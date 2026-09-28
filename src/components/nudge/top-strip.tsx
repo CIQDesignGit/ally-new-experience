@@ -2,7 +2,8 @@
 
 import { Fragment, useEffect, useLayoutEffect, useRef, useState } from "react"
 import Link from "next/link"
-import { ChevronRight } from "lucide-react"
+import { ChevronRight, LogOut } from "lucide-react"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
 import { PeriodSwitch } from "./period-switch"
 import { SettingsGear } from "./settings-gear"
@@ -57,6 +58,47 @@ export function Avatar({ person, className }: { person: Person; className?: stri
       {p.style === "short" && <path d="M11.6 14.2c0-4.8 2.8-7.6 6.4-7.6 3.8 0 6.6 2.6 6.4 7.4-1.4-2.4-3.8-3.2-6.6-3.2s-4.8.8-6.2 3.4z" fill={p.hair} />}
       {p.style === "long" && <path d="M11.6 15c.2-4.6 2.8-7.8 6.4-7.8s6.4 3.2 6.4 7.8c-1.8-2.4-4-3.6-6.4-3.6s-4.6 1.2-6.4 3.6z" fill={p.hair} />}
     </svg>
+  )
+}
+
+/**
+ * The avatar is the account menu: who's signed in (the presenter, whose inbox gets
+ * Ally's emails) and Sign out, which returns to the sign-in page.
+ */
+function AccountMenu({ person }: { person: Person }) {
+  const [email, setEmail] = useState<string | null>(null)
+  return (
+    <DropdownMenu
+      onOpenChange={(open) => {
+        // The sign-in cookie is server-only, so ask the server who this is.
+        if (open && !email)
+          fetch("/api/session")
+            .then((r) => r.json())
+            .then((r: { email: string | null }) => setEmail(r.email))
+            .catch(() => {})
+      }}
+    >
+      <DropdownMenuTrigger aria-label="Account" className="ml-1 rounded-full outline-none focus-visible:ring-2 focus-visible:ring-brand-300">
+        <Avatar person={person} />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" sideOffset={8} className="w-80 rounded-xl p-1.5 shadow-md ring-1 ring-slate-200/80">
+        <div className="px-2.5 py-2">
+          <div className="text-sm font-semibold text-slate-950">{PEOPLE[person].name}</div>
+          <div className="mt-0.5 truncate text-xs text-slate-500">{email ? `Signed in as ${email}` : "\u00a0"}</div>
+        </div>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          onClick={async () => {
+            await fetch("/api/session", { method: "DELETE" }).catch(() => {})
+            // A full load, so the sign-in page starts clean.
+            window.location.href = "/login"
+          }}
+          className="gap-2.5 px-2.5 py-2 text-sm"
+        >
+          <LogOut className="size-4 text-slate-500" /> Sign out
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }
 
@@ -187,7 +229,7 @@ export function TopStrip({ person, greeting, crumbs, period, facts, controls, ic
         {controls && <div className="mr-2 flex items-center">{controls}</div>}
         {icons}
         <SettingsGear />
-        <Avatar person={person} className="ml-1" />
+        <AccountMenu person={person} />
       </div>
     </header>
   )
