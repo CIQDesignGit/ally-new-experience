@@ -21,6 +21,9 @@ export interface TierRow {
   deadline?: string
   /** Where the owner stands on this week's Monday email: not started, or in progress with how far along. */
   weekly?: { state: "not-started" | "in-progress" | "done"; progress?: string }
+  /** The same row as numbers, for ranking across buckets (open value in $M; days until the deadline). */
+  valueM?: number
+  days?: number
 }
 
 /** Title-case agent label for the "Mike Content" owner line. */

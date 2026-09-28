@@ -386,7 +386,7 @@ export interface DeliveredPeriod {
 
 export const DELIVERED: Record<ClosedGrain, DeliveredPeriod> = {
   month: {
-    periodName: "August",
+    periodName: "September",
     buckets: [
       { agent: "content", promised: 0.26, delivered: 0.238, reason: "2 top sellers out of stock" },
       { agent: "media", promised: 0.15, delivered: 0.161, reason: "IROAS ahead of the $2.80 plan" },
@@ -799,7 +799,7 @@ export const TOTAL_SKUS_REMAINING = 1096
 /** The "{priorName} · {priorValue} driven by Ally" toggle and its agent breakdown. */
 export const CLOSED: Record<ClosedGrain, ClosedPeriodData> = {
   month: {
-    name: "August",
+    name: "September",
     total: "$430K",
     media: "$161K",
     content: "$238K",

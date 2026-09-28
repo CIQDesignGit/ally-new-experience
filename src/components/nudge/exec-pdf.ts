@@ -1,4 +1,4 @@
-import { AS_OF, BUSINESS, INFLIGHT, deadlineView, fmtBiz, fmtM, fmtValue, getSnapshot, launchedIds, openView, tierView, waterfallStages } from "./data"
+import { AS_OF, BUSINESS, INFLIGHT, deadlineView, fmtBiz, fmtM, fmtValue, getSnapshot, launchedIds, nudgeTargets, openView, tierView, waterfallStages } from "./data"
 import { rankLevers } from "./model"
 import type { ContentDelivered } from "./delivered-content-data"
 import { DELIVERED, leverDelivered } from "./delivered-periods"
@@ -300,9 +300,89 @@ export async function downloadExecSummary(period: Period, state: ExecState) {
   doc.save(filename)
 }
 
-/** The same PDF, as base64 for an email attachment. */
+/** The same PDF, as base64 for an email attachment, plus the summary the email body leads with. */
 export async function execSummaryForEmail(period: Period, state: ExecState) {
   const { doc, quarter, filename } = await buildExecSummary(period, state)
   const pdfBase64 = (doc.output("datauristring") as string).split(",")[1]
-  return { quarter, filename, pdfBase64 }
+  return { quarter, filename, pdfBase64, digest: execDigest(period, state) }
+}
+
+export interface DigestRow {
+  label: string
+  note?: string
+  value?: string
+  tone?: "warn" | "done"
+  href?: string
+}
+export interface ExecDigest {
+  subject: string
+  preheader: string
+  hero: string[]
+  sections: { title: string; total?: { note: string; value: string }; rows: DigestRow[] }[]
+}
+
+/**
+ * The email's own summary, from the same model as the page and the PDF, so every
+ * number ties: where you stand, what's open, what we delivered, and the top
+ * three actions (soonest deadline first, then dollars). Links open Ally; they never act.
+ */
+export function execDigest(period: Period, { approved, nudged, policy }: ExecState): ExecDigest {
+  const open = openView(approved, policy, period)
+  const approval = tierView("approval", approved, policy, period)
+  const deadline = deadlineView(approved, "approval", policy, period)
+  const done = DELIVERED[period]
+  const biz = BUSINESS[period]
+  const pace = biz.pace + (period === "quarter" || period === "year" ? open.acted : 0)
+  const gap = biz.plan - pace
+  const quarter = INFLIGHT[period].name
+  const standing = gap > 0 ? `${fmtBiz(gap)} short of your ${fmtBiz(biz.plan)} plan` : `${fmtBiz(-gap)} ahead of your ${fmtBiz(biz.plan)} plan`
+
+  const levers = (["content", "media", "ops"] as AgentId[]).sort((a, b) => leverDelivered(done, b).delivered - leverDelivered(done, a).delivered)
+  const drill: Partial<Record<AgentId, ContentDelivered>> = { content: done.content, ops: done.ops }
+  const delivered = levers.reduce((n, a) => n + leverDelivered(done, a).delivered, 0)
+  const projected = levers.reduce((n, a) => n + leverDelivered(done, a).promised, 0)
+
+  const targets = nudgeTargets(policy)
+  const actions = [...tierView("approval", approved, policy, period).rows, ...tierView("input", approved, policy, period).rows]
+    .filter((r) => r.nudgeKey && (r.valueM ?? 0) > 0)
+    .sort((a, b) => (a.days ?? Infinity) - (b.days ?? Infinity) || (b.valueM ?? 0) - (a.valueM ?? 0))
+    .slice(0, 3)
+    .map((r): DigestRow => {
+      const key = r.nudgeKey!
+      const done = !!nudged[key]
+      // The person is the link; the task and its clock sit underneath. Bullets are fragments: no closing full stop.
+      const task = (targets[key]?.batchName ?? r.description).replace(/\.$/, "")
+      return {
+        label: `${done ? "Nudged" : "Nudge"} ${r.analystName}`,
+        note: [task, done ? "nudged today" : r.days ? `${r.days} days to act` : undefined].filter(Boolean).join(" · "),
+        value: r.value,
+        tone: done ? "done" : r.days ? "warn" : undefined,
+        href: `/claire-waterfall?stage=${key.startsWith("team") ? "team" : "approval"}`,
+      }
+    })
+
+  return {
+    subject: `${quarter}: ${gap > 0 ? `${fmtBiz(gap)} short of plan, ${open.totalLabel} in the pipeline to close it` : `${fmtBiz(-gap)} ahead of plan`}`,
+    preheader: deadline ? `${deadline.expiring} expires in ${deadline.days} days` : `${approval.effort} of your team's time unlocks ${approval.value}`,
+    hero: [`You're tracking to ${fmtBiz(pace)} in sales ${PERIOD_WORDS[period]}.`, `That's ${standing}.`],
+    sections: [
+      {
+        title: "Where the money is",
+        rows: [
+          { label: "In the pipeline", note: open.byArea.map((a) => `${a.value} ${a.agent}`).join(" · "), value: open.totalLabel },
+          { label: `${approval.effort} of your team's time unlocks`, value: approval.value },
+          ...(deadline ? [{ label: `Expires in ${deadline.days} days`, value: deadline.expiring, tone: "warn" as const }] : []),
+        ],
+      },
+      {
+        title: `What we delivered · ${done.label}`,
+        total: { note: `of ${fmtValue(projected)} projected`, value: fmtValue(delivered) },
+        rows: levers.map((a) => {
+          const l = leverDelivered(done, a)
+          return { label: a, note: drill[a]?.did ?? l.reason, value: fmtValue(l.delivered) }
+        }),
+      },
+      ...(actions.length ? [{ title: "Top actions", rows: actions }] : []),
+    ],
+  }
 }

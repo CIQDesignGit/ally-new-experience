@@ -125,11 +125,15 @@ export function tierRows(snap: Snapshot, tier: Tier, acted: Acted = {}, levers: 
       description: cfg.describe[lever] ?? "",
       // Nothing left open: the status says why, so the value is a dash rather than "$0K".
       value: open.length ? money(sum(open)) : "—",
+      valueM: sum(open),
     }
     if (tier !== "autopilot") {
       row.nudgeKey = `${TIER_NUDGE_KEY[tier]}-${lever}` as TierRow["nudgeKey"]
       row.weekly = statusFor(snap, tier, lever, acted)
-      if (deadline) row.deadline = `Expires in ${deadline.days} days`
+      if (deadline) {
+        row.deadline = `Expires in ${deadline.days} days`
+        row.days = deadline.days
+      }
     }
     return [{ row, days: tier !== "autopilot" && deadline ? deadline.days : Infinity, value: sum(open) }]
   })

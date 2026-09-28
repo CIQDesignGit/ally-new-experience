@@ -71,6 +71,17 @@ function ClaireWaterfall() {
   }, [resetDemo])
   const selected = stages.find((s) => s.id === selectedId) ?? stages[0]
 
+  // A link from Ally's email (?stage=team) opens on that bucket, its Nudge buttons in view.
+  useEffect(() => {
+    const want = new URLSearchParams(window.location.search).get("stage") as WaterfallSelection | null
+    if (!want || !["autopilot", "approval", "team", "total"].includes(want)) return
+    const t = window.setTimeout(() => {
+      setSelectedId(want)
+      window.setTimeout(() => document.getElementById("stage-detail")?.scrollIntoView({ block: "start" }), 50)
+    }, 0)
+    return () => window.clearTimeout(t)
+  }, [])
+
   return (
     <PageShell className="bg-slate-50">
       {/* overflow-clip (not hidden) keeps rounded corners without breaking the sticky Ally panel in a view. */}
@@ -94,7 +105,9 @@ function ClaireWaterfall() {
 
             <div className="px-12 pb-2">
               <WaterfallChart selectedId={selectedId} onSelect={setSelectedId} />
-              {selectedId === "total" ? <AreaDetail /> : <StageDetail stage={selected} />}
+              <div id="stage-detail" className="scroll-mt-4">
+                {selectedId === "total" ? <AreaDetail /> : <StageDetail stage={selected} />}
+              </div>
             </div>
 
             <ThisQuarterSection />

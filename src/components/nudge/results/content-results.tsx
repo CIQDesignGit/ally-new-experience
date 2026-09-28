@@ -24,7 +24,7 @@ const TABS: { id: View; label: string }[] = [
 const PERIODS: { id: ResultPeriod; label: string }[] = [
   // As of Oct 8 (Q4 FY26): SKU-level results exist for finished periods; Q4's first week is still measuring.
   { id: "qtd", label: "Last quarter" },
-  { id: "month", label: "August" },
+  { id: "month", label: "September" },
   { id: "quarter", label: "Q2 FY26" },
   { id: "year", label: "Last year" },
 ]

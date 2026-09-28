@@ -127,7 +127,7 @@ export const RESULT_SECTIONS: ResultSection[] = [
 /* ---------------------------------------------------------------------------
  * Period filter: last closed month, quarter or year, matching "How we did".
  * Month and year reuse the quarter's SKU rows, re-scaled so every total ties
- * to that period's content row (August $238K, FY25 $1.79M).
+ * to that period's content row (September $238K, FY25 $1.79M).
  * ------------------------------------------------------------------------- */
 export type ResultPeriod = "qtd" | "month" | "quarter" | "year"
 
@@ -151,7 +151,7 @@ function rescale(base: ResultSection, t: Scale): ResultSection {
 
 const [SEASONAL_Q, FOUNDATIONAL_Q, READINESS_Q] = RESULT_SECTIONS
 
-/** Back to school (Q3 and August): its own SKUs. Category grew 8% in event weeks; the $15K stockout ties to Claire's Q3 story. */
+/** Back to school (Q3 and September): its own SKUs. Category grew 8% in event weeks; the $15K stockout ties to Claire's Q3 story. */
 const BACK_TO_SCHOOL: ResultSection = {
   type: "seasonal",
   name: "Seasonal · Back to school",
@@ -179,7 +179,7 @@ export const RESULTS_BY_PERIOD: Record<ResultPeriod, PeriodResults> = {
     ],
   },
   month: {
-    name: "August",
+    name: "September",
     all: { incremental: 0.238, promised: 0.26, sales: 3.3, units: 3.4, traffic: 2.3, conversion: 1.0, live: 100, promisedSkus: 120 },
     sections: [
       rescale(BACK_TO_SCHOOL, { name: "Seasonal · Back to school", incremental: 0.12, promised: 0.13, live: 70, promisedSkus: 82 }),

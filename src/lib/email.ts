@@ -81,3 +81,55 @@ ${facts}${pre}${cta}
 <tr><td style="padding:16px 4px 0;font-size:12px;color:#9CA3AF">${esc(o.footer)}</td></tr>
 </table></td></tr></table></body></html>`
 }
+
+export interface Digest {
+  subject: string
+  preheader: string
+  hero: string[]
+  sections: { title: string; total?: { note: string; value: string }; rows: { label: string; note?: string; value?: string; tone?: "warn" | "done"; href?: string }[] }[]
+}
+
+/** The summary email: the page's headline, then short sections with the money in a right-hand column. */
+export function summaryHtml(d: Digest, origin: string, footer: string) {
+  const TONE = { warn: "#B54708", done: "#067647" } as const
+  // Links only ever point inside Ally.
+  const link = (href: string) => (href.startsWith("/") && !href.startsWith("//") ? `${origin}${href}` : origin)
+  const section = (s: Digest["sections"][number]) => `
+<tr><td style="padding:28px 0 6px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
+<td style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#6B7280;vertical-align:bottom">${esc(s.title)}</td>
+${s.total ? `<td style="text-align:right;white-space:nowrap;vertical-align:bottom;font-size:13px;color:#6B7280"><span style="font-family:ui-monospace,Menlo,monospace;font-size:17px;font-weight:700;color:#7C3AED">${esc(s.total.value)}</span> ${esc(s.total.note)}</td>` : ""}
+</tr></table></td></tr>
+${s.rows
+  .map((r) => {
+    const color = r.tone ? TONE[r.tone] : "#111827"
+    const label = r.href
+      ? `<a href="${esc(link(r.href))}" style="color:${color};text-decoration:none;font-weight:600">${esc(r.label)} &rsaquo;</a>`
+      : `<span style="color:${color};font-weight:600">${esc(r.label)}</span>`
+    return `<tr><td style="border-top:1px solid #F3F4F6;padding:10px 0"><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
+<td style="font-size:14px;line-height:1.45;vertical-align:top">${label}${r.note ? `<div style="color:#6B7280;font-size:13px;margin-top:2px">${esc(r.note)}</div>` : ""}</td>
+<td style="width:96px;text-align:right;vertical-align:top;font-size:15px;font-weight:600;color:${color};font-family:ui-monospace,Menlo,monospace;white-space:nowrap">${esc(r.value ?? "")}</td>
+</tr></table></td></tr>`
+  })
+  .join("")}`
+  return `<!doctype html><html><body style="margin:0;background:#F9FAFB;font-family:Inter,-apple-system,Segoe UI,Helvetica,Arial,sans-serif">
+<span style="display:none;max-height:0;overflow:hidden">${esc(d.preheader)}</span>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F9FAFB;padding:32px 16px"><tr><td align="center">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px">
+<tr><td style="padding:0 4px 16px;font-size:17px;font-weight:600;color:#210235">Commerce<span style="color:#7C3AED">IQ</span> <span style="color:#9CA3AF;font-weight:500">· Ally</span></td></tr>
+<tr><td style="background:#ffffff;border:1px solid #E5E7EB;border-radius:12px;padding:32px">
+<div style="font-size:15px;color:#374151">${esc(d.hero[0] ?? "")}</div>
+<h1 style="margin:6px 0 0;font-size:24px;line-height:1.3;color:#111827">${esc(d.hero[1] ?? "")}</h1>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0">${d.sections.map(section).join("")}</table>
+<a href="${esc(`${origin}/claire-waterfall`)}" style="display:inline-block;margin-top:28px;background:#875BF7;color:#ffffff;text-decoration:none;font-weight:600;font-size:15px;padding:12px 22px;border-radius:8px">Open in Ally</a>
+<div style="margin-top:14px;font-size:13px;color:#6B7280">The full summary is attached as a PDF.</div>
+</td></tr>
+<tr><td style="padding:16px 4px 0;font-size:12px;color:#9CA3AF">${esc(footer)}</td></tr>
+</table></td></tr></table></body></html>`
+}
+
+export function summaryText(d: Digest, origin: string, footer: string) {
+  const body = d.sections
+    .map((s) => [`${s.title.toUpperCase()}${s.total ? `: ${s.total.value} ${s.total.note}` : ""}`, ...s.rows.map((r) => `- ${r.label}${r.value ? `: ${r.value}` : ""}${r.note ? ` (${r.note})` : ""}${r.href ? ` ${origin}${r.href}` : ""}`)].join("\n"))
+    .join("\n\n")
+  return `${d.hero.join(" ")}\n\n${body}\n\nOpen in Ally: ${origin}/claire-waterfall\nThe full summary is attached as a PDF.\n\n${footer}`
+}
