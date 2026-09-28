@@ -5,6 +5,7 @@ import { toast } from "sonner"
 import { useNudge } from "./nudge-context"
 import { nudgeTargets } from "./data"
 import { useSlackNudgeToast } from "./slack-toast"
+import { emailMe } from "./email-me"
 import type { TierRow } from "./types"
 
 /**
@@ -35,6 +36,8 @@ export function useFireNudge() {
           queuePath: t.queuePath,
         }),
       }).catch(() => {})
+      // And by email, to whoever is signed in (they play the nudged person).
+      void emailMe({ kind: "nudge", batchName: t.batchName, description: row.description, value: t.value, skus: t.skus, deadlineDays: t.deadlineDays, recipient: t.recipient, queuePath: t.queuePath })
     },
     [showSlackToast, policy],
   )

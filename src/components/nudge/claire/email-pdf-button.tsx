@@ -1,30 +1,43 @@
 "use client"
 
 import { useState } from "react"
-import { Mail, Loader2 } from "lucide-react"
+import { Download, Loader2, Mail, Send } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { downloadExecSummary } from "../exec-pdf"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { downloadExecSummary, execSummaryForEmail } from "../exec-pdf"
+import { emailMe } from "../email-me"
 import { useNudge } from "../nudge-context"
 import type { Period } from "../types"
 import { ICON_BTN } from "./team-bell"
 
-/** The mail icon in Claire's top line: downloads the page as a PDF, fully expanded, ready to attach. */
+/** The mail icon in Claire's top line: the page as a PDF, fully expanded. Download it, or have it emailed to you. */
 export function EmailPdfButton({ period }: { period: Period }) {
   const { approved, nudged, policy } = useNudge()
-  const [busy, setBusy] = useState(false)
+  const [busy, setBusy] = useState<"download" | "email" | null>(null)
 
-  async function handleDownload() {
-    setBusy(true)
+  async function run(kind: "download" | "email") {
+    setBusy(kind)
     try {
-      await downloadExecSummary(period, { approved, nudged, policy })
+      if (kind === "download") await downloadExecSummary(period, { approved, nudged, policy })
+      else await emailMe({ kind: "summary", ...(await execSummaryForEmail(period, { approved, nudged, policy })) })
     } finally {
-      setBusy(false)
+      setBusy(null)
     }
   }
 
   return (
-    <button type="button" onClick={handleDownload} disabled={busy} aria-label="Email to my team" title="Email to my team" className={cn(ICON_BTN, "disabled:opacity-60")}>
-      {busy ? <Loader2 className="size-4 animate-spin" /> : <Mail className="size-4" />}
-    </button>
+    <DropdownMenu>
+      <DropdownMenuTrigger disabled={!!busy} aria-label="Share this summary" title="Share this summary" className={cn(ICON_BTN, "disabled:opacity-60")}>
+        {busy ? <Loader2 className="size-4 animate-spin" /> : <Mail className="size-4" />}
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" sideOffset={8} className="w-56 rounded-xl p-1.5 shadow-md ring-1 ring-slate-200/80">
+        <DropdownMenuItem onClick={() => run("email")} className="gap-2.5 px-2.5 py-2 text-sm">
+          <Send className="size-4 text-slate-500" /> Email me the PDF
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => run("download")} className="gap-2.5 px-2.5 py-2 text-sm">
+          <Download className="size-4 text-slate-500" /> Download PDF
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }

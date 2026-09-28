@@ -47,7 +47,8 @@ function weekStatus(row: TierRow, nudged: ExecState["nudged"]): { text: string; 
  * expanded (each stage's line items, each area's buckets, each lever's
  * breakdown), from the same live model the page reads. jsPDF loads on demand.
  */
-export async function downloadExecSummary(period: Period, state: ExecState) {
+/** Builds the PDF; download or email it with the two helpers below. */
+async function buildExecSummary(period: Period, state: ExecState) {
   const { approved, nudged, policy } = state
   const { jsPDF } = await import("jspdf")
   const doc = new jsPDF({ unit: "pt", format: "letter" })
@@ -291,5 +292,17 @@ export async function downloadExecSummary(period: Period, state: ExecState) {
     }
   })
 
-  doc.save(`ally-summary-${quarter.replace(/\s+/g, "-").toLowerCase()}.pdf`)
+  return { doc, quarter, filename: `ally-summary-${quarter.replace(/\s+/g, "-").toLowerCase()}.pdf` }
+}
+
+export async function downloadExecSummary(period: Period, state: ExecState) {
+  const { doc, filename } = await buildExecSummary(period, state)
+  doc.save(filename)
+}
+
+/** The same PDF, as base64 for an email attachment. */
+export async function execSummaryForEmail(period: Period, state: ExecState) {
+  const { doc, quarter, filename } = await buildExecSummary(period, state)
+  const pdfBase64 = (doc.output("datauristring") as string).split(",")[1]
+  return { quarter, filename, pdfBase64 }
 }

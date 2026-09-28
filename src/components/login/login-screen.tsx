@@ -7,9 +7,6 @@ import { ArrowRight, Check, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { HarnessMock, IncrementalityMock, ShopperMock } from "./concept-mocks"
 
-/** The demo's identity: whoever signs in is who Ally emails. Read by the email routes. */
-export const SESSION_COOKIE = "ally_demo_email"
-
 const SLIDES = [
   { tag: "Retail harness", title: "The world's first retail harness", Mock: HarnessMock },
   { tag: "Always on", title: "Agents that win AI shopping agents, 24/7", Mock: ShopperMock },
@@ -111,7 +108,7 @@ function SignIn() {
   const [error, setError] = useState<string | null>(null)
   const [state, setState] = useState<"idle" | "busy" | "done">("idle")
 
-  function submit(e: React.FormEvent) {
+  async function submit(e: React.FormEvent) {
     e.preventDefault()
     const value = email.trim().toLowerCase()
     if (!EMAIL.test(value)) {
@@ -120,16 +117,23 @@ function SignIn() {
     }
     setError(null)
     setState("busy")
-    // Per browser, so two people on the same link each stay themselves.
-    document.cookie = `${SESSION_COOKIE}=${encodeURIComponent(value)}; path=/; max-age=${60 * 60 * 24 * 30}; samesite=lax`
     try {
-      localStorage.setItem(SESSION_COOKIE, value)
-    } catch {}
+      // The server checks the domain and remembers the email in this browser only.
+      const res = await fetch("/api/session", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: value }) })
+      const r = (await res.json()) as { ok: boolean; reason?: string }
+      if (!r.ok) {
+        setError(r.reason ?? "Couldn't sign in")
+        setState("idle")
+        return
+      }
+    } catch {
+      setError("Couldn't sign in. Check your connection.")
+      setState("idle")
+      return
+    }
+    setState("done")
     const next = new URLSearchParams(window.location.search).get("next")
-    window.setTimeout(() => {
-      setState("done")
-      router.push(next?.startsWith("/") ? next : "/claire-waterfall")
-    }, 450)
+    router.push(next?.startsWith("/") && !next.startsWith("//") ? next : "/claire-waterfall")
   }
 
   return (

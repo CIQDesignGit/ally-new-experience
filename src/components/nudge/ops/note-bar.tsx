@@ -8,6 +8,7 @@ import { OPS_DAYS_SAVED, fmtValue, opsBatches, opsSkus } from "../data"
 import type { OpsBatch } from "../data"
 import { useNudge } from "../nudge-context"
 import { PRIMARY, SECONDARY } from "../mike/buttons"
+import { emailMe } from "../email-me"
 
 /** One vendor manager for the demo. */
 export const VENDOR_MANAGER = { name: "Dana", full: "Dana Ruiz", role: "your vendor manager" }
@@ -82,6 +83,8 @@ export function NoteBar() {
     // An issue counts as sent when every one of its SKUs has gone; the rest stay open.
     const complete = groups.filter((g) => opsSkus(g.batch).every((s) => g.items.some((x) => x.asin === s.asin))).map((g) => g.batch.id)
     sendNote(complete)
+    // The signed-in person gets the email, playing Dana.
+    void emailMe({ kind: "note", subject: `${groups.length} ${groups.length === 1 ? "issue" : "issues"} on our Amazon listings · ${skus} SKUs`, body: text, skus, issues: groups.length }, { quiet: true })
     toast.success(`Sent to ${VENDOR_MANAGER.full}, ${VENDOR_MANAGER.role} · ${skus} SKUs across ${groups.length} ${groups.length === 1 ? "issue" : "issues"}, evidence attached`, { position: "top-right" })
     setOpen(false)
     setBody(null)

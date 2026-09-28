@@ -87,7 +87,7 @@ export function ShopperMock() {
     { name: "Lumen & Co Cedar Tin", ours: false },
   ]
   const feed = [
-    { t: "2:14 AM", who: "content agent", what: `Added "housewarming gift" to 12 PDPs` },
+    { t: "2:14 AM", who: "content agent", what: `Added "housewarming" to 12 PDPs` },
     { t: "3:02 AM", who: "media agent", what: "Raised bids on 38 gifting keywords" },
     { t: "6:40 AM", who: "Ally", what: "AI share of voice 34%, up 1.4 pts" },
   ]
