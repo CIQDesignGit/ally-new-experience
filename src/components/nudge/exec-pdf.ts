@@ -1,5 +1,6 @@
 import { AS_OF, BUSINESS, INFLIGHT, deadlineView, fmtBiz, fmtM, fmtValue, getSnapshot, launchedIds, nudgeTargets, openView, tierView, waterfallStages } from "./data"
 import { rankLevers } from "./model"
+import { axisMin, buildColumns } from "./waterfall/waterfall-chart"
 import type { ContentDelivered } from "./delivered-content-data"
 import { DELIVERED, leverDelivered } from "./delivered-periods"
 import type { Acted } from "./model"
@@ -314,10 +315,20 @@ export interface DigestRow {
   tone?: "warn" | "done"
   href?: string
 }
+/** The page's bridge as numbers, for the email's chart picture: axis, plan and each column. */
+export interface DigestChart {
+  min: number
+  max: number
+  plan: number
+  planLabel: string
+  alt: string
+  cols: { k: string; l: string; s?: string; v: string; a: number; b: number }[]
+}
 export interface ExecDigest {
   subject: string
   preheader: string
   hero: string[]
+  chart?: DigestChart
   sections: { title: string; total?: { note: string; value: string }; rows: DigestRow[] }[]
 }
 
@@ -335,6 +346,17 @@ export function execDigest(period: Period, { approved, nudged, policy }: ExecSta
   const pace = biz.pace + (period === "quarter" || period === "year" ? open.acted : 0)
   const gap = biz.plan - pace
   const quarter = INFLIGHT[period].name
+  // The same bridge the page draws: same axis, same columns, same labels.
+  const cols = buildColumns(waterfallStages(approved, policy, period), pace, axisMin(pace, biz.plan))
+  const chart: DigestChart = {
+    min: axisMin(pace, biz.plan),
+    max: Math.max(cols[cols.length - 1].end, biz.plan) * 1.03,
+    plan: biz.plan,
+    planLabel: `Plan ${fmtBiz(biz.plan)}`,
+    alt: `Where it sits today: ${cols.map((c) => `${c.label} ${c.valueLabel}`).join(", ")}, against a ${fmtBiz(biz.plan)} plan`,
+    // A narrow email column: autopilot's long caption becomes a short one.
+    cols: cols.map((c) => ({ k: c.key, l: c.label, s: c.key === "autopilot" ? "No action needed" : c.sub || undefined, v: c.valueLabel, a: c.start, b: c.end })),
+  }
   const standing = gap > 0 ? `${fmtBiz(gap)} short of your ${fmtBiz(biz.plan)} plan` : `${fmtBiz(-gap)} ahead of your ${fmtBiz(biz.plan)} plan`
 
   const levers = (["content", "media", "ops"] as AgentId[]).sort((a, b) => leverDelivered(done, b).delivered - leverDelivered(done, a).delivered)
@@ -364,6 +386,7 @@ export function execDigest(period: Period, { approved, nudged, policy }: ExecSta
   return {
     subject: `${quarter}: ${gap > 0 ? `${fmtBiz(gap)} short of plan, ${open.totalLabel} in the pipeline to close it` : `${fmtBiz(-gap)} ahead of plan`}`,
     preheader: deadline ? `${deadline.expiring} expires in ${deadline.days} days` : `${approval.effort} of your team's time unlocks ${approval.value}`,
+    chart,
     hero: [`You're tracking to ${fmtBiz(pace)} in sales ${PERIOD_WORDS[period]}.`, `That's ${standing}.`],
     sections: [
       {

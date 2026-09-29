@@ -86,11 +86,28 @@ export interface Digest {
   subject: string
   preheader: string
   hero: string[]
+  chart?: { min: number; max: number; plan: number; planLabel: string; alt: string; cols: { k: string; l: string; s?: string; v: string; a: number; b: number }[] }
   sections: { title: string; total?: { note: string; value: string }; rows: { label: string; note?: string; value?: string; tone?: "warn" | "done"; href?: string }[] }[]
 }
 
 /** The summary email: the page's headline, then short sections with the money in a right-hand column. */
-export function summaryHtml(d: Digest, origin: string, footer: string) {
+/**
+ * Where email images load from. Inboxes can't reach localhost, so a test sent from a
+ * laptop still points at the live site (set EMAIL_ASSET_ORIGIN to override).
+ */
+export function assetOrigin(origin: string) {
+  if (process.env.EMAIL_ASSET_ORIGIN) return process.env.EMAIL_ASSET_ORIGIN
+  return /localhost|127\.0\.0\.1/.test(origin) ? "https://content-agent-demo-dusky.vercel.app" : origin
+}
+
+/** The chart picture's address: the bridge's numbers ride in the URL, so the image always matches the email. */
+export function chartUrl(chart: NonNullable<Digest["chart"]>, base: string) {
+  const { min, max, plan, planLabel, cols } = chart
+  // v changes whenever the chart design does, so no inbox shows a cached old picture.
+  return `${base}/api/email/chart?v=2&d=${Buffer.from(JSON.stringify({ min, max, plan, planLabel, cols })).toString("base64url")}`
+}
+
+export function summaryHtml(d: Digest, origin: string, footer: string, images = assetOrigin(origin)) {
   const TONE = { warn: "#B54708", done: "#067647" } as const
   // Links only ever point inside Ally.
   const link = (href: string) => (href.startsWith("/") && !href.startsWith("//") ? `${origin}${href}` : origin)
@@ -119,6 +136,12 @@ ${s.rows
 <tr><td style="background:#ffffff;border:1px solid #E5E7EB;border-radius:12px;padding:32px">
 <div style="font-size:15px;color:#374151">${esc(d.hero[0] ?? "")}</div>
 <h1 style="margin:6px 0 0;font-size:24px;line-height:1.3;color:#111827">${esc(d.hero[1] ?? "")}</h1>
+${
+  d.chart
+    ? `<div style="margin:28px 0 8px;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#6B7280">Where it sits today</div>
+<a href="${esc(`${origin}/claire-waterfall`)}"><img src="${esc(chartUrl(d.chart, images))}" width="536" alt="${esc(d.chart.alt)}" style="display:block;width:100%;max-width:536px;height:auto;border:0" /></a>`
+    : ""
+}
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${d.sections.map(section).join("")}</table>
 <a href="${esc(`${origin}/claire-waterfall`)}" style="display:inline-block;margin-top:28px;background:#875BF7;color:#ffffff;text-decoration:none;font-weight:600;font-size:15px;padding:12px 22px;border-radius:8px">Open in Ally</a>
 <div style="margin-top:14px;font-size:13px;color:#6B7280">The full summary is attached as a PDF.</div>

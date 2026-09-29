@@ -14,7 +14,7 @@ const PAD_TOP = 32
  * The axis starts above zero so a small step is still visible next to a big base
  * (said on the chart): 90% of the lower of run rate and plan, rounded down.
  */
-const axisMin = (pace: number, plan: number) => {
+export const axisMin = (pace: number, plan: number) => {
   const v = Math.min(pace, plan) * 0.9
   return v >= 10 ? Math.floor(v) : Math.floor(v * 2) / 2
 }
@@ -31,7 +31,7 @@ const BAR: Record<string, string> = {
 
 export type WaterfallSelection = WaterfallStage["id"] | "total"
 
-interface Column {
+export interface Column {
   key: string
   label: string
   sub?: string
@@ -42,7 +42,7 @@ interface Column {
 }
 
 /** Current run rate → + each open bucket → where Ally takes you, against the plan line. */
-function buildColumns(stages: WaterfallStage[], pace: number, min: number): Column[] {
+export function buildColumns(stages: WaterfallStage[], pace: number, min: number): Column[] {
   let acc = pace
   const steps = stages.map((s) => {
     const sub = s.caption ?? s.effort
