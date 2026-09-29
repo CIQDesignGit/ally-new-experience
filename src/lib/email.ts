@@ -139,7 +139,7 @@ ${s.rows
 ${
   d.chart
     ? `<div style="margin:28px 0 8px;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#6B7280">Where it sits today</div>
-<a href="${esc(`${origin}/claire-waterfall`)}"><img src="${esc(chartUrl(d.chart, images))}" width="536" alt="${esc(d.chart.alt)}" style="display:block;width:100%;max-width:536px;height:auto;border:0" /></a>`
+<a href="${esc(`${origin}/claire-waterfall`)}" style="color:#6B7280;text-decoration:none"><img src="${esc(chartUrl(d.chart, images))}" width="536" alt="${esc(d.chart.alt)}" style="display:block;width:100%;max-width:536px;height:auto;border:0;color:#6B7280;font-size:13px;line-height:1.5" /></a>`
     : ""
 }
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${d.sections.map(section).join("")}</table>
