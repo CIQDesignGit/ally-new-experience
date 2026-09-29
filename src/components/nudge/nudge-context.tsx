@@ -22,6 +22,15 @@ interface StoredState {
   businessGroup?: BusinessGroup
   /** Michelle's running note to the vendor manager: fixes approved, not yet sent. */
   note?: NoteItem[]
+  /** Thumbs up or down on Ally's call for one SKU, by where it was given ("mike:batch:sku"). */
+  feedback?: Record<string, Feedback>
+}
+
+/** A vote on Ally's call, and the context sent with it. */
+export interface Feedback {
+  vote: "up" | "down"
+  text?: string
+  sent?: boolean
 }
 
 /** One SKU of one ops issue, added to the note on a day; sentOn once the note goes. */
@@ -62,6 +71,8 @@ interface NudgeContextValue extends StoredState {
   addToNote: (batchId: string, asins: string[]) => void
   /** Sends everything unsent: stamps the items and approves every issue whose SKUs have all been sent. */
   sendNote: (complete: string[]) => void
+  feedback: Record<string, Feedback>
+  setFeedback: (id: string, f: Feedback) => void
 }
 
 const EMPTY_STATE: StoredState = { nudged: {}, approved: {} }
@@ -176,6 +187,8 @@ export function NudgeProvider({ children }: { children: React.ReactNode }) {
             const fresh = asins.filter((a) => !cur.some((i) => i.batchId === batchId && i.asin === a))
             return { ...prev, note: [...cur, ...fresh.map((asin) => ({ batchId, asin, addedOn: "Oct 8" }))] }
           }),
+        feedback: state.feedback ?? {},
+        setFeedback: (id, f) => update((prev) => ({ ...prev, feedback: { ...(prev.feedback ?? {}), [id]: f } })),
         sendNote: (complete) =>
           update((prev) => ({
             ...prev,

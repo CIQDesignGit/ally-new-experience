@@ -9,6 +9,7 @@ import { PRIMARY, SECONDARY } from "../mike/buttons"
 import { VENDOR_MANAGER } from "./note-bar"
 import { SkuEvidence, SkuHeader } from "./ops-evidence"
 import { flatten } from "./gap-data"
+import { AllyFeedback } from "../ally-feedback"
 
 interface OpsSkuPaneProps {
   batch: OpsBatch
@@ -60,6 +61,8 @@ export function OpsSkuPane({ batch, asin, checked, onBack, onCheck, onSend }: Op
       <div className="mt-6">
         <SkuEvidence batch={batch} asin={sku.asin} />
       </div>
+
+      <AllyFeedback key={sku.asin} id={`michelle:${batch.id}:${sku.asin}`} sku={sku.name} author="Michelle Ortiz" className="mt-6" />
 
       {!done && batch.tier === "approval" && (
         <div className="mt-8 flex flex-wrap items-center gap-4 rounded-xl border border-brand-200 bg-brand-25 px-6 py-5">

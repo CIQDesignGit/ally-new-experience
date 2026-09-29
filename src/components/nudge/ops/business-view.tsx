@@ -19,6 +19,7 @@ import { GAP_TREE, findIn, skusUnder } from "./gap-data"
 import type { Driver, Fix, GapNode } from "./gap-data"
 import { GapAnalysis } from "./gap-view"
 import { VENDOR_MANAGER } from "./note-bar"
+import { AllyFeedback } from "../ally-feedback"
 
 /** $M → "$5.8K" / "$240K" / "$2.1M"; signed when asked. */
 const m = (v: number, signed = false) => {
@@ -322,6 +323,7 @@ export function BusinessPane({ root, nodeId, onSelect, onOpenOps }: { root: GapN
               )}
             </div>
           </div>
+          <AllyFeedback key={n.id} id={`michelle:business:${n.id}`} sku={n.name} author="Michelle Ortiz" />
         </div>
       ) : (
         <div className="mt-6 flex flex-col gap-4">

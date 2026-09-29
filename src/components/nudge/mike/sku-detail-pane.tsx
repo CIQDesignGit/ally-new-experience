@@ -8,6 +8,7 @@ import { PRIMARY, SECONDARY } from "./buttons"
 import { sceneLabel, useBackgrounds } from "./background-composer"
 import { cn } from "@/lib/utils"
 import { SkuSections } from "./sku-diff"
+import { AllyFeedback } from "../ally-feedback"
 import type { Batch, SkuRow } from "../types"
 
 interface SkuDetailPaneProps {
@@ -58,6 +59,8 @@ export function SkuDetailPane({ batch, row, onBack, onApprove, onSelectSku }: Sk
       <div className="mt-6">
         <SkuSections sections={row.sections} thumbnailUrl={sku.thumbnailUrl} skuId={row.skuId} onNext={onNext} />
       </div>
+
+      <AllyFeedback key={row.skuId} id={`mike:${batch.id}:${row.skuId}`} sku={sku.title} author="Mike Chen" className="mt-6" />
 
       {!done && batch.tier === "input" && needsBackground && (
         <div className="mt-8 flex items-center gap-4 rounded-xl border border-warning-200 bg-warning-50 px-6 py-5">

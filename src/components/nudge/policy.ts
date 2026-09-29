@@ -48,6 +48,8 @@ export interface KnowledgeEntry extends Scope {
   text: string
   author: string
   date: string
+  /** Where it came from when it wasn't typed in Settings, e.g. a thumbs down on one SKU. */
+  source?: string
 }
 
 export interface Policy {

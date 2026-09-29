@@ -76,6 +76,7 @@ export function Knowledge() {
                 <p className="mt-1.5 text-[15px] leading-relaxed text-slate-950">{k.text}</p>
                 <div className="mt-0.5 text-xs text-slate-500">
                   {k.author} · {k.date}
+                  {k.source && ` · ${k.source}`}
                 </div>
               </div>
               <button
