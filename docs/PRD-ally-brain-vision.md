@@ -54,7 +54,7 @@ These ten rules decide every design argument; if a screen breaks one, the screen
 1. **Action first.** Every output ends in an action: either Ally queues it for a person's approval, or Ally does it as an agent. Even a deck, a dashboard or an answer carries its "so what" as actions that are ready to go. "Here's something I made for you" is never the end.
 2. **Always opinionated.** Every answer, workflow and notification ends with the next two to four things Ally can do. Never a dead end.
 3. **Push beats pull.** What's broken or important reaches the person in Teams or email. The app is where they act, not where they discover.
-4. **Money is the sort order.** Rank by dollars at risk or dollars to gain, not by recency or count.
+4. **Urgency, then money, is the sort order.** Rank what expires soonest first, then by dollars at risk or dollars to gain. Never by recency, count or a fixed lever order.
 5. **Numbers tie everywhere.** One semantic layer. The analyst's buckets sum to the exec's rows. A number that doesn't reconcile isn't shown.
 6. **Prove value.** Projected vs delivered, the method, and the reason for any gap.
 7. **Say what you don't know.** Show what was ruled out, what couldn't be checked, and ranges instead of false precision.
