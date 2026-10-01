@@ -15,6 +15,7 @@ import { OpsBatchList } from "@/components/nudge/ops/ops-batch-list"
 import { OpsBatchDetail } from "@/components/nudge/ops/ops-batch-detail"
 import { OpsDelivered } from "@/components/nudge/ops/ops-delivered"
 import { MICHELLE_QUESTIONS, michelleAnswer } from "@/components/nudge/ask-ally-personas"
+import { RETRO_QUESTION, StorylineAnswer } from "@/components/nudge/retro/storyline-answer"
 import { ResetDemoButton } from "@/components/nudge/reset-demo-button"
 import { opsBatches, opsSkus } from "@/components/nudge/data"
 import { useNudge } from "@/components/nudge/nudge-context"
@@ -28,7 +29,13 @@ import type { OpsBatch } from "@/components/nudge/data"
 /** The inbox's questions for the Ask Ally bar (gap-to-plan registers its own per node). */
 function InboxChat() {
   useChatSource(
-    { chips: MICHELLE_QUESTIONS.map((q) => ({ q, render: () => <div className="max-w-[860px] rounded-2xl bg-white px-5 py-4 text-[15px] leading-relaxed text-slate-700 ring-1 ring-slate-200">{michelleAnswer(q)}</div> })) },
+    {
+      chips: [
+        ...MICHELLE_QUESTIONS.map((q) => ({ q, render: () => <div className="max-w-[860px] rounded-2xl bg-white px-5 py-4 text-[15px] leading-relaxed text-slate-700 ring-1 ring-slate-200">{michelleAnswer(q)}</div> })),
+        // Analysis to storyline to deck: the answer proposes the story; the storyboard builds it.
+        { q: RETRO_QUESTION, render: () => <StorylineAnswer /> },
+      ],
+    },
     "inbox",
   )
   return null

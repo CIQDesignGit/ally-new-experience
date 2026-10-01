@@ -24,6 +24,20 @@ interface StoredState {
   note?: NoteItem[]
   /** Thumbs up or down on Ally's call for one SKU, by where it was given ("mike:batch:sku"). */
   feedback?: Record<string, Feedback>
+  /** Michelle's Prime Day retro: slide order, look, and where it has gone. */
+  retro?: RetroState
+}
+
+export interface RetroState {
+  order?: string[]
+  theme?: "default" | "aurelle"
+  locked?: boolean
+  /** Deck made from the storyboard. */
+  deck?: boolean
+  sentToClaire?: boolean
+  dashboard?: boolean
+  /** Lessons kept (each is also a Knowledge entry). */
+  saved?: string[]
 }
 
 /** A vote on Ally's call, and the context sent with it. */
@@ -73,6 +87,8 @@ interface NudgeContextValue extends StoredState {
   sendNote: (complete: string[]) => void
   feedback: Record<string, Feedback>
   setFeedback: (id: string, f: Feedback) => void
+  retro: RetroState
+  setRetro: (patch: Partial<RetroState>) => void
 }
 
 const EMPTY_STATE: StoredState = { nudged: {}, approved: {} }
@@ -189,6 +205,8 @@ export function NudgeProvider({ children }: { children: React.ReactNode }) {
           }),
         feedback: state.feedback ?? {},
         setFeedback: (id, f) => update((prev) => ({ ...prev, feedback: { ...(prev.feedback ?? {}), [id]: f } })),
+        retro: state.retro ?? {},
+        setRetro: (patch) => update((prev) => ({ ...prev, retro: { ...(prev.retro ?? {}), ...patch } })),
         sendNote: (complete) =>
           update((prev) => ({
             ...prev,

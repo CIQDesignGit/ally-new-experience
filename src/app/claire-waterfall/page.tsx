@@ -9,6 +9,7 @@ import type { WaterfallSelection } from "@/components/nudge/waterfall/waterfall-
 import { AreaDetail } from "@/components/nudge/waterfall/area-detail"
 import { StageDetail } from "@/components/nudge/waterfall/stage-detail"
 import { ThisQuarterSection } from "@/components/nudge/claire/this-quarter-section"
+import { ReportsReady } from "@/components/nudge/retro/reports-ready"
 import { GrowCards } from "@/components/nudge/market/grow-cards"
 import type { GrowView } from "@/components/nudge/market/grow-cards"
 import { GrowViewSwitch } from "@/components/nudge/market/views"
@@ -110,6 +111,7 @@ function ClaireWaterfall() {
               </div>
             </div>
 
+            <ReportsReady />
             <ThisQuarterSection />
             <GrowCards onOpen={openGrow} />
             <HomeChat />
