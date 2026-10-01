@@ -181,7 +181,7 @@ export function AskBar({ placeholder = "Ask Ally: what can I take from your plat
   const showChips = (open || turns.length > 0) && chips.length > 0
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-8 z-40 flex justify-center px-4">
+    <div className="pointer-events-none fixed inset-x-0 bottom-6 z-40 flex justify-center px-4">
       <div ref={rootRef} className="pointer-events-auto flex w-full max-w-[760px] flex-col gap-2">
         {(showChips || turns.length > 0) && (
           <div className="flex items-end justify-between gap-3">
@@ -216,7 +216,7 @@ export function AskBar({ placeholder = "Ask Ally: what can I take from your plat
             else setOpen(true)
             setText("")
           }}
-          className="flex items-center gap-2 rounded-full border border-slate-200/80 bg-white/90 py-1.5 pr-1.5 pl-4 shadow-pane backdrop-blur transition-colors focus-within:border-brand-300 focus-within:bg-white"
+          className="flex items-center gap-2 rounded-full border border-slate-300 bg-white/95 py-1.5 pr-1.5 pl-4 shadow-[0_8px_24px_-6px_rgba(15,23,42,0.18),0_2px_6px_rgba(15,23,42,0.06)] backdrop-blur transition-colors focus-within:border-brand-400 focus-within:bg-white"
         >
           <Sparkles className="size-4 shrink-0 text-brand-600" />
           <input
