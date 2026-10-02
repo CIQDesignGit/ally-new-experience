@@ -165,7 +165,7 @@ export function ChatThread({ className, anchor }: { className?: string; anchor?:
 }
 
 /** The bar: chips for what's on screen (the ones not yet asked), then the input. */
-export function AskBar({ placeholder = "Ask Ally: what can I take from your plate?" }: { placeholder?: string }) {
+export function AskBar({ placeholder = "What can I take off your plate?" }: { placeholder?: string }) {
   const { source, turns, ask, clear } = useChat()
   const router = useRouter()
   // Questions about this screen answer here; tasks (make a deck, plan an event) open their own conversation.
@@ -275,7 +275,7 @@ export function AskBar({ placeholder = "Ask Ally: what can I take from your plat
             value={text}
             onChange={(e) => setText(e.target.value)}
             onFocus={() => setOpen(true)}
-            placeholder={source.about ? `Ask about ${source.about.toLowerCase()}…` : placeholder}
+            placeholder={placeholder}
             className="flex-1 bg-transparent text-sm text-slate-950 outline-none placeholder:text-slate-400"
           />
           <button type="submit" aria-label="Ask Ally" className="flex size-8 items-center justify-center rounded-full bg-brand-500 text-white transition-colors hover:bg-brand-600">

@@ -229,7 +229,7 @@ function Michelle() {
         </div>
       </div>
       <AppDrawer />
-      <AskBar placeholder={view === "business" ? "Ask Ally about your business" : "Ask Ally about your ops queue"} />
+      <AskBar />
     </PageShell>
   )
 }

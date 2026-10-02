@@ -70,7 +70,7 @@ export function AskAllyInline() {
           <input
             value={value}
             onChange={(e) => setValue(e.target.value)}
-            placeholder="What can I take from your plate?"
+            placeholder="What can I take off your plate?"
             className="flex-1 bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400"
           />
           <button

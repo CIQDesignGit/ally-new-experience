@@ -152,7 +152,7 @@ export default function MikePage() {
           <ResetDemoButton />
         </div>
       </div>
-      <AskBar placeholder="Ask Ally about your content queue" />
+      <AskBar />
       </PageShell>
       </ChatProvider>
     </BackgroundProvider>

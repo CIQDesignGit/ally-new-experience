@@ -43,7 +43,7 @@ interface AskAllyProps {
  * Focus opens the chips above it; a chip or a typed question opens the answer
  * there, built from the numbers already on the page.
  */
-export function AskAlly({ questions = QUESTIONS, renderAnswer, placeholder = "Ask Ally: what can I take from your plate?" }: AskAllyProps = {}) {
+export function AskAlly({ questions = QUESTIONS, renderAnswer, placeholder = "What can I take off your plate?" }: AskAllyProps = {}) {
   const isClaire = !renderAnswer
   const answer = (q: string) => (renderAnswer ? renderAnswer(q) : <Answer q={q as (typeof QUESTIONS)[number]} />)
   const match = (text: string) => (isClaire ? claireMatch(text) : wordMatch(questions, text))
