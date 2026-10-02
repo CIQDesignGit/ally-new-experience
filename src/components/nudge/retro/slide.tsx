@@ -10,7 +10,7 @@ import type { Bar, Chart, RetroSlide, ThemeId } from "./prime-day"
  * (the slide's base font size in px) scales the whole slide. Template: label and
  * action title on top, the chart on the left, the insights on the right.
  */
-export function Slide({ slide, index, theme = "default", size = 16, className, style }: { slide: RetroSlide; index: number; theme?: ThemeId; size?: number; className?: string; style?: CSSProperties }) {
+export function Slide({ slide, index, theme = "default", size = 16, className, style, footer = "Prime Day retro" }: { slide: RetroSlide; index: number; theme?: ThemeId; size?: number; className?: string; style?: CSSProperties; footer?: string }) {
   const t = THEMES[theme]
   return (
     <div
@@ -48,7 +48,7 @@ export function Slide({ slide, index, theme = "default", size = 16, className, s
       </div>
       <div style={{ marginTop: "0.45em", display: "flex", justifyContent: "space-between", fontSize: "0.4em", color: t.footer }}>
         <span style={{ fontWeight: 700, letterSpacing: theme === "default" ? "0.02em" : "0.18em", color: theme === "default" ? "#475569" : t.ink, fontFamily: theme === "default" ? t.body : t.display }}>{t.mark}</span>
-        <span>Prime Day retro · {index}</span>
+        <span>{footer} · {index}</span>
       </div>
     </div>
   )

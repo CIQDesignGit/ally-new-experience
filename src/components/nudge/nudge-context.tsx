@@ -33,6 +33,8 @@ interface StoredState {
   dashboards?: SavedDashboard[]
   /** The Winter Hearth launch's pages are drafted from the agency concept (use case 7). */
   launchReady?: boolean
+  /** Every other deck built in chat (the QBR, the deep dives), by id; the Prime Day retro keeps `retro`. */
+  decks?: Record<string, RetroState>
 }
 
 export interface SavedDashboard {
@@ -57,6 +59,8 @@ export interface RetroState {
   saved?: string[]
   /** Slides shown in their other form (deals as a scorecard instead of bars). */
   alts?: string[]
+  /** Refreshed on a schedule and sent on autopilot. */
+  repeat?: boolean
   /** Where the retro is: still shaping the storyline, or on the storyboard. */
   stage?: "storyline" | "storyboard"
   /** Michelle's rewording of a storyline question, by slide id. */
@@ -124,6 +128,8 @@ interface NudgeContextValue extends StoredState {
   markDashboardSeen: (id: string) => void
   launchReady: boolean
   setLaunchReady: (v: boolean) => void
+  decks: Record<string, RetroState>
+  setDeck: (id: string, patch: Partial<RetroState>) => void
   retro: RetroState
   setRetro: (patch: Partial<RetroState>) => void
 }
@@ -246,6 +252,8 @@ export function NudgeProvider({ children }: { children: React.ReactNode }) {
         addAlert: (a) => update((prev) => ({ ...prev, alerts: [...(prev.alerts ?? []).filter((x) => x.id !== a.id), a] })),
         markAlertsSeen: () => update((prev) => ({ ...prev, alerts: (prev.alerts ?? []).map((x) => ({ ...x, seen: true })) })),
         launchReady: !!state.launchReady,
+        decks: state.decks ?? {},
+        setDeck: (id, patch) => update((prev) => ({ ...prev, decks: { ...(prev.decks ?? {}), [id]: { ...(prev.decks?.[id] ?? {}), ...patch } } })),
         setLaunchReady: (v) => update((prev) => ({ ...prev, launchReady: v })),
         dashboards: state.dashboards ?? [],
         saveDashboard: (d) => update((prev) => ({ ...prev, dashboards: [...(prev.dashboards ?? []).filter((x) => x.id !== d.id), d] })),

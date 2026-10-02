@@ -15,7 +15,7 @@ const hex = (c: string) => c.replace("#", "").toUpperCase()
  * The deck as a real .pptx: every slide in the chosen look, with native,
  * editable charts (not pictures), in the order the storyboard set.
  */
-export async function exportRetroPptx(slides: RetroSlide[], theme: ThemeId) {
+export async function exportRetroPptx(slides: RetroSlide[], theme: ThemeId, deck: { name: string; file: string } = { name: "Prime Day retro", file: "Prime-Day-retro" }) {
   const { default: PptxGenJS } = await import("pptxgenjs")
   const pptx = new PptxGenJS()
   pptx.layout = "LAYOUT_WIDE" // 13.33 × 7.5 in
@@ -39,10 +39,10 @@ export async function exportRetroPptx(slides: RetroSlide[], theme: ThemeId) {
     })
     slide.addShape("line", { x: 8.0, y: 2.0, w: 0, h: 4.6, line: { color: hex(t.rule), width: 1 } })
     slide.addText(t.mark, { x: 0.6, y: 6.95, w: 4, h: 0.3, fontFace: f.display, fontSize: 10, bold: true, color: hex(theme === "default" ? "#475569" : t.ink), charSpacing: theme === "default" ? 0 : 4 })
-    slide.addText(`Prime Day retro · ${i + 1}`, { x: 8.7, y: 6.95, w: 4, h: 0.3, fontFace: f.body, fontSize: 10, color: hex(t.footer), align: "right" })
+    slide.addText(`${deck.name} · ${i + 1}`, { x: 8.7, y: 6.95, w: 4, h: 0.3, fontFace: f.body, fontSize: 10, color: hex(t.footer), align: "right" })
   })
 
-  await pptx.writeFile({ fileName: theme === "aurelle" ? "Prime-Day-retro (Aurelle).pptx" : "Prime-Day-retro.pptx" })
+  await pptx.writeFile({ fileName: theme === "aurelle" ? `${deck.file} (Aurelle).pptx` : `${deck.file}.pptx` })
 }
 
 type PptxSlide = ReturnType<InstanceType<typeof import("pptxgenjs").default>["addSlide"]>

@@ -1,10 +1,10 @@
 "use client"
 
-import { useState } from "react"
-import { GripVertical, Plus, X } from "lucide-react"
+import { useEffect, useState } from "react"
+import { motion } from "framer-motion"
+import { Check, GripVertical, Loader2, Plus, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { PRIMARY } from "../mike/buttons"
-import { RETRO } from "./prime-day"
 import type { RetroSlide } from "./prime-day"
 
 /**
@@ -14,6 +14,10 @@ import type { RetroSlide } from "./prime-day"
  * becomes that slide's title. Editing here is cheap; editing slides isn't.
  */
 export function StorylineStep(p: {
+  verdict: string
+  sources: string
+  /** Who the deck is for, by first name. */
+  forWhom: string
   step: "questions" | "answers"
   slides: RetroSlide[]
   onRename: (id: string, text: string) => void
@@ -31,15 +35,52 @@ export function StorylineStep(p: {
   const [adding, setAdding] = useState(false)
   const [unknown, setUnknown] = useState(false)
   const asking = p.step === "questions"
+  const n = p.slides.length
+
+  // Paced, never instant: Ally plans (the questions arrive one by one), then runs
+  // the analysis (each question works, then its answer lands), then concludes.
+  const [planned, setPlanned] = useState(0)
+  const [plannedDone, setPlannedDone] = useState(false)
+  const [answered, setAnswered] = useState(0)
+  useEffect(() => {
+    if (!asking || plannedDone) return
+    const t = Array.from({ length: n }, (_, i) => window.setTimeout(() => setPlanned((x) => Math.max(x, i + 1)), 900 + i * 260))
+    // Planning happens once: questions added or removed afterwards don't restart it.
+    t.push(window.setTimeout(() => setPlannedDone(true), 900 + n * 260))
+    return () => t.forEach(window.clearTimeout)
+    // Once per arrival on the questions; edits after that don't replay it.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [asking])
+  useEffect(() => {
+    if (asking) return
+    const reset = window.setTimeout(() => setAnswered(0), 0)
+    const t = Array.from({ length: n }, (_, i) => window.setTimeout(() => setAnswered(i + 1), 700 + i * 650))
+    return () => [reset, ...t].forEach(window.clearTimeout)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [asking])
+  const planning = asking && !plannedDone
+  const running = !asking && answered < n
 
   return (
     <div className="flex max-w-[860px] min-w-0 flex-1 flex-col gap-5">
-      <p className="text-[17px] leading-relaxed font-semibold text-slate-950">{asking ? `Here are the ${p.slides.length} questions I'd answer for Claire.` : RETRO.verdict}</p>
+      {planning || running ? (
+        <p className="flex items-center gap-2 text-[15px] text-slate-500">
+          <Loader2 className="size-4 animate-spin text-brand-600" />
+          {planning ? "Planning the analysis…" : `Running the analysis… ${answered} of ${n}`}
+        </p>
+      ) : (
+        <motion.p initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="text-[17px] leading-relaxed font-semibold text-slate-950">
+          {asking ? `Here are the ${n} questions I'd answer for ${p.forWhom}.` : p.verdict}
+        </motion.p>
+      )}
 
       <ol className="flex flex-col">
-        {p.slides.map((s, i) => (
-          <li
+        {p.slides.map((s, i) => (planning && i >= planned ? null : (
+          <motion.li
             key={s.id}
+            initial={asking ? { opacity: 0, y: 6 } : false}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.25 }}
             draggable={asking}
             onDragStart={() => setDrag(i)}
             onDragOver={(e) => {
@@ -57,17 +98,25 @@ export function StorylineStep(p: {
             }}
             className={cn("group grid grid-cols-[18px_22px_minmax(0,1fr)_28px] items-start gap-2 border-t border-slate-100 py-3", drag === i && "opacity-40", over === i && drag !== i && "border-t-2 border-t-brand-400")}
           >
+
             <span className={cn("mt-0.5", asking ? "cursor-grab text-slate-300 group-hover:text-slate-500 active:cursor-grabbing" : "invisible")} aria-hidden>
               <GripVertical className="size-4" />
             </span>
             <span className="mt-px font-mono text-[13px] text-slate-400">{i + 1}</span>
             {asking ? (
               <EditableText value={s.question} onSave={(t) => p.onRename(s.id, t)} className="text-[15px] font-semibold text-slate-950" label={`Question ${i + 1}`} />
-            ) : (
-              <span className="min-w-0">
-                <span className="block text-[13px] text-slate-500">{s.question}</span>
+            ) : i < answered ? (
+              <motion.span initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="min-w-0">
+                <span className="flex items-center gap-1.5 text-[13px] text-slate-500">
+                  <Check className="size-3.5 text-success-600" /> {s.question}
+                </span>
                 <EditableText value={s.title} onSave={(t) => p.onReword(s.id, t)} className="mt-0.5 text-[15px] font-semibold text-slate-950" label={`Answer ${i + 1}`} />
                 <span className="mt-0.5 block text-[13px] text-slate-500">{s.insights.slice(0, 2).map((x) => `${x.figure} ${x.text}`).join(" · ")}</span>
+              </motion.span>
+            ) : (
+              <span className={cn("flex items-center gap-2 text-[15px]", i === answered ? "text-slate-950" : "text-slate-400")}>
+                {i === answered && <Loader2 className="size-4 animate-spin text-brand-600" />}
+                {s.question}
               </span>
             )}
             {asking && p.slides.length > 1 ? (
@@ -77,9 +126,9 @@ export function StorylineStep(p: {
             ) : (
               <span />
             )}
-          </li>
-        ))}
-        {asking && (
+          </motion.li>
+        )))}
+        {asking && !planning && (
           <li className="border-t border-slate-100 py-3 pl-[48px]">
             {adding ? (
               <form
@@ -93,7 +142,7 @@ export function StorylineStep(p: {
                   } else setUnknown(true)
                 }}
               >
-                <input name="q" autoFocus placeholder="How did our ads perform?" onKeyDown={(e) => e.key === "Escape" && setAdding(false)} className="w-full border-b border-brand-300 bg-transparent pb-1 text-[15px] text-slate-950 outline-none placeholder:text-slate-400" />
+                <input name="q" autoFocus placeholder="Type a question for the deck" onKeyDown={(e) => e.key === "Escape" && setAdding(false)} className="w-full border-b border-brand-300 bg-transparent pb-1 text-[15px] text-slate-950 outline-none placeholder:text-slate-400" />
                 {unknown && <span className="mt-1.5 block text-[13px] text-slate-500">I don&apos;t have data to answer that yet.</span>}
               </form>
             ) : (
@@ -105,10 +154,12 @@ export function StorylineStep(p: {
         )}
       </ol>
 
+      {asking && !planning && <p className="text-[15px] text-slate-700">Want to add or change anything? Edit a question, drag to reorder, or add one. Then I&apos;ll run the analysis.</p>}
+      {!planning && !running && (
       <div className="flex flex-wrap items-center gap-3">
         {asking ? (
           <button type="button" onClick={p.onAnswer} className={PRIMARY}>
-            Answer these
+            Run the analysis
           </button>
         ) : (
           <>
@@ -121,7 +172,8 @@ export function StorylineStep(p: {
           </>
         )}
       </div>
-      {!asking && <div className="text-[13px] text-slate-500">{RETRO.sources}</div>}
+      )}
+      {!asking && !running && <div className="text-[13px] text-slate-500">{p.sources}</div>}
     </div>
   )
 }

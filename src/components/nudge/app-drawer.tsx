@@ -20,7 +20,8 @@ export function AppDrawer({ home = "/michelle", defaultOpen }: { home?: string; 
   const path = usePathname()
   const kind = path === home ? "brief" : "conversation"
   const [open, setOpen] = useState(defaultOpen ?? kind === "conversation")
-  const { retro, knowledge, alerts, dashboards } = useNudge()
+  const { retro, knowledge, alerts, dashboards, decks } = useNudge()
+  const qbr = decks.qbr
   // Being on the conversation counts as started, even before its state has loaded.
   const started = Object.keys(retro).length > 0 || path === "/michelle/retro"
 
@@ -50,8 +51,24 @@ export function AppDrawer({ home = "/michelle", defaultOpen }: { home?: string; 
   const fresh = !!retro.dashboard && !retro.dashboardSeen
 
   const sections: { title: string; icon: typeof Home; items: { label: string; sub?: string; href: string; on?: boolean; fresh?: boolean }[]; empty: string; fresh?: boolean }[] = [
-    { title: "Conversations", icon: MessageSquare, items: started ? [{ label: RETRO.name, sub: retro.sentToClaire ? "Sent to Claire" : retro.deck ? "Deck built" : retro.stage === "storyline" ? "Storyline" : "Storyboard", href: "/michelle/retro", on: path === "/michelle/retro" }] : [], empty: "Ask Ally a new task to start one" },
-    { title: "Reports and decks", icon: Presentation, items: retro.deck ? [{ label: RETRO.name, sub: retro.theme === "aurelle" ? "Aurelle Brand 2026" : "CommerceIQ default", href: "/michelle/retro?view=deck" }] : [], empty: "Decks you build show here" },
+    {
+      title: "Conversations",
+      icon: MessageSquare,
+      items: [
+        ...(started ? [{ label: RETRO.name, sub: retro.sentToClaire ? "Sent to Claire" : retro.deck ? "Deck built" : retro.stage === "storyline" ? "Storyline" : "Storyboard", href: "/michelle/retro", on: path === "/michelle/retro" }] : []),
+        ...(qbr || path === "/michelle/decks/qbr" ? [{ label: "Q4 business review", sub: qbr?.sentToClaire ? "Sent to Claire" : qbr?.deck ? "Deck built" : qbr?.stage === "storyboard" ? "Storyboard" : "Storyline", href: "/michelle/decks/qbr", on: path === "/michelle/decks/qbr" }] : []),
+      ],
+      empty: "Ask Ally a new task to start one",
+    },
+    {
+      title: "Reports and decks",
+      icon: Presentation,
+      items: [
+        ...(retro.deck ? [{ label: RETRO.name, sub: retro.theme === "aurelle" ? "Aurelle Brand 2026" : "CommerceIQ default", href: "/michelle/retro?view=deck" }] : []),
+        ...(qbr?.deck ? [{ label: "Q4 business review", sub: qbr.repeat ? "Every Monday · On autopilot" : qbr.theme === "aurelle" ? "Aurelle Brand 2026" : "CommerceIQ default", href: "/michelle/decks/qbr?view=deck" }] : []),
+      ],
+      empty: "Decks you build show here",
+    },
     {
       title: "Dashboards",
       icon: LayoutDashboard,
