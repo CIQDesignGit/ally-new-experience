@@ -74,7 +74,7 @@ export function GiftSetsAnswer() {
               <span className="text-[13px] text-slate-400 tabular-nums">{i + 1}</span>
               <span className="text-[15px] text-slate-950">{w.claim}</span>
               <span className="text-[14px] text-slate-600 tabular-nums">{w.figure}</span>
-              <Change v={w.change} unit={w.unit} bad={w.bad} />
+              <Change v={w.change} unit={w.unit} />
             </button>
           ))}
         </div>
@@ -163,16 +163,16 @@ function Why({ id, n, title, children }: { id: string; n: number; title: string;
   )
 }
 
-/** A change, colored by what it means for us: green good, red bad. */
-function Change({ v, unit = "pts", bad }: { v: number; unit?: string; bad: boolean }) {
-  return <span className={cn("text-[13px] font-medium whitespace-nowrap tabular-nums", bad ? "text-error-600" : "text-success-700")}>{`${v > 0 ? "▲" : "▼"} ${Math.abs(v)}${unit === "%" ? "%" : ` ${unit}`}`}</span>
+/** A change, colored by direction: up green, down red. */
+function Change({ v, unit = "pts" }: { v: number; unit?: string }) {
+  return <span className={cn("text-[13px] font-medium whitespace-nowrap tabular-nums", v < 0 ? "text-error-600" : "text-success-700")}>{`${v > 0 ? "▲" : "▼"} ${Math.abs(v)}${unit === "%" ? "%" : ` ${unit}`}`}</span>
 }
 
 /** The three moves, in the order the proof follows. */
 const WHYS = [
-  { id: "price", claim: "They undercut us on price", figure: "$27.99 vs our $34.99", change: -30, unit: "%", bad: true },
-  { id: "brand", claim: "They're conquering our brand terms", figure: "Brightwick 27% share", change: 19, unit: "pts", bad: true },
-  { id: "gift", claim: "They outbid us on high-traffic gift terms", figure: "Our share 18%", change: -7, unit: "pts", bad: true },
+  { id: "price", claim: "They undercut us on price", figure: "$27.99 vs our $34.99", change: -30, unit: "%" },
+  { id: "brand", claim: "They're conquering our brand terms", figure: "Brightwick 27% share", change: 19, unit: "pts" },
+  { id: "gift", claim: "They outbid us on high-traffic gift terms", figure: "Our share 18%", change: -7, unit: "pts" },
 ]
 
 const $ = (n: number) => `$${n.toFixed(2)}`
@@ -191,14 +191,14 @@ function PriceTile({ who, name, list, price, ours }: { who: string; name: string
   )
 }
 
-/** Share of voice by keyword, ours and Brightwick's, each with its change over 4 weeks (green good for us, red bad); the last row is the average the headline quotes. */
+/** Share of voice by keyword, ours and Brightwick's, each with its change over 4 weeks (up green, down red); the last row is the average the headline quotes. */
 function SovTable({ rows, label }: { rows: { term: string; them: number; us: number; was: { them: number; us: number } }[]; label: string }) {
   const avg = (get: (r: (typeof rows)[number]) => number) => Math.round(rows.reduce((n, r) => n + get(r), 0) / rows.length)
-  const cell = (now: number, was: number, ours: boolean) => (
+  const cell = (now: number, was: number) => (
     <span className="inline-flex items-baseline justify-end gap-2">
       <span className="font-mono">{now}%</span>
       <span className="w-12 text-left">
-        <Change v={now - was} bad={ours ? now < was : now > was} />
+        <Change v={now - was} />
       </span>
     </span>
   )
@@ -215,14 +215,14 @@ function SovTable({ rows, label }: { rows: { term: string; them: number; us: num
         {rows.map((r) => (
           <tr key={r.term} className="border-t border-slate-100">
             <td className="px-4 py-2 text-slate-800">{r.term}</td>
-            <td className="px-4 py-2 text-right text-slate-950">{cell(r.us, r.was.us, true)}</td>
-            <td className="px-4 py-2 text-right text-slate-950">{cell(r.them, r.was.them, false)}</td>
+            <td className="px-4 py-2 text-right text-slate-950">{cell(r.us, r.was.us)}</td>
+            <td className="px-4 py-2 text-right text-slate-950">{cell(r.them, r.was.them)}</td>
           </tr>
         ))}
         <tr className="border-t border-slate-200 bg-slate-25 font-semibold">
           <td className="px-4 py-2 text-slate-950">{label}</td>
-          <td className="px-4 py-2 text-right text-slate-950">{cell(avg((r) => r.us), avg((r) => r.was.us), true)}</td>
-          <td className="px-4 py-2 text-right text-slate-950">{cell(avg((r) => r.them), avg((r) => r.was.them), false)}</td>
+          <td className="px-4 py-2 text-right text-slate-950">{cell(avg((r) => r.us), avg((r) => r.was.us))}</td>
+          <td className="px-4 py-2 text-right text-slate-950">{cell(avg((r) => r.them), avg((r) => r.was.them))}</td>
         </tr>
       </tbody>
     </table>
