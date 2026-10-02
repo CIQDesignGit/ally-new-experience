@@ -73,12 +73,6 @@ export function GapTree({ selected, onSelect }: { selected: string; onSelect: (i
 /* The analysis, as an answer in the page's conversation                       */
 /* ------------------------------------------------------------------------- */
 
-const TAG: Record<Driver["tag"], string> = {
-  Live: "bg-error-50 text-error-700 ring-error-100",
-  Resolved: "bg-success-50 text-success-700 ring-success-100",
-  "Worth watching": "bg-warning-50 text-warning-700 ring-warning-100",
-}
-
 function Steps() {
   const [open, setOpen] = useState(false)
   return (
@@ -126,51 +120,62 @@ export function ActionButton({ action, onInbox }: { action: GapAction; onInbox: 
   )
 }
 
-/** Gap-to-plan analysis for a node: key finding, plan vs actual, the ecommerce equation, drivers, recommendations. */
+/** One color per cause state, shared with the gap page: live dark, worth watching amber, resolved faded. */
+const DOT: Record<Driver["tag"], string> = { Live: "bg-slate-700", "Worth watching": "bg-warning-400", Resolved: "bg-slate-300" }
+const SEC = "text-sm font-semibold text-slate-950"
+const ROW = "border-t border-slate-100"
+
+/** Gap-to-plan analysis for a node: the finding, plan vs actual, what moved sales, why (by dollars), and what to do. */
 export function GapAnalysis({ node, onInbox }: { node: GapNode; onInbox: (batchId: string) => void }) {
   const gap = node.lastWeek.sales - node.lastWeek.plan
-  const eowGap = node.eow.projected - node.eow.plan
-  const top = [...node.drivers].sort((a, b) => a.value - b.value)[0]
+  const drivers = [...node.drivers].sort((a, b) => a.value - b.value)
+  const top = drivers[0]
   const eq = node.equation
+  const sign = (v: number) => `${v > 0 ? "+" : v < 0 ? "−" : ""}${Math.abs(v)}%`
   return (
     <div className="flex max-w-[900px] flex-col gap-5 rounded-2xl bg-white px-5 py-4 ring-1 ring-slate-200">
       <Steps />
+
       <div>
-        <div className="text-xs font-medium text-slate-500">Key finding</div>
-        <p className="mt-1 text-[15px] leading-relaxed text-slate-700">
-          <span className="font-semibold text-slate-950">
-            {gap < 0 ? `Missed plan by ${m(gap)} last week` : `Beat plan by ${m(gap)} last week`} ({pct(node.lastWeek.sales, node.lastWeek.plan)} of plan), and this week is projected at{" "}
-            {m(node.eow.projected)}, {pct(node.eow.projected, node.eow.plan)} of plan.
-          </span>{" "}
-          {top && `Biggest cause (${m(top.value, true)}): ${top.title}.`}
+        <p className="text-[17px] leading-snug font-semibold text-slate-950">
+          {gap < 0 ? "Missed" : "Beat"} plan by <span className={gap < 0 ? "text-error-600" : "text-success-700"}>{m(Math.abs(gap))}</span> last week, {pct(node.lastWeek.sales, node.lastWeek.plan)} of plan.
         </p>
+        {top && (
+          <p className="mt-1 text-sm text-slate-600 tabular-nums">
+            Biggest cause: {top.title.charAt(0).toLowerCase() + top.title.slice(1)} ({m(top.value, true)}). This week is projected at {m(node.eow.projected)}, {pct(node.eow.projected, node.eow.plan)} of plan.
+          </p>
+        )}
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-slate-200">
-        <div className="border-b border-slate-100 bg-slate-25 px-4 py-2.5 text-sm font-semibold text-slate-950">Plan vs actual</div>
-        <div className="grid grid-cols-4 gap-2 px-4 py-2 text-xs font-medium text-slate-500">
-          <span>Period</span>
-          <span className="text-right">Actual</span>
-          <span className="text-right">Plan</span>
-          <span className="text-right">Gap</span>
-        </div>
-        {[
-          { k: `Last week (${GAP_WEEK.last})`, a: node.lastWeek.sales, p: node.lastWeek.plan },
-          { k: `This week, projected (${GAP_WEEK.current})`, a: node.eow.projected, p: node.eow.plan },
-          { k: "Week to date", a: node.wtd, p: undefined },
-        ].map((r) => (
-          <div key={r.k} className="grid grid-cols-4 gap-2 border-t border-slate-100 px-4 py-2.5 text-sm">
-            <span className="text-slate-700">{r.k}</span>
-            <span className="text-right font-mono text-slate-950">{m(r.a)}</span>
-            <span className="text-right font-mono text-slate-500">{r.p ? m(r.p) : "–"}</span>
-            <span className={cn("text-right font-mono font-semibold", r.p && r.a < r.p ? "text-error-600" : "text-slate-500")}>{r.p ? m(r.a - r.p, true) : `${Math.round(GAP_WEEK.elapsed * 100)}% of week`}</span>
+      <div>
+        <div className={SEC}>Plan vs actual</div>
+        <div className="mt-2 text-sm tabular-nums">
+          <div className="grid grid-cols-[minmax(0,1fr)_96px_96px_96px] gap-3 pb-1.5 text-xs text-slate-500">
+            <span />
+            <span className="text-right">Actual</span>
+            <span className="text-right">Plan</span>
+            <span className="text-right">Gap</span>
           </div>
-        ))}
+          {[
+            { k: `Last week · ${GAP_WEEK.last}`, a: node.lastWeek.sales, p: node.lastWeek.plan, lead: true },
+            { k: `This week, projected · ${GAP_WEEK.current}`, a: node.eow.projected, p: node.eow.plan },
+          ].map((r) => (
+            <div key={r.k} className={cn("grid grid-cols-[minmax(0,1fr)_96px_96px_96px] gap-3 py-2", ROW)}>
+              <span className="text-slate-700">{r.k}</span>
+              <span className="text-right text-slate-950">{m(r.a)}</span>
+              <span className="text-right text-slate-500">{m(r.p)}</span>
+              <span className={cn("text-right font-semibold", r.lead && r.a < r.p ? "text-error-600" : "text-slate-950")}>{m(r.a - r.p, true)}</span>
+            </div>
+          ))}
+          <div className={cn("py-2 text-slate-500", ROW)}>
+            Week to date <span className="font-semibold text-slate-950">{m(node.wtd)}</span> · {Math.round(GAP_WEEK.elapsed * 100)}% of the week gone
+          </div>
+        </div>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-slate-200">
-        <div className="border-b border-slate-100 bg-slate-25 px-4 py-2.5 text-sm font-semibold text-slate-950">What moved sales, vs the week before</div>
-        <div className="flex flex-wrap items-center gap-3 px-4 py-4 font-mono text-sm">
+      <div>
+        <div className={SEC}>What moved sales, vs the week before</div>
+        <div className="mt-2 flex flex-wrap items-center gap-2.5 text-sm tabular-nums">
           {(
             [
               ["Traffic", eq.traffic],
@@ -178,57 +183,55 @@ export function GapAnalysis({ node, onInbox }: { node: GapNode; onInbox: (batchI
               ["Price", eq.price],
             ] as const
           ).map(([k, v], i) => (
-            <span key={k} className="flex items-center gap-3">
+            <span key={k} className="flex items-center gap-2.5">
               {i > 0 && <span className="text-slate-400">×</span>}
-              <span className="rounded-lg bg-slate-25 px-3 py-2 text-center ring-1 ring-slate-100">
-                <span className={cn("block font-semibold", v < 0 ? "text-error-600" : v > 0 ? "text-success-700" : "text-slate-950")}>{v > 0 ? "+" : v < 0 ? "−" : ""}{Math.abs(v)}%</span>
-                <span className="block font-sans text-[11px] text-slate-500">{k}</span>
+              <span className="rounded-lg border border-slate-200 px-3 py-1.5 text-center">
+                <span className="block font-semibold text-slate-950">{sign(v)}</span>
+                <span className="block text-xs text-slate-500">{k}</span>
               </span>
             </span>
           ))}
           <span className="text-slate-400">=</span>
-          <span className="rounded-lg bg-slate-900 px-3 py-2 text-center text-white">
-            <span className="block font-semibold">{eq.sales < 0 ? "−" : "+"}{Math.abs(eq.sales)}%</span>
-            <span className="block font-sans text-[11px] text-slate-300">Sales</span>
+          <span className="rounded-lg bg-slate-900 px-3 py-1.5 text-center text-white">
+            <span className="block font-semibold">{sign(eq.sales)}</span>
+            <span className="block text-xs text-slate-300">Sales</span>
           </span>
         </div>
       </div>
 
       <div>
-        <div className="mb-2 text-sm font-semibold text-slate-950">Why, ranked by dollars</div>
-        <div className="flex flex-col gap-2">
-          {[...node.drivers]
-            .sort((a, b) => a.value - b.value)
-            .map((d) => (
-              <div key={d.title} className="rounded-xl border border-slate-200 px-4 py-3">
-                <div className="flex items-start justify-between gap-3">
-                  <span className="text-sm font-semibold text-slate-950">{d.title}</span>
-                  <span className="flex shrink-0 items-center gap-2">
-                    <span className={cn("rounded-full px-2 py-0.5 text-[11px] font-medium ring-1", TAG[d.tag])}>{d.tag}</span>
-                    <span className="font-mono text-sm font-semibold text-error-600">{m(d.value, true)}</span>
-                  </span>
-                </div>
-                <Points className="mt-2" items={d.points} />
-              </div>
-            ))}
+        <div className={SEC}>Why, by dollars</div>
+        <div className="mt-2">
+          {drivers.map((d) => (
+            <div key={d.title} className={cn("grid grid-cols-[8px_minmax(0,1fr)_72px] items-baseline gap-x-3 py-2.5 text-sm", ROW)}>
+              <span className={cn("size-2 -translate-y-px rounded-full", DOT[d.tag])} />
+              <span className="min-w-0">
+                <span className="block text-slate-950">{d.title}</span>
+                <span className="mt-0.5 block text-xs text-slate-500">
+                  {d.tag}
+                  {d.points.length > 0 && ` · ${d.points.join(" · ")}`}
+                </span>
+              </span>
+              <span className="text-right font-semibold text-slate-950 tabular-nums">{m(d.value, true)}</span>
+            </div>
+          ))}
         </div>
       </div>
 
       <div>
-        <div className="mb-2 text-sm font-semibold text-slate-950">What Ally recommends</div>
-        <div className="flex flex-col gap-2">
+        <div className={SEC}>What Ally recommends</div>
+        <div className="mt-2">
           {node.recommendations.map((r) => (
-            <div key={r.title} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 px-4 py-3">
-              <div>
-                <div className="text-sm font-semibold text-slate-950">{r.title}</div>
-                <Points className="mt-1.5" items={r.points} />
+            <div key={r.title} className={cn("flex flex-wrap items-center justify-between gap-3 py-2.5", ROW)}>
+              <div className="min-w-0">
+                <div className="text-sm text-slate-950">{r.title}</div>
+                {r.points.length > 0 && <div className="mt-0.5 text-xs text-slate-500">{r.points.join(" · ")}</div>}
               </div>
               <ActionButton action={r.action} onInbox={onInbox} />
             </div>
           ))}
         </div>
       </div>
-      {eowGap < 0 && <div className="text-xs text-slate-500">Projection: week-to-date run rate plus the drivers still live. Shown as a direction, not a forecast.</div>}
     </div>
   )
 }
