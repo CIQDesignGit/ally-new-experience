@@ -80,21 +80,23 @@ export default function RetroPage() {
   const say = (...m: Omit<Msg, "id">[]) => setMsgs((prev) => [...prev, ...m.map((x) => ({ ...x, id: next.current++ }))])
   const slides = order.map((id) => ALL_SLIDES.find((s) => s.id === id)!).map((s) => (s.id === "deals" && alts.includes("deals") ? { ...s, chart: DEALS_TABLE } : s))
 
-  function addSummary() {
+  function addSummary(text: string) {
+    if (order.includes("summary")) return say({ from: "you", text }, { from: "ally", text: "Slide 1 is already the executive summary." })
     setRetro({ order: ["summary", ...order.filter((id) => id !== "summary")] })
     setChanged((c) => ({ ...c, summary: "New" }))
     say(
-      { from: "you", text: "Add an executive summary slide at the start" },
+      { from: "you", text },
       { from: "ally", text: "Added an executive summary as slide 1: the 4 headline numbers on the left, the 3 messages Claire needs on the right." },
     )
   }
 
-  function dealsAsTable() {
+  function dealsAsTable(text: string) {
+    if (alts.includes("deals")) return say({ from: "you", text }, { from: "ally", text: `Slide ${order.indexOf("deals") + 1} is already a table.` })
     const n = order.indexOf("deals") + 1
     setRetro({ alts: [...alts.filter((a) => a !== "deals"), "deals"] })
     setChanged((c) => ({ ...c, deals: "Changed" }))
     say(
-      { from: "you", text: `Convert slide ${n}'s bar chart to something else` },
+      { from: "you", text },
       { from: "ally", text: `Slide ${n} is now a scorecard: each deal, its lift, what it added, and whether it worked. The question is which deals worked, and a table answers that outright; the bars made you compare.` },
     )
   }
@@ -150,8 +152,6 @@ export default function RetroPage() {
       ? [{ q: "Open the storyboard", run: () => setView("storyboard") }]
       : view === "storyboard"
       ? [
-          ...(order.includes("summary") ? [] : [{ q: "Add an executive summary slide at the start", run: addSummary }]),
-          ...(alts.includes("deals") ? [] : [{ q: `Convert slide ${order.indexOf("deals") + 1}'s bar chart to something else`, run: dealsAsTable }]),
           { q: "Put deals right after the market slide", run: () => { move(order.indexOf("deals"), order.indexOf("market") + 1); say({ from: "you", text: "Put deals right after the market slide" }, { from: "ally", text: `Done. Deals is slide ${order.indexOf("market") + 2}.` }) } },
           { q: "Lock it and build the deck", run: () => { say({ from: "you", text: "Lock it and build the deck" }); makeDeck() } },
         ]
@@ -165,6 +165,12 @@ export default function RetroPage() {
           ]
 
   function ask(text: string) {
+    // Edits with no chip: typed in any wording, they land on what they mean.
+    if (view === "storyboard") {
+      const t = text.toLowerCase()
+      if (/\b(exec|executive|summary|overview|tl;?dr)\b/.test(t)) return addSummary(text)
+      if (/\b(table|scorecard|grid)\b/.test(t) || (/\bchart\b/.test(t) && /\b(convert|change|turn|swap|something else|instead)\b/.test(t))) return dealsAsTable(text)
+    }
     const words = text.toLowerCase().split(/\W+/).filter((w) => w.length > 3)
     const best = chips.map((c) => ({ c, n: words.filter((w) => c.q.toLowerCase().includes(w)).length })).sort((a, b) => b.n - a.n)[0]
     if (best && best.n > 0) best.c.run()
