@@ -20,8 +20,10 @@ Every screen follows these rules. When a screen needs something they don't cover
 2. **Outline (`SECONDARY`) only for buttons that don't act**: the way out (Cancel, Not now, Back, Keep reviewing, Next SKU) and view tools (Expand, Lock, show or hide a sample). Small extras are text links (Start over, Show steps).
 3. **Buttons sit on the right of their row**, vertically centered on the text. Controls that set up the action (a cap, a scope) sit under the row's detail, on the left.
 4. **Done replaces the button in place**: a green check and the past tense ("Approved", "Sent to Dana").
-5. **Peer buttons share one width**, so their edges line up down the card (`ActionRow` sets 176px). Never let label length decide a peer button's size.
+5. **Peer buttons share one fixed width** (200px in `ActionRow` and the brief), not a minimum, so their edges line up. Never let label length decide a peer button's size.
 6. **A button centers on its own name and detail**, not on the whole row; setup controls (a cap, a scope) go on their own line underneath and never push the button down.
+
+7. **A button's label is the action it takes, and clicking it takes that action in place**: "Send to Dana", "Ask Mike to approve", "Approve the bids". Never "Open…", "See…", "Review…" or jargon like "play"; navigation is a link, not a button.
 
 ## Rows of the same kind
 
