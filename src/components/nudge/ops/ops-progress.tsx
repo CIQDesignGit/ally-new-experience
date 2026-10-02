@@ -40,9 +40,9 @@ export function OpsProgress({ celebrate, stage, onStage }: { celebrate: Celebrat
   const open = total - actedValue
   // Daily sales at risk on the urgent items still open (the same number their value is built from).
   const perDay = approvalBatches.filter((b) => b.urgent && !approved[b.id]).reduce((sum, b) => sum + (b.perDay ?? b.approveValue / OPS_DAYS_SAVED), 0)
-  // The quarter as the waterfall shows it: banked, then what's still open by effort. Sums to banked + everything in the queue.
   const openIn = (tier: string) => OPS_BATCHES.filter((b) => b.tier === tier && !approved[b.id]).reduce((sum, b) => sum + money(b.value), 0)
-  const stages = { banked: BANKED + actedValue, autopilot: openIn("autopilot"), approval: left, input: openIn("input") }
+  // Open work only: banked shows in the progress bar below, so the total matches the headline's open amount.
+  const stages = { autopilot: openIn("autopilot"), approval: left, input: openIn("input") }
   const jump = (s: Stage) => {
     if (s === "banked") return document.getElementById("ops-delivered")?.scrollIntoView({ behavior: "smooth", block: "start" })
     onStage?.(s)
