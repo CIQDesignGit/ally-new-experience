@@ -57,24 +57,28 @@ export function OpsBatchList({ selectedId, selectedSku, expandedId, checked, fil
   const { notedIn } = useNote()
   const all = opsBatches(policy)
   const rows = inboxRows(all, approved, filter)
-  const count = (f: InboxFilter) => all.filter((b) => f === "all" || b.tier === f).length
 
   return (
     <div className="bg-white">
-      <div className="flex gap-0.5 border-b border-slate-200 px-2.5 py-2">
-        {FILTERS.map((f) => (
-          <button
-            key={f.id}
-            type="button"
-            onClick={() => onFilter(f.id)}
-            aria-pressed={filter === f.id}
-            className={cn("inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-[13px] whitespace-nowrap transition-colors", filter === f.id ? "bg-slate-100 font-semibold text-slate-950" : "text-slate-500 hover:text-slate-900")}
-          >
-            {f.id !== "all" && <span className={cn("size-1.5 rounded-full", DOT[f.id])} />}
-            {f.label}
-            <span className="font-mono text-xs text-slate-400 tabular-nums">{count(f.id)}</span>
-          </button>
-        ))}
+      {/* Same switch as Business / Ops at the top of the page: each part sized to its label, one font. */}
+      <div className="border-b border-slate-200 px-3 py-2.5">
+        <div className="flex h-9 rounded-lg border border-slate-200 bg-slate-25 p-0.5">
+          {FILTERS.map((f) => (
+            <button
+              key={f.id}
+              type="button"
+              onClick={() => onFilter(f.id)}
+              aria-pressed={filter === f.id}
+              className={cn(
+                "inline-flex flex-auto items-center justify-center gap-1.5 rounded-md px-2 text-[13px] font-medium whitespace-nowrap transition-colors",
+                filter === f.id ? "bg-white text-slate-950 shadow-xs ring-1 ring-slate-200" : "text-slate-500 hover:text-slate-800",
+              )}
+            >
+              {f.id !== "all" && <span className={cn("size-1.5 shrink-0 rounded-full", DOT[f.id])} />}
+              {f.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="flex flex-col">
