@@ -58,7 +58,13 @@ function NeedBrief() {
 /** The brief is in: Ally drafts the pages, queues them for approval, then says what it's keeping in memory. */
 function BriefRead() {
   const { knowledge, saveKnowledge, setLaunchReady } = useNudge()
+  // Paced so each beat lands: what you sent, then the localizing, then the queue and the memory.
+  const [localizing, setLocalizing] = useState(false)
   const [shown, setShown] = useState(false)
+  useEffect(() => {
+    const t = window.setTimeout(() => setLocalizing(true), 1400)
+    return () => window.clearTimeout(t)
+  }, [])
 
   // Drafting and queueing happen on arrival; the facts go to Knowledge (editable there, under Settings).
   useEffect(() => {
@@ -80,13 +86,8 @@ function BriefRead() {
           <div className="px-3 py-2 text-[12px] text-slate-500">{`Creative asset · ${LAUNCH.concept.name}`}</div>
         </div>
       </div>
-      <ConceptTransform onDone={() => setShown(true)} />
-      {shown && (
-        <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col gap-4">
-          <SentLine />
-          <MemorySaved text={LAUNCH_MEMORY.text} />
-        </motion.div>
-      )}
+      {localizing && <ConceptTransform onDone={() => window.setTimeout(() => setShown(true), 700)} />}
+      {shown && <QueuedCard />}
     </div>
   )
 }
@@ -109,14 +110,26 @@ function BriefCard() {
 
 const handled = { current: false }
 
-function SentLine() {
+/** The close: what's waiting and where, and what Ally kept, in one card. */
+function QueuedCard() {
   return (
-    <div className="flex flex-wrap items-center gap-3">
-      <span className="inline-flex items-center gap-1.5 text-[14px] font-medium text-success-700">
-        <Check className="size-4" /> {`Queued for your approval: ${NEW_SKUS.length} SKUs, ${LAUNCH.value}, due ${LAUNCH.due}.`}
-      </span>
-      <OpenItem batch="concepts">Open it in your queue</OpenItem>
-    </div>
+    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+      <div className="flex items-center gap-4 px-4 py-3.5">
+        <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-success-50 ring-1 ring-success-200">
+          <Check className="size-4 text-success-600" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <div className="text-[15px] font-semibold text-slate-950">Queued for your approval</div>
+          <div className="text-[13px] text-slate-500">{`${NEW_SKUS.length} new SKUs · ${LAUNCH.value} · due ${LAUNCH.due}`}</div>
+        </div>
+        <OpenItem batch="concepts" primary>
+          View in queue
+        </OpenItem>
+      </div>
+      <div className="border-t border-slate-100 bg-slate-25 px-4 py-2.5">
+        <MemorySaved text={LAUNCH_MEMORY.text} />
+      </div>
+    </motion.div>
   )
 }
 
@@ -127,6 +140,7 @@ export const LAUNCH_CHIP: Chip = {
   hidden: true,
   takesFiles: true,
   needsFiles: true,
+  think: { ms: 2000, label: "Looking at the launch…", filesLabel: "Reading the brief and the creative…" },
   render: () => <LaunchBriefAnswer />,
 }
 
@@ -140,8 +154,8 @@ function ConceptTransform({ onDone }: { onDone: () => void }) {
   const rest = LAUNCH_PAGES.slice(1)
   const [step, setStep] = useState(0)
   useEffect(() => {
-    const t = [700, 1400, 2100, 2800, 3400].map((ms, i) => window.setTimeout(() => setStep(i + 1), ms))
-    t.push(window.setTimeout(onDone, 3700))
+    const t = [800, 1600, 2400, 3200, 4000].map((ms, i) => window.setTimeout(() => setStep(i + 1), ms))
+    t.push(window.setTimeout(onDone, 4600))
     return () => t.forEach(window.clearTimeout)
     // Runs once, when the answer appears.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -152,7 +166,7 @@ function ConceptTransform({ onDone }: { onDone: () => void }) {
     <div className="rounded-xl border border-slate-200 bg-white p-4">
       <div className="flex items-center gap-2 text-[14px] font-semibold text-slate-950">
         {step < 5 ? <Loader2 className="size-4 animate-spin text-brand-600" /> : <Check className="size-4 text-success-600" />}
-        {step < 5 ? "Localizing the creative for each SKU on Amazon…" : `Localized for ${NEW_SKUS.length} SKUs on Amazon: ${NEW_SKUS.length * 3} images`}
+        {step < 5 ? "Localizing images for your Amazon pages…" : `Localized for ${NEW_SKUS.length} SKUs on Amazon: ${NEW_SKUS.length * 3} images`}
       </div>
       <div className="mt-3 grid grid-cols-[200px_minmax(0,1fr)] gap-5">
         <ul className="flex flex-col gap-2 text-[13px]">
@@ -167,12 +181,15 @@ function ConceptTransform({ onDone }: { onDone: () => void }) {
           <div className="mb-2 text-[12px] font-medium text-slate-500">{sku.title.replace("Aurelle ", "")}</div>
           <div className="grid grid-cols-3 gap-2">
             {(["main", "lifestyle", "story"] as const).map((k, i) =>
-              step > i ? (
-                <motion.div key={k} initial={{ opacity: 0, scale: 0.85, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ type: "spring", stiffness: 260, damping: 24 }}>
+              step >= 5 ? (
+                <motion.div key={k} initial={{ opacity: 0, scale: 0.9, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ type: "spring", stiffness: 260, damping: 24, delay: i * 0.12 }}>
                   <AdaptedImage kind={k} photo={first.photo} focus={first.focus} notes={first.notes} story={first.story} cut={first.cut} facts={PAGE_FACTS[first.skuId]} />
                 </motion.div>
               ) : (
-                <div key={k} className="aspect-square animate-pulse rounded-lg bg-slate-100" />
+                <div key={k} className="relative flex aspect-square items-end overflow-hidden rounded-lg bg-slate-100 p-2">
+                  <motion.i aria-hidden className="absolute inset-y-0 w-1/2 bg-gradient-to-r from-transparent via-white/70 to-transparent" initial={{ left: "-50%" }} animate={{ left: "110%" }} transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut", delay: i * 0.2 }} />
+                  <span className="relative text-[11px] font-medium text-slate-400">{["Main image", "Lifestyle", "Infographic"][i]}</span>
+                </div>
               ),
             )}
           </div>

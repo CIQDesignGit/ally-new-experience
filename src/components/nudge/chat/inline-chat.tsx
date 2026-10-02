@@ -32,6 +32,8 @@ export interface Chip {
   takesFiles?: boolean
   /** Its follow-ups only apply once files came with it (a brief has to arrive before it can be acted on). */
   needsFiles?: boolean
+  /** How long Ally works before answering, and what it says it's doing (with files attached, `filesLabel`). */
+  think?: { ms: number; label?: string; filesLabel?: string }
 }
 
 export interface Attachment {
@@ -59,6 +61,8 @@ interface Turn {
   chip: string
   followUps?: Chip[]
   attach?: Attachment[]
+  /** Ally's working time and label for this turn. */
+  think?: { ms: number; label?: string }
   about?: string
   anchor?: string
   render: () => React.ReactNode
@@ -90,7 +94,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   const next = useRef(1)
   const ask = useCallback(
     (chip: Chip, anchor?: string, said?: string, attach?: Attachment[]) =>
-      setTurns((t) => [...t, { id: next.current++, q: said ?? chip.q, chip: chip.q, followUps: chip.needsFiles && !attach?.length ? undefined : chip.followUps, attach, about: source.about, anchor: anchor ?? source.anchor, render: chip.render }]),
+      setTurns((t) => [...t, { id: next.current++, q: said ?? chip.q, chip: chip.q, followUps: chip.needsFiles && !attach?.length ? undefined : chip.followUps, attach, think: chip.think && { ms: chip.think.ms, label: attach?.length ? (chip.think.filesLabel ?? chip.think.label) : chip.think.label }, about: source.about, anchor: anchor ?? source.anchor, render: chip.render }]),
     [source.about, source.anchor],
   )
   return <Ctx.Provider value={{ source, setSource, turns, ask, clear: () => setTurns([]) }}>{children}</Ctx.Provider>
@@ -139,10 +143,11 @@ export function ChatThread({ className, anchor }: { className?: string; anchor?:
   // Keyed to the newest question's id, not the turns array: the filtered array is new every
   // render, and keying on it restarted the "working" timer forever (answers never appeared).
   const lastId = turns[turns.length - 1]?.id
+  const lastThink = turns[turns.length - 1]?.think?.ms ?? 650
   useEffect(() => {
     if (lastId === undefined) return
     setThinking(lastId)
-    const t = window.setTimeout(() => setThinking(null), 650)
+    const t = window.setTimeout(() => setThinking(null), lastThink)
     // Land on the new question. Smooth where the browser supports it; jump if it didn't move (some ignore smooth scroll).
     const el = lastRef.current
     let fallback: number | undefined
@@ -157,7 +162,7 @@ export function ChatThread({ className, anchor }: { className?: string; anchor?:
       window.clearTimeout(t)
       window.clearTimeout(fallback)
     }
-  }, [lastId])
+  }, [lastId, lastThink])
 
   if (!turns.length) return null
   return (
@@ -193,15 +198,18 @@ export function ChatThread({ className, anchor }: { className?: string; anchor?:
             </span>
             <div className="min-w-0 flex-1">
               {thinking === t.id ? (
-                <div className="flex gap-1.5 py-3" aria-label="Ally is working on it">
-                  {[0, 1, 2].map((d) => (
-                    <motion.span
-                      key={d}
-                      className="size-1.5 rounded-full bg-brand-400"
-                      animate={{ opacity: [0.3, 1, 0.3] }}
-                      transition={{ duration: 0.9, repeat: Infinity, delay: d * 0.15 }}
-                    />
-                  ))}
+                <div className="flex items-center gap-3 py-2" aria-label="Ally is working on it">
+                  <span className="flex gap-1.5">
+                    {[0, 1, 2].map((d) => (
+                      <motion.span
+                        key={d}
+                        className="size-1.5 rounded-full bg-brand-400"
+                        animate={{ opacity: [0.3, 1, 0.3] }}
+                        transition={{ duration: 0.9, repeat: Infinity, delay: d * 0.15 }}
+                      />
+                    ))}
+                  </span>
+                  {t.think?.label && <span className="text-[14px] text-slate-500">{t.think.label}</span>}
                 </div>
               ) : (
                 <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>
