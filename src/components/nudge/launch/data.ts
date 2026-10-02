@@ -97,7 +97,7 @@ export const LAUNCH_PAGES = [
     bullets: ["Hand-poured soy wax in an amber glass jar, 60-hour burn", "Notes of cedar, clove and warm vanilla", "Gift-ready for the holidays"],
     notes: ["Cedar", "Clove", "Vanilla"],
     story: "Notes",
-    removed: "\"non-toxic soy\" in the agency's draft bullet, per the legal rule you kept",
+    removed: "\"non-toxic soy\" from the agency's draft bullet, per Legal's rule in the brief",
   },
   {
     skuId: "sku-new-2",

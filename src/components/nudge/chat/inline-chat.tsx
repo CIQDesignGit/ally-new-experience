@@ -30,6 +30,8 @@ export interface Chip {
   hidden?: boolean
   /** Sending attachments with no other match lands here. */
   takesFiles?: boolean
+  /** Its follow-ups only apply once files came with it (a brief has to arrive before it can be acted on). */
+  needsFiles?: boolean
 }
 
 export interface Attachment {
@@ -76,13 +78,19 @@ export const TYPED_EVENT = "ally-typed"
 
 const Ctx = createContext<ChatValue | null>(null)
 
+/** The turn an answer is rendering for, so it can see what was asked with it (its files, its wording). */
+const TurnCtx = createContext<Turn | null>(null)
+export function useTurn() {
+  return useContext(TurnCtx)
+}
+
 export function ChatProvider({ children }: { children: React.ReactNode }) {
   const [source, setSource] = useState<ChatSource>({ chips: [] })
   const [turns, setTurns] = useState<Turn[]>([])
   const next = useRef(1)
   const ask = useCallback(
     (chip: Chip, anchor?: string, said?: string, attach?: Attachment[]) =>
-      setTurns((t) => [...t, { id: next.current++, q: said ?? chip.q, chip: chip.q, followUps: chip.followUps, attach, about: source.about, anchor: anchor ?? source.anchor, render: chip.render }]),
+      setTurns((t) => [...t, { id: next.current++, q: said ?? chip.q, chip: chip.q, followUps: chip.needsFiles && !attach?.length ? undefined : chip.followUps, attach, about: source.about, anchor: anchor ?? source.anchor, render: chip.render }]),
     [source.about, source.anchor],
   )
   return <Ctx.Provider value={{ source, setSource, turns, ask, clear: () => setTurns([]) }}>{children}</Ctx.Provider>
@@ -197,7 +205,7 @@ export function ChatThread({ className, anchor }: { className?: string; anchor?:
                 </div>
               ) : (
                 <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>
-                  {t.render()}
+                  <TurnCtx.Provider value={t}>{t.render()}</TurnCtx.Provider>
                   {/* Follow-ups live in the conversation, under the answer they follow from. */}
                   {i === turns.length - 1 && !!t.followUps?.filter((f) => !asked.has(f.q)).length && (
                     <div className="mt-4 flex flex-col items-start gap-2">

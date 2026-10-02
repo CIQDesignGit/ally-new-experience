@@ -1,16 +1,18 @@
 "use client"
 
-import { useState } from "react"
-import { Check, ShieldCheck } from "lucide-react"
+import { useEffect, useState } from "react"
+import Link from "next/link"
+import { BookOpen, Check, ShieldCheck, Upload } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useNudge } from "../nudge-context"
-import { useChat } from "../chat/inline-chat"
+import { useChat, useTurn } from "../chat/inline-chat"
+import { UploadDialog } from "../chat/upload-dialog"
 import type { Chip } from "../chat/inline-chat"
 import { OpenItem } from "../chat/open-item"
 import { PRIMARY } from "../mike/buttons"
 import { AS_OF } from "../data"
-import { LAUNCH, LAUNCH_FACTS, LAUNCH_PAGES, NEW_SKUS, RETAILER_CHECKS } from "./data"
-import { AdaptedImage, ConceptImage } from "./images"
+import { LAUNCH, LAUNCH_FACTS, LAUNCH_FILES, LAUNCH_PAGES, NEW_SKUS, RETAILER_CHECKS } from "./data"
+import { AdaptedImage } from "./images"
 
 /**
  * Use case 7. First Ally reads the email and offers to keep what's new; each
@@ -21,65 +23,56 @@ import { AdaptedImage, ConceptImage } from "./images"
 const DATE = new Date(`${AS_OF}T12:00:00`).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
 
 export function LaunchBriefAnswer() {
-  const { knowledge, saveKnowledge } = useNudge()
-  const [choice, setChoice] = useState<Record<string, "yes" | "me" | "no">>({})
+  // Asked for without the brief attached: Ally asks for it instead of pretending to have read it.
+  const turn = useTurn()
+  if (!turn?.attach?.length) return <NeedBrief />
+  return <BriefRead />
+}
 
-  function keep(id: (typeof LAUNCH_FACTS)[number]["id"], c: "yes" | "me" | "no") {
-    setChoice((x) => ({ ...x, [id]: c }))
-    if (c === "no") return saveKnowledge(knowledge.filter((k) => k.id !== `launch-${id}`))
-    const f = LAUNCH_FACTS.find((x) => x.id === id)!
-    const entry = { id: `launch-${id}`, text: f.text, retailer: "Amazon", brands: [] as string[], skuGroups: [] as string[], author: "Mike Chen", date: DATE, source: c === "me" ? "from the brand team's launch email · just for Mike" : "from the brand team's launch email" }
-    saveKnowledge([entry, ...knowledge.filter((k) => k.id !== entry.id)])
-  }
-
+/** No brief yet: one line and the upload, which asks again with the files. */
+function NeedBrief() {
+  const { ask } = useChat()
+  const [open, setOpen] = useState(false)
   return (
-    <div className="flex max-w-[860px] flex-col gap-4 text-[15px] leading-relaxed text-slate-700">
-      <p className="text-[17px] font-semibold text-slate-950">A new launch, an event and a concept. Here&apos;s what&apos;s new; keep what Ally should use from now on.</p>
-      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
-        {LAUNCH_FACTS.map((f, i) => (
-          <div key={f.id} className={cn("flex items-center gap-4 px-4 py-3", i > 0 && "border-t border-slate-100")}>
-            <div className="min-w-0 flex-1">
-              <div className="text-[14px] text-slate-950">{f.text}</div>
-              <div className="text-[12px] text-slate-500">{f.scope}</div>
-            </div>
-            <div className="flex shrink-0 overflow-hidden rounded-lg border border-slate-200 text-[13px]">
-              {(
-                [
-                  ["yes", "Yes"],
-                  ["me", "Just for me"],
-                  ["no", "No"],
-                ] as const
-              ).map(([c, label], k) => (
-                <button key={c} type="button" onClick={() => keep(f.id, c)} aria-pressed={choice[f.id] === c} className={cn("px-3 py-1.5", k > 0 && "border-l border-slate-200", choice[f.id] === c ? "bg-slate-100 font-semibold text-slate-950" : "text-slate-600 hover:bg-slate-50")}>
-                  {label}
-                </button>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
-      <div className="grid grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] items-center gap-5">
-        <ConceptImage />
-        <p className="text-[14px]">
-          {`The agency's concept is in. I'll adapt it into images for each of the ${NEW_SKUS.length} new SKUs, within each retailer's rules, and draft their pages.`}
-        </p>
-      </div>
+    <div className="flex max-w-[640px] flex-col gap-3 text-[15px] leading-relaxed text-slate-700">
+      <p>{`To draft the ${NEW_SKUS.length} Winter Hearth pages I need the launch brief: the brand team's email and the agency's concept.`}</p>
+      <button type="button" onClick={() => setOpen(true)} className={cn(PRIMARY, "w-fit")}>
+        <Upload className="size-4" /> Upload the brief
+      </button>
+      {open && (
+        <UploadDialog
+          title="Upload the launch brief"
+          files={LAUNCH_FILES}
+          onClose={() => setOpen(false)}
+          onAttach={(files) => {
+            setOpen(false)
+            ask(LAUNCH_CHIP, undefined, "Here's the Winter Hearth launch brief.", files)
+          }}
+        />
+      )}
     </div>
   )
 }
 
-export function LaunchAdaptAnswer() {
-  const { launchReady, setLaunchReady } = useNudge()
-  const { turns } = useChat()
-  const sent = launchReady || turns.some((t) => t.chip === SEND_ASK)
+/** The brief is in: Ally drafts the pages, queues them for approval, then says what it's keeping in memory. */
+function BriefRead() {
+  const { knowledge, saveKnowledge, setLaunchReady } = useNudge()
+
+  // Drafting and queueing happen on arrival; the facts go to Knowledge (editable there, under Settings).
+  useEffect(() => {
+    if (handled.current) return
+    handled.current = true
+    setLaunchReady(true)
+    const entries = LAUNCH_FACTS.map((f) => ({ id: `launch-${f.id}`, text: f.text, retailer: "Amazon", brands: [] as string[], skuGroups: [] as string[], author: "Mike Chen", date: DATE, source: "from the brand team's launch email" }))
+    saveKnowledge([...entries, ...knowledge.filter((k) => !k.id.startsWith("launch-"))])
+  }, [knowledge, saveKnowledge, setLaunchReady])
+
   return (
     <div className="flex max-w-[960px] flex-col gap-5 text-[15px] leading-relaxed text-slate-700">
-      <p className="text-[17px] font-semibold text-slate-950">
-        {NEW_SKUS.length} pages drafted from one concept: {NEW_SKUS.length * 3} images, titles and bullets. Here are two.
-      </p>
+      <p>{`Got Priya's brief: ${NEW_SKUS.length} new SKUs launch ${LAUNCH.launch} for the Hudson Valley Winter Market, with the agency's concept, "${LAUNCH.tagline}." I drafted their pages from it: ${NEW_SKUS.length * 3} images, titles and bullets. Here are two.`}</p>
 
       {LAUNCH_PAGES.map((p) => {
-        const sku = NEW_SKUS.find((s) => s.id === p.skuId)!
+        const sku = NEW_SKUS.find((x) => x.id === p.skuId)!
         return (
           <div key={p.skuId} className="grid grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] gap-5 rounded-xl border border-slate-200 bg-white p-4">
             <div className="grid grid-cols-3 gap-2">
@@ -97,7 +90,7 @@ export function LaunchAdaptAnswer() {
               </ul>
               {p.removed && (
                 <div className="mt-2.5 flex items-start gap-1.5 text-[12px] text-success-700">
-                  <ShieldCheck className="mt-0.5 size-3.5 shrink-0" /> Removed {p.removed}
+                  <ShieldCheck className="mt-0.5 size-3.5 shrink-0" /> {`Removed ${p.removed}`}
                 </div>
               )}
             </div>
@@ -105,58 +98,49 @@ export function LaunchAdaptAnswer() {
         )
       })}
 
-      <div>
-        <div className="text-[13px] font-medium text-slate-950">Checked against each retailer&apos;s rules</div>
-        <div className="mt-2 grid grid-cols-3 gap-3">
-          {RETAILER_CHECKS.map((r) => (
-            <div key={r.retailer} className="rounded-xl border border-slate-200 bg-white px-4 py-3">
-              <div className="text-[14px] font-semibold text-slate-950">{r.retailer}</div>
-              <ul className="mt-1.5 flex flex-col gap-1">
-                {r.rules.map((x) => (
-                  <li key={x} className="flex items-start gap-1.5 text-[12px] text-slate-600">
-                    <Check className="mt-0.5 size-3 shrink-0 text-success-600" /> {x}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
+      <div className="text-[13px] text-slate-500">
+        {`Checked against each retailer's rules: ${RETAILER_CHECKS.map((r) => `${r.retailer} (${r.rules[0].toLowerCase()})`).join(" · ")}.`}
       </div>
 
-      {sent ? (
-        <SentLine />
-      ) : (
-        <div>
-          <button type="button" onClick={() => setLaunchReady(true)} className={PRIMARY}>
-            Send {NEW_SKUS.length} SKUs for approval
-          </button>
+      <SentLine />
+
+      <div className="rounded-xl bg-slate-25 px-4 py-3 ring-1 ring-slate-200">
+        <div className="flex items-center gap-2 text-[14px] font-semibold text-slate-950">
+          <BookOpen className="size-4 text-brand-600" /> I&apos;ve put this in memory, so future work follows it
         </div>
-      )}
+        <ul className="mt-1.5 flex flex-col gap-0.5 text-[13px] text-slate-700">
+          {LAUNCH_FACTS.map((f) => (
+            <li key={f.id}>· {f.text}</li>
+          ))}
+        </ul>
+        <Link href="/settings?tab=knowledge" className="mt-2 inline-block text-[13px] font-medium text-brand-700 hover:underline">
+          Change it in Knowledge
+        </Link>
+      </div>
     </div>
   )
 }
+
+// Once per page load, even when React mounts the answer twice in development.
+const handled = { current: false }
 
 function SentLine() {
   return (
     <div className="flex flex-wrap items-center gap-3">
       <span className="inline-flex items-center gap-1.5 text-[14px] font-medium text-success-700">
-        <Check className="size-4" /> Sent. The {LAUNCH.name} is one approval away: {NEW_SKUS.length} SKUs, {LAUNCH.value}, due {LAUNCH.due}.
+        <Check className="size-4" /> {`Queued for your approval: ${NEW_SKUS.length} SKUs, ${LAUNCH.value}, due ${LAUNCH.due}.`}
       </span>
       <OpenItem batch="concepts">Open it in your queue</OpenItem>
     </div>
   )
 }
 
-export const ADAPT_ASK = "Adapt the concept for the 3 new SKUs"
-export const SEND_ASK = "Send the 3 SKUs for approval"
-
-const ADAPT_CHIP: Chip = { q: ADAPT_ASK, match: /adapt|draft|images?/i, render: () => <LaunchAdaptAnswer /> }
 /** The brief arrives as files (from the queue item or the 📎); it isn't offered as a starter. */
 export const LAUNCH_CHIP: Chip = {
   q: "Here's the Winter Hearth launch brief",
   match: /launch|winter hearth|brand team|brief/i,
   hidden: true,
   takesFiles: true,
+  needsFiles: true,
   render: () => <LaunchBriefAnswer />,
-  followUps: [ADAPT_CHIP],
 }
