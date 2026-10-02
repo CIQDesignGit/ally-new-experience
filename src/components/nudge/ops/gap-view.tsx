@@ -1,7 +1,8 @@
 "use client"
 
-import { useState } from "react"
-import { ArrowRight, Check, ChevronDown, ChevronRight, Sparkles } from "lucide-react"
+import { useEffect, useState } from "react"
+import { motion } from "framer-motion"
+import { ArrowRight, Check, ChevronDown, ChevronRight, Loader2, Sparkles } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { OPS_BATCHES, fmtValue } from "../data"
@@ -76,13 +77,61 @@ export function GapTree({ selected, onSelect }: { selected: string; onSelect: (i
 /* The analysis, as an answer in the page's conversation                       */
 /* ------------------------------------------------------------------------- */
 
-function Steps({ extra = [], measure = "sales" }: { extra?: string[]; measure?: GapRecipe["measure"] }) {
-  const [open, setOpen] = useState(false)
+/**
+ * The run, the way an agent shows its work: each step appears with a spinner and
+ * turns into a check. The first five take a second or two (they read data); the
+ * rest go quickly. Then it folds into one line you can open, and the answer follows.
+ */
+function Steps({ extra = [], measure = "sales", onDone }: { extra?: string[]; measure?: GapRecipe["measure"]; onDone?: () => void }) {
   const steps = [...GAP_STEPS.slice(0, -2), ...extra, ...GAP_STEPS.slice(-2)].map((st) => st.replace("by dollars", `by ${BY[measure]}`))
+  // How long each step takes: slow for the data pulls, quick for the rest.
+  const [plan] = useState(() => steps.map((_, i) => (i < 5 ? 1100 + ((i * 397) % 700) : 260 + ((i * 131) % 160))))
+  const total = plan.reduce((a, b) => a + b, 0)
+  const [ran, setRan] = useState(0)
+  const [open, setOpen] = useState(false)
+  const [elapsed, setElapsed] = useState(0)
+  const running = ran < steps.length
+  useEffect(() => {
+    const at = plan.reduce<number[]>((acc, ms) => [...acc, (acc[acc.length - 1] ?? 0) + ms], [])
+    const ts = at.map((t, i) => window.setTimeout(() => setRan(i + 1), t))
+    const tick = window.setInterval(() => setElapsed((e) => e + 1), 1000)
+    ts.push(window.setTimeout(() => window.clearInterval(tick), total))
+    return () => {
+      ts.forEach(window.clearTimeout)
+      window.clearInterval(tick)
+    }
+    // Once, when the answer starts.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+  useEffect(() => {
+    if (!running) onDone?.()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [running])
+  const secs = Math.max(1, Math.round(total / 1000))
+
+  if (running)
+    return (
+      <div className="text-sm">
+        <div className="flex items-center gap-2 text-slate-600">
+          <Loader2 className="size-4 animate-spin text-brand-600" />
+          <span className="font-medium text-slate-950">Analyzing</span>
+          <span className="text-slate-400 tabular-nums">· {elapsed}s</span>
+        </div>
+        <ol className="mt-2 flex flex-col gap-1.5 border-l-2 border-slate-100 pl-4">
+          {steps.slice(0, ran + 1).map((st, i) => (
+            <motion.li key={st} initial={{ opacity: 0, y: 3 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} className="flex items-center gap-2">
+              {i < ran ? <Check className="size-3.5 shrink-0 text-success-600" /> : <Loader2 className="size-3.5 shrink-0 animate-spin text-brand-600" />}
+              <span className={i < ran ? "text-slate-500" : "text-slate-950"}>{st}</span>
+              {extra.includes(st) && <span className="text-xs text-brand-700">you added</span>}
+            </motion.li>
+          ))}
+        </ol>
+      </div>
+    )
   return (
     <div className="text-sm">
       <button type="button" onClick={() => setOpen((o) => !o)} className="inline-flex items-center gap-1.5 text-slate-600 hover:text-slate-900">
-        <Check className="size-4 text-success-600" /> Analyzed in {steps.length} steps <span className="text-slate-300">·</span>
+        <Check className="size-4 text-success-600" /> Analyzed in {steps.length} steps <span className="text-slate-400 tabular-nums">· {secs}s</span> <span className="text-slate-300">·</span>
         <span className="font-medium text-brand-700">{open ? "Hide steps" : "Show all steps"}</span>
         <ChevronDown className={cn("size-3.5 text-brand-700 transition-transform", open && "rotate-180")} />
       </button>
@@ -135,6 +184,8 @@ export function GapAnalysis({ node, onInbox, recipe: given, nested }: { node: Ga
   // What Ally knew when this was asked: a lesson saved later doesn't rewrite an earlier answer.
   const live = useGapLesson()
   const [lesson] = useState(live)
+  // The answer waits for the run to finish, step by step.
+  const [ready, setReady] = useState(false)
   const recipe = given ?? lesson?.recipe ?? DEFAULT_RECIPE
   const mm = (v: number, signed = false) => inMeasure(v, recipe.measure, signed)
   const fill = recipe.steps.includes(FILL_STEP)
@@ -158,7 +209,9 @@ export function GapAnalysis({ node, onInbox, recipe: given, nested }: { node: Ga
           This run uses it.
         </MemoryRecall>
       )}
-      <Steps extra={recipe.steps} measure={recipe.measure} />
+      <Steps extra={recipe.steps} measure={recipe.measure} onDone={() => setReady(true)} />
+      {ready && (
+      <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="flex flex-col gap-5">
 
       <div>
         <p className="text-[17px] leading-snug font-semibold text-slate-950">
@@ -267,6 +320,8 @@ export function GapAnalysis({ node, onInbox, recipe: given, nested }: { node: Ga
         </div>
       </div>
       {!nested && <RecipeFeedback node={node} render={(r) => <GapAnalysis node={node} onInbox={onInbox} recipe={r} nested />} />}
+      </motion.div>
+      )}
     </div>
   )
 }

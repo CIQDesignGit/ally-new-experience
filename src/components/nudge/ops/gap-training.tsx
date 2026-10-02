@@ -334,6 +334,10 @@ export function RecipeFeedback({ node, render }: { node: GapNode; render: (recip
           {stage !== "ask" && stage !== "updating" && (
             <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col gap-3">
               <AllySays delay={0}>{stage === "review" ? (changed ? "Here's the new skill file." : "Nothing in the skill file changes from that.") : "Skill file updated."}</AllySays>
+              {/* Approved: the memory notification first, where it can't be missed. */}
+              {stage !== "review" && stage !== "scope" && (
+                <MemorySaved label="Saved to memory" text={`${lessonText(draft)}. Applies to ${SCOPE_LABEL[scope].toLowerCase().replace("the aurelle account", "the Aurelle account")}.`} />
+              )}
               {/* Before approval: the change against the current version. After: the new version and its log. */}
               {stage === "review" || stage === "scope" ? <SkillFile base={base} draft={{ ...draft, scope }} version={version} /> : <SkillFile base={draft} draft={draft} version={version + 1} log={draft.log} />}
               {stage === "review" && changed && (
@@ -363,9 +367,8 @@ export function RecipeFeedback({ node, render }: { node: GapNode; render: (recip
               )}
               {stage === "approved" && (
                 <>
-                  <MemorySaved label={null} text={`Learned: ${lessonText(draft)}. Applies to ${SCOPE_LABEL[scope].toLowerCase().replace("the aurelle account", "the Aurelle account")}.`} />
                   <AllySays delay={0.8}>Do you want me to run the analysis again?</AllySays>
-                  <motion.button initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1 }} type="button" onClick={() => setStage("running")} className={cn(PRIMARY, "w-fit")}>
+                  <motion.button initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1 }} type="button" onClick={() => setStage("rerun")} className={cn(PRIMARY, "w-fit")}>
                     Run it again
                   </motion.button>
                 </>
@@ -422,7 +425,7 @@ export function LessonFromChat() {
     // Once, when said.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-  return <MemorySaved label={null} text={`Learned: ${lessonText(recipe)}. Applies to the Aurelle account.`} />
+  return <MemorySaved label="Saved to memory" text={`${lessonText(recipe)}. Applies to the Aurelle account.`} />
 }
 
 /** Plain language anywhere: "Remember that we measure plan by weight". Not a starter: it matches what's typed. */
