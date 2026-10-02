@@ -9,7 +9,8 @@ import { SplitBar } from "../mike/split-bar"
 import type { Stage } from "../mini-waterfall"
 
 function fmt(v: number) {
-  return v >= 1 ? `$${+v.toFixed(1)}M` : `$${Math.round(v * 1000)}K`
+  // Same rounding as the progress bar under it, so the two always read the same.
+  return v >= 1 ? `$${+v.toFixed(2)}M` : `$${Math.round(v * 1000)}K`
 }
 /** "$720K" → 0.72 ($M). */
 const money = (s: string) => parseFloat(s.replace(/[$KM,]/g, "")) / (s.endsWith("K") ? 1000 : 1)
@@ -50,12 +51,12 @@ export function OpsProgress({ celebrate }: { celebrate: Celebrate | null }) {
   return (
     <>
       {/* The headline beside the quarter's waterfall: the claim on the left, its picture on the right. */}
-      <div className="grid grid-cols-[minmax(0,1fr)_308px] items-end gap-8 px-10 pt-2 pb-6">
+      <div className="grid grid-cols-[minmax(0,1fr)_340px] items-end gap-8 px-10 pt-2 pb-6">
         <div className="min-w-0">
         <div className="text-2xl font-semibold tracking-tight text-slate-700">
           <span className="font-mono text-slate-950">{fmt(open)}</span> of ops opportunity is {actedValue > 0 ? "still " : ""}open this quarter.
         </div>
-        <h1 className="mt-1 text-[30px] leading-tight font-bold tracking-tight text-slate-950">
+        <h1 className="mt-1 text-[28px] leading-tight font-bold tracking-tight text-slate-950">
           {left > 0.005 ? (
             <>
               <span className="font-mono">{fmt(left)}</span> {doneValue > 0 ? "still" : "is"} one approval from live.

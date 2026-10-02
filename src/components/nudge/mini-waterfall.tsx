@@ -19,13 +19,13 @@ export function MiniWaterfall({ values, highlight = "approval", onSelect, classN
     { k: "input", label: "Your input", color: "#f5b85c" },
   ]
   const total = stages.reduce((n, s) => n + values[s.k], 0)
-  const W = 308
-  const H = 132
-  const base = 104
-  const top = 20
+  const W = 340
+  const H = 160
+  const base = 128
+  const top = 24
   const scale = (base - top) / (total || 1)
-  const bw = 52
-  const gap = 12
+  const bw = 56
+  const gap = 15
   let run = 0
   const fmt = (v: number) => (v >= 1 ? `$${(Math.round(v * 100) / 100).toString()}M` : `$${Math.round(v * 1000)}K`)
   return (
@@ -43,15 +43,15 @@ export function MiniWaterfall({ values, highlight = "approval", onSelect, classN
             <title>{`${{ banked: "Banked", autopilot: "On autopilot", approval: "One approval away", input: "Needs your input" }[s.k]}: ${s.k === "banked" ? "" : "+"}${fmt(v)}`}</title>
             <rect x={x} y={top - 14} width={bw} height={H - top} fill="transparent" />
             <motion.rect x={x} width={bw} rx={3} fill={s.color} initial={{ y: base, height: 0 }} animate={{ y: y0, height: h }} transition={{ delay: 0.1 + i * 0.08, duration: 0.45 }} />
-            <text x={x + bw / 2} y={y0 - 5} textAnchor="middle" fontSize={11} fontWeight={on ? 700 : 600} fill={on ? "#5b21b6" : "#475569"} fontFamily="var(--font-mono)">{`${s.k === "banked" ? "" : "+"}${fmt(v)}`}</text>
-            <text x={x + bw / 2} y={base + 15} textAnchor="middle" fontSize={10.5} fontWeight={on ? 700 : 500} fill={on ? "#5b21b6" : "#64748b"}>{s.label}</text>
+            <text x={x + bw / 2} y={y0 - 6} textAnchor="middle" fontSize={13} fontWeight={on ? 700 : 600} fill={on ? "#5b21b6" : "#475569"} fontFamily="var(--font-mono)">{`${s.k === "banked" ? "" : "+"}${fmt(v)}`}</text>
+            <text x={x + bw / 2} y={base + 19} textAnchor="middle" fontSize={12.5} fontWeight={on ? 700 : 500} fill={on ? "#5b21b6" : "#64748b"}>{s.label}</text>
           </g>
         )
       })}
       <g>
         <rect x={4 * (bw + gap)} y={base - total * scale} width={bw} height={total * scale} rx={3} fill="#e2e8f0" />
-        <text x={4 * (bw + gap) + bw / 2} y={base - total * scale - 5} textAnchor="middle" fontSize={11} fontWeight={700} fill="#0f172a" fontFamily="var(--font-mono)">{fmt(total)}</text>
-        <text x={4 * (bw + gap) + bw / 2} y={base + 15} textAnchor="middle" fontSize={10.5} fill="#64748b">Quarter</text>
+        <text x={4 * (bw + gap) + bw / 2} y={base - total * scale - 6} textAnchor="middle" fontSize={13} fontWeight={700} fill="#0f172a" fontFamily="var(--font-mono)">{fmt(total)}</text>
+        <text x={4 * (bw + gap) + bw / 2} y={base + 19} textAnchor="middle" fontSize={12.5} fill="#64748b">Quarter</text>
       </g>
     </svg>
   )
