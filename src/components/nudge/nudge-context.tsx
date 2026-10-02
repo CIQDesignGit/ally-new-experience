@@ -42,6 +42,8 @@ export interface RetroState {
   saved?: string[]
   /** Slides shown in their other form (deals as a scorecard instead of bars). */
   alts?: string[]
+  /** Where the retro is: still shaping the storyline, or on the storyboard. */
+  stage?: "storyline" | "storyboard"
   /** Michelle's rewording of a storyline question, by slide id. */
   questions?: Record<string, string>
   /** Her rewording of an answer (the slide's title), by slide id. */

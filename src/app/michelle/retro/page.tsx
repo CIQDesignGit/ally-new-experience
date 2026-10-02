@@ -67,7 +67,7 @@ export default function RetroPage() {
       // A new task opens as a conversation: the ask and Ally's storyline, nothing else.
       window.setTimeout(() => setView("answer"), 0)
       // After the saved demo state has loaded (it loads in the provider's effect, which runs after this one).
-      window.setTimeout(() => setRetro({ order: undefined, theme: undefined, locked: false, deck: false, sentToClaire: false, dashboard: false, dashboardSeen: false, saved: [], alts: [], questions: {}, answers: {} }), 0)
+      window.setTimeout(() => setRetro({ order: undefined, theme: undefined, locked: false, deck: false, sentToClaire: false, dashboard: false, dashboardSeen: false, saved: [], alts: [], questions: {}, answers: {}, stage: "storyline" }), 0)
       window.history.replaceState(null, "", "/michelle/retro")
       return
     }
@@ -98,6 +98,7 @@ export default function RetroPage() {
       { id: 2, from: "ally", text: `Here's the storyline. The storyboard is open on the right: ${slides.length} slides, one per beat. Drag to reorder, or tell me what to change.` },
     ])
     setView("storyboard")
+    setRetro({ stage: "storyboard" })
   }
 
   function addSummary(text: string) {

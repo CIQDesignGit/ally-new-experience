@@ -50,7 +50,7 @@ export function AppDrawer({ home = "/michelle", defaultOpen }: { home?: string; 
   const fresh = !!retro.dashboard && !retro.dashboardSeen
 
   const sections: { title: string; icon: typeof Home; items: { label: string; sub?: string; href: string; on?: boolean; fresh?: boolean }[]; empty: string; fresh?: boolean }[] = [
-    { title: "Conversations", icon: MessageSquare, items: started ? [{ label: RETRO.name, sub: retro.sentToClaire ? "Sent to Claire" : retro.deck ? "Deck built" : "Storyboard", href: "/michelle/retro", on: path === "/michelle/retro" }] : [], empty: "Ask Ally a new task to start one" },
+    { title: "Conversations", icon: MessageSquare, items: started ? [{ label: RETRO.name, sub: retro.sentToClaire ? "Sent to Claire" : retro.deck ? "Deck built" : retro.stage === "storyline" ? "Storyline" : "Storyboard", href: "/michelle/retro", on: path === "/michelle/retro" }] : [], empty: "Ask Ally a new task to start one" },
     { title: "Reports and decks", icon: Presentation, items: retro.deck ? [{ label: RETRO.name, sub: retro.theme === "aurelle" ? "Aurelle Brand 2026" : "CommerceIQ default", href: "/michelle/retro?view=deck" }] : [], empty: "Decks you build show here" },
     { title: "Dashboards", icon: LayoutDashboard, fresh, items: retro.dashboard ? [{ label: RETRO.name, sub: "Live · refreshes daily", href: "/michelle/dashboards/prime-day", on: path === "/michelle/dashboards/prime-day", fresh }] : [], empty: "Publish a deck or answers as a dashboard" },
     { title: "Alerts", icon: Bell, items: [], empty: "No custom alerts yet" },
