@@ -507,7 +507,7 @@ function Storyboard(p: {
           {p.locked ? "Locked" : "Lock"}
         </button>
         {p.onDashboard && (
-          <button type="button" onClick={p.onDashboard} className={cn(SECONDARY, SMALL)}>
+          <button type="button" onClick={p.onDashboard} className={cn(PRIMARY, SMALL)}>
             Make a dashboard
           </button>
         )}
@@ -588,11 +588,11 @@ function Deck(p: {
             ))}
           </div>
         ) : (
-          <button type="button" onClick={p.onBrand} className={cn(SECONDARY, SMALL)}>
+          <button type="button" onClick={p.onBrand} className={cn(PRIMARY, SMALL)}>
             <Paperclip className="size-4" /> Apply brand template
           </button>
         )}
-        <button type="button" onClick={p.onExport} className={cn(SECONDARY, SMALL)}>
+        <button type="button" onClick={p.onExport} className={cn(PRIMARY, SMALL)}>
           <Download className="size-4" /> Export PowerPoint
         </button>
         <button type="button" onClick={p.onShare} className={cn(PRIMARY, SMALL)}>

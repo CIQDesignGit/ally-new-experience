@@ -149,7 +149,7 @@ export function ReviewPolicy() {
           />
           <span className="px-1 text-sm text-slate-400">→</span>
           <SinglePicker label="Mode" value={scope.mode} options={MODES.map((m) => ({ id: m, label: MODE_LABEL[m] }))} onChange={(v) => setScope({ ...scope, mode: v as ReviewMode })} />
-          <button type="button" onClick={addRule} className={cn(SECONDARY, "ml-auto h-9 px-4 text-sm")}>
+          <button type="button" onClick={addRule} className={cn(PRIMARY, "ml-auto")}>
             Add rule
           </button>
         </div>

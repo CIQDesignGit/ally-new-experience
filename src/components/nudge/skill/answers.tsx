@@ -393,10 +393,10 @@ function Results({ version }: { version: 1 | 2 }) {
         <div className="text-[13px] font-medium text-slate-950">What to ask Amazon for</div>
         <div className="mt-2 overflow-hidden rounded-xl border border-slate-200 bg-white">
           <Action n={1} title="A 2% cost increase on the 3 gift and tin lines, with a margin guarantee" sub="Lifts Amazon's net PPM on $18M of volume toward its 25% target, so the pressure comes off the rest.">
-            {sent.includes("cost") ? <Done>In the proposal</Done> : <button type="button" onClick={() => send("cost", "Added to the proposal · +2% cost on 3 lines, with a margin guarantee")} className={SECONDARY}>Add to the proposal</button>}
+            {sent.includes("cost") ? <Done>In the proposal</Done> : <button type="button" onClick={() => send("cost", "Added to the proposal · +2% cost on 3 lines, with a margin guarantee")} className={PRIMARY}>Add to the proposal</button>}
           </Action>
           <Action n={2} title="A 1% growth rebate in place of more co-op" sub="Co-op from 7% to 6%; Amazon earns the 1% back only if we grow 10%.">
-            {sent.includes("rebate") ? <Done>Sent to Dana</Done> : <button type="button" onClick={() => send("rebate", "Sent to Dana · growth rebate in place of co-op")} className={SECONDARY}>Send to Dana</button>}
+            {sent.includes("rebate") ? <Done>Sent to Dana</Done> : <button type="button" onClick={() => send("rebate", "Sent to Dana · growth rebate in place of co-op")} className={PRIMARY}>Send to Dana</button>}
           </Action>
           <Action n={3} title="File the $600K recovery claims" sub="$350K of chargeback disputes and $250K of shorted POs, proof attached. Settle them before terms open.">
             <OpenItem batch="chargebacks">Open the claims</OpenItem>

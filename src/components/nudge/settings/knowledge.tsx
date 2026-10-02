@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Trash2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useNudge } from "../nudge-context"
-import { SECONDARY } from "../mike/buttons"
+import { PRIMARY } from "../mike/buttons"
 import { BRANDS, RETAILERS, SKU_GROUPS } from "../policy"
 import { MultiPicker, ScopeChips, SinglePicker } from "./scope-picker"
 
@@ -58,7 +58,7 @@ export function Knowledge() {
           <SinglePicker label="Retailer" value={scope.retailer} options={RETAILERS.map((r) => ({ id: r, label: r }))} onChange={(v) => setScope({ ...scope, retailer: v })} />
           <MultiPicker label="All brands" value={scope.brands} options={BRANDS} onChange={(v) => setScope({ ...scope, brands: v })} />
           <MultiPicker label="All SKU groups" value={scope.skuGroups} options={SKU_GROUPS} onChange={(v) => setScope({ ...scope, skuGroups: v })} />
-          <button type="button" onClick={add} disabled={!text.trim()} className={cn(SECONDARY, "ml-auto h-9 px-4 text-sm disabled:opacity-50")}>
+          <button type="button" onClick={add} disabled={!text.trim()} className={cn(PRIMARY, "ml-auto disabled:opacity-50")}>
             Add
           </button>
         </div>

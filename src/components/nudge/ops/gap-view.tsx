@@ -16,7 +16,7 @@ import type { Driver, GapAction, GapNode, Recommendation } from "./gap-data"
 import type { GapRecipe } from "../policy"
 import { MemoryRecall } from "../chat/memory"
 import { ActionCard, ActionRow } from "../ui/action"
-import { SECONDARY } from "../mike/buttons"
+import { PRIMARY } from "../mike/buttons"
 import { DidYouKnow } from "../chat/agent-run"
 import { BY, DEFAULT_RECIPE, FILL, FILL_STEP, RecipeFeedback, inMeasure, lbsOf, lessonText, unitsOf, useGapLesson } from "./gap-training"
 
@@ -174,7 +174,7 @@ export function ActionButton({ action, onInbox }: { action: GapAction; onInbox: 
         else if (play) launch([play])
         else toast.success(`${action.label}: Ally will tell you the moment it moves.`, { position: "top-right" })
       }}
-      className={SECONDARY}
+      className={PRIMARY}
     >
       {action.label}
       <ArrowRight className="size-3.5" />

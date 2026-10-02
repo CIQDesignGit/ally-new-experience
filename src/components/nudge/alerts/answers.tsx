@@ -107,7 +107,7 @@ export function GiftSetsAnswer() {
           detail="15% coupon on our 3 gift sets through Nov 30 · $29.74, within $2 of Brightwick"
           done={coupon && "Approved"}
           action={
-            <button type="button" onClick={() => setCoupon(true)} className={SECONDARY}>
+            <button type="button" onClick={() => setCoupon(true)} className={PRIMARY}>
               Approve the coupon
             </button>
           }
@@ -129,7 +129,7 @@ export function GiftSetsAnswer() {
           }
           done={!!sent && (sent.chip.startsWith("Send") ? "Sent to James" : "Approved")}
           action={
-            <button type="button" onClick={() => ask(needsJames ? jamesChip(cap) : approveChip(cap))} className={SECONDARY}>
+            <button type="button" onClick={() => ask(needsJames ? jamesChip(cap) : approveChip(cap))} className={PRIMARY}>
               {needsJames ? "Send to James" : "Approve the bids"}
             </button>
           }

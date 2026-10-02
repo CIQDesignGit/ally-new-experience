@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils"
 import { AS_OF } from "./data"
 import { useNudge } from "./nudge-context"
 import { BRANDS } from "./policy"
-import { SECONDARY } from "./mike/buttons"
+import { PRIMARY } from "./mike/buttons"
 
 const THUMB = "flex size-10 items-center justify-center rounded-lg border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300"
 const DATE = new Date(`${AS_OF}T12:00:00`).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
@@ -112,7 +112,7 @@ export function AllyFeedback({ id, sku, author, className }: { id: string; sku: 
             className="block w-full resize-none bg-transparent px-4 py-3 text-sm text-slate-950 outline-none placeholder:text-slate-400"
           />
           <div className="flex justify-end border-t border-slate-100 px-3 py-2.5">
-            <button type="button" onClick={send} disabled={!draft.trim()} className={cn(SECONDARY, "h-9 px-4 text-sm disabled:opacity-50")}>
+            <button type="button" onClick={send} disabled={!draft.trim()} className={cn(PRIMARY, "disabled:opacity-50")}>
               Send to Ally
             </button>
           </div>
