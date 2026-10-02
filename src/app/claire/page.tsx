@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { AppDrawer } from "@/components/nudge/app-drawer"
 import { PageShell } from "@/components/layout/page-shell"
 import { ClaireHeader } from "@/components/nudge/claire/claire-header"
 import { StatusStrip } from "@/components/nudge/claire/status-strip"
@@ -29,8 +28,8 @@ export default function ClairePage() {
   const [groupBy, setGroupBy] = useState<"status" | "area">("status")
 
   return (
-    <PageShell className="bg-slate-50 xl:bg-white">
-      <div className="mx-auto max-w-[1280px] overflow-hidden bg-white shadow-pane-lg sm:my-6 sm:rounded-2xl sm:ring-1 sm:ring-slate-900/6 xl:my-0 xl:rounded-none xl:shadow-none xl:ring-0">
+    <PageShell className="bg-slate-50">
+      <div className="mx-auto max-w-[1280px] overflow-hidden bg-white shadow-pane-lg sm:my-6 sm:rounded-2xl sm:ring-1 sm:ring-slate-900/6">
         <ClaireHeader period={period} />
         <WeeklyBanner />
         <StatusStrip period={period} onPeriodChange={setPeriod} />
@@ -103,7 +102,6 @@ export default function ClairePage() {
         <AutopilotCompare />
         <AskAllyInline />
       </div>
-      <AppDrawer home="/claire" />
     </PageShell>
   )
 }

@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { AppDrawer } from "@/components/nudge/app-drawer"
 import { PageShell } from "@/components/layout/page-shell"
 import { ResetDemoButton } from "@/components/nudge/reset-demo-button"
 import { BusinessHero } from "@/components/nudge/claire/business-hero"
@@ -29,7 +30,8 @@ let resetThisLoad = false
  */
 /** The home page's questions for the Ask Ally bar (the views register their own). */
 function HomeChat() {
-  useChatSource({ chips: QUESTIONS.map((q) => ({ q, render: () => <div className="max-w-[860px] rounded-2xl bg-white px-5 py-4 text-[15px] leading-relaxed text-slate-700 ring-1 ring-slate-200"><Answer q={q} /></div> })) }, "home")
+  // Four starters; "why is content behind" and "email this summary" still answer when typed.
+  useChatSource({ chips: QUESTIONS.map((q, i) => ({ q, hidden: i === 2 || i === 5, render: () => <div className="max-w-[860px] rounded-2xl bg-white px-5 py-4 text-[15px] leading-relaxed text-slate-700 ring-1 ring-slate-200"><Answer q={q} /></div> })) }, "home")
   return null
 }
 
@@ -84,9 +86,9 @@ function ClaireWaterfall() {
   }, [])
 
   return (
-    <PageShell className="bg-slate-50">
+    <PageShell className="bg-slate-50 xl:bg-white">
       {/* overflow-clip (not hidden) keeps rounded corners without breaking the sticky Ally panel in a view. */}
-      <div className="mx-auto max-w-[1280px] overflow-clip bg-white shadow-pane-lg sm:my-6 sm:rounded-2xl sm:ring-1 sm:ring-slate-900/6">
+      <div className="mx-auto max-w-[1280px] overflow-clip bg-white shadow-pane-lg sm:my-6 sm:rounded-2xl sm:ring-1 sm:ring-slate-900/6 xl:my-0 xl:rounded-none xl:shadow-none xl:ring-0">
         {/* A view shows where you are instead of the greeting; "Home" is the way back. */}
         <BusinessHero
           topLineOnly={!!grow}
@@ -123,6 +125,7 @@ function ClaireWaterfall() {
           </>
         )}
       </div>
+      <AppDrawer home="/claire-waterfall" />
       <AskBar />
     </PageShell>
   )

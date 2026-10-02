@@ -64,14 +64,15 @@ function InboxChat() {
       chips: [
         PROMO_CHIPS["promo-month"],
         { q: GIFT_QUESTION, match: /gift.?sets?/i, render: () => <GiftSetsAnswer /> },
-        // Run-by-name first: "open my negotiation prep" means the saved skill, not a new prep.
         LESSON_CHIP,
+        // Run-by-name first: "open my negotiation prep" means the saved skill, not a new prep.
         RUN_BY_NAME_CHIP,
         PREP_CHIP,
-        ...MICHELLE_QUESTIONS.map((q) => ({ q, render: () => <div className="max-w-[860px] rounded-2xl bg-white px-5 py-4 text-[15px] leading-relaxed text-slate-700 ring-1 ring-slate-200">{michelleAnswer(q)}</div> })),
+        // Answered when asked, not offered: the bar keeps five starters, one per job.
+        ...MICHELLE_QUESTIONS.map((q) => ({ q, hidden: true, render: () => <div className="max-w-[860px] rounded-2xl bg-white px-5 py-4 text-[15px] leading-relaxed text-slate-700 ring-1 ring-slate-200">{michelleAnswer(q)}</div> })),
         // A task, not a question about the brief: it opens its own conversation.
         { q: RETRO_TASK, task: "/michelle/retro?new=1", render: () => <StorylineAnswer /> },
-        { q: "Claire's Q4 business review", task: "/michelle/decks/qbr?new=1", match: /\b(qbr|business review)\b/i, render: () => null },
+        { q: "Claire's Q4 business review", hidden: true, task: "/michelle/decks/qbr?new=1", match: /\b(qbr|business review)\b/i, render: () => null },
         // Gap to plan has its own page; asking for it goes there.
         { q: "Where are we against plan?", task: "/michelle/gap", match: /\b(gap to plan|against plan|behind plan|vs\.? plan|short of plan)\b/i, render: () => null },
       ],
