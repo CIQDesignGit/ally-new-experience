@@ -204,7 +204,7 @@ export function AskBar({ placeholder = "Ask Ally: what can I take from your plat
 
   const tray = showChips || turns.length > 0
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-6 z-40 flex justify-center px-4 xl:left-[var(--sidebar-w,0px)]">
+    <div className="pointer-events-none fixed inset-x-0 bottom-3 z-40 flex flex-col items-center px-4 xl:left-[var(--sidebar-w,0px)]">
       {/* One solid panel: suggestions sit in a tray above the input, never floating over the page. */}
       <div
         ref={rootRef}
@@ -268,6 +268,7 @@ export function AskBar({ placeholder = "Ask Ally: what can I take from your plat
           </button>
         </form>
       </div>
+      <p className="pointer-events-auto mt-1.5 rounded-full bg-white/95 px-2.5 py-0.5 text-center text-xs text-slate-400">Ally is AI and can make mistakes. Please double-check responses.</p>
     </div>
   )
 }

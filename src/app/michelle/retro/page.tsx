@@ -196,8 +196,8 @@ export default function RetroPage() {
   )
 
   return (
-    <PageShell className={cn("bg-slate-50", playfair.variable, lato.variable)}>
-      <div className="mx-auto max-w-[1440px] overflow-clip bg-white shadow-pane-lg sm:my-6 sm:rounded-2xl sm:ring-1 sm:ring-slate-900/6">
+    <PageShell className={cn("bg-slate-50 xl:bg-white", playfair.variable, lato.variable)}>
+      <div className="mx-auto max-w-[1440px] overflow-clip bg-white shadow-pane-lg sm:my-6 sm:rounded-2xl sm:ring-1 sm:ring-slate-900/6 xl:my-0 xl:rounded-none xl:shadow-none xl:ring-0">
         <TopStrip person="michelle" crumbs={[{ label: "Daily brief", href: "/michelle" }, { label: RETRO.name }]} />
         {view === "answer" ? (
           <div className="mt-4 flex min-h-[760px] justify-center border-t border-slate-200 px-10 pt-8 pb-10">
@@ -368,23 +368,28 @@ function Lessons({ saved, onSave }: { saved: string[]; onSave: (id: string, scop
   )
 }
 
+const AI_NOTE = "Ally is AI and can make mistakes. Please double-check responses."
+
 function Composer({ onAsk, placeholder, className }: { onAsk: (t: string) => void; placeholder: string; className?: string }) {
   const [text, setText] = useState("")
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault()
-        if (!text.trim()) return
-        onAsk(text.trim())
-        setText("")
-      }}
-      className={cn("flex items-center gap-2 rounded-2xl border border-slate-300 bg-white py-1.5 pr-1.5 pl-4 shadow-[0_8px_24px_-6px_rgba(15,23,42,0.18),0_2px_6px_rgba(15,23,42,0.06)]", className)}
-    >
-      <input value={text} onChange={(e) => setText(e.target.value)} placeholder={placeholder} aria-label={placeholder} className="h-8 min-w-0 flex-1 bg-transparent text-sm text-slate-950 outline-none placeholder:text-slate-400" />
-      <button type="submit" aria-label="Send" className="flex size-8 items-center justify-center rounded-full bg-brand-500 text-white hover:bg-brand-600">
-        <Send className="size-4" />
-      </button>
-    </form>
+    <div className={className}>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault()
+          if (!text.trim()) return
+          onAsk(text.trim())
+          setText("")
+        }}
+        className="flex items-center gap-2 rounded-2xl border border-slate-300 bg-white py-1.5 pr-1.5 pl-4 shadow-[0_8px_24px_-6px_rgba(15,23,42,0.18),0_2px_6px_rgba(15,23,42,0.06)]"
+      >
+        <input value={text} onChange={(e) => setText(e.target.value)} placeholder={placeholder} aria-label={placeholder} className="h-8 min-w-0 flex-1 bg-transparent text-sm text-slate-950 outline-none placeholder:text-slate-400" />
+        <button type="submit" aria-label="Send" className="flex size-8 items-center justify-center rounded-full bg-brand-500 text-white hover:bg-brand-600">
+          <Send className="size-4" />
+        </button>
+      </form>
+      <p className="mt-2 text-center text-xs text-slate-400">{AI_NOTE}</p>
+    </div>
   )
 }
 

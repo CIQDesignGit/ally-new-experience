@@ -35,9 +35,7 @@ export function AppDrawer({ home = "/michelle" }: { home?: string }) {
     const apply = () => {
       const w = wide.matches ? (open ? OPEN_W : SHUT_W) : "0px"
       root.style.setProperty("--sidebar-w", w)
-      // A gutter each side, so the page card never touches the sidebar's edge.
-      document.body.style.paddingLeft = wide.matches ? `calc(${w} + 24px)` : ""
-      document.body.style.paddingRight = wide.matches ? "24px" : ""
+      document.body.style.paddingLeft = w
     }
     apply()
     wide.addEventListener("change", apply)
@@ -45,7 +43,6 @@ export function AppDrawer({ home = "/michelle" }: { home?: string }) {
       wide.removeEventListener("change", apply)
       root.style.removeProperty("--sidebar-w")
       document.body.style.paddingLeft = ""
-      document.body.style.paddingRight = ""
     }
   }, [open])
 
@@ -62,7 +59,7 @@ export function AppDrawer({ home = "/michelle" }: { home?: string }) {
     <aside
       aria-label="Ally"
       style={{ width: open ? OPEN_W : SHUT_W }}
-      className="fixed inset-y-0 left-0 z-40 hidden flex-col overflow-hidden border-r border-slate-200 bg-white transition-[width] duration-200 xl:flex"
+      className="fixed inset-y-0 left-0 z-40 hidden flex-col overflow-hidden border-r border-slate-200 bg-slate-50 transition-[width] duration-200 xl:flex"
     >
       <div className={cn("flex h-16 shrink-0 items-center", open ? "justify-between px-4" : "justify-center")}>
         {open && <span className="text-[15px] font-semibold text-slate-950">Ally</span>}
