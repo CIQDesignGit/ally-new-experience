@@ -5,6 +5,7 @@ import { OPS_DAYS_SAVED, opsBatches } from "../data"
 import { DELIVERED } from "../delivered-periods"
 import { useNudge } from "../nudge-context"
 import { MiniWaterfall } from "../mini-waterfall"
+import { SplitBar } from "../mike/split-bar"
 import type { Stage } from "../mini-waterfall"
 
 function fmt(v: number) {
@@ -49,7 +50,7 @@ export function OpsProgress({ celebrate }: { celebrate: Celebrate | null }) {
   return (
     <>
       {/* The headline beside the quarter's waterfall: the claim on the left, its picture on the right. */}
-      <div className="grid grid-cols-[minmax(0,1fr)_308px] items-end gap-8 border-b border-slate-200 px-10 pt-2 pb-6">
+      <div className="grid grid-cols-[minmax(0,1fr)_308px] items-end gap-8 px-10 pt-2 pb-6">
         <div className="min-w-0">
         <div className="text-2xl font-semibold tracking-tight text-slate-700">
           <span className="font-mono text-slate-950">{fmt(open)}</span> of ops opportunity is {actedValue > 0 ? "still " : ""}open this quarter.
@@ -71,16 +72,25 @@ export function OpsProgress({ celebrate }: { celebrate: Celebrate | null }) {
             "Everything one approval away is live."
           )}
         </h1>
-        {celebrate && (
-          <div className="relative mt-2 text-sm font-semibold text-success-700">
-            +{fmt(celebrate.value)} · {celebrate.label}
-            <div className="absolute -top-1 left-0 size-16">
-              <PublishConfetti />
-            </div>
-          </div>
-        )}
         </div>
         <MiniWaterfall values={stages} onSelect={jump} />
+      </div>
+      <div className="relative border-y border-slate-200 bg-brand-25 px-10 py-4">
+        <SplitBar
+          banked={BANKED}
+          unlocked={actedValue}
+          open={open}
+          aside={
+            celebrate && (
+              <div className="relative text-sm font-semibold text-success-700">
+                +{fmt(celebrate.value)} · {celebrate.label}
+                <div className="absolute -top-1 left-0 size-16">
+                  <PublishConfetti />
+                </div>
+              </div>
+            )
+          }
+        />
       </div>
     </>
   )

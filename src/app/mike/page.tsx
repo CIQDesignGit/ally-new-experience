@@ -82,6 +82,7 @@ export default function MikePage() {
 
   function handleApprove(batch: Batch) {
     approve(batch.id)
+    showProgress()
     setCelebrate({ value: batch.approveValue, skus: batch.approveSkus })
     window.setTimeout(() => setCelebrate(null), 2200)
   }
@@ -89,6 +90,7 @@ export default function MikePage() {
   /** "Approve all" on a group: ship every pending bulk item in it at once (one-by-one items stay for their review). */
   function handleApproveAll(batches: Batch[]) {
     batches.forEach((b) => approve(b.id))
+    showProgress()
     setCelebrate({ value: batches.reduce((s, b) => s + b.approveValue, 0), skus: batches.reduce((s, b) => s + b.approveSkus, 0) })
     window.setTimeout(() => setCelebrate(null), 2200)
   }
@@ -164,4 +166,13 @@ export default function MikePage() {
       </ChatProvider>
     </BackgroundProvider>
   )
+}
+
+/** After an approval, scroll up to the progress bar so the move (and the celebration) is seen. */
+function showProgress() {
+  window.scrollTo({ top: 0, behavior: "smooth" })
+  // Some embedded browsers ignore smooth scrolling: land there anyway.
+  window.setTimeout(() => {
+    if (window.scrollY > 4) window.scrollTo({ top: 0 })
+  }, 700)
 }

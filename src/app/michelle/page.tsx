@@ -176,12 +176,14 @@ function Michelle() {
 
   function handleAction(batch: OpsBatch) {
     approve(batch.id)
+    showProgress()
     celebrateFor([batch])
     if (batch.email) toast.success(`Sent to ${batch.email.to}, ${batch.email.role} · evidence attached`, { position: "top-right" })
   }
 
   function handleApproveAll(batches: OpsBatch[]) {
     batches.forEach((b) => approve(b.id))
+    showProgress()
     celebrateFor(batches)
   }
 
@@ -268,4 +270,13 @@ function Michelle() {
       <AskBar />
     </PageShell>
   )
+}
+
+/** After an approval, scroll up to the progress bar so the move (and the celebration) is seen. */
+function showProgress() {
+  window.scrollTo({ top: 0, behavior: "smooth" })
+  // Some embedded browsers ignore smooth scrolling: land there anyway.
+  window.setTimeout(() => {
+    if (window.scrollY > 4) window.scrollTo({ top: 0 })
+  }, 700)
 }
