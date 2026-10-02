@@ -55,9 +55,9 @@ export default function AlertsPage() {
                       )}
                     </div>
                     <div className="text-right text-[13px] text-slate-500">
-                      Email · 12× a day
+                      {a.respond ? "Media agent responds" : "Tells you"}
                       <br />
-                      Owner: Michelle
+                      Email · 12× a day
                     </div>
                   </li>
                 ))}

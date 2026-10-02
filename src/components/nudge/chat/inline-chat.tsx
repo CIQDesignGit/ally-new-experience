@@ -182,6 +182,7 @@ export function ChatThread({ className, anchor }: { className?: string; anchor?:
                         ))}
                     </div>
                   )}
+                  {i === turns.length - 1 && !anchor && <div data-chat-end aria-hidden />}
                 </motion.div>
               )}
             </div>

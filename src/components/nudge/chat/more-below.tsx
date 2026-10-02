@@ -14,8 +14,15 @@ export function MoreBelow({ list, className }: { list?: React.RefObject<HTMLElem
   useEffect(() => {
     const el = list?.current
     const check = () => {
-      const gap = el ? el.scrollHeight - el.scrollTop - el.clientHeight : document.documentElement.scrollHeight - window.scrollY - window.innerHeight
-      setMore(gap > 24)
+      // A conversation reserves empty room under its newest answer; what counts is where its content ends.
+      const end = el ? null : document.querySelector("[data-chat-end]")
+      const dock = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--askbar-h")) || 0
+      const gap = el
+        ? el.scrollHeight - el.scrollTop - el.clientHeight
+        : end
+          ? end.getBoundingClientRect().bottom - (window.innerHeight - dock)
+          : document.documentElement.scrollHeight - window.scrollY - window.innerHeight
+      setMore(gap > 4)
     }
     const t = el ?? window
     t.addEventListener("scroll", check, { passive: true })
@@ -23,8 +30,11 @@ export function MoreBelow({ list, className }: { list?: React.RefObject<HTMLElem
     // Content grows (answers, expanding rows) without a scroll event.
     const ro = new ResizeObserver(check)
     ro.observe(el ?? document.body)
+    // Programmatic smooth scrolls don't always end on a scroll event; a light re-check keeps it honest.
+    const tick = window.setInterval(check, 400)
     check()
     return () => {
+      window.clearInterval(tick)
       t.removeEventListener("scroll", check)
       window.removeEventListener("resize", check)
       ro.disconnect()
@@ -39,7 +49,12 @@ export function MoreBelow({ list, className }: { list?: React.RefObject<HTMLElem
       onClick={() => {
         const el = list?.current
         if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" })
-        else window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "smooth" })
+        else {
+          const end = document.querySelector("[data-chat-end]")
+          const dock = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--askbar-h")) || 0
+          if (end) window.scrollBy({ top: end.getBoundingClientRect().bottom - (window.innerHeight - dock) + 24, behavior: "smooth" })
+          else window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "smooth" })
+        }
       }}
       className={cn("pointer-events-auto flex size-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-[0_4px_12px_-4px_rgba(15,23,42,0.2)] hover:text-slate-950", className)}
     >
