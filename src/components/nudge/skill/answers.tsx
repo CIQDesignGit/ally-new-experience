@@ -12,8 +12,8 @@ import type { Attachment, Chip } from "../chat/inline-chat"
 import { UploadDialog } from "../chat/upload-dialog"
 import { OpenItem } from "../chat/open-item"
 import { PRIMARY, SECONDARY } from "../mike/buttons"
-import { ASKS, ASKS_TOTAL, COST_FILE, FREIGHT_ASK, PREP_FILES, SKILL, SKILL_STEPS, TAUGHT_STEP, TAUGHT_TOTAL } from "./data"
-import { MemorySaved } from "../chat/memory"
+import { ASKS_TOTAL, CONTRA, CONTRA_3YR, CONTRA_YEAR, COST_FILE, NARRATIVE, PREP_FILES, PRODUCTS, QUADRANT_LABEL, SKILL, SKILL_STEPS, TAUGHT_STEP, TAUGHT_TOTAL, TARGETS, quadrantOf } from "./data"
+import type { Quadrant } from "./data"
 
 /**
  * Use case 8, a skill from past work. Ally asks how the team does it, learns
@@ -77,8 +77,8 @@ function StepsFound() {
           </motion.li>
         ))}
       </ol>
-      <p>I can&apos;t find manufacturing cost by SKU, and step 4 needs it. Upload your cost file and I&apos;ll fill it in.</p>
-      <Uploader label="Upload the cost file" title="Upload the cost file" files={COST_FILE} onDone={(f) => ask(COST_CHIP, undefined, "Here's the FY26 cost file.", f)} />
+      <p>Amazon&apos;s side is already in Ally. Your side isn&apos;t: step 2 needs your margin by product. Upload your brand margin file and I&apos;ll lay it over Amazon&apos;s.</p>
+      <Uploader label="Upload the brand margin file" title="Upload the brand margin file" files={COST_FILE} onDone={(f) => ask(COST_CHIP, undefined, "Here's our FY26 brand margin file.", f)} />
     </div>
   )
 }
@@ -92,7 +92,7 @@ function SkillDraft() {
   const who = { me: "Only you", team: "Your team", account: "Everyone at Aurelle" }
   return (
     <div className="flex max-w-[760px] flex-col gap-4 text-[15px] leading-relaxed text-slate-700">
-      <p>That fills the gap. Here&apos;s the skill I&apos;d save, so next time you just say the word.</p>
+      <p>All 13 product lines matched Amazon&apos;s catalog. That fills the gap. Here&apos;s the skill I&apos;d save, so next time you just say the word.</p>
       <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
         <div className="flex items-start gap-3 border-b border-slate-100 px-5 py-4">
           <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-brand-50 ring-1 ring-brand-200">
@@ -118,7 +118,7 @@ function SkillDraft() {
             </ol>
           </dd>
           <dt className="text-slate-500">Uses</dt>
-          <dd className="text-slate-800">Vendor Central · Ally&apos;s queue · market data · your cost file</dd>
+          <dd className="text-slate-800">Amazon net PPM and contribution margin · Amazon Ads · last year&apos;s terms · your brand margin file</dd>
           <dt className="text-slate-500">Time</dt>
           <dd className="text-slate-800">{`${SKILL.before}; now ${SKILL.after}`}</dd>
           <dt className="text-slate-500">Who can use it</dt>
@@ -170,7 +170,7 @@ function SkillDraft() {
   )
 }
 
-const RUN_STATUS = ["Pulling 12 months from Vendor Central…", "Sizing 9 chargebacks and 6 shorted POs…", "Benchmarking co-op and allowances against the category…", "Modeling margin under 3 term scenarios…", "Ranking the asks…", "Building the negotiation deck…"]
+const RUN_STATUS = ["Pulling net PPM and contribution margin for 13 product lines…", "Laying your margin over Amazon's…", "Reading last year's terms…", "Mapping $96M of volume into the four quadrants…", "Finding the volume stuck where either side loses…", "Testing the contra COGS mix against both margins…", "Building the negotiation deck…"]
 
 /** Step 4: the run. In view for a few seconds, then in the background, then ready. */
 function RunAnswer({ version = 1 }: { version?: 1 | 2 }) {
@@ -186,8 +186,9 @@ function RunAnswer({ version = 1 }: { version?: 1 | 2 }) {
       window.setTimeout(
         () => {
           setPhase("ready")
-          const total = version === 2 ? TAUGHT_TOTAL : ASKS_TOTAL
-          toast.success(`${SKILL.name} is ready · ${version === 2 ? 4 : 3} asks worth $${total.toFixed(2).replace(/0$/, "")}M a year`, { position: "top-right" })
+          void TAUGHT_TOTAL
+          void ASKS_TOTAL
+          toast.success(`${SKILL.name} is ready · +$${CONTRA_YEAR.toFixed(2)}M a year in better terms`, { position: "top-right" })
         },
         version === 2 ? 450 * steps.length + 500 : 900 * inView + 4200,
       ),
@@ -197,7 +198,7 @@ function RunAnswer({ version = 1 }: { version?: 1 | 2 }) {
   }, [])
   const shown = phase === "running" ? step : 3
   return (
-    <div className="flex max-w-[860px] flex-col gap-4 text-[15px] leading-relaxed text-slate-700">
+    <div className="flex max-w-[980px] flex-col gap-4 text-[15px] leading-relaxed text-slate-700">
       <div className="rounded-xl border border-slate-200 bg-white p-4">
         <div className="flex items-center gap-2 text-[14px] font-semibold text-slate-950">
           {phase === "ready" ? <Check className="size-4 text-success-600" /> : <Loader2 className="size-4 animate-spin text-brand-600" />}
@@ -220,7 +221,7 @@ function RunAnswer({ version = 1 }: { version?: 1 | 2 }) {
           })}
         </ul>
         <div className="mt-3 text-[13px] text-slate-500">
-          {phase === "running" ? (version === 2 ? "Adding the freight allowance and the two columns…" : RUN_STATUS[Math.min(step, RUN_STATUS.length - 1)]) : phase === "background" ? "This runs in the background for about 10 minutes. Keep working; I'll let you know when it's ready." : `Ran ${steps.length} steps on 12 months of data, 412 SKUs and your FY26 costs.`}
+          {phase === "running" ? (version === 2 ? "Adding the freight allowance and the two columns…" : RUN_STATUS[Math.min(step, RUN_STATUS.length - 1)]) : phase === "background" ? "This runs in the background for about 10 minutes. Keep working; I'll let you know when it's ready." : `Ran ${steps.length} steps on 12 months of data, 13 product lines and $96M of volume.`}
         </div>
       </div>
 
@@ -239,78 +240,126 @@ function RunAnswer({ version = 1 }: { version?: 1 | 2 }) {
 }
 
 function Results({ version }: { version: 1 | 2 }) {
-  const asks = version === 2 ? [...ASKS, FREIGHT_ASK] : ASKS
-  const total = version === 2 ? TAUGHT_TOTAL : ASKS_TOTAL
-  const fmtTotal = `$${total.toFixed(2).replace(/0$/, "")}M`
-  const taught = version === 2
+  void version
   const [sent, setSent] = useState<string[]>([])
   const send = (k: string, msg: string) => {
     setSent((x) => [...x, k])
     toast.success(msg, { position: "top-right" })
   }
-  const newCol = "bg-brand-25"
+  const share = (q: Quadrant) => Math.round((PRODUCTS.filter((p) => quadrantOf(p) === q).reduce((n, p) => n + p.cogs, 0) / 96) * 100)
+  // Where either side loses first, then by volume: that's where the negotiation will go.
+  const order: Quadrant[] = ["brand", "loss", "amazon", "win"]
+  const rows = [...PRODUCTS].sort((a, b) => order.indexOf(quadrantOf(a)) - order.indexOf(quadrantOf(b)) || b.cogs - a.cogs)
   return (
-    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col gap-4">
-      <p className="text-[17px] font-semibold text-slate-950">{`Your FY26 negotiation prep is ready: ${asks.length} asks worth ${fmtTotal} a year in margin.`}</p>
-      <table className="w-full overflow-hidden rounded-xl border border-slate-200 bg-white text-[14px]">
-        <thead>
-          <tr className="text-left text-[12px] text-slate-500">
-            <th className="px-4 py-2 font-medium">Ask</th>
-            {taught && <th className={cn("px-3 py-2 text-right font-medium", newCol)}>Last year</th>}
-            <th className="px-3 py-2 text-right font-medium">Today</th>
-            <th className="px-3 py-2 text-right font-medium">Ask for</th>
-            {taught && <th className={cn("px-3 py-2 text-right font-medium", newCol)}>Amazon&apos;s likely counter</th>}
-            <th className="px-4 py-2 text-right font-medium">Worth a year</th>
-          </tr>
-        </thead>
-        <tbody>
-          {asks.map((a) => (
-            <tr key={a.ask} className={cn("border-t border-slate-100 align-top", taught && a.ask === FREIGHT_ASK.ask && "bg-brand-25")}>
-              <td className="px-4 py-2.5">
-                <div className="font-medium text-slate-950">{a.ask}</div>
-                <div className="text-[13px] text-slate-500">{a.why}</div>
-              </td>
-              {taught && <td className={cn("px-3 py-2.5 text-right font-mono text-slate-600", newCol)}>{a.lastYear}</td>}
-              <td className="px-3 py-2.5 text-right font-mono text-slate-700">{a.today}</td>
-              <td className="px-3 py-2.5 text-right font-mono text-slate-950">{a.target}</td>
-              {taught && <td className={cn("px-3 py-2.5 text-right font-mono text-slate-600", newCol)}>{a.counter}</td>}
-              <td className="px-4 py-2.5 text-right font-mono font-semibold text-slate-950">{$m(a.worth)}</td>
-            </tr>
-          ))}
-          <tr className="border-t border-slate-200 bg-slate-25 font-semibold">
-            <td className="px-4 py-2 text-slate-950">{`All ${asks.length}`}</td>
-            {taught && <td />}
-            <td />
-            <td />
-            {taught && <td />}
-            <td className="px-4 py-2 text-right font-mono text-slate-950">{fmtTotal}</td>
-          </tr>
-        </tbody>
-      </table>
+    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col gap-5">
+      <p className="text-[17px] font-semibold text-slate-950">{`Your FY26 AVN prep is ready. ${share("win")}% of your volume is a mutual win; ${share("brand")}% makes money for you but not for Amazon, and that's where the pressure will come.`}</p>
+
+      <div className="rounded-xl border border-slate-200 bg-white p-4">
+        <div className="flex items-baseline justify-between">
+          <span className="text-[13px] font-medium text-slate-950">Portfolio profitability · 13 product lines · $96M shipped COGS</span>
+          <span className="text-[12px] text-slate-500">Bubble size is volume</span>
+        </div>
+        <ShareBar share={share} />
+        <Quadrants />
+      </div>
+
+      <div>
+        <div className="text-[13px] font-medium text-slate-950">By product line</div>
+        <div className="mt-2 overflow-hidden rounded-xl border border-slate-200 bg-white">
+          <table className="w-full text-[13px]">
+            <thead>
+              <tr className="text-left text-[11px] text-slate-500">
+                <th className="px-3 py-2 font-medium">Product line</th>
+                <th className="px-3 py-2 text-right font-medium">Shipped COGS</th>
+                <th className="px-3 py-2 text-right font-medium">Our margin</th>
+                <th className="px-3 py-2 text-right font-medium">Amazon net PPM</th>
+                <th className="px-3 py-2 text-right font-medium">Ad spend</th>
+                <th className="px-3 py-2 font-medium">Quadrant</th>
+                <th className="px-3 py-2 font-medium">Main cause</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((p) => {
+                const q = quadrantOf(p)
+                return (
+                  <tr key={p.name} className="border-t border-slate-100">
+                    <td className="px-3 py-1.5 text-slate-950">{p.name}</td>
+                    <td className="px-3 py-1.5 text-right font-mono text-slate-800">{`$${p.cogs.toFixed(1)}M`}</td>
+                    <td className={cn("px-3 py-1.5 text-right font-mono", p.brand < TARGETS.brand ? "text-error-600" : "text-slate-800")}>{`${p.brand}%`}</td>
+                    <td className={cn("px-3 py-1.5 text-right font-mono", p.ppm < TARGETS.amazon ? "text-error-600" : "text-slate-800")}>{`${p.ppm}%`}</td>
+                    <td className="px-3 py-1.5 text-right font-mono text-slate-800">{`$${p.ads}K`}</td>
+                    <td className="px-3 py-1.5">
+                      <span className="inline-flex items-center gap-1.5 whitespace-nowrap text-slate-700">
+                        <i className={cn("size-2 rounded-full", QDOT[q])} /> {QUADRANT_LABEL[q]}
+                      </span>
+                    </td>
+                    <td className="px-3 py-1.5 text-slate-500">{p.cause || "—"}</td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+        <div className="mt-1.5 text-[12px] text-slate-500">{`Targets: our margin ${TARGETS.brand}%, Amazon net PPM ${TARGETS.amazon}%. Red is below target.`}</div>
+      </div>
+
+      <div>
+        <div className="text-[13px] font-medium text-slate-950">Contra COGS: today against what to ask for</div>
+        <div className="mt-2 overflow-hidden rounded-xl border border-slate-200 bg-white">
+          <table className="w-full text-[13px]">
+            <thead>
+              <tr className="text-left text-[11px] text-slate-500">
+                <th className="px-3 py-2 font-medium">Term</th>
+                <th className="px-3 py-2 text-right font-medium">Today</th>
+                <th className="px-3 py-2 text-right font-medium">Recommended</th>
+                <th className="px-3 py-2 text-right font-medium">Change</th>
+                <th className="px-3 py-2 text-right font-medium">A year</th>
+                <th className="px-3 py-2 font-medium">Why</th>
+              </tr>
+            </thead>
+            <tbody>
+              {CONTRA.map((c) => (
+                <tr key={c.term} className="border-t border-slate-100">
+                  <td className="px-3 py-1.5 font-medium text-slate-950">{c.term}</td>
+                  <td className="px-3 py-1.5 text-right font-mono text-slate-700">{c.today}</td>
+                  <td className="px-3 py-1.5 text-right font-mono text-slate-950">{c.rec}</td>
+                  <td className="px-3 py-1.5 text-right font-mono text-slate-700">{c.bps ? `${c.bps > 0 ? "+" : "−"}${Math.abs(c.bps)} bps` : "—"}</td>
+                  <td className={cn("px-3 py-1.5 text-right font-mono font-semibold", c.year < 0 ? "text-error-600" : "text-slate-950")}>{c.year ? `${c.year < 0 ? "−" : "+"}${$m(Math.abs(c.year))}` : "—"}</td>
+                  <td className="px-3 py-1.5 text-slate-500">{c.note}</td>
+                </tr>
+              ))}
+              <tr className="border-t border-slate-200 bg-slate-25 font-semibold">
+                <td className="px-3 py-2 text-slate-950">Net to us</td>
+                <td />
+                <td />
+                <td />
+                <td className="px-3 py-2 text-right font-mono text-slate-950">{`+${$m(CONTRA_YEAR)}`}</td>
+                <td className="px-3 py-2 text-slate-700">{`$${CONTRA_3YR}M over 3 years, since terms carry forward`}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-brand-200 bg-brand-25 px-4 py-3">
+        <div className="flex items-center gap-1.5 text-[12px] font-semibold text-brand-700">
+          <Wand2 className="size-3.5" /> How to run the negotiation
+        </div>
+        <p className="mt-1 text-[14px] text-slate-800">{NARRATIVE}</p>
+        <div className="mt-1 text-[11px] text-slate-500">Written from the numbers above only.</div>
+      </div>
 
       <div>
         <div className="text-[13px] font-medium text-slate-950">What to ask Amazon for</div>
         <div className="mt-2 overflow-hidden rounded-xl border border-slate-200 bg-white">
-          <Action n={1} title="File the $600K recovery claims" sub="$350K of chargeback disputes and $250K of shorted POs, proof attached. Settle them before terms open.">
+          <Action n={1} title="A 2% cost increase on the 3 gift and tin lines, with a margin guarantee" sub="Lifts Amazon's net PPM on $18M of volume toward its 25% target, so the pressure comes off the rest.">
+            {sent.includes("cost") ? <Done>In the proposal</Done> : <button type="button" onClick={() => send("cost", "Added to the proposal · +2% cost on 3 lines, with a margin guarantee")} className={SECONDARY}>Add to the proposal</button>}
+          </Action>
+          <Action n={2} title="A 1% growth rebate in place of more co-op" sub="Co-op from 7% to 6%; Amazon earns the 1% back only if we grow 10%.">
+            {sent.includes("rebate") ? <Done>Sent to Dana</Done> : <button type="button" onClick={() => send("rebate", "Sent to Dana · growth rebate in place of co-op")} className={SECONDARY}>Send to Dana</button>}
+          </Action>
+          <Action n={3} title="File the $600K recovery claims" sub="$350K of chargeback disputes and $250K of shorted POs, proof attached. Settle them before terms open.">
             <OpenItem batch="chargebacks">Open the claims</OpenItem>
-          </Action>
-          <Action n={2} title="Ask Dana for a 1.5% damage allowance" sub="12 months of damage at 0.6% against a 3% allowance, with the returns data attached.">
-            {sent.includes("damage") ? (
-              <Done>Sent to Dana</Done>
-            ) : (
-              <button type="button" onClick={() => send("damage", "Sent to Dana · damage-allowance case with 12 months of data")} className={SECONDARY}>
-                Send to Dana
-              </button>
-            )}
-          </Action>
-          <Action n={3} title="Trade a growth commitment for 6% co-op" sub="Commit to 10% more sell-in next year in exchange for co-op at 6%, from 7%.">
-            {sent.includes("coop") ? (
-              <Done>In the proposal</Done>
-            ) : (
-              <button type="button" onClick={() => send("coop", "Added to the proposal · 10% more sell-in for 6% co-op")} className={SECONDARY}>
-                Add to the proposal
-              </button>
-            )}
           </Action>
         </div>
       </div>
@@ -318,10 +367,76 @@ function Results({ version }: { version: 1 | 2 }) {
         <Link href="/michelle/decks/negotiation?view=deck" className="font-medium text-brand-700 hover:underline">
           Open the negotiation deck
         </Link>
-        <span className="text-slate-500">· 5 slides: the asks, the case for each, and next steps</span>
+        <span className="text-slate-500">· 5 slides: where the volume sits, the asks, and next steps</span>
       </div>
-      {taught && <MemorySaved text={`Skill updated · v2 · now sizes the freight allowance and shows last year and Amazon's counter`} />}
     </motion.div>
+  )
+}
+
+const QDOT: Record<Quadrant, string> = { win: "bg-brand-500", amazon: "bg-slate-400", brand: "bg-warning-500", loss: "bg-error-500" }
+const QFILL: Record<Quadrant, string> = { win: "#875bf7", amazon: "#94a3b8", brand: "#f89b04", loss: "#ef4444" }
+
+function ShareBar({ share }: { share: (q: Quadrant) => number }) {
+  const qs: Quadrant[] = ["win", "amazon", "brand", "loss"]
+  return (
+    <div className="mt-3">
+      <div className="flex h-2.5 overflow-hidden rounded-full">
+        {qs.map((q) => (
+          <i key={q} className={QDOT[q]} style={{ width: `${share(q)}%` }} />
+        ))}
+      </div>
+      <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1 text-[12px] text-slate-600">
+        {qs.map((q) => (
+          <span key={q} className="flex items-center gap-1.5">
+            <i className={cn("size-2 rounded-full", QDOT[q])} />
+            {`${QUADRANT_LABEL[q]} ${share(q)}%`}
+          </span>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+/** Our margin across, Amazon's net PPM up, one bubble per product line sized by volume; target lines split the quadrants. */
+function Quadrants() {
+  const W = 760
+  const H = 300
+  const pad = { l: 44, r: 16, t: 28, b: 32 }
+  const x = (v: number) => pad.l + ((v - 15) / (45 - 15)) * (W - pad.l - pad.r)
+  const y = (v: number) => pad.t + ((36 - v) / (36 - 8)) * (H - pad.t - pad.b)
+  const r = (c: number) => 5 + Math.sqrt(c) * 4.2
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="mt-3 w-full" role="img" aria-label="Quadrant chart of 13 product lines by our margin and Amazon net PPM">
+      <rect x={x(TARGETS.brand)} y={y(36)} width={x(45) - x(TARGETS.brand)} height={y(TARGETS.amazon) - y(36)} fill="#875bf7" opacity={0.05} />
+      <line x1={x(TARGETS.brand)} x2={x(TARGETS.brand)} y1={pad.t} y2={H - pad.b} stroke="#94a3b8" strokeDasharray="4 4" />
+      <line x1={pad.l} x2={W - pad.r} y1={y(TARGETS.amazon)} y2={y(TARGETS.amazon)} stroke="#94a3b8" strokeDasharray="4 4" />
+      {[
+        { t: "Mutual win", x: x(44), y: y(35), a: "end" },
+        { t: "Amazon wins, brand weak", x: x(16), y: y(35), a: "start" },
+        { t: "Brand wins, Amazon weak", x: x(44), y: y(9), a: "end" },
+        { t: "Mutual loss", x: x(16), y: y(9), a: "start" },
+      ].map((l) => (
+        <text key={l.t} x={l.x} y={l.y} textAnchor={l.a as "start" | "end"} fontSize={11} fill="#94a3b8">
+          {l.t}
+        </text>
+      ))}
+      {[20, 25, 30, 35, 40].map((v) => (
+        <text key={`x${v}`} x={x(v)} y={H - 12} textAnchor="middle" fontSize={11} fill="#94a3b8" fontFamily="var(--font-mono)">{`${v}%`}</text>
+      ))}
+      {[10, 15, 20, 25, 30, 35].map((v) => (
+        <text key={`y${v}`} x={pad.l - 8} y={y(v) + 4} textAnchor="end" fontSize={11} fill="#94a3b8" fontFamily="var(--font-mono)">{`${v}%`}</text>
+      ))}
+      <text x={W - pad.r} y={H - 0} textAnchor="end" fontSize={11} fill="#64748b">Our margin →</text>
+      <text x={4} y={12} fontSize={11} fill="#64748b">Amazon net PPM ↑</text>
+      {PRODUCTS.map((p, i) => {
+        const q = quadrantOf(p)
+        return (
+          <motion.circle key={p.name} cx={x(p.brand)} cy={y(p.ppm)} initial={{ r: 0 }} animate={{ r: r(p.cogs) }} transition={{ delay: i * 0.05, type: "spring", stiffness: 200, damping: 18 }} fill={QFILL[q]} fillOpacity={0.55} stroke={QFILL[q]} strokeWidth={1.5}>
+            <title>{`${p.name}: $${p.cogs}M, our margin ${p.brand}%, Amazon net PPM ${p.ppm}%`}</title>
+          </motion.circle>
+        )
+      })}
+    </svg>
   )
 }
 
@@ -367,7 +482,7 @@ export const PREP_CHIP: Chip = {
   think: { ms: 2000, label: "Looking for how your team does this…", filesLabel: "Reading 14 tabs and 22 slides…" },
   render: () => <PrepAnswer />,
 }
-const COST_CHIP: Chip = { q: "Here's the FY26 cost file.", hidden: true, think: { ms: 2200, label: "Reading the cost file and drafting the skill…" }, render: () => <SkillDraft /> }
+const COST_CHIP: Chip = { q: "Here's our FY26 brand margin file.", hidden: true, think: { ms: 2200, label: "Matching 13 product lines and drafting the skill…" }, render: () => <SkillDraft /> }
 const RUN_CHIP: Chip = { q: "Run it for FY26", hidden: true, think: { ms: 1200, label: `Starting ${SKILL.name}…` }, render: () => <RunAnswer /> }
 /** Typed by name, the way a saved skill is used. */
 export const RUN_BY_NAME_CHIP: Chip = { q: "Open my negotiation prep", hidden: true, match: /open my negotiation prep|run my negotiation/i, think: { ms: 1200, label: `Starting ${SKILL.name}…` }, render: () => <RunByName /> }

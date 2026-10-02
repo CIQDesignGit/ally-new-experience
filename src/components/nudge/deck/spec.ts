@@ -77,11 +77,11 @@ export const QBR_DECK: DeckSpec = {
 /** Built by the negotiation skill: it opens as a finished deck. */
 export const NEGOTIATION_DECK: DeckSpec = {
   id: "negotiation",
-  name: "FY26 Amazon negotiation",
+  name: "FY26 Amazon AVN",
   forWhom: "Michelle Ortiz",
   path: "/michelle/decks/negotiation",
   ask: "Open my negotiation prep",
-  verdict: "Three asks worth $3.0M a year in margin: the damage allowance, co-op, and $600K of chargebacks and shortages.",
+  verdict: "61% of our volume works for both of us; 19% makes money for us but not for Amazon. The new terms mix is worth $2.18M a year, $6.5M over three years.",
   sources: "Vendor Central, 12 months · Ally's queue · category benchmarks · FY26 manufacturing cost",
   file: "FY26-Amazon-negotiation",
   slides: NEGOTIATION_SLIDES,
