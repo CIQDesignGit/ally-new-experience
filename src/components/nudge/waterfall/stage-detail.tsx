@@ -1,8 +1,9 @@
 "use client"
 
-import { NudgeRow } from "../claire/nudge-row"
+import { ClaireRow } from "../claire/claire-row"
 import { AutopilotDetail } from "./autopilot-detail"
-import { TIER_GRID } from "../claire/nudge-tier"
+/** Owner and status · value · Claire's move (a 180px button). */
+const TIER_GRID = "grid grid-cols-[minmax(0,1fr)_100px_190px_0px] items-center gap-4"
 import { fmtM } from "../data"
 import type { WaterfallStage } from "../data"
 
@@ -23,7 +24,7 @@ export function StageDetail({ stage }: { stage: WaterfallStage }) {
       {stage.rows.length > 0 && (
         // Column headers in the same style as every other table on the page (see DeliveredHeader).
         <div className={`${TIER_GRID} px-6 pt-3 pb-1 text-xs font-medium text-slate-500`}>
-          <div className="grid grid-cols-[168px_minmax(0,1fr)] gap-4 lg:grid-cols-[168px_minmax(0,1fr)_200px]">
+          <div className="grid grid-cols-[168px_minmax(0,1fr)] gap-4 lg:grid-cols-[168px_minmax(0,1fr)_220px]">
             <span>Owner</span>
             <span>What&apos;s waiting</span>
             <span className="hidden lg:block">This week</span>
@@ -36,8 +37,8 @@ export function StageDetail({ stage }: { stage: WaterfallStage }) {
       {stage.rows.length > 0 ? (
         <div className="px-6 pb-1.5">
           {stage.rows.map((row, i) => (
-            // Nudge whoever hasn't started; anyone already on it (or done) doesn't need one.
-            <NudgeRow key={i} row={row} grid={TIER_GRID} statusColumn nudge={row.weekly?.state === "not-started" ? "always" : "none"} />
+            // Each row says where it stands and offers Claire's move: ask by a date, or approve it herself once it's due.
+            <ClaireRow key={i} row={row} grid={TIER_GRID} />
           ))}
         </div>
       ) : (

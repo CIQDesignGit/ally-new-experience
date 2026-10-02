@@ -30,7 +30,7 @@ interface Celebrate {
  * he approves, against what's open.
  */
 export function MikeProgress({ celebrate, stage, onStage }: { celebrate: Celebrate | null; /** The inbox filter, shown on its bar. */ stage?: Stage; onStage?: (s: Exclude<Stage, "banked">) => void }) {
-  const { approved, policy, launchReady } = useNudge()
+  const { approved, policy, launchReady, day } = useNudge()
   const BATCHES = contentBatches(policy, launchedIds(approved), launchReady)
 
   const approvalBatches = BATCHES.filter((b) => b.tier === "approval")
@@ -47,7 +47,7 @@ export function MikeProgress({ celebrate, stage, onStage }: { celebrate: Celebra
   const expiry = soonest && {
     all: dated.length === pending.length,
     value: dated.filter((b) => b.deadline === soonest).reduce((s, b) => s + money(b.value), 0),
-    days: daysUntil(soonest, AS_OF),
+    days: daysUntil(soonest, AS_OF) - day,
   }
   const open = total - actedValue
   // Open work only: banked shows in the progress bar below, so the total matches the headline's open amount.

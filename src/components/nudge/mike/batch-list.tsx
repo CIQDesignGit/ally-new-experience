@@ -44,7 +44,8 @@ export function mikeRows(all: Batch[], approved: Record<string, boolean>, filter
  * waterfall above. The open item lists its SKUs under it.
  */
 export function BatchList({ selectedId, selectedSkuId, expandedBatchId, filter, onFilter, onToggleExpand, onSelectBatch, onSelectSku }: BatchListProps) {
-  const { approved, policy, launchReady } = useNudge()
+  const { approved, policy, launchReady, asks, day } = useNudge()
+  const claireAsked = asks["approval-content"]
   const bgs = useBackgrounds()
   const all = contentBatches(policy, launchedIds(approved), launchReady)
   const rows = mikeRows(all, approved, filter)
@@ -67,8 +68,11 @@ export function BatchList({ selectedId, selectedSkuId, expandedBatchId, filter, 
                 <Check className="size-3" />
                 {b.tier === "input" ? "Sent to Ally" : "Published"}
               </span>
+            ) : claireAsked && b.tier === "approval" && b.deadline ? (
+              // Claire's ask, on the work it's about, with its due date.
+              <span className={day > claireAsked.dueDay ? "text-warning-700" : "text-brand-700"}>Claire asked · {day > claireAsked.dueDay ? "overdue since" : "due"} {claireAsked.due.split(",")[0]}</span>
             ) : b.deadline ? (
-              <span className="text-warning-700">{b.chip || `Expires in ${daysUntil(b.deadline, AS_OF)} days`}</span>
+              <span className="text-warning-700">{!b.chip || b.chip.startsWith("Expires") ? `Expires in ${daysUntil(b.deadline, AS_OF) - day} days` : b.chip}</span>
             ) : null
           return (
             <div key={b.id} data-batch={b.id} className={cn("border-b border-slate-100", active && !selectedSkuId && "bg-slate-50 shadow-[inset_2px_0_0_var(--color-brand-500)]")}>

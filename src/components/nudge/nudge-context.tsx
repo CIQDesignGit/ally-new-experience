@@ -27,6 +27,12 @@ const MIKE_NUDGE_KEYS: NudgeKey[] = ["approval-content", "team-content"]
 interface StoredState {
   nudged: Partial<Record<NudgeKey, boolean>>
   approved: Record<string, boolean>
+  /** Claire's asks: who she asked to approve, by when, and how she asked (from the product or by email reply). */
+  asks?: Partial<Record<NudgeKey, { due: string; dueDay: number; by: "product" | "email" }>>
+  /** Work Claire approved herself, and how (a button in the product, or a YES reply to her email). */
+  approvedBy?: Partial<Record<NudgeKey, "product" | "email">>
+  /** Demo clock: 0 is today (Thu, Oct 8); "Next check-in" moves it to her next visit (twice a week). */
+  day?: number
   /** Review policy and knowledge from the settings page; absent = defaults. */
   policy?: Policy
   knowledge?: KnowledgeEntry[]
@@ -115,6 +121,13 @@ interface NudgeContextValue extends StoredState {
   /** Marks several keys nudged in one state update (so a "Nudge team" click doesn't clobber). */
   nudgeMany: (keys: NudgeKey[]) => void
   approve: (batchId: string) => void
+  asks: NonNullable<StoredState["asks"]>
+  askBy: (key: NudgeKey, due: string, dueDay: number, by: "product" | "email") => void
+  approvedBy: NonNullable<StoredState["approvedBy"]>
+  /** Marks Claire's own approval of a row; the batches it covers are approved by the caller. */
+  approveAs: (key: NudgeKey, by: "product" | "email", batchIds: string[]) => void
+  day: number
+  nextMorning: (to?: number) => void
   policy: Policy
   savePolicy: (p: Policy) => void
   knowledge: KnowledgeEntry[]
@@ -283,6 +296,13 @@ export function NudgeProvider({ children }: { children: React.ReactNode }) {
         decks: state.decks ?? {},
         skills: state.skills ?? [],
         conversations: state.conversations ?? [],
+        asks: state.asks ?? {},
+        askBy: (key, due, dueDay, by) => update((prev) => ({ ...prev, nudged: { ...prev.nudged, [key]: true }, asks: { ...(prev.asks ?? {}), [key]: { due, dueDay, by } } })),
+        approvedBy: state.approvedBy ?? {},
+        approveAs: (key, by, batchIds) =>
+          update((prev) => ({ ...prev, approved: { ...prev.approved, ...Object.fromEntries(batchIds.map((id) => [id, true])) }, approvedBy: { ...(prev.approvedBy ?? {}), [key]: by } })),
+        day: state.day ?? 0,
+        nextMorning: (to) => update((prev) => ({ ...prev, day: to ?? (prev.day ?? 0) + 1 })),
         recordConversation: (c) => update((prev) => ({ ...prev, conversations: [c, ...(prev.conversations ?? []).filter((x) => x.id !== c.id)] })),
         saveSkill: (k) => update((prev) => ({ ...prev, skills: [...(prev.skills ?? []).filter((x) => x.id !== k.id), k] })),
         setDeck: (id, patch) => update((prev) => ({ ...prev, decks: { ...(prev.decks ?? {}), [id]: { ...(prev.decks?.[id] ?? {}), ...patch } } })),

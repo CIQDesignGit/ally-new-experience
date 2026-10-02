@@ -11,14 +11,14 @@ import { ICON_BTN } from "./team-bell"
 
 /** Two icons in Claire's top line, both the page as a PDF (fully expanded): email it to me, or download it. */
 export function EmailPdfButton({ period }: { period: Period }) {
-  const { approved, nudged, policy } = useNudge()
+  const { approved, nudged, policy, asks, approvedBy, day } = useNudge()
   const [busy, setBusy] = useState<"download" | "email" | null>(null)
 
   async function run(kind: "download" | "email") {
     setBusy(kind)
     try {
       if (kind === "download") await downloadExecSummary(period, { approved, nudged, policy })
-      else await emailMe({ kind: "summary", ...(await execSummaryForEmail(period, { approved, nudged, policy })) })
+      else await emailMe({ kind: "summary", ...(await execSummaryForEmail(period, { approved, nudged, policy, asks, approvedBy, day })) })
     } finally {
       setBusy(null)
     }

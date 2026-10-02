@@ -88,6 +88,8 @@ export interface Digest {
   hero: string[]
   chart?: { min: number; max: number; plan: number; planLabel: string; alt: string; cols: { k: string; l: string; s?: string; v: string; a: number; b: number }[] }
   sections: { title: string; total?: { note: string; value: string }; rows: { label: string; note?: string; value?: string; tone?: "warn" | "done"; href?: string }[] }[]
+  /** How to act by replying, shown right after the actions. */
+  reply?: string
 }
 
 /** The summary email: the page's headline, then short sections with the money in a right-hand column. */
@@ -143,6 +145,7 @@ ${
     : ""
 }
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${d.sections.map(section).join("")}</table>
+${d.reply ? `<div style="margin-top:18px;background:#F5F3FF;border:1px solid #DDD6FE;border-radius:10px;padding:14px 16px;font-size:14px;line-height:1.5;color:#3B0764;font-weight:600">${esc(d.reply)}</div>` : ""}
 <a href="${esc(`${origin}/claire-waterfall`)}" style="display:inline-block;margin-top:28px;background:#875BF7;color:#ffffff;text-decoration:none;font-weight:600;font-size:15px;padding:12px 22px;border-radius:8px">Open in Ally</a>
 <div style="margin-top:14px;font-size:13px;color:#6B7280">The full summary is attached as a PDF.</div>
 </td></tr>
@@ -154,5 +157,5 @@ export function summaryText(d: Digest, origin: string, footer: string) {
   const body = d.sections
     .map((s) => [`${s.title.toUpperCase()}${s.total ? `: ${s.total.value} ${s.total.note}` : ""}`, ...s.rows.map((r) => `- ${r.label}${r.value ? `: ${r.value}` : ""}${r.note ? ` (${r.note})` : ""}${r.href ? ` ${origin}${r.href}` : ""}`)].join("\n"))
     .join("\n\n")
-  return `${d.hero.join(" ")}\n\n${body}\n\nOpen in Ally: ${origin}/claire-waterfall\nThe full summary is attached as a PDF.\n\n${footer}`
+  return `${d.hero.join(" ")}\n\n${body}${d.reply ? `\n\n${d.reply}` : ""}\n\nOpen in Ally: ${origin}/claire-waterfall\nThe full summary is attached as a PDF.\n\n${footer}`
 }

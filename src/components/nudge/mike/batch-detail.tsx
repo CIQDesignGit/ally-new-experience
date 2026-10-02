@@ -63,12 +63,13 @@ function Actions({ batch, onApprove, onReviewAll, children }: BatchDetailProps &
  * never leaves the batch he's about to approve.
  */
 export function BatchDetail({ batch, onApprove, onReviewAll, onSelect, onSelectSku }: BatchDetailProps) {
-  const { approved, nudged, policy, savePolicy } = useNudge()
+  const { approved, nudged, asks, policy, savePolicy } = useNudge()
   // A policy part scheduled on autopilot ("halloween-auto"): Mike can check it and hold it back, just this once.
   const scheduled = batch.tier === "autopilot" && batch.mode === "autopilot"
   const seedId = batch.id.replace(/-auto$/, "")
   const done = !!approved[batch.id]
-  const source = batch.nudgeKey && nudged[batch.nudgeKey] ? "Nudged by Claire, just now" : batch.nudgeSource
+  const ask = batch.nudgeKey ? asks[batch.nudgeKey] : undefined
+  const source = ask ? `Claire asked you to approve by ${ask.due}` : batch.nudgeKey && nudged[batch.nudgeKey] ? "Nudged by Claire, just now" : batch.nudgeSource
   const [showSample, setShowSample] = useState(false)
   const sampleRef = useRef<HTMLDivElement>(null)
   const row = batch.skuRows[0]

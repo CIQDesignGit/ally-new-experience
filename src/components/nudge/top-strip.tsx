@@ -7,6 +7,8 @@ import { useRouter } from "next/navigation"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
 import { PeriodSwitch } from "./period-switch"
+import { dayLabel } from "./claire/claire-actions"
+import { useNudge } from "./nudge-context"
 import { SettingsGear } from "./settings-gear"
 
 /** Ally's mark, redrawn as a vector from the brand file (public/ally-logo.png): hair and ring, two sparks and a streak. */
@@ -238,6 +240,8 @@ export function TopStrip({ person, greeting, crumbs, period, facts, controls, ic
           <>
             <Sep />
             <PeriodSwitch />
+            <Sep />
+            <Today />
           </>
         )}
         {facts && <Facts>{facts}</Facts>}
@@ -250,4 +254,10 @@ export function TopStrip({ person, greeting, crumbs, period, facts, controls, ic
       </div>
     </header>
   )
+}
+
+/** Today, from the demo clock ("Next check-in" moves it), so the audience sees the day change. */
+function Today() {
+  const { day } = useNudge()
+  return <span className="shrink-0 text-slate-500 tabular-nums">{dayLabel(day)}</span>
 }

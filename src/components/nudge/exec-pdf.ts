@@ -1,3 +1,4 @@
+import { REPLY_LINE, replyActions } from "./claire/claire-actions"
 import { AS_OF, BUSINESS, INFLIGHT, deadlineView, fmtBiz, fmtM, fmtValue, getSnapshot, launchedIds, nudgeTargets, openView, tierView, waterfallStages } from "./data"
 import { rankLevers } from "./model"
 import { axisMin, buildColumns } from "./waterfall/waterfall-chart"
@@ -31,6 +32,10 @@ export interface ExecState {
   approved: Acted
   nudged: Partial<Record<NudgeKey, boolean>>
   policy?: Policy
+  /** Claire's asks, own approvals and the demo clock, so the email's reply actions match her page. */
+  asks?: Partial<Record<NudgeKey, { due: string; dueDay: number }>>
+  approvedBy?: Partial<Record<NudgeKey, string>>
+  day?: number
 }
 
 /** The "This week" status, worded as the stage tables word it. */
@@ -50,7 +55,7 @@ function weekStatus(row: TierRow, nudged: ExecState["nudged"]): { text: string; 
  */
 /** Builds the PDF; download or email it with the two helpers below. */
 async function buildExecSummary(period: Period, state: ExecState) {
-  const { approved, nudged, policy } = state
+  const { approved, nudged, policy, day = 0 } = state
   const { jsPDF } = await import("jspdf")
   const doc = new jsPDF({ unit: "pt", format: "letter" })
   const M = 56
@@ -62,7 +67,9 @@ async function buildExecSummary(period: Period, state: ExecState) {
   const open = openView(approved, policy, period)
   const stages = waterfallStages(approved, policy, period)
   const approval = tierView("approval", approved, policy, period)
-  const deadline = deadlineView(approved, "approval", policy, period)
+  const dl = deadlineView(approved, "approval", policy, period)
+  // Counted down by the demo clock, as the page counts it.
+  const deadline = dl && { ...dl, days: dl.days - day }
   const done = DELIVERED[period]
   const biz = BUSINESS[period]
   // Same as the page: the run rate plus what was approved this session.
@@ -330,6 +337,8 @@ export interface ExecDigest {
   hero: string[]
   chart?: DigestChart
   sections: { title: string; total?: { note: string; value: string }; rows: DigestRow[] }[]
+  /** How to act by replying: "Reply YES to do all of these, or YES 1…". */
+  reply?: string
 }
 
 /**
@@ -337,10 +346,12 @@ export interface ExecDigest {
  * number ties: where you stand, what's open, what we delivered, and the top
  * three actions (soonest deadline first, then dollars). Links open Ally; they never act.
  */
-export function execDigest(period: Period, { approved, nudged, policy }: ExecState): ExecDigest {
+export function execDigest(period: Period, { approved, policy, asks = {}, approvedBy = {}, day = 0 }: ExecState): ExecDigest {
   const open = openView(approved, policy, period)
   const approval = tierView("approval", approved, policy, period)
-  const deadline = deadlineView(approved, "approval", policy, period)
+  const dl = deadlineView(approved, "approval", policy, period)
+  // Counted down by the demo clock, as the page counts it.
+  const deadline = dl && { ...dl, days: dl.days - day }
   const done = DELIVERED[period]
   const biz = BUSINESS[period]
   const pace = biz.pace + (period === "quarter" || period === "year" ? open.acted : 0)
@@ -364,24 +375,9 @@ export function execDigest(period: Period, { approved, nudged, policy }: ExecSta
   const delivered = levers.reduce((n, a) => n + leverDelivered(done, a).delivered, 0)
   const projected = levers.reduce((n, a) => n + leverDelivered(done, a).promised, 0)
 
-  const targets = nudgeTargets(policy)
-  const actions = [...tierView("approval", approved, policy, period).rows, ...tierView("input", approved, policy, period).rows]
-    .filter((r) => r.nudgeKey && (r.valueM ?? 0) > 0)
-    .sort((a, b) => (a.days ?? Infinity) - (b.days ?? Infinity) || (b.valueM ?? 0) - (a.valueM ?? 0))
-    .slice(0, 3)
-    .map((r): DigestRow => {
-      const key = r.nudgeKey!
-      const done = !!nudged[key]
-      // The person is the link; the task and its clock sit underneath. Bullets are fragments: no closing full stop.
-      const task = (targets[key]?.batchName ?? r.description).replace(/\.$/, "")
-      return {
-        label: `${done ? "Nudged" : "Nudge"} ${r.analystName}`,
-        note: [task, done ? "nudged today" : r.days ? `${r.days} days to act` : undefined].filter(Boolean).join(" · "),
-        value: r.value,
-        tone: done ? "done" : r.days ? "warn" : undefined,
-        href: `/claire-waterfall?stage=${key.startsWith("team") ? "team" : "approval"}`,
-      }
-    })
+  // The actions Claire can take by replying, numbered as her page numbers them.
+  const replies = replyActions(tierView("approval", approved, policy, period).rows, asks, approvedBy, day)
+  const actions: DigestRow[] = replies.map((r) => ({ label: `${r.n} · ${r.label}`, note: r.note, value: r.row.value, tone: r.kind === "approve" ? "warn" : undefined }))
 
   return {
     subject: `${quarter}: ${gap > 0 ? `${fmtBiz(gap)} short of plan, ${open.totalLabel} in the pipeline to close it` : `${fmtBiz(-gap)} ahead of plan`}`,
@@ -405,7 +401,8 @@ export function execDigest(period: Period, { approved, nudged, policy }: ExecSta
           return { label: a, note: drill[a]?.did ?? l.reason, value: fmtValue(l.delivered) }
         }),
       },
-      ...(actions.length ? [{ title: "Top actions", rows: actions }] : []),
+      ...(actions.length ? [{ title: "Reply to act", rows: actions }] : []),
     ],
+    reply: actions.length ? REPLY_LINE : undefined,
   }
 }

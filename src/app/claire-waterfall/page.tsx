@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { AppDrawer } from "@/components/nudge/app-drawer"
 import { PageShell } from "@/components/layout/page-shell"
 import { ResetDemoButton } from "@/components/nudge/reset-demo-button"
+import { DemoControls } from "@/components/nudge/claire/demo-controls"
 import { BusinessHero } from "@/components/nudge/claire/business-hero"
 import { WaterfallChart } from "@/components/nudge/waterfall/waterfall-chart"
 import type { WaterfallSelection } from "@/components/nudge/waterfall/waterfall-chart"
@@ -126,7 +127,8 @@ function ClaireWaterfall() {
             <HomeChat />
             <ChatThread />
             {/* Demo-only control, kept out of the product chrome. Room below for the floating Ask Ally bar. */}
-            <div className="flex justify-end px-12 pt-6 pb-24 opacity-50 hover:opacity-100">
+            <div className="flex justify-end gap-4 px-12 pt-6 pb-24 opacity-50 hover:opacity-100">
+              <DemoControls />
               <ResetDemoButton />
             </div>
           </>
