@@ -209,9 +209,7 @@ export function GapAnalysis({ node, onInbox, recipe: given, nested }: { node: Ga
   return (
     <div className="flex max-w-[900px] flex-col gap-5 rounded-2xl bg-white px-5 py-4 ring-1 ring-slate-200">
       {lesson && !given && (
-        <MemoryRecall text={`${lessonText(lesson.recipe)}.`} from={`you taught Ally, ${lesson.date}`}>
-          This run uses it.
-        </MemoryRecall>
+        <MemoryRecall text={`${lessonText(lesson.recipe)}.`} from={`you taught Ally, ${lesson.date}`} />
       )}
       <Steps extra={recipe.steps} measure={recipe.measure} onDone={() => setReady(true)} />
       {ready && (

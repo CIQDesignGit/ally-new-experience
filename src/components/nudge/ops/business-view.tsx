@@ -14,7 +14,7 @@ import { useNudge } from "../nudge-context"
 import { ChatThread, useChat, useChatSource } from "../chat/inline-chat"
 import type { Chip } from "../chat/inline-chat"
 import type { AgentId, Period } from "../types"
-import { GAP_TREE, findIn, skusUnder } from "./gap-data"
+import { findIn, skusUnder } from "./gap-data"
 import type { Driver, Fix, GapNode } from "./gap-data"
 import { GapAnalysis } from "./gap-view"
 import { VENDOR_MANAGER } from "./note-bar"
@@ -37,7 +37,6 @@ export function BusinessHero() {
   const l = useLive()
   const { plan } = BUSINESS[l.period]
   const pace = l.pace(l.period)
-  const weekGap = GAP_TREE.eow.projected - GAP_TREE.eow.plan
   return (
     <div className="px-10 pt-2 pb-7">
       <div className="text-2xl font-semibold tracking-tight text-slate-700">
@@ -48,20 +47,6 @@ export function BusinessHero() {
         That&apos;s <span className="font-mono">{fmtBiz(plan - pace)}</span> short of your <span className="font-mono">{fmtBiz(plan)}</span> plan.{" "}
         <span className="font-mono text-brand-600">{l.open.totalLabel}</span> of work is in flight to close it.
       </h1>
-      <div className="mt-2 text-base text-slate-500">
-        {l.open.byArea.map((a, i) => (
-          <span key={a.agent}>
-            {i > 0 && <span className="text-slate-300"> · </span>}
-            <span className="font-semibold text-slate-700">{a.value}</span> in {a.agent}
-          </span>
-        ))}
-        {l.period !== "week" && (
-          <>
-            <span className="text-slate-300"> · </span>
-            This week <span className="font-semibold text-slate-700 tabular-nums">{m(weekGap, true)}</span> vs plan
-          </>
-        )}
-      </div>
     </div>
   )
 }
@@ -206,9 +191,6 @@ export function BusinessRail({ root, selected, onSelect }: { root: GapNode; sele
             {label as string}
           </button>
         ))}
-      </div>
-      <div className="px-2 pb-2 text-[11px] text-slate-500">
-        Last week vs plan · ranked by {businessSort === "sales" ? "sales" : "gap"}
       </div>
       {flat ? (
         skus.map((n) => <RailRow key={n.id} node={n} depth={0} selected={selected} trail={[]} onSelect={onSelect} sort={businessSort} path={pathOf(n.id)} />)

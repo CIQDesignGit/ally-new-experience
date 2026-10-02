@@ -33,7 +33,7 @@ export function MemorySaved({ text, label = "Remembered" }: { text: string; /** 
 }
 
 /** The callback: what Ally kept, when and from where, above what it now knows because of it. */
-export function MemoryRecall({ text, from, children }: { text: string; from: string; children: React.ReactNode }) {
+export function MemoryRecall({ text, from, children }: { text: string; from: string; children?: React.ReactNode }) {
   return (
     <div className="rounded-xl border border-brand-200 bg-brand-25 px-4 py-3.5">
       <div className="flex items-center gap-2.5 text-[13px]">
@@ -42,7 +42,7 @@ export function MemoryRecall({ text, from, children }: { text: string; from: str
         <span className="text-slate-500">· {from}</span>
       </div>
       <div className="mt-2 pl-[34px] text-[15px] font-semibold text-slate-950">{text}</div>
-      <div className="mt-1.5 pl-[34px] text-[14px] text-slate-700">{children}</div>
+      {children && <div className="mt-1.5 pl-[34px] text-[14px] text-slate-700">{children}</div>}
     </div>
   )
 }

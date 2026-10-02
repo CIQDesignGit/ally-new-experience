@@ -158,7 +158,6 @@ export function StorylineStep(p: {
         )}
       </ol>
 
-      {asking && !planning && <p className="text-[15px] text-slate-700">Want to add or change anything? Edit a question, drag to reorder, or add one. Then I&apos;ll run the analysis.</p>}
       {!planning && !running && (
       <div className="flex flex-wrap items-center gap-3">
         {asking ? (

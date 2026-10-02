@@ -58,7 +58,7 @@ function SavedDashboard({ id }: { id: string }) {
               <h1 className="text-[28px] leading-tight font-semibold tracking-tight text-slate-950">{d.name}</h1>
               <div className="mt-1 flex items-center gap-2 text-sm text-slate-500">
                 <span className="size-1.5 rounded-full bg-success-500" aria-hidden />
-                Live · updated today, 9:00 AM · saved from chat
+                Live · updated today, 9:00 AM
               </div>
             </div>
 

@@ -101,9 +101,7 @@ export function BatchDetail({ batch, onApprove, onReviewAll, onSelect, onSelectS
           <div className={cn("font-mono text-[28px] font-bold tracking-tight tabular-nums", done ? "text-success-700" : "text-slate-950")}>
             +{done ? (batch.approveValue >= 1 ? `$${batch.approveValue.toFixed(2)}M` : `$${Math.round(batch.approveValue * 1000)}K`) : batch.value}
           </div>
-          <div className="mt-0.5 text-sm text-slate-500">
-            {done ? "approved" : "projected incremental sales"} · {batch.approveSkus} SKUs
-          </div>
+          {done && <div className="mt-0.5 text-sm text-slate-500">approved</div>}
         </div>
       </div>
 
