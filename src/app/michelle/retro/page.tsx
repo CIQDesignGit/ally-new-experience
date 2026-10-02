@@ -1,5 +1,6 @@
 "use client"
 
+import { AppDrawer } from "@/components/nudge/app-drawer"
 import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -199,7 +200,8 @@ export default function RetroPage() {
         </div>
         )}
       </div>
-      {share && (
+<AppDrawer />
+            {share && (
         <ShareSheet
           theme={theme}
           count={slides.length}

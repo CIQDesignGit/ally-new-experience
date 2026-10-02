@@ -1,5 +1,6 @@
 "use client"
 
+import { AppDrawer } from "@/components/nudge/app-drawer"
 import { useRef, useState } from "react"
 import { toast } from "sonner"
 import { AskBar, ChatProvider, ChatThread, useChat, useChatSource } from "@/components/nudge/chat/inline-chat"
@@ -211,6 +212,7 @@ function Michelle() {
           <ResetDemoButton />
         </div>
       </div>
+      <AppDrawer />
       <AskBar placeholder={view === "business" ? "Ask Ally about your business" : "Ask Ally about your ops queue"} />
     </PageShell>
   )
