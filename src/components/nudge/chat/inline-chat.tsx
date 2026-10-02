@@ -152,7 +152,9 @@ export function ChatThread({ className, anchor }: { className?: string; anchor?:
     const el = lastRef.current
     let fallback: number | undefined
     if (el) {
-      const top = el.getBoundingClientRect().top + window.scrollY - 24
+      // Land below anything pinned to the top of the page (the note to Dana, a filter bar), so the question is never hidden under it.
+      const pinned = [...document.querySelectorAll<HTMLElement>("[data-sticky-top]")].reduce((m, e) => Math.max(m, e.offsetHeight), 0)
+      const top = el.getBoundingClientRect().top + window.scrollY - 24 - pinned
       window.scrollTo({ top, behavior: "smooth" })
       fallback = window.setTimeout(() => {
         if (Math.abs(window.scrollY - top) > 8) window.scrollTo({ top })

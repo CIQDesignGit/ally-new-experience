@@ -35,7 +35,7 @@ export function RailGroup({
   children: React.ReactNode
 }) {
   return (
-    <section className={cn("relative", !first && "border-t border-slate-200")}>
+    <section data-tier={group.tier} className={cn("relative scroll-mt-4", !first && "border-t border-slate-200")}>
       <span className={cn("absolute inset-y-0 left-0 w-1", group.edge)} aria-hidden />
       <div className={cn("flex items-start justify-between gap-3 py-3 pr-5 pl-6", group.band)}>
         <div className="min-w-0">

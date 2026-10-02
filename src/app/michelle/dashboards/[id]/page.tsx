@@ -62,7 +62,7 @@ function SavedDashboard({ id }: { id: string }) {
               </div>
             </div>
 
-            <div className="sticky top-0 z-30 mt-6 flex flex-wrap items-center gap-2 border-y border-slate-200 bg-white px-10 py-3">
+            <div data-sticky-top className="sticky top-0 z-30 mt-6 flex flex-wrap items-center gap-2 border-y border-slate-200 bg-white px-10 py-3">
               <DateRange label={RANGES[0].dates} ranges={RANGES} month="October 2026" startPad={4} days={31} from={1} to={8} />
               <Menu label="Retailer" value="Amazon" options={["Amazon"]} locked />
               <Menu label="Category" value={category} options={PROMO_DEPTH.map((r) => r.category)} onChange={setCategory} />

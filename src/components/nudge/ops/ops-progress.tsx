@@ -4,7 +4,8 @@ import { PublishConfetti } from "@/components/home/publish-confetti"
 import { OPS_DAYS_SAVED, opsBatches } from "../data"
 import { DELIVERED } from "../delivered-periods"
 import { useNudge } from "../nudge-context"
-import { SplitBar } from "../mike/split-bar"
+import { MiniWaterfall } from "../mini-waterfall"
+import type { Stage } from "../mini-waterfall"
 
 function fmt(v: number) {
   return v >= 1 ? `$${+v.toFixed(1)}M` : `$${Math.round(v * 1000)}K`
@@ -37,14 +38,23 @@ export function OpsProgress({ celebrate }: { celebrate: Celebrate | null }) {
   const open = total - actedValue
   // Daily sales at risk on the urgent items still open (the same number their value is built from).
   const perDay = approvalBatches.filter((b) => b.urgent && !approved[b.id]).reduce((sum, b) => sum + (b.perDay ?? b.approveValue / OPS_DAYS_SAVED), 0)
+  // The quarter as the waterfall shows it: banked, then what's still open by effort. Sums to banked + everything in the queue.
+  const openIn = (tier: string) => OPS_BATCHES.filter((b) => b.tier === tier && !approved[b.id]).reduce((sum, b) => sum + money(b.value), 0)
+  const stages = { banked: BANKED + actedValue, autopilot: openIn("autopilot"), approval: left, input: openIn("input") }
+  const jump = (s: Stage) => {
+    if (s === "banked") return document.getElementById("ops-delivered")?.scrollIntoView({ behavior: "smooth", block: "start" })
+    document.querySelector(`[data-tier="${s}"]`)?.scrollIntoView({ behavior: "smooth", block: "start" })
+  }
 
   return (
     <>
-      <div className="px-10 pt-2 pb-7">
+      {/* The headline beside the quarter's waterfall: the claim on the left, its picture on the right. */}
+      <div className="grid grid-cols-[minmax(0,1fr)_308px] items-end gap-8 border-b border-slate-200 px-10 pt-2 pb-6">
+        <div className="min-w-0">
         <div className="text-2xl font-semibold tracking-tight text-slate-700">
           <span className="font-mono text-slate-950">{fmt(open)}</span> of ops opportunity is {actedValue > 0 ? "still " : ""}open this quarter.
         </div>
-        <h1 className="mt-1 text-[40px] leading-tight font-bold tracking-tight text-slate-950">
+        <h1 className="mt-1 text-[30px] leading-tight font-bold tracking-tight text-slate-950">
           {left > 0.005 ? (
             <>
               <span className="font-mono">{fmt(left)}</span> {doneValue > 0 ? "still" : "is"} one approval from live.
@@ -61,23 +71,16 @@ export function OpsProgress({ celebrate }: { celebrate: Celebrate | null }) {
             "Everything one approval away is live."
           )}
         </h1>
-      </div>
-      <div className="relative border-y border-slate-200 bg-brand-25 px-10 py-4">
-        <SplitBar
-          banked={BANKED}
-          unlocked={actedValue}
-          open={open}
-          aside={
-            celebrate && (
-              <div className="relative text-sm font-semibold text-success-700">
-                +{fmt(celebrate.value)} · {celebrate.label}
-                <div className="absolute -top-1 left-0 size-16">
-                  <PublishConfetti />
-                </div>
-              </div>
-            )
-          }
-        />
+        {celebrate && (
+          <div className="relative mt-2 text-sm font-semibold text-success-700">
+            +{fmt(celebrate.value)} · {celebrate.label}
+            <div className="absolute -top-1 left-0 size-16">
+              <PublishConfetti />
+            </div>
+          </div>
+        )}
+        </div>
+        <MiniWaterfall values={stages} onSelect={jump} />
       </div>
     </>
   )

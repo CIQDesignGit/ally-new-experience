@@ -100,7 +100,7 @@ export function NoteBar() {
   }
 
   return (
-    <div className="sticky top-0 z-30 border-y border-slate-200 bg-white/95 backdrop-blur">
+    <div data-sticky-top className="sticky top-0 z-30 border-y border-slate-200 bg-white/95 backdrop-blur">
       <div className={cn("flex flex-wrap items-center gap-x-4 gap-y-2 px-10 py-3", nudge && !open && "bg-warning-50")}>
         <Mail className={cn("size-4 shrink-0", skus ? "text-brand-600" : "text-slate-400")} />
         {skus ? (
