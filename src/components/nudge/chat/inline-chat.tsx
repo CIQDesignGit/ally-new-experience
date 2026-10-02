@@ -5,6 +5,7 @@ import { motion } from "framer-motion"
 import { Plus, Send, Sparkles } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
+import { FadeAbove, MoreBelow } from "./more-below"
 
 /**
  * Inline chat: one Ask Ally bar at the bottom, chips that follow what's on
@@ -125,8 +126,7 @@ export function ChatThread({ className, anchor }: { className?: string; anchor?:
   return (
     <section
       className={cn(anchor ? "flex flex-col gap-6 pt-2" : "flex flex-col gap-8 border-t border-slate-200 px-12 pt-8", className)}
-      // Page-level answers end the page: leave room for the bar (and its suggestions) below the last one.
-      style={anchor ? undefined : { paddingBottom: "calc(var(--askbar-h, 0px) + 48px)" }}
+      style={anchor ? undefined : { paddingBottom: 32 }}
       aria-label={anchor ? `Conversation about ${anchor}` : "Conversation with Ally"}
     >
       {turns.map((t, i) => (
@@ -173,20 +173,26 @@ export function AskBar({ placeholder = "Ask Ally: what can I take from your plat
   const [text, setText] = useState("")
   const [open, setOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
+  const dockRef = useRef<HTMLDivElement>(null)
   const askedHere = new Set(turns.filter((t) => t.about === source.about && t.anchor === source.anchor).map((t) => t.q))
   const chips = source.chips.filter((c) => !askedHere.has(c.q))
 
   // The page reserves the bar's height under its last answer, so the bar and its
   // suggestions never sit on top of what Ally just said.
   useEffect(() => {
-    const el = rootRef.current
+    const el = dockRef.current
     if (!el) return
     const root = document.documentElement
-    const ro = new ResizeObserver(() => root.style.setProperty("--askbar-h", `${el.offsetHeight}px`))
+    const ro = new ResizeObserver(() => {
+      root.style.setProperty("--askbar-h", `${el.offsetHeight}px`)
+      // Every page ends above the dock, so nothing is ever stuck behind it.
+      document.body.style.paddingBottom = `${el.offsetHeight}px`
+    })
     ro.observe(el)
     return () => {
       ro.disconnect()
       root.style.removeProperty("--askbar-h")
+      document.body.style.paddingBottom = ""
     }
   }, [])
 
@@ -204,7 +210,16 @@ export function AskBar({ placeholder = "Ask Ally: what can I take from your plat
 
   const tray = showChips || turns.length > 0
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-3 z-40 flex flex-col items-center px-4 xl:left-[var(--sidebar-w,0px)]">
+    // The dock, like Claude's: content fades out above it, the box is solid, and nothing shows beside or below it.
+    // It spans the page card's width, so on grey-backed pages it reads as the card's own bottom.
+    <div ref={dockRef} className="pointer-events-none fixed inset-x-0 bottom-0 z-40 xl:left-[var(--sidebar-w,0px)]">
+      <div className="relative mx-auto max-w-[1280px]">
+        <FadeAbove />
+        <div className="absolute inset-x-0 -top-8 flex justify-center">
+          <MoreBelow />
+        </div>
+      </div>
+      <div className="pointer-events-auto mx-auto flex max-w-[1280px] flex-col items-center bg-white px-4 pb-2.5">
       {/* One solid panel: suggestions sit in a tray above the input, never floating over the page. */}
       <div
         ref={rootRef}
@@ -268,7 +283,8 @@ export function AskBar({ placeholder = "Ask Ally: what can I take from your plat
           </button>
         </form>
       </div>
-      <p className="pointer-events-auto mt-1.5 rounded-full bg-white/95 px-2.5 py-0.5 text-center text-xs text-slate-400">Ally is AI and can make mistakes. Please double-check responses.</p>
+      <p className="mt-2 text-center text-xs text-slate-400">Ally is AI and can make mistakes. Please double-check responses.</p>
+      </div>
     </div>
   )
 }

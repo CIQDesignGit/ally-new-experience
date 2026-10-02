@@ -16,10 +16,10 @@ const SHUT_W = "64px"
  * Collapsed to icons on the daily brief (the page is the work); open on a
  * conversation, where what you made is what you move between. Lists only what exists, so nothing leads nowhere.
  */
-export function AppDrawer({ home = "/michelle" }: { home?: string }) {
+export function AppDrawer({ home = "/michelle", defaultOpen }: { home?: string; /** Overrides the page-kind default, e.g. collapsed while a deck is open. */ defaultOpen?: boolean }) {
   const path = usePathname()
   const kind = path === home ? "brief" : "conversation"
-  const [open, setOpen] = useState(kind === "conversation")
+  const [open, setOpen] = useState(defaultOpen ?? kind === "conversation")
   const { retro, knowledge } = useNudge()
   // Being on the conversation counts as started, even before its state has loaded.
   const started = Object.keys(retro).length > 0 || path === "/michelle/retro"

@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { Check, Download, GripVertical, Lock, Maximize2, Minimize2, Paperclip, Send, Sparkles, X } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { FadeAbove, MoreBelow } from "@/components/nudge/chat/more-below"
 import { PageShell } from "@/components/layout/page-shell"
 import { TopStrip } from "@/components/nudge/top-strip"
 import { useNudge } from "@/components/nudge/nudge-context"
@@ -209,7 +210,15 @@ export default function RetroPage() {
                 <AllyMark />
                 <StorylineAnswer onOpen={() => setView("storyboard")} />
               </div>
-              <Composer onAsk={ask} placeholder="Ask a follow-up" className="sticky bottom-6 mt-auto" />
+              <div className="sticky bottom-0 mt-auto">
+                <div className="relative">
+                  <FadeAbove />
+                  <div className="absolute inset-x-0 -top-8 flex justify-center">
+                    <MoreBelow />
+                  </div>
+                </div>
+                <Composer onAsk={ask} placeholder="Ask a follow-up" className="bg-white pb-3" />
+              </div>
             </div>
           </div>
         ) : (
@@ -218,22 +227,31 @@ export default function RetroPage() {
           <div className="relative min-w-0 bg-slate-50">
             {objectPane}
             {expanded && (
-              <div className="pointer-events-none sticky bottom-6 z-20 flex flex-col items-center gap-2 pb-6">
-                <div className="pointer-events-auto flex flex-wrap justify-center gap-2">
+              <div className="pointer-events-none sticky bottom-0 z-20">
+                <div className="relative">
+                  <FadeAbove from="from-slate-50" />
+                  <div className="absolute inset-x-0 -top-8 flex justify-center">
+                    <MoreBelow />
+                  </div>
+                </div>
+                <div className="pointer-events-auto flex flex-col items-center gap-2 bg-slate-50 pb-3">
+                <div className="flex flex-wrap justify-center gap-2">
                   {chips.map((c) => (
                     <button key={c.q} type="button" onClick={c.run} className="rounded-full border border-slate-200 bg-white/95 px-3 py-1.5 text-sm text-slate-700 shadow-xs hover:border-brand-300 hover:text-brand-700">
                       {c.q}
                     </button>
                   ))}
                 </div>
-                <Composer onAsk={ask} placeholder="Ask Ally to change the storyboard" className="pointer-events-auto w-[760px] max-w-[calc(100%-32px)]" />
+                <Composer onAsk={ask} placeholder="Ask Ally to change the storyboard" className="w-[760px] max-w-[calc(100%-32px)]" />
+                </div>
               </div>
             )}
           </div>
         </div>
         )}
       </div>
-<AppDrawer />
+{/* Like Claude with an artifact: the sidebar steps aside once the storyboard or deck opens. */}
+      <AppDrawer key={view === "answer" ? "talk" : "object"} defaultOpen={view === "answer"} />
             {share && (
         <ShareSheet
           theme={theme}
@@ -305,7 +323,13 @@ function Conversation({ msgs, chips, onAsk, retro, onSave }: { msgs: Msg[]; chip
           ),
         )}
       </div>
-      <div className="flex flex-col gap-2 px-4 pb-4">
+      <div className="relative">
+        <FadeAbove className="absolute inset-x-0 -top-8" />
+        <div className="absolute inset-x-0 -top-12 flex justify-center">
+          <MoreBelow list={list} />
+        </div>
+      </div>
+      <div className="flex flex-col gap-2 px-4 pb-3">
         <div className="flex flex-wrap gap-1.5">
           {chips.map((c) => (
             <button key={c.q} type="button" onClick={c.run} className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[13px] text-slate-700 hover:border-brand-300 hover:text-brand-700">
@@ -388,7 +412,7 @@ function Composer({ onAsk, placeholder, className }: { onAsk: (t: string) => voi
           <Send className="size-4" />
         </button>
       </form>
-      <p className="mt-2 text-center text-xs text-slate-400">{AI_NOTE}</p>
+      <p className="mt-2 text-center text-[11px] whitespace-nowrap text-slate-400">{AI_NOTE}</p>
     </div>
   )
 }
