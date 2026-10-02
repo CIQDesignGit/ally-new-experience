@@ -399,7 +399,7 @@ export function execDigest(period: Period, { approved, policy = DEFAULT_POLICY, 
         {
           title: "This week",
           total: { value: approval.value, note: "one approval away" },
-          lead: `Reply YES and Ally sends each person their list, due ${shortDay(ASSIGN_DUE)}, and follows up until it's approved.`,
+          lead: `Reply YES to assign all ${replies.length === 3 ? "three" : replies.length}, due ${shortDay(ASSIGN_DUE)}. Ally follows up until it's approved.`,
           rows: replies.map((r) => ({ label: `${r.n} · ${r.label}`, note: r.note, flag: r.flag, value: r.row?.value })),
         },
       ]
@@ -444,6 +444,6 @@ export function execDigest(period: Period, { approved, policy = DEFAULT_POLICY, 
         }),
       },
     ],
-    reply: monday ? `Reply YES to send ${replies.length === 3 ? "all three" : "all of them"}, or ${replies.map((r) => `YES ${r.n}`).join(", ").replace(/, (YES \d)$/, " or $1")} for one. No need to log in.` : actions.length ? REPLY_LINE : undefined,
+    reply: monday ? `Reply YES to assign ${replies.length === 3 ? "all three" : "all of them"}, or ${replies.map((r) => `YES ${r.n}`).join(", ").replace(/, (YES \d)$/, " or $1")} for one. No need to log in.` : actions.length ? REPLY_LINE : undefined,
   }
 }

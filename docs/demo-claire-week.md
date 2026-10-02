@@ -12,10 +12,10 @@
 
 | Who | Do | What the room sees |
 |---|---|---|
-| Claire | Click the **email icon** (top right) | Real email: "Mon: this week's work for your team · $1.5M one approval away". Three lines: Assign to Mike ($660K), James ($560K), Michelle ($312K), due Wed |
-| Claire | Show the email, then click **Claire replies YES** | All three rows: "Assigned Mon · due Wed" |
+| Claire | Click the **email icon** (top right) | Real email: "Mon: this week's work for your team · $1.5M one approval away". One line per person with their value: Mike $660K (expires in 21 days), James $560K, Michelle $312K. "Reply YES to assign all three, due Wed" |
+| Claire | Show the email, then click **Claire replies YES** *(or **Assign** on each row of her page)* | Status: "Not started". Action: "✓ Assigned · due Wed" |
 | Mike | Open Slack | Real DM: "Claire assigned you this week's work: Halloween seasonal updates and gift sets. Due Wed, Oct 7." |
-| Mike | Open Mike's page | Halloween items read "Due Wed". The detail pane reads "Assigned by Ally Mon · due Wed, Oct 7" |
+| Mike | Open Mike's page | Halloween items read "Due Wed". The detail pane reads "Claire assigned this Mon · due Wed, Oct 7" |
 
 **Say:** "Claire never logged in. She replied YES from her phone, and three people have their week."
 
@@ -23,9 +23,9 @@
 
 | Who | Do | What the room sees |
 |---|---|---|
-| Presenter | **Go to Wednesday ▸** | Michelle: approved. James: "2 of 5 campaigns live · due today". Mike: "Not started · due today". Halloween expires in 19 days |
-| Claire | Show the real email | "Wed: 1 of 3 done · 2 for you to decide". Reply options: 1 · Mike: finish by Fri, or Ally ships it. 2 · James: finish by Fri |
-| Claire | **Claire replies YES** | Mike: "Due Fri · Ally ships it if not approved · set by your email reply". James: "Due Fri" |
+| Presenter | **Go to Wednesday ▸** | James: approved. Michelle: "6 of 28 SKUs approved" ($204K left). Mike: "Not started". Halloween expires in 19 days |
+| Claire | Show the real email | "Wed: 1 of 3 done · 2 for you to decide". Reply options: 1 · Mike: finish by Fri, or Ally ships it. 2 · Michelle: finish by Fri |
+| Claire | **Claire replies YES** *(or **Assign · due Fri** on her page)* | Mike and Michelle: "✓ Assigned · due Fri". Under Mike's: "Ally ships it if not approved" |
 | Mike | Open Slack | Real DM: "Claire set a deadline: Fri, Oct 9. If it isn't approved by then, Ally ships the core SKUs; hero SKUs wait for you." |
 | Mike *(optional)* | In Mike's queue, open **Halloween gift sets** and click **Approve 180 SKUs** | Claire's row: "180 of 414 SKUs approved" |
 
@@ -35,7 +35,7 @@
 
 | Who | Do | What the room sees |
 |---|---|---|
-| Presenter | **Go to Friday ▸** | James: approved. Ally ships Mike's unapproved core SKUs and holds the 20 hero SKUs for him. One approval away drops to $355K |
+| Presenter | **Go to Friday ▸** | Michelle: approved. Ally ships Mike's unapproved core SKUs and holds the 20 hero SKUs for him. One approval away drops to $355K |
 | Claire | Show the real email | "Fri: 2 of 3 done · Ally shipped $305K on your deadline" ($205K if Mike approved the gift sets). One reply option: put seasonal content on autopilot |
 | Claire | On her page, click **Put seasonal on autopilot** *(or Claire replies YES)* | "Seasonal on autopilot". Settings shows the rule with Claire's name |
 | Mike | Open Mike's page | Core parts: "Shipped by Ally". Hero parts: "Held for your review" |
@@ -56,12 +56,12 @@
 - Optional, between Wednesday and Friday: approves the gift sets (180 SKUs) to show "Mike did half".
 - Friday: sees what Ally shipped and the 20 hero SKUs waiting for him.
 
-**Michelle**
-- Nothing on stage. Her work is played for her: by Wednesday, she has approved her fixes.
-- Don't cut to her page in this story. Her inbox shows each fix at its full value, while Claire's row shows $312K for this quarter, so the numbers won't match on screen.
-
 **James**
-- Nothing on stage. He is "2 of 5 campaigns live" on Wednesday and done on Friday. He has no page or real Slack in the demo.
+- Nothing on stage. He finishes his campaigns by Wednesday. He has no page or real Slack in the demo.
+
+**Michelle**
+- Nothing on stage. Her work is played for her: 6 of 28 SKUs approved by Wednesday, the rest by Friday.
+- Don't cut to her page in this story. Her inbox shows each fix at its full value, while Claire's row shows $312K for this quarter, so the numbers won't match on screen.
 
 ## Before you present
 - One full run sends 4 real emails. The limit is 20 an hour.

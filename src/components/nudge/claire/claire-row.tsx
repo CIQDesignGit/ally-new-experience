@@ -6,7 +6,7 @@ import { OwnerName } from "../owner-name"
 import { AGENT_DOT } from "../agent-style"
 import { AGENT_LABEL, type TierRow } from "../types"
 import { PRIMARY } from "../mike/buttons"
-import { ASSIGN_DUE, countdown, dueFor, rowAction, shortDay, useClaireActions } from "./claire-actions"
+import { countdown, dueFor, rowAction, useClaireActions } from "./claire-actions"
 
 /**
  * One row of "One approval away" on Claire's page: who, what, where it stands
@@ -30,13 +30,20 @@ export function ClaireRow({ row, grid, showAction }: { row: TierRow; grid: strin
   const st = statusOf(row)
   const move = rowAction(row, s)
   const content = row.nudgeKey === "approval-content"
+  const ask = row.nudgeKey ? s.asks[row.nudgeKey] : undefined
   const deadline = st.kind === "shipped" || st.kind === "held" ? undefined : countdown(row.deadline, day)
+
+  const due = ask ? ask.due.split(",")[0] : ""
+  const did = (text: string) => (
+    // Same 40px box as the button it replaces, so it sits where the button sat.
+    <span className="inline-flex h-10 w-[180px] items-center justify-center gap-1.5 text-sm font-medium whitespace-nowrap text-success-700">
+      <Check className="size-4" /> {text}
+    </span>
+  )
 
   const action =
     move === "autopilot-done" ? (
-      <span className="inline-flex items-center gap-1.5 text-sm font-medium text-success-700">
-        <Check className="size-4" /> Seasonal on autopilot
-      </span>
+      did("Seasonal on autopilot")
     ) : move === "autopilot" ? (
       <span className="flex w-[180px] flex-col items-center gap-1.5">
         <button type="button" onClick={() => autopilotSeasonal("product")} className={cn(PRIMARY, "w-[180px]")}>
@@ -45,15 +52,16 @@ export function ClaireRow({ row, grid, showAction }: { row: TierRow; grid: strin
         <span className="text-[13px] text-slate-500">From the next event</span>
       </span>
     ) : move === "assign" ? (
-      // Monday: Claire hands out the week, due Wednesday.
       <button type="button" onClick={() => assignFor(row, "product")} className={cn(PRIMARY, "w-[180px]")}>
-        Send list · due {shortDay(ASSIGN_DUE)}
+        Assign
       </button>
+    ) : move === "assigned" ? (
+      did(`Assigned · due ${due}`)
     ) : move === "ask" ? (
       // Wednesday came and went: Claire sets the next date.
       <span className="flex w-[180px] flex-col items-center gap-1.5">
         <button type="button" onClick={() => askFor(row, "product")} className={cn(PRIMARY, "w-[180px]")}>
-          Ask by {dueFor(day).short}
+          Assign · due {dueFor(day).short}
         </button>
         {content && (
           <>
@@ -64,12 +72,20 @@ export function ClaireRow({ row, grid, showAction }: { row: TierRow; grid: strin
           </>
         )}
       </span>
+    ) : move === "asked" ? (
+      <span className="flex w-[180px] flex-col items-center gap-1.5">
+        {did(`Assigned · due ${due}`)}
+        {content && (
+          <>
+            {ask?.ship && <span className="text-[13px] text-slate-500">Ally ships it if not approved</span>}
+            <button type="button" onClick={() => approveMyself(row, "product")} className={LINK}>
+              or approve it myself
+            </button>
+          </>
+        )}
+      </span>
     ) : move === "approve" ? (
       <button type="button" onClick={() => approveMyself(row, "product")} className={cn(PRIMARY, "w-[180px]")}>
-        Approve it myself
-      </button>
-    ) : move === "approve-link" ? (
-      <button type="button" onClick={() => approveMyself(row, "product")} className={LINK}>
         Approve it myself
       </button>
     ) : null
@@ -77,7 +93,7 @@ export function ClaireRow({ row, grid, showAction }: { row: TierRow; grid: strin
   return (
     // Text and value share the row's first line; the button centers on the row.
     <div className={cn(grid, "group items-start border-t border-slate-100 py-3.5 first:border-t-0")}>
-      <div className="grid grid-cols-[168px_minmax(0,1fr)] items-start gap-4 lg:grid-cols-[168px_minmax(0,1fr)_220px]">
+      <div className="grid grid-cols-[168px_minmax(0,1fr)] items-start gap-4 lg:grid-cols-[168px_minmax(0,1fr)_180px]">
         <div className="flex items-center gap-2.5">
           <span className={`size-2 rounded-sm ${AGENT_DOT[row.agent]}`} />
           {row.analystName ? (
@@ -92,7 +108,7 @@ export function ClaireRow({ row, grid, showAction }: { row: TierRow; grid: strin
         <div className="text-sm leading-5">
           <span className={cn("font-medium", TONE[st.kind])}>
             {(st.kind === "shipped" || st.kind === "held") && <Check className="mr-1 inline size-3.5 -translate-y-px" />}
-            {st.text}
+            {st.work}
           </span>
           {deadline && <span className="mt-0.5 block text-[13px] font-medium text-warning-700">{deadline}</span>}
         </div>

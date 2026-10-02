@@ -76,7 +76,7 @@ export function BatchDetail({ batch, onApprove, onReviewAll, onSelect, onSelectS
     : shipped.length
       ? `Ally shipped the core SKUs on Claire's ${short} deadline. These hero SKUs wait for you.`
       : ask?.by === "ally"
-        ? `Claire sent this Mon · due ${ask.due}`
+        ? `Claire assigned this Mon · due ${ask.due}`
         : ask
           ? `Claire asked you to approve by ${ask.due}${ask.ship ? ". If it isn't approved, Ally ships the core SKUs." : ""}`
           : batch.nudgeKey && nudged[batch.nudgeKey]

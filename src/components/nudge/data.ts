@@ -943,7 +943,7 @@ const SNAPSHOT: Snapshot = {
       canNudgeTeam: true,
       describe: {
         content: "Halloween seasonal updates and gift sets.",
-        ops: "Buy box, promo badge, listing and shipping fixes, one email each.",
+        ops: "Buy box, promo badge, listing and shipping fixes.",
         media: "5 new DSP campaigns for new-to-brand shoppers.",
       },
     },

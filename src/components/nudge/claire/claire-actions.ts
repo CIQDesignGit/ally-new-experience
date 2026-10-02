@@ -64,7 +64,17 @@ export function itemsFor(key: NudgeKey | undefined, s: Pick<WeekState, "approved
   return []
 }
 
-export type RowState = { kind: "pre" | "assigned" | "due" | "overdue" | "asked" | "held" | "shipped"; text: string; /** What shipped, for "held" and "shipped". */ shipped?: string; /** Of that, what Ally shipped at Claire's deadline. */ byAlly?: string }
+export type RowState = {
+  kind: "pre" | "assigned" | "due" | "overdue" | "asked" | "held" | "shipped"
+  /** The whole story in one line, for the email. */
+  text: string
+  /** The work alone, for the page's Status column: "Not assigned", "Not started", "2 of 5 campaigns live", "Approved by Michelle". */
+  work: string
+  /** What shipped, for "held" and "shipped". */
+  shipped?: string
+  /** Of that, what Ally shipped at Claire's deadline. */
+  byAlly?: string
+}
 
 /** Where a row stands, in the words Claire's page and email both use. */
 export function rowStatus(row: TierRow, s: WeekState): RowState {
@@ -73,8 +83,11 @@ export function rowStatus(row: TierRow, s: WeekState): RowState {
   const items = itemsFor(key, s)
   const done = items.filter((i) => s.approved[i.id])
   const shipped = done.length ? money(done.reduce((n, i) => n + i.value, 0)) : undefined
-  if (key && s.approvedBy[key]) return { kind: "shipped", text: s.approvedBy[key] === "email" ? "Approved by your email reply" : "Approved by you", shipped }
-  if (items.length && done.length === items.length) return { kind: "shipped", text: `Approved by ${name}`, shipped }
+  if (key && s.approvedBy[key]) {
+    const text = s.approvedBy[key] === "email" ? "Approved by your email reply" : "Approved by you"
+    return { kind: "shipped", text, work: text, shipped }
+  }
+  if (items.length && done.length === items.length) return { kind: "shipped", text: `Approved by ${name}`, work: `Approved by ${name}`, shipped }
   const ask = key ? s.asks[key] : undefined
   if (key && s.autoShipped[key]?.length) {
     const by = s.autoShipped[key]!
@@ -82,9 +95,14 @@ export function rowStatus(row: TierRow, s: WeekState): RowState {
     const hero = skus((i) => !s.approved[i.id])
     const own = skus((i) => !!s.approved[i.id] && !by.includes(i.id))
     const ally = skus((i) => by.includes(i.id))
-    return { kind: "held", text: `${own ? `${name} approved ${own} · ` : ""}Ally shipped ${ally} on your ${ask ? shortOf(ask.due) : ""} deadline · ${hero} hero SKUs held for ${name}`, shipped, byAlly: money(items.filter((i) => by.includes(i.id)).reduce((n, i) => n + i.value, 0)) }
+    return {
+      kind: "held",
+      text: `${own ? `${name} approved ${own} · ` : ""}Ally shipped ${ally} on your ${ask ? shortOf(ask.due) : ""} deadline · ${hero} hero SKUs held for ${name}`,
+      work: `${own ? `${name} approved ${own} · ` : ""}Ally shipped ${ally} · ${hero} hero SKUs left`,
+      shipped,
+      byAlly: money(items.filter((i) => by.includes(i.id)).reduce((n, i) => n + i.value, 0)) }
   }
-  if (!ask) return { kind: "pre", text: "Not assigned yet" }
+  if (!ask) return { kind: "pre", text: "Not assigned yet", work: "Not assigned" }
   // From Wednesday, the seeded campaign count is this week's progress.
   const progress = done.length
     ? `${done.reduce((n, i) => n + i.skus, 0)} of ${items.reduce((n, i) => n + i.skus, 0)} SKUs approved`
@@ -94,16 +112,16 @@ export function rowStatus(row: TierRow, s: WeekState): RowState {
   const due = shortOf(ask.due)
   const where = progress || "Not started"
   if (ask.by === "ally") {
-    if (s.day < ask.dueDay) return { kind: "assigned", text: `List sent ${shortDay(WEEK_START)} · due ${due}${progress ? ` · ${progress}` : ""}` }
-    if (s.day === ask.dueDay) return { kind: "due", text: `${where} · due today` }
-    return { kind: "overdue", text: `${where} · overdue since ${due}` }
+    if (s.day < ask.dueDay) return { kind: "assigned", text: `Assigned ${shortDay(WEEK_START)} · due ${due}${progress ? ` · ${progress}` : ""}`, work: where }
+    if (s.day === ask.dueDay) return { kind: "due", text: `${where} · due today`, work: where }
+    return { kind: "overdue", text: `${where} · overdue since ${due}`, work: where }
   }
   // Claire's ask, from the product or her email.
   const then = ask.ship ? " · Ally ships it if not approved" : ""
   const via = ask.by === "email" ? " · set by your email reply" : ""
-  if (s.day < ask.dueDay) return { kind: "asked", text: `Due ${due}${then}${progress ? ` · ${progress}` : ""}${via}` }
-  if (s.day === ask.dueDay) return { kind: "due", text: `${where} · due today` }
-  return { kind: "overdue", text: `${where} · overdue since ${due}` }
+  if (s.day < ask.dueDay) return { kind: "asked", text: `Due ${due}${then}${progress ? ` · ${progress}` : ""}${via}`, work: where }
+  if (s.day === ask.dueDay) return { kind: "due", text: `${where} · due today`, work: where }
+  return { kind: "overdue", text: `${where} · overdue since ${due}`, work: where }
 }
 
 const SEASONAL_RULE = "r-seasonal-core"
@@ -122,8 +140,12 @@ const seasonalRule = (date: string): ReviewRule => ({
   date,
 })
 
-/** Claire's move on a row, the same on her page and in her email; null when there's nothing for her to do. */
-export type RowAction = "assign" | "ask" | "approve" | "approve-link" | "autopilot" | "autopilot-done" | null
+/**
+ * Claire's move on a row (the same on her page and in her email), or what she
+ * already did, which replaces the button in place: "Assigned · due Wed",
+ * "Asked · due Fri". Null when there's nothing of hers on the row.
+ */
+export type RowAction = "assign" | "assigned" | "ask" | "asked" | "approve" | "autopilot" | "autopilot-done" | null
 export function rowAction(row: TierRow, s: WeekState): RowAction {
   const st = rowStatus(row, s)
   const key = row.nudgeKey
@@ -132,9 +154,10 @@ export function rowAction(row: TierRow, s: WeekState): RowAction {
   const late = st.kind === "due" || st.kind === "overdue"
   if (content && (st.kind === "shipped" || st.kind === "held") && (!!s.approvedBy[key] || !!s.autoShipped[key]?.length)) return hasSeasonalAutopilot(s.policy) ? "autopilot-done" : "autopilot"
   if (st.kind === "pre") return "assign"
+  if (st.kind === "assigned") return "assigned"
   if (late && ask?.by === "ally") return "ask"
   if (content && late) return "approve"
-  if (content && st.kind === "asked") return "approve-link"
+  if (st.kind === "asked") return "asked"
   return null
 }
 
@@ -155,8 +178,8 @@ export function useClaireActions() {
     if (!row.nudgeKey) return
     const due = dayLabel(ASSIGN_DUE)
     askBy(row.nudgeKey, due, ASSIGN_DUE, "ally")
-    if (row.nudgeKey === "approval-content") sendSlack(row, { headline: `Claire sent you this week's list: ${row.description.replace(/\.$/, "")}. Due ${due}.`, chip: `Due ${due}` })
-    toast.success(`Sent ${row.analystName} their list · due ${shortOf(due)}${by === "email" ? " · from your email reply" : ""}`, { position: "top-right" })
+    if (row.nudgeKey === "approval-content") sendSlack(row, { headline: `Claire assigned you this week's work: ${row.description.replace(/\.$/, "")}. Due ${due}.`, chip: `Due ${due}` })
+    toast.success(`Assigned ${row.analystName} · due ${shortOf(due)}${by === "email" ? " · from your email reply" : ""}`, { position: "top-right" })
   }
 
   /** Claire sets the next due date. On content it carries "or Ally ships it", and Mike hears it in Slack. */
@@ -221,7 +244,7 @@ export function replyActions(rows: TierRow[], s: WeekState): ReplyAction[] {
     if (st.kind === "pre") {
       // Who, then the size of the work and what it is; the deadline flagged on its own.
       const skus = r.agent === "media" ? 0 : itemsFor(r.nudgeKey, s).reduce((n, i) => n + i.skus, 0)
-      const what = r.description.replace(/\.$/, "").replace(/, one email each$/, "")
+      const what = r.description.replace(/\.$/, "")
       acts.push({ kind: "assign", row: r, label: `${r.analystName} · ${AGENT_LABEL[r.agent]}`, note: [skus ? `${skus} SKUs` : "", what].filter(Boolean).join(" · "), flag: countdown(r.deadline, s.day) })
       continue
     }

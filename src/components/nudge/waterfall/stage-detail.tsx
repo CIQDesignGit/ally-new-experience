@@ -3,8 +3,11 @@
 import { ClaireRow } from "../claire/claire-row"
 import { rowAction, useClaireActions } from "../claire/claire-actions"
 import { AutopilotDetail } from "./autopilot-detail"
-/** Owner and status · value · Claire's move (a 180px button), when any row has one; else the value meets the card's edge. */
-const gridFor = (moves: boolean) => `grid ${moves ? "grid-cols-[minmax(0,1fr)_100px_190px]" : "grid-cols-[minmax(0,1fr)_100px]"} items-center gap-4`
+/**
+ * Owner, task and status · value · Claire's move (a 180px button, right-aligned in a 204px column so 40px sits
+ * between the value and the button), when any row has one; else the value meets the card's edge.
+ */
+const gridFor = (moves: boolean) => `grid ${moves ? "grid-cols-[minmax(0,1fr)_100px_204px]" : "grid-cols-[minmax(0,1fr)_100px]"} items-center gap-4`
 import { fmtM } from "../data"
 import type { WaterfallStage } from "../data"
 
@@ -31,10 +34,10 @@ function TierDetail({ stage }: { stage: WaterfallStage }) {
       {stage.rows.length > 0 && (
         // Column headers in the same style as every other table on the page (see DeliveredHeader).
         <div className={`${TIER_GRID} px-6 pt-3 pb-1 text-xs font-medium text-slate-500`}>
-          <div className="grid grid-cols-[168px_minmax(0,1fr)] gap-4 lg:grid-cols-[168px_minmax(0,1fr)_220px]">
+          <div className="grid grid-cols-[168px_minmax(0,1fr)] gap-4 lg:grid-cols-[168px_minmax(0,1fr)_180px]">
             <span>Owner</span>
-            <span>What&apos;s waiting</span>
-            <span className="hidden lg:block">This week</span>
+            <span>Task</span>
+            <span className="hidden lg:block">Status</span>
           </div>
           <span className="text-right">Value</span>
           {moves && <span />}

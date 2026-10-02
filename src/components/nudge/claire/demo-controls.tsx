@@ -36,24 +36,25 @@ export function DemoControls() {
     setBusy(true)
     try {
       if (step === "wed") {
-        // By Wednesday, Michelle has approved her fixes; James is partway; Mike hasn't started.
-        const ids = itemsFor("approval-ops", s).map((i) => i.id)
+        // By Wednesday, James has approved his campaigns; Michelle has approved a few of her fixes; Mike hasn't started.
+        const few = itemsFor("approval-ops", s).slice(0, 2)
+        const ids = ["media-dsp", ...few.map((i) => i.id)]
         approveMany(ids)
         nextMorning(BEATS[1].day)
-        toast(`${dayLabel(BEATS[1].day)} · Michelle approved her fixes`, { position: "top-right" })
+        toast(`${dayLabel(BEATS[1].day)} · James approved his campaigns · Michelle approved ${few.length} fixes`, { position: "top-right" })
         await emailClaire({ approved: { ...approved, ...Object.fromEntries(ids.map((id) => [id, true])) }, autoShipped, day: BEATS[1].day })
         return
       }
-      // Friday: James finishes. Content Claire gave a ship-by date and nobody approved ships now: core SKUs only, hero SKUs held.
-      const media = ["media-dsp"]
+      // Friday: Michelle finishes. Content Claire gave a ship-by date and nobody approved ships now: core SKUs only, hero SKUs held.
+      const ops = itemsFor("approval-ops", s).filter((i) => !approved[i.id]).map((i) => i.id)
       const ask = asks["approval-content"]
       const ship = ask?.ship && ask.by !== "ally" && !approvedBy["approval-content"] ? itemsFor("approval-content", s).filter((i) => !approved[i.id] && !i.hero) : []
-      approveMany(media)
+      approveMany(ops)
       if (ship.length) autoShip("approval-content", ship.map((i) => i.id))
       nextMorning(BEATS[2].day)
-      toast(`${dayLabel(BEATS[2].day)} · James approved his campaigns${ship.length ? " · Ally shipped Mike's core SKUs on your deadline" : ""}`, { position: "top-right" })
+      toast(`${dayLabel(BEATS[2].day)} · Michelle approved the rest of her fixes${ship.length ? " · Ally shipped Mike's core SKUs on your deadline" : ""}`, { position: "top-right" })
       await emailClaire({
-        approved: { ...approved, ...Object.fromEntries([...media, ...ship.map((i) => i.id)].map((id) => [id, true])) },
+        approved: { ...approved, ...Object.fromEntries([...ops, ...ship.map((i) => i.id)].map((id) => [id, true])) },
         autoShipped: ship.length ? { ...autoShipped, "approval-content": ship.map((i) => i.id) } : autoShipped,
         day: BEATS[2].day,
       })
