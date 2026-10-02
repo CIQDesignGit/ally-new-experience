@@ -93,9 +93,7 @@ export function OpsBatchDetail({ batch, onAction, onReviewAll }: OpsBatchDetailP
         </div>
         <div className="shrink-0 text-right">
           <div className={`font-mono text-[28px] font-bold tracking-tight tabular-nums ${done ? "text-success-700" : "text-slate-950"}`}>+{batch.value}</div>
-          <div className="mt-0.5 text-sm text-slate-500">
-            {batch.tier === "autopilot" ? "leakage prevented this quarter" : done ? "sent" : "projected leakage prevented"}
-          </div>
+          {(batch.tier === "autopilot" || done) && <div className="mt-0.5 text-sm text-slate-500">{batch.tier === "autopilot" ? "leakage prevented this quarter" : "sent"}</div>}
           {batch.urgent && !done && <div className="mt-0.5 font-mono text-sm font-semibold text-error-600">−{daily} a day</div>}
         </div>
       </div>
@@ -203,7 +201,6 @@ export function OpsBatchDetail({ batch, onAction, onReviewAll }: OpsBatchDetailP
                   <ArrowRight className="size-3.5" />
                 </button>
               )}
-              <div className="text-xs text-slate-500">Nothing is sent from here. Reviewed SKUs join your note to {VENDOR_MANAGER.name}, which goes out as one email.</div>
             </div>
             {showSample && sample && !each && (
               <div className="border-t border-slate-100 pt-8">
