@@ -11,7 +11,10 @@ import { ChatThread, useChat, useChatSource } from "../chat/inline-chat"
 import type { Chip } from "../chat/inline-chat"
 import { useLaunch } from "../market/plays"
 import { GAP_STEPS, GAP_TREE, GAP_WEEK, gapNode, pathTo } from "./gap-data"
-import type { Driver, GapAction, GapNode } from "./gap-data"
+import type { Driver, GapAction, GapNode, Recommendation } from "./gap-data"
+import type { GapRecipe } from "../policy"
+import { MemoryRecall } from "../chat/memory"
+import { DEFAULT_RECIPE, FILL, FILL_STEP, RecipeFeedback, inMeasure, lbsOf, lessonText, unitsOf, useGapLesson } from "./gap-training"
 
 /** $M → "$5.8K", "$1.32M"; signed when asked. */
 const m = (v: number, signed = false) => {
@@ -73,21 +76,23 @@ export function GapTree({ selected, onSelect }: { selected: string; onSelect: (i
 /* The analysis, as an answer in the page's conversation                       */
 /* ------------------------------------------------------------------------- */
 
-function Steps() {
+function Steps({ extra = [] }: { extra?: string[] }) {
   const [open, setOpen] = useState(false)
+  const steps = [...GAP_STEPS.slice(0, -2), ...extra, ...GAP_STEPS.slice(-2)]
   return (
     <div className="text-sm">
       <button type="button" onClick={() => setOpen((o) => !o)} className="inline-flex items-center gap-1.5 text-slate-600 hover:text-slate-900">
-        <Check className="size-4 text-success-600" /> Analyzed in {GAP_STEPS.length} steps <span className="text-slate-300">·</span>
+        <Check className="size-4 text-success-600" /> Analyzed in {steps.length} steps <span className="text-slate-300">·</span>
         <span className="font-medium text-brand-700">{open ? "Hide steps" : "Show all steps"}</span>
         <ChevronDown className={cn("size-3.5 text-brand-700 transition-transform", open && "rotate-180")} />
       </button>
       {open && (
         <ol className="mt-2 flex flex-col gap-1.5 border-l-2 border-slate-100 pl-4 text-slate-600">
-          {GAP_STEPS.map((s, i) => (
-            <li key={s}>
+          {steps.map((st, i) => (
+            <li key={st} className={extra.includes(st) ? "text-slate-950" : undefined}>
               <span className="mr-2 font-mono text-xs text-slate-400">{i + 1}</span>
-              {s}
+              {st}
+              {extra.includes(st) && <span className="ml-2 text-xs text-brand-700">you added</span>}
             </li>
           ))}
         </ol>
@@ -126,23 +131,42 @@ const SEC = "text-sm font-semibold text-slate-950"
 const ROW = "border-t border-slate-100"
 
 /** Gap-to-plan analysis for a node: the finding, plan vs actual, what moved sales, why (by dollars), and what to do. */
-export function GapAnalysis({ node, onInbox }: { node: GapNode; onInbox: (batchId: string) => void }) {
+export function GapAnalysis({ node, onInbox, recipe: given, nested }: { node: GapNode; onInbox: (batchId: string) => void; /** A recipe being tried, before it's saved. */ recipe?: GapRecipe; /** Inside the before/after: no feedback row of its own. */ nested?: boolean }) {
+  // What Ally knew when this was asked: a lesson saved later doesn't rewrite an earlier answer.
+  const live = useGapLesson()
+  const [lesson] = useState(live)
+  const recipe = given ?? lesson?.recipe ?? DEFAULT_RECIPE
+  const mm = (v: number, signed = false) => inMeasure(v, recipe.measure, signed)
+  const fill = recipe.steps.includes(FILL_STEP)
   const gap = node.lastWeek.sales - node.lastWeek.plan
-  const drivers = [...node.drivers].sort((a, b) => a.value - b.value)
+  // The added fill-rate step names the cause behind the stockout; the dollars stay with the stockout, so the total still ties.
+  const drivers = [...node.drivers]
+    .sort((a, b) => a.value - b.value)
+    .map((d) => (fill && /out of stock/i.test(d.title) ? { ...d, points: [`Cause: fill rate ${FILL.rate}% on ${FILL.pos} POs (target ${FILL.target}%)`, ...d.points] } : d))
+  const recs: Recommendation[] = fill
+    ? [...node.recommendations, { title: `Claim the ${FILL.pos} short-shipped POs`, points: [`Fill rate ${FILL.rate}% vs ${FILL.target}% target`, "The same POs as Shorted POs in your queue"], action: { kind: "inbox", label: "Open the claims", batchId: "shorted-pos" } }]
+    : node.recommendations
+  const extra = (["units", "weight", "fill"] as const).filter((c) => recipe.columns.includes(c) && !(c === "units" && recipe.measure === "units") && !(c === "weight" && recipe.measure === "weight"))
+  const cols = `minmax(0,1fr) repeat(${3 + extra.length}, 88px)`
   const top = drivers[0]
   const eq = node.equation
   const sign = (v: number) => `${v > 0 ? "+" : v < 0 ? "−" : ""}${Math.abs(v)}%`
   return (
     <div className="flex max-w-[900px] flex-col gap-5 rounded-2xl bg-white px-5 py-4 ring-1 ring-slate-200">
-      <Steps />
+      {lesson && !given && (
+        <MemoryRecall text={`${lessonText(lesson.recipe)}.`} from={`you taught Ally, ${lesson.date}`}>
+          This run uses it.
+        </MemoryRecall>
+      )}
+      <Steps extra={recipe.steps} />
 
       <div>
         <p className="text-[17px] leading-snug font-semibold text-slate-950">
-          {gap < 0 ? "Missed" : "Beat"} plan by <span className={gap < 0 ? "text-error-600" : "text-success-700"}>{m(Math.abs(gap))}</span> last week, {pct(node.lastWeek.sales, node.lastWeek.plan)} of plan.
+          {gap < 0 ? "Missed" : "Beat"} plan by <span className={gap < 0 ? "text-error-600" : "text-success-700"}>{mm(Math.abs(gap))}</span> last week, {pct(node.lastWeek.sales, node.lastWeek.plan)} of plan.
         </p>
         {top && (
           <p className="mt-1 text-sm text-slate-600 tabular-nums">
-            Biggest cause: {top.title.charAt(0).toLowerCase() + top.title.slice(1)} ({m(top.value, true)}). This week is projected at {m(node.eow.projected)}, {pct(node.eow.projected, node.eow.plan)} of plan.
+            Biggest cause: {top.title.charAt(0).toLowerCase() + top.title.slice(1)} ({mm(top.value, true)}). This week is projected at {mm(node.eow.projected)}, {pct(node.eow.projected, node.eow.plan)} of plan.
           </p>
         )}
       </div>
@@ -150,25 +174,35 @@ export function GapAnalysis({ node, onInbox }: { node: GapNode; onInbox: (batchI
       <div>
         <div className={SEC}>Plan vs actual</div>
         <div className="mt-2 text-sm tabular-nums">
-          <div className="grid grid-cols-[minmax(0,1fr)_96px_96px_96px] gap-3 pb-1.5 text-xs text-slate-500">
+          <div className="grid gap-3 pb-1.5 text-xs text-slate-500" style={{ gridTemplateColumns: cols }}>
             <span />
             <span className="text-right">Actual</span>
             <span className="text-right">Plan</span>
             <span className="text-right">Gap</span>
+            {extra.map((c) => (
+              <span key={c} className="text-right text-brand-700">
+                {{ units: "Units", weight: "Weight", fill: "Fill rate" }[c]}
+              </span>
+            ))}
           </div>
           {[
             { k: `Last week · ${GAP_WEEK.last}`, a: node.lastWeek.sales, p: node.lastWeek.plan, lead: true },
-            { k: `This week, projected · ${GAP_WEEK.current}`, a: node.eow.projected, p: node.eow.plan },
+            { k: `This week, projected · ${GAP_WEEK.current}`, a: node.eow.projected, p: node.eow.plan, lead: false },
           ].map((r) => (
-            <div key={r.k} className={cn("grid grid-cols-[minmax(0,1fr)_96px_96px_96px] gap-3 py-2", ROW)}>
+            <div key={r.k} className={cn("grid gap-3 py-2", ROW)} style={{ gridTemplateColumns: cols }}>
               <span className="text-slate-700">{r.k}</span>
-              <span className="text-right text-slate-950">{m(r.a)}</span>
-              <span className="text-right text-slate-500">{m(r.p)}</span>
-              <span className={cn("text-right font-semibold", r.lead && r.a < r.p ? "text-error-600" : "text-slate-950")}>{m(r.a - r.p, true)}</span>
+              <span className="text-right text-slate-950">{mm(r.a)}</span>
+              <span className="text-right text-slate-500">{mm(r.p)}</span>
+              <span className={cn("text-right font-semibold", r.lead && r.a < r.p ? "text-error-600" : "text-slate-950")}>{mm(r.a - r.p, true)}</span>
+              {extra.map((c) => (
+                <span key={c} className="text-right text-slate-950">
+                  {c === "units" ? `${Math.round(unitsOf(r.a) / 1000)}K` : c === "weight" ? `${Math.round(lbsOf(r.a) / 1000)}K lbs` : r.lead ? `${FILL.rate}%` : "–"}
+                </span>
+              ))}
             </div>
           ))}
           <div className={cn("py-2 text-slate-500", ROW)}>
-            Week to date <span className="font-semibold text-slate-950">{m(node.wtd)}</span> · {Math.round(GAP_WEEK.elapsed * 100)}% of the week gone
+            Week to date <span className="font-semibold text-slate-950">{mm(node.wtd)}</span> · {Math.round(GAP_WEEK.elapsed * 100)}% of the week gone
           </div>
         </div>
       </div>
@@ -200,7 +234,7 @@ export function GapAnalysis({ node, onInbox }: { node: GapNode; onInbox: (batchI
       </div>
 
       <div>
-        <div className={SEC}>Why, by dollars</div>
+        <div className={SEC}>Why, by {recipe.measure === "sales" ? "dollars" : recipe.measure === "units" ? "units" : "weight"}</div>
         <div className="mt-2">
           {drivers.map((d) => (
             <div key={d.title} className={cn("grid grid-cols-[8px_minmax(0,1fr)_72px] items-baseline gap-x-3 py-2.5 text-sm", ROW)}>
@@ -212,7 +246,7 @@ export function GapAnalysis({ node, onInbox }: { node: GapNode; onInbox: (batchI
                   {d.points.length > 0 && ` · ${d.points.join(" · ")}`}
                 </span>
               </span>
-              <span className="text-right font-semibold text-slate-950 tabular-nums">{m(d.value, true)}</span>
+              <span className="text-right font-semibold text-slate-950 tabular-nums">{mm(d.value, true)}</span>
             </div>
           ))}
         </div>
@@ -221,7 +255,7 @@ export function GapAnalysis({ node, onInbox }: { node: GapNode; onInbox: (batchI
       <div>
         <div className={SEC}>What Ally recommends</div>
         <div className="mt-2">
-          {node.recommendations.map((r) => (
+          {recs.map((r) => (
             <div key={r.title} className={cn("flex flex-wrap items-center justify-between gap-3 py-2.5", ROW)}>
               <div className="min-w-0">
                 <div className="text-sm text-slate-950">{r.title}</div>
@@ -232,6 +266,7 @@ export function GapAnalysis({ node, onInbox }: { node: GapNode; onInbox: (batchI
           ))}
         </div>
       </div>
+      {!nested && <RecipeFeedback node={node} render={(r) => <GapAnalysis node={node} onInbox={onInbox} recipe={r} nested />} />}
     </div>
   )
 }

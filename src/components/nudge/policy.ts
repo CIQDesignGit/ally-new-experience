@@ -50,6 +50,16 @@ export interface KnowledgeEntry extends Scope {
   date: string
   /** Where it came from when it wasn't typed in Settings, e.g. a thumbs down on one SKU. */
   source?: string
+  /** A corrected recipe (how an analysis runs), when the lesson is one. */
+  recipe?: GapRecipe
+}
+
+/** How gap to plan runs: what plan is measured in, steps added to Ally's, and the columns shown. */
+export interface GapRecipe {
+  measure: "sales" | "units" | "weight"
+  steps: string[]
+  columns: ("units" | "weight" | "fill")[]
+  scope: "me" | "team" | "account"
 }
 
 export interface Policy {

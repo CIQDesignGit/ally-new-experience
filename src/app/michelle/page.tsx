@@ -21,6 +21,7 @@ import { PROMO_QUESTIONS, PROMO_WIDGETS } from "@/components/nudge/promo/data"
 import type { PromoWidget } from "@/components/nudge/promo/data"
 import type { Chip } from "@/components/nudge/chat/inline-chat"
 import { PREP_CHIP, RUN_BY_NAME_CHIP } from "@/components/nudge/skill/answers"
+import { LESSON_CHIP } from "@/components/nudge/ops/gap-training"
 import { PREP_FILES } from "@/components/nudge/skill/data"
 import { GiftSetsAnswer } from "@/components/nudge/alerts/answers"
 import { GIFT_QUESTION } from "@/components/nudge/alerts/data"
@@ -64,6 +65,7 @@ function InboxChat() {
         PROMO_CHIPS["promo-month"],
         { q: GIFT_QUESTION, match: /gift.?sets?/i, render: () => <GiftSetsAnswer /> },
         // Run-by-name first: "open my negotiation prep" means the saved skill, not a new prep.
+        LESSON_CHIP,
         RUN_BY_NAME_CHIP,
         PREP_CHIP,
         ...MICHELLE_QUESTIONS.map((q) => ({ q, render: () => <div className="max-w-[860px] rounded-2xl bg-white px-5 py-4 text-[15px] leading-relaxed text-slate-700 ring-1 ring-slate-200">{michelleAnswer(q)}</div> })),
