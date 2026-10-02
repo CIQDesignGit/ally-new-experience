@@ -4,6 +4,7 @@ import { Suspense, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { TopStrip } from "@/components/nudge/top-strip"
 import { cn } from "@/lib/utils"
+import { AppDrawer } from "@/components/nudge/app-drawer"
 import { PageShell } from "@/components/layout/page-shell"
 import { ReviewPolicy } from "@/components/nudge/settings/review-policy"
 import { Knowledge } from "@/components/nudge/settings/knowledge"
@@ -67,6 +68,7 @@ export default function SettingsPage() {
           </Suspense>
           <ChatThread />
         </div>
+        <AppDrawer />
         <AskBar />
       </PageShell>
     </ChatProvider>

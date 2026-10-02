@@ -46,7 +46,8 @@ export function BusinessHero() {
       <div className="text-2xl font-semibold tracking-tight text-slate-700">
         Amazon is projected to land at <span className="font-mono text-slate-950">{fmtBiz(pace)}</span> {PERIOD_WORDS[l.period]}.
       </div>
-      <h1 className="mt-1 text-[40px] leading-tight font-bold tracking-tight text-slate-950">
+      {/* One line, the same size as Mike's and Michelle's headlines. */}
+      <h1 className="mt-1 text-[28px] leading-tight font-bold tracking-tight text-slate-950">
         That&apos;s <span className="font-mono">{fmtBiz(plan - pace)}</span> short of your <span className="font-mono">{fmtBiz(plan)}</span> plan.{" "}
         <span className="font-mono text-brand-600">{l.open.totalLabel}</span> of work is in flight to close it.
       </h1>

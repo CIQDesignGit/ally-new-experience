@@ -3,6 +3,7 @@
 import { LAUNCH_CHIP } from "@/components/nudge/launch/answers"
 import { LAUNCH_FILES } from "@/components/nudge/launch/data"
 import { useEffect, useRef, useState } from "react"
+import { AppDrawer } from "@/components/nudge/app-drawer"
 import { PageShell } from "@/components/layout/page-shell"
 import { ResetDemoButton } from "@/components/nudge/reset-demo-button"
 import { AskBar, ChatProvider, ChatThread, useChatSource } from "@/components/nudge/chat/inline-chat"
@@ -135,8 +136,8 @@ export default function MikePage() {
     <BackgroundProvider>
       <ChatProvider>
       <MikeChat />
-      <PageShell className="bg-slate-50">
-      <div className="mx-auto max-w-[1280px] overflow-hidden bg-white shadow-pane-lg sm:my-6 sm:rounded-2xl sm:ring-1 sm:ring-slate-900/6">
+      <PageShell className="bg-slate-50 xl:bg-white">
+      <div className="mx-auto max-w-[1280px] overflow-hidden bg-white shadow-pane-lg sm:my-6 sm:rounded-2xl sm:ring-1 sm:ring-slate-900/6 xl:my-0 xl:rounded-none xl:shadow-none xl:ring-0">
         <MikeHeader />
         <MikeProgress celebrate={celebrate} stage={filter === "all" ? undefined : filter} onStage={(st) => pickFilter(st, true)} />
         <div ref={queueRef} className="grid scroll-mt-4 grid-cols-[340px_minmax(0,1fr)]">
@@ -171,6 +172,7 @@ export default function MikePage() {
           <ResetDemoButton />
         </div>
       </div>
+      <AppDrawer home="/mike" />
       <AskBar />
       </PageShell>
       </ChatProvider>

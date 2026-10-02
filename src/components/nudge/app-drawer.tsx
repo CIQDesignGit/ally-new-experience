@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Bell, BookOpen, Home, LayoutDashboard, MessageSquare, PanelLeft, Presentation, Wand2 } from "lucide-react"
+import { Bell, BookOpen, Home, LayoutDashboard, MessageSquare, PanelLeft, Presentation, TrendingDown, Wand2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useNudge } from "./nudge-context"
 import { RETRO } from "./retro/prime-day"
@@ -104,6 +104,10 @@ export function AppDrawer({ home = "/michelle", defaultOpen }: { home?: string; 
             <Link href={home} className={cn("flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm", path === home ? "bg-slate-100 font-semibold text-slate-950" : "text-slate-700 hover:bg-slate-50")}>
               <Home className="size-4 text-slate-500" /> Daily brief
             </Link>
+            {/* Where the business stands against plan: always there, not something made in a chat. */}
+            <Link href="/michelle/gap" className={cn("mt-0.5 flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm", path === "/michelle/gap" ? "bg-slate-100 font-semibold text-slate-950" : "text-slate-700 hover:bg-slate-50")}>
+              <TrendingDown className="size-4 text-slate-500" /> Gap to plan
+            </Link>
           </div>
           {sections.map((sec) => (
             <div key={sec.title} className="mt-5 px-2">
@@ -138,6 +142,9 @@ export function AppDrawer({ home = "/michelle", defaultOpen }: { home?: string; 
         <nav className="flex flex-1 flex-col items-center gap-1">
           <Link href={home} aria-label="Daily brief" title="Daily brief" className={iconBtn(path === home)}>
             <Home className="size-4" />
+          </Link>
+          <Link href="/michelle/gap" aria-label="Gap to plan" title="Gap to plan" className={iconBtn(path === "/michelle/gap")}>
+            <TrendingDown className="size-4" />
           </Link>
           {/* Lists live in the open sidebar: an icon opens it. */}
           {sections.map((sec) => (

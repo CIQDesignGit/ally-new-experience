@@ -8,9 +8,6 @@ import { OPEN_ITEM_EVENT } from "@/components/nudge/chat/open-item"
 import type { OpenItemDetail } from "@/components/nudge/chat/open-item"
 import { OpsSkuPane } from "@/components/nudge/ops/ops-sku-pane"
 import { NoteBar } from "@/components/nudge/ops/note-bar"
-import { BusinessHero, BusinessPane, BusinessRail } from "@/components/nudge/ops/business-view"
-import { treeFor } from "@/components/nudge/ops/gap-data"
-import { cn } from "@/lib/utils"
 import { PageShell } from "@/components/layout/page-shell"
 import { MichelleHeader } from "@/components/nudge/ops/michelle-header"
 import { OpsProgress } from "@/components/nudge/ops/ops-progress"
@@ -73,6 +70,8 @@ function InboxChat() {
         // A task, not a question about the brief: it opens its own conversation.
         { q: RETRO_TASK, task: "/michelle/retro?new=1", render: () => <StorylineAnswer /> },
         { q: "Claire's Q4 business review", task: "/michelle/decks/qbr?new=1", match: /\b(qbr|business review)\b/i, render: () => null },
+        // Gap to plan has its own page; asking for it goes there.
+        { q: "Where are we against plan?", task: "/michelle/gap", match: /\b(gap to plan|against plan|behind plan|vs\.? plan|short of plan)\b/i, render: () => null },
       ],
       files: PREP_FILES,
     },
@@ -90,13 +89,7 @@ export default function MichellePage() {
 }
 
 function Michelle() {
-  const { clear } = useChat()
-  const { approve, approved, policy, businessGroup, note, addToNote } = useNudge()
-  // The Business view's hierarchy in the customer's order; the pane starts on the whole of Amazon.
-  const tree = treeFor(businessGroup)
-  const [nodeId, setNodeId] = useState("overall")
-  // Business: the quarterback view (where you stand, why, is the work moving). Ops: the queue of fixes.
-  const [view, setView] = useState<"business" | "ops">("ops")
+  const { approve, approved, policy, note, addToNote } = useNudge()
   const OPS_BATCHES = opsBatches(policy)
   // Open on the top of the inbox (same order as the list).
   const [selectedId, setSelectedId] = useState<OpsBatch["id"]>(() => inboxRows(OPS_BATCHES, approved, "all")[0].id)
@@ -147,13 +140,23 @@ function Michelle() {
     scrollToQueue()
   }
 
+  // The gap-to-plan page's "fix it" links land here on that issue ("/michelle?open=buybox&asin=…").
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search)
+    const id = q.get("open")
+    if (!id) return
+    window.history.replaceState(null, "", "/michelle")
+    window.setTimeout(() => openOps(id, q.get("asin") ?? undefined), 300)
+    // Once, on arrival.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   // An Ask Ally answer's next step ("Review the 4 hero SKUs") opens that issue here.
   useEffect(() => {
     const onOpen = (e: Event) => {
       const { batch, review } = (e as CustomEvent<OpenItemDetail>).detail
       const b = OPS_BATCHES.find((x) => x.id === batch) ?? OPS_BATCHES.find((x) => x.id.startsWith(batch))
       if (!b) return
-      setView("ops")
       if (review) reviewAll(b)
       else openOps(b.id)
     }
@@ -165,7 +168,6 @@ function Michelle() {
   function openOps(batchId: string, asin?: string) {
     const b = OPS_BATCHES.find((x) => x.id === batchId) ?? OPS_BATCHES.find((x) => batchId.startsWith(x.id))
     if (!b) return
-    setView("ops")
     setSelectedId(b.id)
     const onIt = !!asin && opsSkus(b).some((s) => s.asin === asin)
     setSelectedSku(onIt ? asin! : null)
@@ -202,47 +204,7 @@ function Michelle() {
   return (
     <PageShell className="bg-slate-50 xl:bg-white">
       <div className="mx-auto max-w-[1280px] overflow-clip bg-white shadow-pane-lg sm:my-6 sm:rounded-2xl sm:ring-1 sm:ring-slate-900/6 xl:my-0 xl:rounded-none xl:shadow-none xl:ring-0">
-        <MichelleHeader
-          viewSwitch={
-            <div className="inline-flex h-9 items-center rounded-lg border border-slate-200 bg-slate-25 p-0.5">
-              {(
-                [
-                  ["business", "Business"],
-                  ["ops", "Ops"],
-                ] as const
-              ).map(([id, label]) => (
-                <button
-                  key={id}
-                  type="button"
-                  onClick={() => {
-                    // Each view starts its own conversation.
-                    clear()
-                    setView(id)
-                  }}
-                  aria-pressed={view === id}
-                  className={cn(
-                    "h-full rounded-md px-3 text-sm font-medium transition-colors",
-                    view === id ? "bg-white text-slate-950 shadow-xs ring-1 ring-slate-200" : "text-slate-500 hover:text-slate-800",
-                  )}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-          }
-        />
-        {view === "business" ? (
-          <>
-            <BusinessHero />
-            <div className="grid grid-cols-[340px_minmax(0,1fr)] border-t border-slate-200">
-              <div className="border-r border-slate-200 bg-white">
-                <BusinessRail root={tree} selected={nodeId} onSelect={setNodeId} />
-              </div>
-              <BusinessPane root={tree} nodeId={nodeId} onSelect={setNodeId} onOpenOps={openOps} />
-            </div>
-          </>
-        ) : (
-          <>
+        <MichelleHeader />
         <OpsProgress celebrate={celebrate} stage={filter === "all" ? undefined : filter} onStage={(st) => pickFilter(st, true)} />
         <NoteBar
           onSent={(c) => {
@@ -274,10 +236,8 @@ function Michelle() {
           )}
         </div>
         <InboxChat />
-          </>
-        )}
         <OpsDelivered />
-        {/* Page-level answers go last, so the conversation is the end of the page. Business-view answers sit under the pane they're about. */}
+        {/* Page-level answers go last, so the conversation is the end of the page.  */}
         <ChatThread />
         {/* Demo-only control, kept out of the product chrome. Room below for the floating Ask Ally bar. */}
         <div className="flex justify-end px-10 pb-24 opacity-50 hover:opacity-100">
