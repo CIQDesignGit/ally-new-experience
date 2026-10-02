@@ -20,9 +20,9 @@ export function MiniWaterfall({ values, highlight = "approval", onSelect, classN
   ]
   const total = stages.reduce((n, s) => n + values[s.k], 0)
   const W = 340
-  const H = 160
-  const base = 128
-  const top = 24
+  const H = 112
+  const base = 88
+  const top = 18
   const scale = (base - top) / (total || 1)
   const bw = 56
   const gap = 15
