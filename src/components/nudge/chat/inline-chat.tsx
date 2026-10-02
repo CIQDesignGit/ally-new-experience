@@ -2,7 +2,8 @@
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react"
 import { motion } from "framer-motion"
-import { Send, Sparkles } from "lucide-react"
+import { Plus, Send, Sparkles } from "lucide-react"
+import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 
 /**
@@ -15,6 +16,8 @@ import { cn } from "@/lib/utils"
 export interface Chip {
   q: string
   render: () => React.ReactNode
+  /** A task, not a question about this screen: it starts its own conversation at this address. */
+  task?: string
 }
 
 export interface ChatSource {
@@ -164,6 +167,9 @@ export function ChatThread({ className, anchor }: { className?: string; anchor?:
 /** The bar: chips for what's on screen (the ones not yet asked), then the input. */
 export function AskBar({ placeholder = "Ask Ally: what can I take from your plate?" }: { placeholder?: string }) {
   const { source, turns, ask, clear } = useChat()
+  const router = useRouter()
+  // Questions about this screen answer here; tasks (make a deck, plan an event) open their own conversation.
+  const run = (c: Chip) => (c.task ? router.push(c.task) : ask(c))
   const [text, setText] = useState("")
   const [open, setOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
@@ -196,29 +202,44 @@ export function AskBar({ placeholder = "Ask Ally: what can I take from your plat
   // Once a conversation starts, the next questions stay visible above the bar.
   const showChips = (open || turns.length > 0) && chips.length > 0
 
+  const tray = showChips || turns.length > 0
   return (
     <div className="pointer-events-none fixed inset-x-0 bottom-6 z-40 flex justify-center px-4">
-      <div ref={rootRef} className="pointer-events-auto flex w-full max-w-[760px] flex-col gap-2">
-        {(showChips || turns.length > 0) && (
-          <div className="flex items-end justify-between gap-3">
-            <div className="flex flex-wrap gap-2">
-              {showChips &&
-                chips.map((c) => (
-                  <button
-                    key={c.q}
-                    type="button"
-                    onClick={() => {
-                      ask(c)
-                      setOpen(false)
-                    }}
-                    className="rounded-full border border-slate-200 bg-white/95 px-3 py-1.5 text-sm text-slate-700 shadow-xs backdrop-blur transition-colors hover:border-brand-300 hover:text-brand-700"
-                  >
-                    {c.q}
-                  </button>
-                ))}
-            </div>
+      {/* One solid panel: suggestions sit in a tray above the input, never floating over the page. */}
+      <div
+        ref={rootRef}
+        className={cn(
+          "pointer-events-auto flex w-full max-w-[760px] flex-col border border-slate-300 bg-white shadow-[0_8px_24px_-6px_rgba(15,23,42,0.18),0_2px_6px_rgba(15,23,42,0.06)] transition-colors focus-within:border-brand-400",
+          tray ? "rounded-[22px]" : "rounded-full",
+        )}
+      >
+        {tray && (
+          <div className="flex flex-wrap items-center gap-2 border-b border-slate-100 px-3 pt-3 pb-2.5">
+            {showChips &&
+              chips.map((c) => (
+                <button
+                  key={c.q}
+                  type="button"
+                  onClick={() => {
+                    run(c)
+                    setOpen(false)
+                  }}
+                  className={cn(
+                    "rounded-full border px-3 py-1.5 text-sm transition-colors",
+                    c.task ? "inline-flex items-center gap-1.5 border-brand-200 bg-brand-25 text-brand-700 hover:border-brand-400" : "border-slate-200 bg-white text-slate-700 hover:border-brand-300 hover:text-brand-700",
+                  )}
+                >
+                  {c.task && (
+                    <>
+                      <Plus className="size-3.5" />
+                      <span className="font-semibold">New:</span>
+                    </>
+                  )}
+                  {c.q}
+                </button>
+              ))}
             {turns.length > 0 && (
-              <button type="button" onClick={clear} className="shrink-0 rounded-full bg-white/90 px-3 py-1.5 text-xs text-slate-500 shadow-xs backdrop-blur hover:text-slate-800">
+              <button type="button" onClick={clear} className="ml-auto shrink-0 rounded-full px-2.5 py-1.5 text-xs text-slate-500 hover:bg-slate-50 hover:text-slate-800">
                 Clear conversation
               </button>
             )}
@@ -228,11 +249,11 @@ export function AskBar({ placeholder = "Ask Ally: what can I take from your plat
           onSubmit={(e) => {
             e.preventDefault()
             const chip = closest(source.chips, text)
-            if (chip) ask(chip)
+            if (chip) run(chip)
             else setOpen(true)
             setText("")
           }}
-          className="flex items-center gap-2 rounded-full border border-slate-300 bg-white/95 py-1.5 pr-1.5 pl-4 shadow-[0_8px_24px_-6px_rgba(15,23,42,0.18),0_2px_6px_rgba(15,23,42,0.06)] backdrop-blur transition-colors focus-within:border-brand-400 focus-within:bg-white"
+          className="flex items-center gap-2 py-1.5 pr-1.5 pl-4"
         >
           <Sparkles className="size-4 shrink-0 text-brand-600" />
           <input

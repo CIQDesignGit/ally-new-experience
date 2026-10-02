@@ -13,7 +13,7 @@ import { AS_OF } from "@/components/nudge/data"
 import { PRIMARY, SECONDARY } from "@/components/nudge/mike/buttons"
 import { Slide } from "@/components/nudge/retro/slide"
 import { BRAND_FILE, LESSONS, RETRO, SLIDES, THEMES } from "@/components/nudge/retro/prime-day"
-import { RETRO_QUESTION } from "@/components/nudge/retro/storyline-answer"
+import { RETRO_QUESTION, StorylineAnswer } from "@/components/nudge/retro/storyline-answer"
 import { exportRetroPptx } from "@/components/nudge/retro/export-pptx"
 import { lato, playfair } from "@/components/nudge/retro/fonts"
 
@@ -33,7 +33,7 @@ export default function RetroPage() {
   const router = useRouter()
   const order = retro.order?.length === SLIDES.length ? retro.order : DEFAULT_ORDER
   const theme = retro.theme ?? "default"
-  const [view, setView] = useState<"storyboard" | "deck">("storyboard")
+  const [view, setView] = useState<"answer" | "storyboard" | "deck">("storyboard")
   const [tab, setTab] = useState<"outline" | "questions" | "storyboard">("storyboard")
   const [expanded, setExpanded] = useState(false)
   const [current, setCurrent] = useState(0)
@@ -41,7 +41,7 @@ export default function RetroPage() {
   const [share, setShare] = useState(false)
   const [msgs, setMsgs] = useState<Msg[]>([
     { id: 1, from: "you", text: RETRO_QUESTION },
-    { id: 2, from: "ally", text: "Storyboard is open on the right: 7 slides, one per beat. Drag to reorder, or tell me what to change." },
+    { id: 2, from: "ally", text: "Here's the storyline. The storyboard is open on the right: 7 slides, one per beat. Drag to reorder, or tell me what to change." },
   ])
   const next = useRef(3)
 
@@ -54,6 +54,8 @@ export default function RetroPage() {
     if (q.get("new") === "1" && !fresh.current) {
       fresh.current = true
       opened.current = true
+      // A new task opens as a conversation: the ask and Ally's storyline, nothing else.
+      window.setTimeout(() => setView("answer"), 0)
       // After the saved demo state has loaded (it loads in the provider's effect, which runs after this one).
       window.setTimeout(() => setRetro({ order: undefined, theme: undefined, locked: false, deck: false, sentToClaire: false, dashboard: false, saved: [] }), 0)
       window.history.replaceState(null, "", "/michelle/retro")
@@ -119,7 +121,9 @@ export default function RetroPage() {
 
   // Suggestions follow the stage; typed text lands on the closest one.
   const chips: { q: string; run: () => void }[] =
-    view === "storyboard"
+    view === "answer"
+      ? [{ q: "Open the storyboard", run: () => setView("storyboard") }]
+      : view === "storyboard"
       ? [
           { q: "Put deals right after the market slide", run: () => { move(order.indexOf("deals"), 1); say({ from: "you", text: "Put deals right after the market slide" }, { from: "ally", text: "Done. Deals is now slide 2." }) } },
           { q: "Lock it and build the deck", run: () => { say({ from: "you", text: "Lock it and build the deck" }); makeDeck() } },
@@ -160,7 +164,21 @@ export default function RetroPage() {
   return (
     <PageShell className={cn("bg-slate-50", playfair.variable, lato.variable)}>
       <div className="mx-auto max-w-[1440px] overflow-clip bg-white shadow-pane-lg sm:my-6 sm:rounded-2xl sm:ring-1 sm:ring-slate-900/6">
-        <TopStrip person="michelle" crumbs={[{ label: "Home", href: "/michelle" }, { label: RETRO.name }]} />
+        <TopStrip person="michelle" crumbs={[{ label: "Daily brief", href: "/michelle" }, { label: RETRO.name }]} />
+        {view === "answer" ? (
+          <div className="mt-4 flex min-h-[760px] justify-center border-t border-slate-200 px-10 pt-8 pb-10">
+            <div className="flex w-full max-w-[860px] flex-col gap-6">
+              <div className="flex justify-end">
+                <div className="max-w-[560px] rounded-2xl rounded-br-md bg-brand-500 px-4 py-2.5 text-[15px] text-white">{RETRO_QUESTION}</div>
+              </div>
+              <div className="flex gap-3">
+                <AllyMark />
+                <StorylineAnswer onOpen={() => setView("storyboard")} />
+              </div>
+              <Composer onAsk={ask} placeholder="Ask a follow-up" className="sticky bottom-6 mt-auto" />
+            </div>
+          </div>
+        ) : (
         <div className={cn("mt-4 grid min-h-[760px] border-t border-slate-200", expanded ? "grid-cols-1" : "grid-cols-[384px_minmax(0,1fr)]")}>
           {!expanded && <Conversation msgs={msgs} chips={chips} onAsk={ask} retro={retro} onSave={saveLesson} />}
           <div className="relative min-w-0 bg-slate-50">
@@ -179,6 +197,7 @@ export default function RetroPage() {
             )}
           </div>
         </div>
+        )}
       </div>
       {share && (
         <ShareSheet

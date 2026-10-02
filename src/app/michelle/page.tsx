@@ -15,7 +15,7 @@ import { OpsBatchList } from "@/components/nudge/ops/ops-batch-list"
 import { OpsBatchDetail } from "@/components/nudge/ops/ops-batch-detail"
 import { OpsDelivered } from "@/components/nudge/ops/ops-delivered"
 import { MICHELLE_QUESTIONS, michelleAnswer } from "@/components/nudge/ask-ally-personas"
-import { RETRO_QUESTION, StorylineAnswer } from "@/components/nudge/retro/storyline-answer"
+import { RETRO_TASK, StorylineAnswer } from "@/components/nudge/retro/storyline-answer"
 import { ResetDemoButton } from "@/components/nudge/reset-demo-button"
 import { opsBatches, opsSkus } from "@/components/nudge/data"
 import { useNudge } from "@/components/nudge/nudge-context"
@@ -32,8 +32,8 @@ function InboxChat() {
     {
       chips: [
         ...MICHELLE_QUESTIONS.map((q) => ({ q, render: () => <div className="max-w-[860px] rounded-2xl bg-white px-5 py-4 text-[15px] leading-relaxed text-slate-700 ring-1 ring-slate-200">{michelleAnswer(q)}</div> })),
-        // Analysis to storyline to deck: the answer proposes the story; the storyboard builds it.
-        { q: RETRO_QUESTION, render: () => <StorylineAnswer /> },
+        // A task, not a question about the brief: it opens its own conversation.
+        { q: RETRO_TASK, task: "/michelle/retro?new=1", render: () => <StorylineAnswer /> },
       ],
     },
     "inbox",
