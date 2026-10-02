@@ -212,30 +212,68 @@ const CAUSE_TONE: Record<Driver["tag"], { bar: string; text: string }> = {
   Resolved: { bar: "bg-slate-300", text: "text-slate-500" },
 }
 
-/** The week's gap as one bar, split by cause: how much of it each one explains. */
-function GapSplit({ drivers }: { drivers: Driver[] }) {
-  const total = drivers.reduce((s, d) => s + Math.abs(d.value), 0) || 1
+const WALK = "grid grid-cols-[8px_minmax(0,1fr)_200px_72px_minmax(0,0.9fr)] items-center gap-x-4 px-5"
+
+/** One step of the walk: where this cause's dollars sit between plan (right) and actual (left). */
+function Step({ from, to, tone }: { from: number; to: number; tone: string }) {
   return (
-    <div className="flex h-3 gap-0.5 overflow-hidden rounded-full" role="img" aria-label={drivers.map((d) => `${d.title} ${m(d.value, true)}`).join(", ")}>
-      {drivers.map((d) => (
-        <div key={d.title} title={`${d.title} ${m(d.value, true)}`} className={CAUSE_TONE[d.tag].bar} style={{ flex: Math.abs(d.value) / total }} />
-      ))}
+    <div className="relative h-5">
+      <i aria-hidden className="absolute inset-y-0 left-0 right-0 border-x border-dashed border-slate-200" />
+      <i aria-hidden className={cn("absolute inset-y-1 rounded-sm", tone)} style={{ left: `${Math.max(0, to)}%`, width: `${Math.max(from - Math.max(0, to), 1.5)}%` }} />
     </div>
   )
 }
 
-/** One cause: its share dot, what happened and its state, the dollars, and the fix in flight. */
-function Cause({ d, fixFor, asin }: { d: Driver; fixFor: ReturnType<typeof useFixes>; asin?: string }) {
-  const f = d.fix && fixFor(d.fix, asin)
+/**
+ * Plan to actual, one labeled step per cause: the picture and the list are the
+ * same rows, so nothing is said twice. Steps run right to left, from plan down
+ * to actual, sized to their share of the gap; each row ends in its fix.
+ */
+function GapWalk({ n, drivers, fixFor }: { n: GapNode; drivers: Driver[]; fixFor: ReturnType<typeof useFixes> }) {
+  const total = drivers.reduce((s, d) => s + Math.abs(d.value), 0) || 1
+  // Each step's span, from plan (100%) down to actual (0%).
+  const spans = drivers.reduce<{ from: number; to: number }[]>((acc, d) => {
+    const from = acc.length ? acc[acc.length - 1].to : 100
+    return [...acc, { from, to: from - (Math.abs(d.value) / total) * 100 }]
+  }, [])
   return (
-    <div className="grid grid-cols-[8px_minmax(0,1fr)_64px_minmax(0,0.9fr)] items-baseline gap-x-3 border-t border-slate-100 px-5 py-3 text-sm">
-      <span className={cn("size-2 -translate-y-px rounded-full", CAUSE_TONE[d.tag].bar)} />
-      <span className="min-w-0">
-        <span className="block text-slate-950">{d.title}</span>
-        <span className={cn("mt-0.5 block text-xs", CAUSE_TONE[d.tag].text)}>{d.tag}</span>
-      </span>
-      <span className="text-right font-semibold text-slate-950 tabular-nums">{m(d.value, true)}</span>
-      <span className="min-w-0">{f ? <FixLine f={f} /> : <span className="text-slate-500">{d.tag === "Resolved" ? "No action needed" : d.tag === "Worth watching" ? "Watching" : "No fix in flight"}</span>}</span>
+    <div className="pb-2 text-sm">
+      <div className={cn(WALK, "border-t border-slate-100 py-2.5")}>
+        <span />
+        <span className="font-medium text-slate-950">Plan</span>
+        <span className="relative h-5">
+          <i aria-hidden className="absolute inset-y-0 right-0 w-0.5 rounded bg-slate-950" />
+        </span>
+        <span className="text-right font-semibold text-slate-950 tabular-nums">{m(n.lastWeek.plan)}</span>
+        <span />
+      </div>
+      {drivers.map((d, i) => {
+        const { from, to } = spans[i]
+        const f = d.fix && fixFor(d.fix, n.asin)
+        return (
+          <div key={d.title} className={cn(WALK, "border-t border-slate-100 py-2.5")}>
+            <span className={cn("size-2 rounded-full", CAUSE_TONE[d.tag].bar)} />
+            <span className="min-w-0">
+              <span className="block text-slate-950">{d.title}</span>
+              <span className={cn("mt-0.5 block text-xs", CAUSE_TONE[d.tag].text)}>{d.tag}</span>
+            </span>
+            <Step from={from} to={to} tone={CAUSE_TONE[d.tag].bar} />
+            <span className="text-right font-semibold text-slate-950 tabular-nums">{m(d.value, true)}</span>
+            <span className="min-w-0">{f ? <FixLine f={f} /> : <span className="text-slate-500">{d.tag === "Resolved" ? "No action needed" : d.tag === "Worth watching" ? "Watching" : "No fix in flight"}</span>}</span>
+          </div>
+        )
+      })}
+      <div className={cn(WALK, "border-t border-slate-200 py-2.5")}>
+        <span />
+        <span className="font-medium text-slate-950">Actual</span>
+        <span className="relative h-5">
+          <i aria-hidden className="absolute inset-y-0 left-0 w-0.5 rounded bg-slate-950" />
+        </span>
+        <span className="text-right font-semibold text-slate-950 tabular-nums">{m(n.lastWeek.sales)}</span>
+        <span className="text-xs text-slate-500 tabular-nums">
+          {m(n.lastWeek.sales - n.lastWeek.plan, true)} · {pct(n.lastWeek.sales, n.lastWeek.plan)} of plan
+        </span>
+      </div>
     </div>
   )
 }
@@ -274,36 +312,22 @@ export function BusinessPane({ root, nodeId, onSelect, onOpenOps }: { root: GapN
         </div>
       </div>
 
-      {/* The week in one block: last week's gap, how it splits by cause, then the causes and their fixes. */}
+      {/* The week in one block: last week's gap, then the walk from plan to actual, a step per cause with its fix. */}
       <div className="mt-5 overflow-hidden rounded-xl border border-slate-200">
-        <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-2 px-5 pt-4 pb-3">
-          <div>
-            <div className="text-xs font-medium text-slate-500">Last week vs plan</div>
-            <div className="mt-0.5 flex items-baseline gap-2 tabular-nums">
-              <span className={cn("text-[26px] font-semibold tracking-tight", g < 0 ? "text-error-600" : "text-success-700")}>{m(g, true)}</span>
-              <span className="text-sm text-slate-500">
-                {m(n.lastWeek.sales)} of {m(n.lastWeek.plan)} · {pct(n.lastWeek.sales, n.lastWeek.plan)}
-              </span>
-            </div>
+        <div className="px-5 pt-4 pb-3">
+          <div className="text-xs font-medium text-slate-500">Last week vs plan</div>
+          <div className="mt-0.5 flex items-baseline gap-2 tabular-nums">
+            <span className={cn("text-[26px] font-semibold tracking-tight", g < 0 ? "text-error-600" : "text-success-700")}>{m(g, true)}</span>
+            <span className="text-sm text-slate-500">
+              {m(n.lastWeek.sales)} of {m(n.lastWeek.plan)} · {pct(n.lastWeek.sales, n.lastWeek.plan)}
+            </span>
           </div>
-          <div className="flex gap-6 text-sm text-slate-500 tabular-nums">
-            <span>
-              This week, projected <span className="font-semibold text-slate-950">{m(eow, true)}</span> · {pct(n.eow.projected, n.eow.plan)}
-            </span>
-            <span>
-              Week to date <span className="font-semibold text-slate-950">{m(n.wtd)}</span>
-            </span>
+          <div className="mt-1 text-sm text-slate-500 tabular-nums">
+            This week, projected <span className="font-semibold text-slate-950">{m(eow, true)}</span> · {pct(n.eow.projected, n.eow.plan)} · Week to date <span className="font-semibold text-slate-950">{m(n.wtd)}</span>
           </div>
         </div>
         {byValue.length > 0 ? (
-          <>
-            <div className="px-5 pb-4">
-              <GapSplit drivers={byValue} />
-            </div>
-            {byValue.map((d) => (
-              <Cause key={d.title} d={d} fixFor={fixFor} asin={n.asin} />
-            ))}
-          </>
+          <GapWalk n={n} drivers={byValue} fixFor={fixFor} />
         ) : (
           <div className="border-t border-slate-100 px-5 py-3 text-sm text-success-700">On track · nothing pulling it below plan</div>
         )}
