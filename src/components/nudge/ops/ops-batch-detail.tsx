@@ -1,17 +1,16 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { ArrowRight, Check, ChevronDown, Mail, RefreshCw, Search } from "lucide-react"
+import { Check, ChevronDown, Mail, RefreshCw, Search } from "lucide-react"
 import { toast } from "sonner"
 import { useNudge } from "../nudge-context"
-import { PRIMARY, SECONDARY } from "../mike/buttons"
+import { PRIMARY } from "../mike/buttons"
 import { OPS_DAYS_SAVED, fmtValue, opsSkus } from "../data"
 import type { OpsBatch } from "../data"
 import { SkillsTrace, SkuEvidence, SkuHeader } from "./ops-evidence"
 import { BuyBoxVisual } from "./buybox-visual"
 import { IssueVisual, hasIssueVisual } from "./issue-visuals"
 import { VENDOR_MANAGER, useNote } from "./note-bar"
-import { ShieldCheck } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface OpsBatchDetailProps {
@@ -70,8 +69,6 @@ export function OpsBatchDetail({ batch, onAction, onReviewAll }: OpsBatchDetailP
   // Buy box issues get the picture: the lead SKU's offers and crawls.
   const lead = batch.sellerSkus?.find((x) => x.asin === batch.exampleSku) ?? batch.sellerSkus?.[0]
   const daily = fmtValue(batch.perDay ?? batch.approveValue / OPS_DAYS_SAVED)
-  // The page confirms the send (same toast from the issue pane and the SKU pane).
-  const send = () => onAction(batch)
 
   return (
     <div className="flex min-w-0 flex-col px-10 py-8">
@@ -169,43 +166,36 @@ export function OpsBatchDetail({ batch, onAction, onReviewAll }: OpsBatchDetailP
           </div>
         ) : (
           <div className="flex flex-col gap-6">
-            {noted > 0 && (
+            {/* One action and one status line: the next step, or where the SKUs are now. */}
+            {noted === batch.skus ? (
               <div className="flex items-center gap-2 text-sm text-slate-700">
                 <Mail className="size-4 text-brand-600" />
-                {sentAll ? `Sent to ${VENDOR_MANAGER.name}` : `${noted} of ${batch.skus} SKUs in your note to ${VENDOR_MANAGER.name} · not sent`}
+                {sentAll ? `Sent to ${VENDOR_MANAGER.name}` : `All ${batch.skus} SKUs are in your note to ${VENDOR_MANAGER.name}. They go out when you send it.`}
+              </div>
+            ) : (
+              <div className="flex flex-col gap-2">
+                <div className="flex flex-wrap items-center gap-4">
+                  {each ? (
+                    <button type="button" onClick={() => onReviewAll(batch)} className={PRIMARY}>
+                      Review {batch.skus} SKUs
+                    </button>
+                  ) : (
+                    <button type="button" onClick={addAll} className={PRIMARY}>
+                      Add {batch.skus} SKUs to your note
+                    </button>
+                  )}
+                  {!each && sample && (
+                    <button type="button" onClick={() => setShowSample((v) => !v)} className="inline-flex items-center gap-1 text-sm font-medium text-slate-600 hover:text-brand-700">
+                      {showSample ? "Hide the sample" : "Check a sample first"}
+                      <ChevronDown className={cn("size-4 transition-transform", showSample && "rotate-180")} />
+                    </button>
+                  )}
+                </div>
+                {(noted > 0 || batch.reassure) && (
+                  <div className="text-sm text-slate-500">{noted > 0 ? `${noted} of ${batch.skus} in your note to ${VENDOR_MANAGER.name}` : batch.reassure}</div>
+                )}
               </div>
             )}
-            <div className="flex flex-col gap-3">
-              <div className="flex flex-wrap items-center gap-3">
-                {each ? (
-                  <button type="button" onClick={() => onReviewAll(batch)} className={PRIMARY}>
-                    Review {batch.skus} SKUs
-                  </button>
-                ) : (
-                  <button type="button" onClick={addAll} disabled={noted === batch.skus} className={cn(PRIMARY, "disabled:opacity-50")}>
-                    {noted === batch.skus ? "All in your note" : `Add ${batch.skus} SKUs to your note`}
-                  </button>
-                )}
-                {!each && sample && (
-                  <button type="button" onClick={() => setShowSample((v) => !v)} className={SECONDARY}>
-                    {showSample ? "Hide sample" : "Review sample SKU"}
-                    <ChevronDown className={cn("size-4 text-slate-400 transition-transform", showSample && "rotate-180")} />
-                  </button>
-                )}
-              </div>
-              {batch.reassure && (
-                <div className="flex items-center gap-2 text-sm text-slate-700">
-                  <ShieldCheck className="size-4 shrink-0 text-success-600" />
-                  {batch.reassure}
-                </div>
-              )}
-              {!each && skus.length > 1 && (
-                <button type="button" onClick={() => onReviewAll(batch)} className="inline-flex w-fit items-center gap-1 text-sm text-slate-500 transition-colors hover:text-brand-700">
-                  Or review all {batch.skus} SKUs one by one
-                  <ArrowRight className="size-3.5" />
-                </button>
-              )}
-            </div>
             {showSample && sample && !each && (
               <div className="border-t border-slate-100 pt-8">
                 <SkuHeader asin={sample.asin} name={sample.name} label="Sample" />
