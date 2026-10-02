@@ -8,6 +8,7 @@ import { PRIMARY, SECONDARY } from "../mike/buttons"
 import { OPS_DAYS_SAVED, fmtValue, opsSkus } from "../data"
 import type { OpsBatch } from "../data"
 import { SkillsTrace, SkuEvidence, SkuHeader } from "./ops-evidence"
+import { BuyBoxVisual } from "./buybox-visual"
 import { VENDOR_MANAGER, useNote } from "./note-bar"
 import { ShieldCheck } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -64,6 +65,8 @@ export function OpsBatchDetail({ batch, onAction, onReviewAll }: OpsBatchDetailP
     addToNote(batch.id, skus.map((x) => x.asin), true)
     toast.success(`Added ${batch.skus} SKUs to your note to ${VENDOR_MANAGER.name}`, { position: "top-right" })
   }
+  // Buy box issues get the picture: the lead SKU's offers and crawls.
+  const lead = batch.sellerSkus?.find((x) => x.asin === batch.exampleSku) ?? batch.sellerSkus?.[0]
   const daily = fmtValue(batch.perDay ?? batch.approveValue / OPS_DAYS_SAVED)
   // The page confirms the send (same toast from the issue pane and the SKU pane).
   const send = () => onAction(batch)
@@ -109,6 +112,11 @@ export function OpsBatchDetail({ batch, onAction, onReviewAll }: OpsBatchDetailP
               <span className="-ml-2 text-xs text-slate-500">this quarter</span>
             </div>
           ))
+        ) : lead ? (
+          <>
+            <p className="border-b border-slate-100 px-5 py-4 text-sm leading-relaxed text-slate-950">{batch.detected}</p>
+            <BuyBoxVisual batch={batch} sku={lead} />
+          </>
         ) : (
           <div className="px-5 py-4">
             <p className="text-sm leading-relaxed text-slate-950">{batch.detected}</p>

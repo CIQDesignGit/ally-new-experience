@@ -504,13 +504,14 @@ const CITIES = ["Los Angeles (90028)", "New York (10025)", "Seattle (98101)", "C
 const TIMES = ["Today, 10:00 AM", "Today, 8:00 AM", "Today, 6:00 AM", "Today, 4:00 AM", "Today, 2:00 AM", "Yesterday, 10:00 PM"]
 /** One buy-box SKU: two sellers undercutting MAP; the first wins most crawls. */
 function buyBoxSku(asin: string, name: string, tier: SellerSku["tier"], price: number, cut: number, wins: number): SellerSku {
-  const theirs = +(price * (1 - cut)).toFixed(2)
+  // Round numbers, as a seller would list and a brand would set them: $27.50, a $32 floor.
+  const theirs = Math.round(price * (1 - cut) * 2) / 2
   return {
     asin,
     name,
     tier,
     price,
-    map: +(price * 0.94).toFixed(2),
+    map: Math.round(price * 0.94),
     sellers: [
       { name: "CandleDepot", price: theirs, stock: "In stock", rating: 4.2, wins },
       { name: "WickWorks", price: theirs, stock: "In stock", rating: 4.1, wins: 12 - wins },
