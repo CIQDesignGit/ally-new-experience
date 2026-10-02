@@ -15,6 +15,7 @@ import { GAP_STEPS, GAP_TREE, GAP_WEEK, gapNode, pathTo } from "./gap-data"
 import type { Driver, GapAction, GapNode, Recommendation } from "./gap-data"
 import type { GapRecipe } from "../policy"
 import { MemoryRecall } from "../chat/memory"
+import { DidYouKnow } from "../chat/agent-run"
 import { BY, DEFAULT_RECIPE, FILL, FILL_STEP, RecipeFeedback, inMeasure, lbsOf, lessonText, unitsOf, useGapLesson } from "./gap-training"
 
 /** $M → "$5.8K", "$1.32M"; signed when asked. */
@@ -111,7 +112,8 @@ function Steps({ extra = [], measure = "sales", onDone }: { extra?: string[]; me
 
   if (running)
     return (
-      <div className="text-sm">
+      <div className="grid gap-5 text-sm md:grid-cols-[minmax(0,1fr)_280px]">
+      <div className="min-w-0">
         <div className="flex items-center gap-2 text-slate-600">
           <Loader2 className="size-4 animate-spin text-brand-600" />
           <span className="font-medium text-slate-950">Analyzing</span>
@@ -126,6 +128,8 @@ function Steps({ extra = [], measure = "sales", onDone }: { extra?: string[]; me
             </motion.li>
           ))}
         </ol>
+      </div>
+      <DidYouKnow className="self-start" />
       </div>
     )
   return (

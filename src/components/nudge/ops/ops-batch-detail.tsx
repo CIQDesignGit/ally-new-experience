@@ -7,7 +7,6 @@ import { useNudge } from "../nudge-context"
 import { PRIMARY } from "../mike/buttons"
 import { OPS_DAYS_SAVED, fmtValue, opsSkus } from "../data"
 import type { OpsBatch } from "../data"
-import { SkillsTrace } from "./ops-evidence"
 import { BuyBoxVisual } from "./buybox-visual"
 import { IssueVisual, hasIssueVisual } from "./issue-visuals"
 import { VENDOR_MANAGER, useNote } from "./note-bar"
@@ -75,16 +74,6 @@ export function OpsBatchDetail({ batch, onAction, onReviewAll }: OpsBatchDetailP
             {batch.partLabel && ` · ${batch.partLabel}`}
           </div>
           <div className="mt-0.5 text-2xl font-semibold tracking-tight text-slate-950">{batch.name}</div>
-          {/* Team, count and how it was found on one line. */}
-          <div className="mt-1.5 flex flex-wrap items-center gap-x-2 text-sm text-slate-500">
-            {batch.team} · {batch.skus} {batch.tier === "input" ? batch.inputNoun : "SKUs"}
-            {batch.skills && (
-              <>
-                <span className="text-slate-300">·</span>
-                <SkillsTrace skills={batch.skills} />
-              </>
-            )}
-          </div>
         </div>
         <div className="shrink-0 text-right">
           <div className={`font-mono text-[28px] font-bold tracking-tight tabular-nums ${done ? "text-success-700" : "text-slate-950"}`}>+{batch.value}</div>

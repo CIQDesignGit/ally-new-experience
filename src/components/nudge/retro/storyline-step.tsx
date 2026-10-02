@@ -6,6 +6,7 @@ import { Check, GripVertical, Loader2, Plus, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { PRIMARY } from "../mike/buttons"
 import type { RetroSlide } from "./prime-day"
+import { DidYouKnow } from "../chat/agent-run"
 
 /**
  * The storyline before the storyboard, in two steps on one list. First the
@@ -54,7 +55,9 @@ export function StorylineStep(p: {
   useEffect(() => {
     if (asking) return
     const reset = window.setTimeout(() => setAnswered(0), 0)
-    const t = Array.from({ length: n }, (_, i) => window.setTimeout(() => setAnswered(i + 1), 700 + i * 650))
+    // The first answers take longest (they read the data); the rest come quicker.
+    const at = (i: number) => 900 + Math.min(i, 4) * 1300 + Math.max(0, i - 4) * 500
+    const t = Array.from({ length: n }, (_, i) => window.setTimeout(() => setAnswered(i + 1), at(i)))
     return () => [reset, ...t].forEach(window.clearTimeout)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [asking])
@@ -62,6 +65,7 @@ export function StorylineStep(p: {
   const running = !asking && answered < n
 
   return (
+    <div className="flex min-w-0 flex-1 items-start gap-6">
     <div className="flex max-w-[860px] min-w-0 flex-1 flex-col gap-5">
       {planning || running ? (
         <p className="flex items-center gap-2 text-[15px] text-slate-500">
@@ -174,6 +178,9 @@ export function StorylineStep(p: {
       </div>
       )}
       {!asking && !running && <div className="text-[13px] text-slate-500">{p.sources}</div>}
+    </div>
+    {/* While the questions are answered, "Did you know" sits beside them. */}
+    {running && <DidYouKnow className="sticky top-6 hidden w-[260px] shrink-0 lg:flex" />}
     </div>
   )
 }

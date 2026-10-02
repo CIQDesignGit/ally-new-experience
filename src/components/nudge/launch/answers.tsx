@@ -5,6 +5,7 @@ import { Check, Loader2, Upload } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useNudge } from "../nudge-context"
 import { useChat, useTurn } from "../chat/inline-chat"
+import { AgentRun } from "../chat/agent-run"
 import { UploadDialog } from "../chat/upload-dialog"
 import type { Chip } from "../chat/inline-chat"
 import { OpenItem } from "../chat/open-item"
@@ -26,8 +27,25 @@ const DATE = new Date(`${AS_OF}T12:00:00`).toLocaleDateString("en-US", { month: 
 export function LaunchBriefAnswer() {
   // Asked for without the brief attached: Ally asks for it instead of pretending to have read it.
   const turn = useTurn()
+  const [read, setRead] = useState(false)
   if (!turn?.attach?.length) return <NeedBrief />
-  return <BriefRead />
+  // The brief is read first, visibly; then Ally shows what it took from it.
+  return (
+    <div className="flex flex-col gap-4">
+      <AgentRun
+        title="Reading the launch brief"
+        files={[
+          { name: LAUNCH_FILES[0].name, size: LAUNCH_FILES[0].size, detail: "From Priya · 3 SKUs launching Nov 9" },
+          { name: LAUNCH_FILES[1].name, size: LAUNCH_FILES[1].size, detail: "1 concept image · Gather round the glow" },
+        ]}
+        readMs={6000}
+        steps={["Pulled the launch date, prices and sizes", "Matched the 3 SKUs to your catalog", "Read the concept: the glow, the hearth, the frost", "Checked it against Amazon's image rules"]}
+        slow={2}
+        onDone={() => setRead(true)}
+      />
+      {read && <BriefRead />}
+    </div>
+  )
 }
 
 /** No brief yet: one line and the upload, which asks again with the files. */
@@ -140,7 +158,7 @@ export const LAUNCH_CHIP: Chip = {
   hidden: true,
   takesFiles: true,
   needsFiles: true,
-  think: { ms: 2000, label: "Looking at the launch…", filesLabel: "Reading the brief and the creative…" },
+  think: { ms: 2000, label: "Looking at the launch…", filesLabel: "Opening the files…" },
   render: () => <LaunchBriefAnswer />,
 }
 

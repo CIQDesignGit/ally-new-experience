@@ -22,7 +22,6 @@ import type { PromoWidget } from "@/components/nudge/promo/data"
 import type { Chip } from "@/components/nudge/chat/inline-chat"
 import { PREP_CHIP, RUN_BY_NAME_CHIP } from "@/components/nudge/skill/answers"
 import { LESSON_CHIP } from "@/components/nudge/ops/gap-training"
-import { PREP_FILES } from "@/components/nudge/skill/data"
 import { GiftSetsAnswer } from "@/components/nudge/alerts/answers"
 import { GIFT_QUESTION } from "@/components/nudge/alerts/data"
 import { RETRO_TASK, StorylineAnswer } from "@/components/nudge/retro/storyline-answer"
@@ -55,8 +54,10 @@ function InboxChat() {
         { q: GIFT_QUESTION, match: /gift.?sets?/i, render: () => <GiftSetsAnswer /> },
         LESSON_CHIP,
         // Run-by-name first: "open my negotiation prep" means the saved skill, not a new prep.
-        RUN_BY_NAME_CHIP,
-        PREP_CHIP,
+        // A new task, so a new thread: the negotiation opens in its own conversation.
+        { ...RUN_BY_NAME_CHIP, task: "/michelle/c/negotiation?run=1" },
+        // Not a starter: Ally has no negotiation playbook to offer until one is taught. Typed, it still opens the thread.
+        { ...PREP_CHIP, hidden: true, task: "/michelle/c/negotiation" },
         // Answered when asked, not offered: the bar keeps five starters, one per job.
         ...MICHELLE_QUESTIONS.map((q) => ({ q, hidden: true, render: () => <div className="max-w-[860px] rounded-2xl bg-white px-5 py-4 text-[15px] leading-relaxed text-slate-700 ring-1 ring-slate-200">{michelleAnswer(q)}</div> })),
         // A task, not a question about the brief: it opens its own conversation.
@@ -65,7 +66,6 @@ function InboxChat() {
         // Gap to plan has its own page; asking for it goes there.
         { q: "Where are we against plan?", task: "/michelle/gap", match: /\b(gap to plan|against plan|behind plan|vs\.? plan|short of plan)\b/i, render: () => null },
       ],
-      files: PREP_FILES,
     },
     "inbox",
   )

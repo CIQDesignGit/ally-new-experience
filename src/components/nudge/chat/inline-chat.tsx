@@ -144,7 +144,8 @@ export function ChatThread({ className, anchor }: { className?: string; anchor?:
   // Keyed to the newest question's id, not the turns array: the filtered array is new every
   // render, and keying on it restarted the "working" timer forever (answers never appeared).
   const lastId = turns[turns.length - 1]?.id
-  const lastThink = turns[turns.length - 1]?.think?.ms ?? 650
+  // A quick question still gets a beat: about a second, never instant.
+  const lastThink = turns[turns.length - 1]?.think?.ms ?? 1100
   useEffect(() => {
     if (lastId === undefined) return
     setThinking(lastId)
@@ -196,7 +197,8 @@ export function ChatThread({ className, anchor }: { className?: string; anchor?:
             </div>
           </div>
           <div className="flex gap-3">
-            <span className="mt-1 flex size-7 shrink-0 items-center justify-center rounded-full bg-brand-50">
+            <span className="relative mt-1 flex size-7 shrink-0 items-center justify-center rounded-full bg-brand-50">
+              {thinking === t.id && <span className="absolute -inset-1 animate-spin rounded-full border-2 border-brand-200 border-t-brand-600" style={{ animationDuration: "1.1s" }} aria-hidden />}
               <Sparkles className="size-3.5 text-brand-600" />
             </span>
             <div className="min-w-0 flex-1">
@@ -212,7 +214,7 @@ export function ChatThread({ className, anchor }: { className?: string; anchor?:
                       />
                     ))}
                   </span>
-                  {t.think?.label && <span className="text-[14px] text-slate-500">{t.think.label}</span>}
+                  <span className="text-[14px] text-slate-500">{t.think?.label ?? "Thinking"}</span>
                 </div>
               ) : (
                 <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>

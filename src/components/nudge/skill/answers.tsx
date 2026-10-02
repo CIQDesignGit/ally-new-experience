@@ -8,6 +8,7 @@ import { AlertCircle, Check, Loader2, Upload, Wand2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useNudge } from "../nudge-context"
 import { useChat, useTurn } from "../chat/inline-chat"
+import { AgentRun, DidYouKnow } from "../chat/agent-run"
 import type { Attachment, Chip } from "../chat/inline-chat"
 import { UploadDialog } from "../chat/upload-dialog"
 import { OpenItem } from "../chat/open-item"
@@ -50,7 +51,24 @@ function Uploader({ label, title, files, onDone }: { label: string; title: strin
 function PrepAnswer() {
   const turn = useTurn()
   const { ask } = useChat()
-  if (turn?.attach?.length) return <StepsFound />
+  const [read, setRead] = useState(false)
+  // With last year's files: Ally reads them first, visibly, before it says what it found.
+  if (turn?.attach?.length)
+    return (
+      <div className="flex flex-col gap-4">
+      <AgentRun
+        title="Reading last year's prep"
+        files={[
+          { name: PREP_FILES[0].name, size: PREP_FILES[0].size, detail: "14 tabs · 2,140 rows" },
+          { name: PREP_FILES[1].name, size: PREP_FILES[1].size, detail: "22 slides" },
+        ]}
+        steps={["Matched each tab to the slide it fed", "Traced every number back to its source", `Found the ${SKILL_STEPS.length} steps your team ran`, "Checked which data Ally already has", "Flagged the one input Ally can't find"]}
+        slow={3}
+        onDone={() => setRead(true)}
+      />
+      {read && <StepsFound />}
+      </div>
+    )
   return (
     <div className="flex max-w-[640px] flex-col gap-3 text-[15px] leading-relaxed text-slate-700">
       <p>I don&apos;t have a playbook for your Amazon vendor negotiation yet. If you have last year&apos;s prep, upload it and I&apos;ll learn the steps from it.</p>
@@ -79,6 +97,24 @@ function StepsFound() {
       </ol>
       <p>Amazon&apos;s side is already in Ally. Your side isn&apos;t: step 2 needs your margin by product. Upload your brand margin file and I&apos;ll lay it over Amazon&apos;s.</p>
       <Uploader label="Upload the brand margin file" title="Upload the brand margin file" files={COST_FILE} onDone={(f) => ask(COST_CHIP, undefined, "Here's our FY26 brand margin file.", f)} />
+    </div>
+  )
+}
+
+/** The margin file, read before the skill is drafted from it. */
+function MarginRead() {
+  const [read, setRead] = useState(false)
+  return (
+    <div className="flex flex-col gap-4">
+    <AgentRun
+      title="Reading your brand margin file"
+      files={[{ name: COST_FILE[0].name, size: COST_FILE[0].size, detail: "13 product lines · FY26" }]}
+      readMs={5000}
+      steps={["Matched 13 product lines to Amazon's catalog", "Laid your margin over Amazon's, line by line", "Drafted the skill from the 7 steps"]}
+      slow={2}
+      onDone={() => setRead(true)}
+    />
+    {read && <SkillDraft />}
     </div>
   )
 }
@@ -199,6 +235,8 @@ function RunAnswer({ version = 1 }: { version?: 1 | 2 }) {
   const shown = phase === "running" ? step : 3
   return (
     <div className="flex max-w-[980px] flex-col gap-4 text-[15px] leading-relaxed text-slate-700">
+      {/* While it runs, "Did you know" sits beside the work; it goes when the results land. */}
+      <div className={cn("grid gap-5", phase !== "ready" && "md:grid-cols-[minmax(0,1fr)_280px]")}>
       <div className="rounded-xl border border-slate-200 bg-white p-4">
         <div className="flex items-center gap-2 text-[14px] font-semibold text-slate-950">
           {phase === "ready" ? <Check className="size-4 text-success-600" /> : <Loader2 className="size-4 animate-spin text-brand-600" />}
@@ -223,6 +261,8 @@ function RunAnswer({ version = 1 }: { version?: 1 | 2 }) {
         <div className="mt-3 text-[13px] text-slate-500">
           {phase === "running" ? (version === 2 ? "Adding the freight allowance and the two columns…" : RUN_STATUS[Math.min(step, RUN_STATUS.length - 1)]) : phase === "background" ? "This runs in the background for about 10 minutes. Keep working; I'll let you know when it's ready." : `Ran ${steps.length} steps on 12 months of data, 13 product lines and $96M of volume.`}
         </div>
+      </div>
+      {phase !== "ready" && <DidYouKnow className="self-start" />}
       </div>
 
       {phase === "ready" && (
@@ -479,10 +519,10 @@ export const PREP_CHIP: Chip = {
   match: /negotiat/i,
   takesFiles: true,
   needsFiles: true,
-  think: { ms: 2000, label: "Looking for how your team does this…", filesLabel: "Reading 14 tabs and 22 slides…" },
+  think: { ms: 2200, label: "Looking for how your team does this…", filesLabel: "Opening the files…" },
   render: () => <PrepAnswer />,
 }
-const COST_CHIP: Chip = { q: "Here's our FY26 brand margin file.", hidden: true, think: { ms: 2200, label: "Matching 13 product lines and drafting the skill…" }, render: () => <SkillDraft /> }
+const COST_CHIP: Chip = { q: "Here's our FY26 brand margin file.", hidden: true, think: { ms: 900 }, render: () => <MarginRead /> }
 const RUN_CHIP: Chip = { q: "Run it for FY26", hidden: true, think: { ms: 1200, label: `Starting ${SKILL.name}…` }, render: () => <RunAnswer /> }
 /** Typed by name, the way a saved skill is used. */
 export const RUN_BY_NAME_CHIP: Chip = { q: "Open my negotiation prep", hidden: true, match: /open my negotiation prep|run my negotiation/i, think: { ms: 1200, label: `Starting ${SKILL.name}…` }, render: () => <RunByName /> }
