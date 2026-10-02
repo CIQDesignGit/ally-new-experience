@@ -98,20 +98,21 @@ export const MICHELLE_LIMIT = 5
 export const IROAS = 3.4
 
 /** Share of voice by term today. Brightwick on our brand terms averages 27%; our share on gift terms averages 18%. */
+/** Share of voice by keyword now, and 4 weeks ago (`was`). Brand terms: Brightwick's average 8% → 27%. Gift terms: ours 25% → 18%. */
 export const BRAND_TERM_SOV = [
-  { term: "aurelle candles", them: 34, us: 52 },
-  { term: "aurelle candle", them: 31, us: 55 },
-  { term: "aurelle soy candles", them: 29, us: 48 },
-  { term: "aurelle jar candle", them: 26, us: 50 },
-  { term: "aurelle amber floral", them: 22, us: 58 },
-  { term: "aurelle gift set", them: 20, us: 41 },
+  { term: "aurelle candles", them: 34, us: 52, was: { them: 10, us: 66 } },
+  { term: "aurelle candle", them: 31, us: 55, was: { them: 9, us: 68 } },
+  { term: "aurelle soy candles", them: 29, us: 48, was: { them: 8, us: 61 } },
+  { term: "aurelle jar candle", them: 26, us: 50, was: { them: 7, us: 63 } },
+  { term: "aurelle amber floral", them: 22, us: 58, was: { them: 7, us: 69 } },
+  { term: "aurelle gift set", them: 20, us: 41, was: { them: 7, us: 55 } },
 ]
 export const GIFT_TERM_SOV = [
-  { term: "candle gift set", them: 38, us: 22 },
-  { term: "candle gifts for her", them: 41, us: 19 },
-  { term: "scented candle set", them: 35, us: 17 },
-  { term: "holiday candle gift", them: 33, us: 16 },
-  { term: "luxury candle gift", them: 36, us: 16 },
+  { term: "candle gift set", them: 38, us: 22, was: { them: 28, us: 29 } },
+  { term: "candle gifts for her", them: 41, us: 19, was: { them: 30, us: 26 } },
+  { term: "scented candle set", them: 35, us: 17, was: { them: 26, us: 24 } },
+  { term: "holiday candle gift", them: 33, us: 16, was: { them: 24, us: 23 } },
+  { term: "luxury candle gift", them: 36, us: 16, was: { them: 27, us: 23 } },
 ]
 
 /** Gift-set prices on Amazon today: Brightwick's 30% promo undercuts our unchanged price. */

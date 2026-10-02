@@ -26,6 +26,7 @@ const back = (cap: number) => Math.round(cap * IROAS)
 export function GiftSetsAnswer() {
   const { turns, ask } = useChat()
   const [cap, setCap] = useState<number>(4)
+  const [coupon, setCoupon] = useState(false)
   const sent = turns.find((t) => t.chip.startsWith("Approve") || t.chip.startsWith("Send to James"))
   const needsJames = cap > MICHELLE_LIMIT
 
@@ -59,30 +60,65 @@ export function GiftSetsAnswer() {
         </div>
       </div>
 
-      <div className="flex flex-col gap-4">
-        <div className="text-[13px] font-medium text-slate-950">Why traffic fell</div>
+      {/* Why, in three moves: each row is the claim and its number; click to jump to its proof below. */}
+      <div>
+        <div className="text-[13px] font-medium text-slate-950">Why traffic fell: Brightwick came at us three ways</div>
+        <div className="mt-2 overflow-hidden rounded-xl border border-slate-200 bg-white">
+          {WHYS.map((w, i) => (
+            <button
+              key={w.id}
+              type="button"
+              onClick={() => document.getElementById(`why-${w.id}`)?.scrollIntoView({ behavior: "smooth", block: "start" })}
+              className={cn("grid w-full grid-cols-[20px_minmax(0,1fr)_auto_auto] items-baseline gap-x-3 px-4 py-3 text-left hover:bg-slate-25", i > 0 && "border-t border-slate-100")}
+            >
+              <span className="text-[13px] text-slate-400 tabular-nums">{i + 1}</span>
+              <span className="text-[15px] text-slate-950">{w.claim}</span>
+              <span className="text-[14px] text-slate-600 tabular-nums">{w.figure}</span>
+              <Change v={w.change} unit={w.unit} bad={w.bad} />
+            </button>
+          ))}
+        </div>
+      </div>
 
-        <Why title="Brightwick cut gift-set prices 30%. We're $7 above their promo.">
+      <div className="flex flex-col gap-5">
+        <Why id="price" n={1} title="They undercut us on price: 30% off their gift set, $7 below ours.">
           <div className="grid grid-cols-2 gap-3">
             <PriceTile who="Brightwick" name={GIFT_PRICES.them.name} list={GIFT_PRICES.them.list} price={GIFT_PRICES.them.promo} />
             <PriceTile who="Us" name={GIFT_PRICES.us.name} price={GIFT_PRICES.us.price} ours />
           </div>
         </Why>
 
-        <Why title="Brightwick is buying our brand terms: 27% share of voice, up from 8%.">
+        <Why id="brand" n={2} title="They're conquering our brand terms: 27% share of voice, up from 8%.">
           <SovTable rows={BRAND_TERM_SOV} label="All 6 brand keywords" />
         </Why>
 
-        <Why title="Brightwick outbids us on gift terms: our share is 18%, down from 25%.">
+        <Why id="gift" n={3} title="They outbid us on high-traffic gift terms: our share is 18%, down from 25%.">
           <SovTable rows={GIFT_TERM_SOV} label="All 5 gift keywords" />
         </Why>
 
         <div className="text-[13px] text-slate-500">Ruled out: stock (99% in stock), content (no changes), ratings (steady at 4.6).</div>
       </div>
 
+      {/* The answer to the price cut; the bids below answer the other two. */}
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-5 py-4">
+        <div className="min-w-0">
+          <div className="text-xs font-medium text-slate-500">Answers 1 · price</div>
+          <div className="mt-0.5 text-[15px] font-semibold text-slate-950">A 15% coupon on our 3 gift sets through Nov 30: $29.74, within $2 of Brightwick</div>
+        </div>
+        {coupon ? (
+          <span className="inline-flex items-center gap-1.5 text-[14px] font-medium text-success-700">
+            <Check className="size-4" /> Coupon approved
+          </span>
+        ) : (
+          <button type="button" onClick={() => setCoupon(true)} className={SECONDARY}>
+            Approve the coupon
+          </button>
+        )}
+      </div>
+
       <div className="rounded-xl border border-brand-200 bg-brand-25 px-5 py-4">
-        <div className="flex items-center gap-2 text-xs font-semibold tracking-wide text-brand-700 uppercase">
-          <Sparkles className="size-3.5" /> Recommended
+        <div className="flex items-center gap-2 text-xs font-medium text-brand-700">
+          <Sparkles className="size-3.5" /> Answers 2 and 3 · share of voice
         </div>
         <p className="mt-1.5 text-[15px] font-semibold text-slate-950">
           {`Raise bids on our ${BRAND_TERMS.length} brand and ${GIFT_TERMS.length} gift terms until we're back above 20% share of voice.`}
@@ -115,14 +151,29 @@ export function GiftSetsAnswer() {
   )
 }
 
-function Why({ title, children }: { title: string; children: React.ReactNode }) {
+function Why({ id, n, title, children }: { id: string; n: number; title: string; children: React.ReactNode }) {
   return (
-    <div>
-      <div className="mb-2 text-[14px] text-slate-800">{title}</div>
+    <div id={`why-${id}`} className="scroll-mt-24">
+      <div className="mb-2 flex items-baseline gap-2 text-[14px] text-slate-800">
+        <span className="text-[13px] text-slate-400 tabular-nums">{n}</span>
+        {title}
+      </div>
       {children}
     </div>
   )
 }
+
+/** A change, colored by what it means for us: green good, red bad. */
+function Change({ v, unit = "pts", bad }: { v: number; unit?: string; bad: boolean }) {
+  return <span className={cn("text-[13px] font-medium whitespace-nowrap tabular-nums", bad ? "text-error-600" : "text-success-700")}>{`${v > 0 ? "▲" : "▼"} ${Math.abs(v)}${unit === "%" ? "%" : ` ${unit}`}`}</span>
+}
+
+/** The three moves, in the order the proof follows. */
+const WHYS = [
+  { id: "price", claim: "They undercut us on price", figure: "$27.99 vs our $34.99", change: -30, unit: "%", bad: true },
+  { id: "brand", claim: "They're conquering our brand terms", figure: "Brightwick 27% share", change: 19, unit: "pts", bad: true },
+  { id: "gift", claim: "They outbid us on high-traffic gift terms", figure: "Our share 18%", change: -7, unit: "pts", bad: true },
+]
 
 const $ = (n: number) => `$${n.toFixed(2)}`
 
@@ -140,30 +191,38 @@ function PriceTile({ who, name, list, price, ours }: { who: string; name: string
   )
 }
 
-/** Share of voice by keyword, ours and Brightwick's; the last row is the average the headline quotes. */
-function SovTable({ rows, label }: { rows: { term: string; them: number; us: number }[]; label: string }) {
-  const avg = (k: "us" | "them") => Math.round(rows.reduce((n, r) => n + r[k], 0) / rows.length)
+/** Share of voice by keyword, ours and Brightwick's, each with its change over 4 weeks (green good for us, red bad); the last row is the average the headline quotes. */
+function SovTable({ rows, label }: { rows: { term: string; them: number; us: number; was: { them: number; us: number } }[]; label: string }) {
+  const avg = (get: (r: (typeof rows)[number]) => number) => Math.round(rows.reduce((n, r) => n + get(r), 0) / rows.length)
+  const cell = (now: number, was: number, ours: boolean) => (
+    <span className="inline-flex items-baseline justify-end gap-2">
+      <span className="font-mono">{now}%</span>
+      <span className="w-12 text-left">
+        <Change v={now - was} bad={ours ? now < was : now > was} />
+      </span>
+    </span>
+  )
   return (
     <table className="w-full overflow-hidden rounded-xl border border-slate-200 bg-white text-[14px]">
       <thead>
         <tr className="text-left text-[12px] text-slate-500">
           <th className="px-4 py-2 font-medium">Keyword</th>
-          <th className="w-[160px] px-4 py-2 text-right font-medium">Our share of voice</th>
-          <th className="w-[200px] px-4 py-2 text-right font-medium">Brightwick&apos;s share of voice</th>
+          <th className="w-[170px] px-4 py-2 text-right font-medium">Our share · 4 wk change</th>
+          <th className="w-[210px] px-4 py-2 text-right font-medium">Brightwick&apos;s share · change</th>
         </tr>
       </thead>
       <tbody>
         {rows.map((r) => (
           <tr key={r.term} className="border-t border-slate-100">
             <td className="px-4 py-2 text-slate-800">{r.term}</td>
-            <td className="px-4 py-2 text-right font-mono text-slate-950">{r.us}%</td>
-            <td className="px-4 py-2 text-right font-mono text-slate-950">{r.them}%</td>
+            <td className="px-4 py-2 text-right text-slate-950">{cell(r.us, r.was.us, true)}</td>
+            <td className="px-4 py-2 text-right text-slate-950">{cell(r.them, r.was.them, false)}</td>
           </tr>
         ))}
         <tr className="border-t border-slate-200 bg-slate-25 font-semibold">
           <td className="px-4 py-2 text-slate-950">{label}</td>
-          <td className="px-4 py-2 text-right font-mono text-slate-950">{avg("us")}%</td>
-          <td className="px-4 py-2 text-right font-mono text-slate-950">{avg("them")}%</td>
+          <td className="px-4 py-2 text-right text-slate-950">{cell(avg((r) => r.us), avg((r) => r.was.us), true)}</td>
+          <td className="px-4 py-2 text-right text-slate-950">{cell(avg((r) => r.them), avg((r) => r.was.them), false)}</td>
         </tr>
       </tbody>
     </table>
@@ -327,34 +386,42 @@ function AlertsCreatedAnswer({ ids, drafts, cap }: { ids: CustomAlert["id"][]; d
       addAlert({ ...ALERT_RULES[id], ...drafts[id], created: new Date().toISOString(), seen: false })
     }
   }, [ids, drafts, addAlert])
+  // What each rule reads today, so a rule that's already true says so in its row.
+  const today: Record<CustomAlert["id"], string> = { "brand-terms": "Brightwick is at 27%", "gift-terms": "our share is 18%" }
+  const short = (id: CustomAlert["id"], t: number) => (id === "brand-terms" ? `Any competitor above ${t}% share on ${BRAND_TERMS.length} brand terms` : `Our share below ${t}% on ${GIFT_TERMS.length} gift terms`)
+  const cap1 = (t: string) => t.charAt(0).toUpperCase() + t.slice(1)
   return (
-    <div className="flex max-w-[640px] flex-col gap-3 text-[15px] leading-relaxed text-slate-700">
-      <div className="flex flex-col gap-1.5">
-        {ids.map((id) => (
-          <div key={id} className="flex items-start gap-2 text-[14px]">
-            <Bell className="mt-0.5 size-4 shrink-0 text-brand-600" />
-            <span className="shrink-0 font-semibold whitespace-nowrap text-slate-950">{ALERT_RULES[id].name}</span>
-            <span className="text-slate-500">
-              · {modeLabel(drafts[id].mode, cap)} · {drafts[id].frequency} · {drafts[id].channel}
-            </span>
-          </div>
-        ))}
-      </div>
-      <p>
-        {confirmLine(ids, drafts)}{" "}
-        <Link href="/michelle/alerts" className="font-medium text-brand-700 hover:underline">
+    <div className="max-w-[720px] overflow-hidden rounded-xl border border-slate-200 bg-white">
+      <div className="flex items-center justify-between border-b border-slate-100 px-5 py-3">
+        <span className="inline-flex items-center gap-2 text-[15px] font-semibold text-slate-950">
+          <Check className="size-4 text-success-600" />
+          {ids.length === 1 ? "Alert on" : `${ids.length} alerts on`}
+        </span>
+        <Link href="/michelle/alerts" className="text-[13px] font-medium text-brand-700 hover:underline">
           See your alerts
         </Link>
-      </p>
+      </div>
+      {ids.map((id, i) => {
+        const d = drafts[id]
+        const hot = isCrossed(id, d.threshold)
+        return (
+          <div key={id} className={cn("grid grid-cols-[16px_minmax(0,1fr)_auto] gap-x-3 px-5 py-3.5", i > 0 && "border-t border-slate-100")}>
+            <Bell className="mt-0.5 size-4 text-brand-600" />
+            <div className="min-w-0">
+              <div className="text-[14px] font-semibold text-slate-950">{ALERT_RULES[id].name}</div>
+              <div className="mt-0.5 text-[13px] text-slate-500">{short(id, d.threshold)}</div>
+              {hot && <div className="mt-1 text-[13px] font-medium text-warning-700">True now: {today[id]}</div>}
+            </div>
+            <div className="text-right">
+              <div className="text-[13px] font-medium text-slate-950">{modeLabel(d.mode, cap)}</div>
+              <div className="mt-0.5 text-[13px] text-slate-500">
+                {cap1(d.frequency)} · {d.channel.replace("your ", "")}
+              </div>
+            </div>
+          </div>
+        )
+      })}
     </div>
   )
 }
 
-
-/** What happens next, from whether each rule is already true at today's numbers. */
-function confirmLine(ids: CustomAlert["id"][], drafts: Record<CustomAlert["id"], Draft>) {
-  const hot = ids.filter((id) => isCrossed(id, drafts[id].threshold))
-  if (!hot.length) return "Neither is true today. I'll alert you the first time one is."
-  if (hot.length === ids.length) return `${ids.length === 1 ? "It's" : "Both are"} already true today, and the media agent is on ${ids.length === 1 ? "it" : "them"}. I'll alert you if ${ids.length === 1 ? "it's" : "they're"} still true on Oct 15, or sooner if ${ids.length === 1 ? "it gets" : "either gets"} worse.`
-  return `${ALERT_RULES[hot[0]].name} is already true, and the media agent is on it; I'll alert you if it's still true on Oct 15. The other alerts you the first time it's true.`
-}
