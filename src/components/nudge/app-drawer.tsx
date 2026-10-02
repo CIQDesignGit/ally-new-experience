@@ -20,7 +20,7 @@ export function AppDrawer({ home = "/michelle", defaultOpen }: { home?: string; 
   const path = usePathname()
   const kind = path === home ? "brief" : "conversation"
   const [open, setOpen] = useState(defaultOpen ?? kind === "conversation")
-  const { retro, knowledge } = useNudge()
+  const { retro, knowledge, alerts } = useNudge()
   // Being on the conversation counts as started, even before its state has loaded.
   const started = Object.keys(retro).length > 0 || path === "/michelle/retro"
 
@@ -53,7 +53,7 @@ export function AppDrawer({ home = "/michelle", defaultOpen }: { home?: string; 
     { title: "Conversations", icon: MessageSquare, items: started ? [{ label: RETRO.name, sub: retro.sentToClaire ? "Sent to Claire" : retro.deck ? "Deck built" : retro.stage === "storyline" ? "Storyline" : "Storyboard", href: "/michelle/retro", on: path === "/michelle/retro" }] : [], empty: "Ask Ally a new task to start one" },
     { title: "Reports and decks", icon: Presentation, items: retro.deck ? [{ label: RETRO.name, sub: retro.theme === "aurelle" ? "Aurelle Brand 2026" : "CommerceIQ default", href: "/michelle/retro?view=deck" }] : [], empty: "Decks you build show here" },
     { title: "Dashboards", icon: LayoutDashboard, fresh, items: retro.dashboard ? [{ label: RETRO.name, sub: "Live · refreshes daily", href: "/michelle/dashboards/prime-day", on: path === "/michelle/dashboards/prime-day", fresh }] : [], empty: "Publish a deck or answers as a dashboard" },
-    { title: "Alerts", icon: Bell, items: [], empty: "No custom alerts yet" },
+    { title: "Alerts", icon: Bell, fresh: alerts.some((a) => !a.seen), items: alerts.map((a) => ({ label: a.name, sub: a.firing ? "Fired today" : "Watching", href: "/michelle/alerts", on: path === "/michelle/alerts", fresh: !a.seen })), empty: "No custom alerts yet" },
   ]
 
   const iconBtn = (on?: boolean) => cn("flex size-10 items-center justify-center rounded-lg", on ? "bg-slate-100 text-slate-950" : "text-slate-500 hover:bg-slate-50 hover:text-slate-900")
@@ -114,7 +114,7 @@ export function AppDrawer({ home = "/michelle", defaultOpen }: { home?: string; 
           </Link>
           {/* Lists live in the open sidebar: an icon opens it. */}
           {sections.map((sec) => (
-            <button key={sec.title} type="button" onClick={() => toggle(true)} aria-label={sec.fresh ? `${sec.title}: 1 new` : sec.title} title={sec.title} className={cn(iconBtn((sec.title === "Conversations" && path === "/michelle/retro") || (sec.title === "Dashboards" && path.startsWith("/michelle/dashboards"))), "relative")}>
+            <button key={sec.title} type="button" onClick={() => toggle(true)} aria-label={sec.fresh ? `${sec.title}: 1 new` : sec.title} title={sec.title} className={cn(iconBtn((sec.title === "Conversations" && path === "/michelle/retro") || (sec.title === "Dashboards" && path.startsWith("/michelle/dashboards")) || (sec.title === "Alerts" && path === "/michelle/alerts")), "relative")}>
               <sec.icon className="size-4" />
               {sec.fresh && <span aria-hidden className="absolute top-2 right-2 size-2 rounded-full bg-brand-500 ring-2 ring-slate-50" />}
             </button>

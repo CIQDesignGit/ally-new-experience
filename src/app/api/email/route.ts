@@ -12,6 +12,7 @@ type Body =
   | { kind: "nudge"; batchName: string; description: string; value: string; skus?: number; deadlineDays?: number; recipient?: "mike" | "michelle"; queuePath?: string }
   | { kind: "summary"; quarter: string; filename: string; pdfBase64: string; digest?: Digest }
   | { kind: "note"; subject: string; body: string; skus: number; issues: number }
+  | { kind: "alert"; name: string; watches: string; when: string; now: string }
 
 const NAME = { mike: "Mike", michelle: "Michelle" } as const
 
@@ -77,6 +78,25 @@ export async function POST(request: NextRequest) {
         footer: `${footer} You're receiving it as Dana, the vendor manager.`,
       }),
       text: `${b.body}\n\n${footer}`,
+    }
+  } else if (b.kind === "alert") {
+    // A custom alert firing: the rule Michelle wrote, and where the number is now.
+    const href = `${origin}/michelle/alerts`
+    msg = {
+      to,
+      subject: `Ally alert: ${b.name}`,
+      html: layout({
+        preheader: b.now,
+        heading: b.now,
+        lines: ["Hi Michelle,", `Your alert "${b.name}" just fired.`],
+        facts: [
+          ["Watches", b.watches],
+          ["Alerts when", b.when],
+        ],
+        cta: { label: "Open in Ally", href },
+        footer: `${footer} You're receiving it as Michelle.`,
+      }),
+      text: `Hi Michelle,\n\nYour alert "${b.name}" just fired.\n${b.now}\n\nWatches: ${b.watches}\nAlerts when: ${b.when}\n\nOpen in Ally: ${href}\n\n${footer}`,
     }
   } else {
     return NextResponse.json({ ok: false, reason: "unknown-kind" }, { status: 400 })

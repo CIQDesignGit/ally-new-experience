@@ -1,4 +1,5 @@
 "use client"
+import type { CustomAlert } from "./alerts/data"
 
 import { createContext, useCallback, useContext, useEffect, useState } from "react"
 import type { NudgeKey, Period } from "./types"
@@ -26,6 +27,8 @@ interface StoredState {
   feedback?: Record<string, Feedback>
   /** Michelle's Prime Day retro: slide order, look, and where it has gone. */
   retro?: RetroState
+  /** Alerts Michelle wrote in chat. */
+  alerts?: CustomAlert[]
 }
 
 export interface RetroState {
@@ -99,6 +102,10 @@ interface NudgeContextValue extends StoredState {
   sendNote: (complete: string[]) => void
   feedback: Record<string, Feedback>
   setFeedback: (id: string, f: Feedback) => void
+  alerts: CustomAlert[]
+  /** Adds or replaces an alert by id. */
+  addAlert: (a: CustomAlert) => void
+  markAlertsSeen: () => void
   retro: RetroState
   setRetro: (patch: Partial<RetroState>) => void
 }
@@ -217,6 +224,9 @@ export function NudgeProvider({ children }: { children: React.ReactNode }) {
           }),
         feedback: state.feedback ?? {},
         setFeedback: (id, f) => update((prev) => ({ ...prev, feedback: { ...(prev.feedback ?? {}), [id]: f } })),
+        alerts: state.alerts ?? [],
+        addAlert: (a) => update((prev) => ({ ...prev, alerts: [...(prev.alerts ?? []).filter((x) => x.id !== a.id), a] })),
+        markAlertsSeen: () => update((prev) => ({ ...prev, alerts: (prev.alerts ?? []).map((x) => ({ ...x, seen: true })) })),
         retro: state.retro ?? {},
         setRetro: (patch) => update((prev) => ({ ...prev, retro: { ...(prev.retro ?? {}), ...patch } })),
         sendNote: (complete) =>

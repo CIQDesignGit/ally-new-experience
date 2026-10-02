@@ -18,6 +18,8 @@ import { OpsBatchList } from "@/components/nudge/ops/ops-batch-list"
 import { OpsBatchDetail } from "@/components/nudge/ops/ops-batch-detail"
 import { OpsDelivered } from "@/components/nudge/ops/ops-delivered"
 import { MICHELLE_QUESTIONS, michelleAnswer } from "@/components/nudge/ask-ally-personas"
+import { AlertSetAnswer, GiftSetsAnswer } from "@/components/nudge/alerts/answers"
+import { BRAND_ALERT_ASK, GIFT_ALERT_ASK, GIFT_QUESTION } from "@/components/nudge/alerts/data"
 import { RETRO_TASK, StorylineAnswer } from "@/components/nudge/retro/storyline-answer"
 import { ResetDemoButton } from "@/components/nudge/reset-demo-button"
 import { opsBatches, opsSkus } from "@/components/nudge/data"
@@ -31,15 +33,24 @@ import type { OpsBatch } from "@/components/nudge/data"
  */
 /** The inbox's questions for the Ask Ally bar (gap-to-plan registers its own per node). */
 function InboxChat() {
+  const { turns } = useChat()
+  // The alert asks follow the gift-sets drill: they watch the two numbers it found.
+  const drilled = turns.some((t) => t.chip === GIFT_QUESTION)
   useChatSource(
     {
       chips: [
+        ...(drilled
+          ? [
+              { q: BRAND_ALERT_ASK, match: /brand(ed)?\s+terms?/i, render: () => <AlertSetAnswer id="brand-terms" /> },
+              { q: GIFT_ALERT_ASK, match: /gift\s+terms?/i, render: () => <AlertSetAnswer id="gift-terms" /> },
+            ]
+          : [{ q: GIFT_QUESTION, match: /gift.?sets?/i, render: () => <GiftSetsAnswer /> }]),
         ...MICHELLE_QUESTIONS.map((q) => ({ q, render: () => <div className="max-w-[860px] rounded-2xl bg-white px-5 py-4 text-[15px] leading-relaxed text-slate-700 ring-1 ring-slate-200">{michelleAnswer(q)}</div> })),
         // A task, not a question about the brief: it opens its own conversation.
         { q: RETRO_TASK, task: "/michelle/retro?new=1", render: () => <StorylineAnswer /> },
       ],
     },
-    "inbox",
+    drilled ? "inbox-drilled" : "inbox",
   )
   return null
 }

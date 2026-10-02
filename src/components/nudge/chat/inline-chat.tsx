@@ -19,6 +19,8 @@ export interface Chip {
   render: () => React.ReactNode
   /** A task, not a question about this screen: it starts its own conversation at this address. */
   task?: string
+  /** Typed text that means this chip, in any wording; checked before the word-overlap guess. */
+  match?: RegExp
 }
 
 export interface ChatSource {
@@ -31,7 +33,10 @@ export interface ChatSource {
 
 interface Turn {
   id: number
+  /** What was asked, in the asker's words. */
   q: string
+  /** The chip it landed on (same as q when the chip was tapped). */
+  chip: string
   about?: string
   anchor?: string
   render: () => React.ReactNode
@@ -42,7 +47,7 @@ interface ChatValue {
   setSource: (s: ChatSource) => void
   turns: Turn[]
   /** Ask; the answer goes under `anchor` (defaults to what's on screen). */
-  ask: (chip: Chip, anchor?: string) => void
+  ask: (chip: Chip, anchor?: string, said?: string) => void
   clear: () => void
 }
 
@@ -53,8 +58,8 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   const [turns, setTurns] = useState<Turn[]>([])
   const next = useRef(1)
   const ask = useCallback(
-    (chip: Chip, anchor?: string) =>
-      setTurns((t) => [...t, { id: next.current++, q: chip.q, about: source.about, anchor: anchor ?? source.anchor, render: chip.render }]),
+    (chip: Chip, anchor?: string, said?: string) =>
+      setTurns((t) => [...t, { id: next.current++, q: said ?? chip.q, chip: chip.q, about: source.about, anchor: anchor ?? source.anchor, render: chip.render }]),
     [source.about, source.anchor],
   )
   return <Ctx.Provider value={{ source, setSource, turns, ask, clear: () => setTurns([]) }}>{children}</Ctx.Provider>
@@ -169,12 +174,12 @@ export function AskBar({ placeholder = "What can I take off your plate?" }: { pl
   const { source, turns, ask, clear } = useChat()
   const router = useRouter()
   // Questions about this screen answer here; tasks (make a deck, plan an event) open their own conversation.
-  const run = (c: Chip) => (c.task ? router.push(c.task) : ask(c))
+  const run = (c: Chip, said?: string) => (c.task ? router.push(c.task) : ask(c, undefined, said))
   const [text, setText] = useState("")
   const [open, setOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
   const dockRef = useRef<HTMLDivElement>(null)
-  const askedHere = new Set(turns.filter((t) => t.about === source.about && t.anchor === source.anchor).map((t) => t.q))
+  const askedHere = new Set(turns.filter((t) => t.about === source.about && t.anchor === source.anchor).map((t) => t.chip))
   const chips = source.chips.filter((c) => !askedHere.has(c.q))
 
   // The page reserves the bar's height under its last answer, so the bar and its
@@ -205,10 +210,10 @@ export function AskBar({ placeholder = "What can I take off your plate?" }: { pl
     return () => document.removeEventListener("mousedown", onDown)
   }, [open])
 
-  // Once a conversation starts, the next questions stay visible above the bar.
-  const showChips = (open || turns.length > 0) && chips.length > 0
+  // Follow-ups show while you're using the bar and collapse when you click anywhere else.
+  const showChips = open && chips.length > 0
 
-  const tray = showChips || turns.length > 0
+  const tray = open && (showChips || turns.length > 0)
   return (
     // The dock, like Claude's: content fades out above it, the box is solid, and nothing shows beside or below it.
     // It spans the page card's width, so on grey-backed pages it reads as the card's own bottom.
@@ -237,7 +242,8 @@ export function AskBar({ placeholder = "What can I take off your plate?" }: { pl
                   type="button"
                   onClick={() => {
                     run(c)
-                    setOpen(false)
+                    // Stay open: the next follow-ups are right here.
+                    setOpen(true)
                   }}
                   className={cn(
                     "rounded-full border px-3 py-1.5 text-sm transition-colors",
@@ -263,8 +269,8 @@ export function AskBar({ placeholder = "What can I take off your plate?" }: { pl
         <form
           onSubmit={(e) => {
             e.preventDefault()
-            const chip = closest(source.chips, text)
-            if (chip) run(chip)
+            const chip = source.chips.find((c) => c.match?.test(text)) ?? closest(source.chips, text)
+            if (chip) run(chip, text.trim())
             else setOpen(true)
             setText("")
           }}
@@ -275,6 +281,7 @@ export function AskBar({ placeholder = "What can I take off your plate?" }: { pl
             value={text}
             onChange={(e) => setText(e.target.value)}
             onFocus={() => setOpen(true)}
+            onClick={() => setOpen(true)}
             placeholder={placeholder}
             className="flex-1 bg-transparent text-sm text-slate-950 outline-none placeholder:text-slate-400"
           />
