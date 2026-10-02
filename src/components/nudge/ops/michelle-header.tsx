@@ -1,14 +1,16 @@
 "use client"
 
 import { TopStrip, useViewer } from "../top-strip"
+import { BUSINESS, fmtBiz } from "../data"
+import { useLive } from "../live-model"
 
-const Dot = () => <span className="text-slate-300">·</span>
-const Num = ({ children }: { children: React.ReactNode }) => <span className="font-mono font-semibold text-slate-950">{children}</span>
-const Up = ({ children }: { children: React.ReactNode }) => <span className="font-medium text-success-700">↑{children}</span>
 
-/** Michelle's top line, shaped like Mike's and Claire's: greeting, quarter, how her ops work is doing; the view switch sits by the gear. */
+/** Michelle's top line: greeting, quarter, and the one number she reports on, the projected gap to plan (same as Claire's: forecast vs plan). */
 export function MichelleHeader({ viewSwitch }: { viewSwitch?: React.ReactNode }) {
   const { viewer, visiting, home } = useViewer("michelle")
+  const l = useLive()
+  const { plan } = BUSINESS[l.period]
+  const gap = l.pace(l.period) - plan
   return (
     <TopStrip
       person={viewer}
@@ -17,19 +19,13 @@ export function MichelleHeader({ viewSwitch }: { viewSwitch?: React.ReactNode })
       crumbs={visiting ? [{ label: "Home", href: home }, { label: "Michelle's queue" }] : undefined}
       period
       facts={
-        <>
-          <span>
-            Buy box win rate <Num>94%</Num> <Up>2 pts</Up>
+        <span>
+          Projected plan gap{" "}
+          <span className={gap < 0 ? "font-semibold text-error-600 tabular-nums" : "font-semibold text-success-700 tabular-nums"}>
+            {gap < 0 ? "−" : "+"}
+            {fmtBiz(Math.abs(gap))}
           </span>
-          <Dot />
-          <span>
-            Promo badges live <Num>97%</Num> <Up>3 pts</Up>
-          </span>
-          <Dot />
-          <span>
-            <Num>2</Num> days to fix, down from 14
-          </span>
-        </>
+        </span>
       }
       controls={viewSwitch}
     />
