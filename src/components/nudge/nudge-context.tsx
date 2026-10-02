@@ -53,6 +53,8 @@ export interface NoteItem {
   asin: string
   addedOn: string
   sentOn?: string
+  /** Added with the whole issue ("Add 8 SKUs to your note"), not one SKU at a time: counts every SKU in it. */
+  whole?: boolean
 }
 
 /** The demo's note starts with yesterday's work, so it's clearly built up over time. */
@@ -82,7 +84,7 @@ interface NudgeContextValue extends StoredState {
   businessGroup: BusinessGroup
   setBusinessGroup: (g: BusinessGroup) => void
   note: NoteItem[]
-  addToNote: (batchId: string, asins: string[]) => void
+  addToNote: (batchId: string, asins: string[], whole?: boolean) => void
   /** Sends everything unsent: stamps the items and approves every issue whose SKUs have all been sent. */
   sendNote: (complete: string[]) => void
   feedback: Record<string, Feedback>
@@ -197,11 +199,11 @@ export function NudgeProvider({ children }: { children: React.ReactNode }) {
         businessGroup: state.businessGroup ?? "Brand",
         setBusinessGroup: (businessGroup) => update((prev) => ({ ...prev, businessGroup })),
         note: state.note ?? SEED_NOTE,
-        addToNote: (batchId, asins) =>
+        addToNote: (batchId, asins, whole) =>
           update((prev) => {
-            const cur = prev.note ?? SEED_NOTE
+            const cur = (prev.note ?? SEED_NOTE).map((i) => (whole && i.batchId === batchId && !i.sentOn ? { ...i, whole: true } : i))
             const fresh = asins.filter((a) => !cur.some((i) => i.batchId === batchId && i.asin === a))
-            return { ...prev, note: [...cur, ...fresh.map((asin) => ({ batchId, asin, addedOn: "Oct 8" }))] }
+            return { ...prev, note: [...cur, ...fresh.map((asin) => ({ batchId, asin, addedOn: "Oct 8", ...(whole ? { whole: true } : {}) }))] }
           }),
         feedback: state.feedback ?? {},
         setFeedback: (id, f) => update((prev) => ({ ...prev, feedback: { ...(prev.feedback ?? {}), [id]: f } })),

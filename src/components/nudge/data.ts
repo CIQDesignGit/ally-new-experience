@@ -283,18 +283,32 @@ export function opsBatches(policy?: Policy): OpsBatch[] {
     // Only tiers that have SKUs in this item name it ("Core", not "Core and Tail" when tail is empty).
     const bulkTiers = TIERS.filter((t) => !eachTiers.includes(t) && b.split!.tiers[t].skus > 0) as SkuTier[]
     const label = (tiers: SkuTier[]) => (tiers.length === 1 ? TIER_INFO[tiers[0]].label : undefined)
-    const part = (id: string, skus: number, value: number, mode: ReviewMode, tiers: SkuTier[], extra: Partial<OpsBatch> = {}): OpsBatch => ({
-      ...b,
-      id,
-      mode,
-      partLabel: label(tiers),
-      skus,
-      value: fmtPart(value),
-      approveValue: value,
-      sellerSkus: tiersIn(tiers),
-      perDay: value / OPS_DAYS_SAVED,
-      ...extra,
-    })
+    const part = (id: string, skus: number, value: number, mode: ReviewMode, tiers: SkuTier[], extra: Partial<OpsBatch> = {}): OpsBatch => {
+      const perDay = value / OPS_DAYS_SAVED
+      const own = tiersIn(tiers)
+      // The part tells its own story: its SKU count, its daily loss, a lead example from its own SKUs.
+      const lead = own.find((x) => x.asin === b.exampleSku) ?? own[0]
+      return {
+        ...b,
+        id,
+        mode,
+        partLabel: label(tiers),
+        skus,
+        value: fmtPart(value),
+        approveValue: value,
+        sellerSkus: own,
+        perDay,
+        detected: b.detected.replace(`${b.skus} SKUs`, `${skus} ${skus === 1 ? "SKU" : "SKUs"}`),
+        evidence: b.evidence.map((e, i) => {
+          // The price line belongs to the lead SKU: rebuild it when this part leads with a different one.
+          if (i === 0 && lead && lead.asin !== b.exampleSku && lead.sellers[0]) return `${lead.sellers[0].name} at $${lead.sellers[0].price.toFixed(2)} vs your $${lead.price.toFixed(2)}, below your $${Math.round(lead.map)} MAP floor`
+          return e.replace(/\$[\d.]+K a day/, `${fmtPart(perDay)} a day`)
+        }),
+        exampleSku: lead?.asin ?? b.exampleSku,
+        exampleName: lead?.name ?? b.exampleName,
+        ...extra,
+      }
+    }
     const parts: OpsBatch[] = []
     if (each) parts.push(part(`${b.id}-review`, each, plan.each.value, "each", eachTiers))
     if (bulk)

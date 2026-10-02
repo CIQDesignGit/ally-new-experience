@@ -30,8 +30,8 @@ export function OpsListItem({ batch, active, selectedSku, expanded, checked, onT
   const { approved } = useNudge()
   const done = !!approved[batch.id]
   const skus = opsSkus(batch)
-  const { inNote, sent } = useNote()
-  const noted = skus.filter((s) => inNote(batch.id, s.asin)).length
+  const { sent, notedIn } = useNote()
+  const noted = notedIn(batch.id, batch.skus)
   const allSent = skus.length > 0 && skus.every((s) => sent(batch.id, s.asin))
   const count = batch.tier === "input" ? batch.inputCount : batch.skus
   const noun = batch.tier === "input" ? (batch.inputNoun ?? "items") : "SKUs"
@@ -64,7 +64,7 @@ export function OpsListItem({ batch, active, selectedSku, expanded, checked, onT
             batch.mode === "each" && !done && !noted && <span key="m">review each</span>,
             !done && noted > 0 && !allSent && (
               <span key="note" className="font-medium text-brand-700">
-                In your note · {noted} of {skus.length}
+                In your note · {noted} of {batch.skus}
               </span>
             ),
             done && <span key="d" className="font-medium text-success-700">{batch.tier === "input" ? "Sent to Ally" : `Sent to ${VENDOR_MANAGER.name}`}</span>,

@@ -29,7 +29,7 @@ const k = (v: number) => `${v < 0 ? "−" : "+"}$${+(Math.abs(v) * 1000).toFixed
  * Hero issues move one SKU at a time; the escalation goes once every SKU is checked.
  */
 export function OpsSkuPane({ batch, asin, checked, onBack, onCheck, onSend }: OpsSkuPaneProps) {
-  const { approved } = useNudge()
+  const { approved, addToNote } = useNudge()
   const done = !!approved[batch.id]
   const skus = opsSkus(batch)
   const sku = skus.find((s) => s.asin === asin) ?? skus[0]
@@ -98,7 +98,7 @@ export function OpsSkuPane({ batch, asin, checked, onBack, onCheck, onSend }: Op
               </button>
             </div>
           ) : (
-            <button type="button" onClick={() => skus.forEach((s) => onCheck(s.asin))} className={PRIMARY}>
+            <button type="button" onClick={() => addToNote(batch.id, skus.map((s) => s.asin), true)} className={PRIMARY}>
               Add {batch.skus} SKUs to your note
             </button>
           )}

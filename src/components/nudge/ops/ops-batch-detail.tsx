@@ -57,11 +57,11 @@ export function OpsBatchDetail({ batch, onAction, onReviewAll }: OpsBatchDetailP
   }, [batch.id])
   const each = batch.mode === "each"
   const { addToNote } = useNudge()
-  const { inNote, sent } = useNote()
-  const noted = skus.filter((x) => inNote(batch.id, x.asin)).length
+  const { sent, notedIn } = useNote()
+  const noted = notedIn(batch.id, batch.skus)
   const sentAll = skus.length > 0 && skus.every((x) => sent(batch.id, x.asin))
   const addAll = () => {
-    addToNote(batch.id, skus.map((x) => x.asin))
+    addToNote(batch.id, skus.map((x) => x.asin), true)
     toast.success(`Added ${batch.skus} SKUs to your note to ${VENDOR_MANAGER.name}`, { position: "top-right" })
   }
   const daily = fmtValue(batch.perDay ?? batch.approveValue / OPS_DAYS_SAVED)
@@ -160,7 +160,7 @@ export function OpsBatchDetail({ batch, onAction, onReviewAll }: OpsBatchDetailP
             {noted > 0 && (
               <div className="flex items-center gap-2 text-sm text-slate-700">
                 <Mail className="size-4 text-brand-600" />
-                {sentAll ? `Sent to ${VENDOR_MANAGER.name}` : `${noted} of ${skus.length} SKUs in your note to ${VENDOR_MANAGER.name} · not sent`}
+                {sentAll ? `Sent to ${VENDOR_MANAGER.name}` : `${noted} of ${batch.skus} SKUs in your note to ${VENDOR_MANAGER.name} · not sent`}
               </div>
             )}
             <div className="flex flex-col gap-3">
@@ -170,8 +170,8 @@ export function OpsBatchDetail({ batch, onAction, onReviewAll }: OpsBatchDetailP
                     Review {batch.skus} SKUs
                   </button>
                 ) : (
-                  <button type="button" onClick={addAll} disabled={noted === skus.length} className={cn(PRIMARY, "disabled:opacity-50")}>
-                    {noted === skus.length ? "All in your note" : `Add ${batch.skus} SKUs to your note`}
+                  <button type="button" onClick={addAll} disabled={noted === batch.skus} className={cn(PRIMARY, "disabled:opacity-50")}>
+                    {noted === batch.skus ? "All in your note" : `Add ${batch.skus} SKUs to your note`}
                   </button>
                 )}
                 {!each && sample && (
@@ -203,8 +203,8 @@ export function OpsBatchDetail({ batch, onAction, onReviewAll }: OpsBatchDetailP
                 </div>
                 <div className="mt-6 flex flex-col gap-3 rounded-xl border border-brand-200 bg-brand-25 px-6 py-5">
                   <div className="text-sm font-semibold text-slate-950">Looks right? The other {batch.skus - 1} SKUs have the same issue.</div>
-                  <button type="button" onClick={addAll} disabled={noted === skus.length} className={cn(PRIMARY, "w-fit disabled:opacity-50")}>
-                    {noted === skus.length ? "All in your note" : `Add ${batch.skus} SKUs to your note`}
+                  <button type="button" onClick={addAll} disabled={noted === batch.skus} className={cn(PRIMARY, "w-fit disabled:opacity-50")}>
+                    {noted === batch.skus ? "All in your note" : `Add ${batch.skus} SKUs to your note`}
                   </button>
                 </div>
               </div>

@@ -23,13 +23,20 @@ export function useNote() {
   const groups = ops
     .map((b) => ({ batch: b, items: unsent.filter((i) => i.batchId === b.id) }))
     .filter((g) => g.items.length)
-  const perDay = groups.reduce((n, g) => n + (g.batch.perDay ?? g.batch.approveValue / OPS_DAYS_SAVED) * (g.items.length / Math.max(opsSkus(g.batch).length, 1)), 0)
   // An issue added whole counts all its SKUs, not just the ones listed with detail.
-  const countOf = (g: { batch: OpsBatch; items: { asin: string }[] }) => (g.items.length >= opsSkus(g.batch).length ? g.batch.skus : g.items.length)
+  // An issue added whole counts all its SKUs; otherwise, the ones added.
+  const countOf = (g: { batch: OpsBatch; items: { asin: string; whole?: boolean }[] }) => (g.items.some((i) => i.whole) ? g.batch.skus : g.items.length)
+  /** How many of an issue's SKUs are in the note (all of them once it was added whole). */
+  const notedIn = (batchId: string, total: number) => {
+    const items = unsent.filter((i) => i.batchId === batchId)
+    return items.some((i) => i.whole) ? total : items.length
+  }
+  // What waiting costs: each issue's daily loss, for the share of its SKUs in the note.
+  const perDay = groups.reduce((n, g) => n + (g.batch.perDay ?? g.batch.approveValue / OPS_DAYS_SAVED) * (countOf(g) / Math.max(g.batch.skus, 1)), 0)
   const skuCount = groups.reduce((n, g) => n + countOf(g), 0)
   const inNote = (batchId: string, asin: string) => note.some((i) => i.batchId === batchId && i.asin === asin)
   const sent = (batchId: string, asin: string) => note.some((i) => i.batchId === batchId && i.asin === asin && i.sentOn)
-  return { groups, perDay, skus: skuCount, countOf, started: unsent[0]?.addedOn, inNote, sent, ops }
+  return { groups, perDay, skus: skuCount, countOf, notedIn, started: unsent[0]?.addedOn, inNote, sent, ops }
 }
 
 /** The email Ally drafts from the note: one message, a section per issue, a line per SKU. */
@@ -81,7 +88,9 @@ export function NoteBar() {
 
   function send() {
     // An issue counts as sent when every one of its SKUs has gone; the rest stay open.
-    const complete = groups.filter((g) => opsSkus(g.batch).every((s) => g.items.some((x) => x.asin === s.asin))).map((g) => g.batch.id)
+    const complete = groups
+      .filter((g) => g.items.some((i) => i.whole) || (opsSkus(g.batch).length >= g.batch.skus && opsSkus(g.batch).every((s) => g.items.some((x) => x.asin === s.asin))))
+      .map((g) => g.batch.id)
     sendNote(complete)
     // The signed-in person gets the email, playing Dana.
     void emailMe({ kind: "note", subject: `${groups.length} ${groups.length === 1 ? "issue" : "issues"} on our Amazon listings · ${skus} SKUs`, body: text, skus, issues: groups.length }, { quiet: true })
