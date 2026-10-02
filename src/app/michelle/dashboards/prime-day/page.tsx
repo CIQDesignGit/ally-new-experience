@@ -10,7 +10,7 @@ import { AppDrawer } from "@/components/nudge/app-drawer"
 import { useNudge } from "@/components/nudge/nudge-context"
 import { SECONDARY } from "@/components/nudge/mike/buttons"
 import { ChartView } from "@/components/nudge/retro/slide"
-import { DEALS_TABLE, EXEC_SLIDE, RETRO, SLIDES } from "@/components/nudge/retro/prime-day"
+import { CATEGORY_SPLIT, DEAL_SPLIT, DEALS_TABLE, RETRO, SLIDES } from "@/components/nudge/retro/prime-day"
 
 /**
  * The retro as a live dashboard: the deck's charts as tiles, refreshed daily,
@@ -18,9 +18,13 @@ import { DEALS_TABLE, EXEC_SLIDE, RETRO, SLIDES } from "@/components/nudge/retro
  * agent, a deal); every chart that has it puts it forward.
  */
 
-const CATEGORIES = ["Jar candles", "Clean-burn soy", "Pillar candles", "Wax melts", "Gift sets", "Travel tins"]
-const AGENTS = ["Content", "Media", "Ops"]
-const DEALS = ["Lightning", "Bundle", "Coupon"]
+const CATEGORIES = Object.keys(CATEGORY_SPLIT)
+const AGENTS = ["Content", "Media", "Ops"] as const
+const DEALS = Object.keys(DEAL_SPLIT)
+const ALLY_TOTAL = { Media: 190, Content: 180, Ops: 40 }
+/** Two tiles are both about categories; on the dashboard they say which way. */
+const TILE_NAME: Record<string, string> = { "categories-up": "Categories that led", "categories-down": "Categories that trailed" }
+const k$ = (n: number) => `$${n}K`
 
 const RANGES = [
   { label: "Prime Day 2026", dates: "Jul 14 – 15, 2026", live: true },
@@ -32,7 +36,7 @@ const RANGES = [
 export default function PrimeDayDashboard() {
   const { retro, setRetro } = useNudge()
   const [category, setCategory] = useState<string>()
-  const [agent, setAgent] = useState<string>()
+  const [agent, setAgent] = useState<(typeof AGENTS)[number]>()
   const [deal, setDeal] = useState<string>()
   const alts = retro.alts ?? []
 
@@ -48,7 +52,16 @@ export default function PrimeDayDashboard() {
     .filter((s): s is (typeof SLIDES)[number] => !!s)
     .map((s) => (s.id === "deals" && alts.includes("deals") ? { ...s, chart: DEALS_TABLE } : s))
   const focus = (id: string) => (id === "ally" ? agent : id === "deals" ? deal : category)
-  const kpis = EXEC_SLIDE.chart.kind === "kpis" ? EXEC_SLIDE.chart.items : []
+  // The top numbers recalculate for the filters; the charts below put the pick forward.
+  const cat = category ? CATEGORY_SPLIT[category] : undefined
+  const allyBy = cat?.ally ?? ALLY_TOTAL
+  const added = agent ? allyBy[agent] : allyBy.Media + allyBy.Content + allyBy.Ops
+  const kpis = [
+    cat ? { figure: cat.sales, label: `${category} sales, ${cat.growth.startsWith("−") ? "down" : "up"} ${cat.growth.replace("−", "")}` } : { figure: "$4.6M", label: "Prime Day sales, up 28%" },
+    cat ? { figure: cat.share, label: "of Prime Day sales" } : { figure: "+2 pts", label: "faster than the market" },
+    { figure: k$(added), label: agent ? `added by the ${agent.toLowerCase()} agent` : "added by Ally" },
+    deal ? { figure: DEAL_SPLIT[deal].added, label: `from ${deal.toLowerCase()} deals, ${DEAL_SPLIT[deal].lift} lift` } : { figure: String(cat?.lessons ?? 4), label: "lessons kept for Black Friday" },
+  ]
   const filtered = !!(category || agent || deal)
 
   return (
@@ -73,7 +86,7 @@ export default function PrimeDayDashboard() {
           <DateRange />
           <Menu label="Retailer" value="Amazon" options={["Amazon"]} locked />
           <Menu label="Category" value={category} options={CATEGORIES} onChange={setCategory} />
-          <Menu label="Agent" value={agent} options={AGENTS} onChange={setAgent} />
+          <Menu label="Agent" value={agent} options={[...AGENTS]} onChange={(v) => setAgent(v as (typeof AGENTS)[number] | undefined)} />
           <Menu label="Deal" value={deal} options={DEALS} onChange={setDeal} />
           {filtered && (
             <button
@@ -102,8 +115,8 @@ export default function PrimeDayDashboard() {
 
           <div className="grid grid-cols-2 gap-4">
             {tiles.map((s) => (
-              <section key={s.id} aria-label={s.eyebrow.split(" · ")[1]} className="flex flex-col rounded-xl border border-slate-200 p-5">
-                <div className="text-xs font-medium tracking-wide text-slate-500 uppercase">{s.eyebrow.split(" · ")[1]}</div>
+              <section key={s.id} aria-label={TILE_NAME[s.id] ?? s.eyebrow.split(" · ")[1]} className="flex flex-col rounded-xl border border-slate-200 p-5">
+                <div className="text-xs font-medium tracking-wide text-slate-500 uppercase">{TILE_NAME[s.id] ?? s.eyebrow.split(" · ")[1]}</div>
                 <div className="mt-1 text-[15px] font-semibold text-slate-950">{s.title}</div>
                 <div className="mt-4 grid flex-1 grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] gap-5">
                   <div className="flex h-[190px] flex-col justify-end" style={{ fontSize: 24 }}>

@@ -266,3 +266,25 @@ export const DEALS_TABLE: Chart = {
   ],
 }
 
+
+/**
+ * Prime Day by category, for the dashboard's filters. Ties to the deck: the five
+ * categories sum to $4.6M (+28%, up from $3.6M), jar candles are $2.1M (+41%),
+ * and Ally's $410K splits $190K media, $180K content, $40K ops. Clean-burn soy
+ * is a segment inside jar candles, so it isn't added to the total.
+ */
+export const CATEGORY_SPLIT: Record<string, { sales: string; growth: string; share: string; ally: { Media: number; Content: number; Ops: number }; lessons: number }> = {
+  "Jar candles": { sales: "$2.1M", growth: "41%", share: "46%", ally: { Media: 110, Content: 100, Ops: 20 }, lessons: 2 },
+  "Clean-burn soy": { sales: "$900K", growth: "36%", share: "20%", ally: { Media: 50, Content: 50, Ops: 10 }, lessons: 2 },
+  "Pillar candles": { sales: "$1.6M", growth: "24%", share: "35%", ally: { Media: 40, Content: 35, Ops: 5 }, lessons: 1 },
+  "Wax melts": { sales: "$400K", growth: "19%", share: "9%", ally: { Media: 15, Content: 12, Ops: 3 }, lessons: 1 },
+  "Gift sets": { sales: "$400K", growth: "9%", share: "9%", ally: { Media: 20, Content: 20, Ops: 10 }, lessons: 2 },
+  "Travel tins": { sales: "$100K", growth: "−4%", share: "2%", ally: { Media: 5, Content: 13, Ops: 2 }, lessons: 2 },
+}
+
+/** Each deal type's lift and added sales (the deals slide's numbers). */
+export const DEAL_SPLIT: Record<string, { added: string; lift: string }> = {
+  Lightning: { added: "+$310K", lift: "+52%" },
+  Bundle: { added: "+$90K", lift: "+18%" },
+  Coupon: { added: "+$40K", lift: "+6%" },
+}
