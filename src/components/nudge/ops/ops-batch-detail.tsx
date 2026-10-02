@@ -9,6 +9,7 @@ import { OPS_DAYS_SAVED, fmtValue, opsSkus } from "../data"
 import type { OpsBatch } from "../data"
 import { SkillsTrace, SkuEvidence, SkuHeader } from "./ops-evidence"
 import { BuyBoxVisual } from "./buybox-visual"
+import { IssueVisual, hasIssueVisual } from "./issue-visuals"
 import { VENDOR_MANAGER, useNote } from "./note-bar"
 import { ShieldCheck } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -118,6 +119,8 @@ export function OpsBatchDetail({ batch, onAction, onReviewAll }: OpsBatchDetailP
           ))
         ) : lead ? (
           <BuyBoxVisual sku={lead} />
+        ) : hasIssueVisual(batch) ? (
+          <IssueVisual batch={batch} />
         ) : (
           <div className="px-5 py-4">
             <p className="text-sm leading-relaxed text-slate-950">{batch.detected}</p>
