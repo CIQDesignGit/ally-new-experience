@@ -60,6 +60,8 @@ export interface GapRecipe {
   steps: string[]
   columns: ("units" | "weight" | "fill")[]
   scope: "me" | "team" | "account"
+  /** Who changed the skill file, for whom, and what changed: newest last. */
+  log?: { version: number; who: string; when: string; scope: "me" | "team" | "account"; changes: string[] }[]
 }
 
 export interface Policy {

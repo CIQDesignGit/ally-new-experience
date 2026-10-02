@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
-import { Check, Loader2, Plus, ThumbsDown, ThumbsUp, X } from "lucide-react"
+import { Check, Loader2, ThumbsDown, ThumbsUp } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { AS_OF } from "../data"
 import { useNudge } from "../nudge-context"
@@ -67,58 +67,167 @@ export function lessonText(r: GapRecipe) {
 }
 const SCOPE_LABEL: Record<GapRecipe["scope"], string> = { me: "Only you", team: "Your team", account: "The Aurelle account" }
 
-const PICKS = ["Wrong number", "Missed something", "Wrong logic", "Wrong format"]
+const MISSES = [
+  { id: "logic", label: "Wrong logic", ask: "What did I miss in the logic?", hint: "Measure plan in units, and you didn't check fill rate", suggest: ["Measure plan in units", "Check fill rate on last week's POs"] },
+  { id: "presentation", label: "Poor presentation", ask: "What did I miss in the presentation?", hint: "Add units and fill rate columns", suggest: ["Add units and fill rate columns"] },
+  { id: "data", label: "Wrong data", ask: "Which data was wrong?", hint: "Bright Citrus shipped 240 units on PO 4480112, not 180", suggest: [] as string[] },
+] as const
+type Miss = (typeof MISSES)[number]["id"]
+
+/** What a correction in plain words changes in the recipe: Ally's read of it, shown back before it's applied. */
+function readLogic(text: string, r: GapRecipe): { recipe: GapRecipe; heard: string[] } {
+  const t = text.toLowerCase()
+  const heard: string[] = []
+  let next = { ...r, steps: [...r.steps] }
+  const measure = /\b(weight|lbs|pounds)\b/.test(t) ? "weight" : /\bunits?\b/.test(t) ? "units" : /\b(dollars|sales \(\$\)|in sales)\b/.test(t) ? "sales" : undefined
+  if (measure && measure !== r.measure) {
+    next = { ...next, measure }
+    heard.push(`Measure plan in ${MEASURE_LABEL[measure]}, not ${MEASURE_LABEL[r.measure]}`)
+  }
+  if (/fill.?rate/.test(t) && !next.steps.includes(FILL_STEP)) {
+    next.steps.push(FILL_STEP)
+    heard.push(`Add a step: ${FILL_STEP.toLowerCase().replace("pos", "POs")}`)
+  }
+  if (!heard.length && t.trim()) {
+    const st = text.trim().replace(/^(you )?(should|need to|missed|forgot to)\s*/i, "")
+    const step = `Checked ${st.charAt(0).toLowerCase()}${st.slice(1)}`.replace(/^Checked check(ed)? /i, "Checked ")
+    next.steps.push(step)
+    heard.push(`Add a step: ${step.toLowerCase()}`)
+  }
+  return { recipe: next, heard }
+}
+function readPresentation(text: string, r: GapRecipe): { recipe: GapRecipe; heard: string[] } {
+  const t = text.toLowerCase()
+  const add = ([["units", /\bunits?\b/], ["weight", /\b(weight|lbs|pounds)\b/], ["fill", /fill.?rate/]] as const).filter(([c, re]) => re.test(t) && !r.columns.includes(c)).map(([c]) => c)
+  const name = { units: "Units", weight: "Shipped weight", fill: "Fill rate" }
+  return { recipe: { ...r, columns: [...r.columns, ...add] }, heard: add.length ? [`Add columns to plan vs actual: ${add.map((c) => name[c]).join(", ")}`] : [] }
+}
+
+/** The changes between two versions of the skill file, in its own words. */
+function diff(a: GapRecipe, b: GapRecipe) {
+  const name = { units: "Units", weight: "Shipped weight", fill: "Fill rate" }
+  return [
+    a.measure !== b.measure && `Measure plan in: ${MEASURE_LABEL[a.measure]} → ${MEASURE_LABEL[b.measure]}`,
+    ...b.steps.filter((x) => !a.steps.includes(x)).map((x) => `Step added: ${x}`),
+    ...b.columns.filter((x) => !a.columns.includes(x)).map((x) => `Column added: ${name[x]}`),
+  ].filter(Boolean) as string[]
+}
+
+/** One of Ally's turns in the correction: a short line, after a beat. */
+function AllySays({ children, delay = 0.35 }: { children: React.ReactNode; delay?: number }) {
+  return (
+    <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ delay, duration: 0.25 }} className="text-[15px] font-semibold text-slate-950">
+      {children}
+    </motion.div>
+  )
+}
+
+/** The skill file Ally runs gap to plan from: its lines, what changed, and (once approved) the decision log. */
+function SkillFile({ base, draft, version, log }: { base: GapRecipe; draft: GapRecipe; version: number; log?: GapRecipe["log"] }) {
+  const changes = diff(base, draft)
+  const name = { units: "Units", weight: "Shipped weight", fill: "Fill rate" }
+  return (
+    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white text-sm">
+      <div className="flex items-center justify-between border-b border-slate-100 bg-slate-25 px-5 py-2.5">
+        <span className="font-semibold text-slate-950">Gap to plan · skill file</span>
+        <span className="text-xs text-slate-500 tabular-nums">
+          v{version}
+          {changes.length > 0 && ` → v${version + 1}`}
+        </span>
+      </div>
+      <dl className="grid grid-cols-[120px_minmax(0,1fr)] gap-x-4 gap-y-2 px-5 py-3.5">
+        <dt className="text-slate-500">Measure plan in</dt>
+        <dd className="text-slate-950">
+          {base.measure !== draft.measure && <span className="mr-2 text-slate-400 line-through">{MEASURE_LABEL[base.measure]}</span>}
+          <span className={base.measure !== draft.measure ? "font-medium text-brand-700" : undefined}>{MEASURE_LABEL[draft.measure]}</span>
+        </dd>
+        <dt className="text-slate-500">Steps</dt>
+        <dd className="text-slate-950">
+          10 standard
+          {draft.steps.map((x) => (
+            <span key={x} className={cn("block", !base.steps.includes(x) && "font-medium text-brand-700")}>
+              + {x}
+            </span>
+          ))}
+        </dd>
+        <dt className="text-slate-500">Columns</dt>
+        <dd className="text-slate-950">
+          Actual, Plan, Gap
+          {draft.columns.map((c) => (
+            <span key={c} className={cn(!base.columns.includes(c) && "font-medium text-brand-700")}>, {name[c]}</span>
+          ))}
+        </dd>
+      </dl>
+      {log && log.length > 0 && (
+        <div className="border-t border-slate-100 px-5 py-3">
+          <div className="text-xs font-medium text-slate-500">Decision log</div>
+          {[...log].reverse().map((e) => (
+            <div key={e.version} className="mt-1.5 text-[13px] text-slate-700">
+              <span className="font-medium text-slate-950">
+                v{e.version} · {e.who}
+              </span>{" "}
+              changed it for {SCOPE_LABEL[e.scope].toLowerCase().replace("the aurelle account", "the Aurelle account")} · {e.when}
+              <span className="block text-slate-500">{e.changes.join(" · ")}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
 
 /**
- * Under the analysis: did Ally get it right? A thumbs down opens "What did I
- * miss?" and the recipe to correct; the rerun shows before and after.
+ * Under the analysis, correcting the recipe as a conversation: what did I miss
+ * (logic, presentation, data); Ally asks about each in turn and reads back what
+ * it heard; the updated skill file is approved for a scope and logged; then
+ * Ally offers to rerun and shows the revised answer.
  */
 export function RecipeFeedback({ node, render }: { node: GapNode; render: (recipe: GapRecipe) => React.ReactNode }) {
   const { knowledge, saveKnowledge } = useNudge()
   const lesson = useGapLesson()
-  const [vote, setVote] = useState<"up" | "down" | null>(null)
-  const [picks, setPicks] = useState<string[]>([])
-  const [note, setNote] = useState("")
-  const [draft, setDraft] = useState<GapRecipe>(lesson?.recipe ?? DEFAULT_RECIPE)
-  const [newStep, setNewStep] = useState("")
-  const [stage, setStage] = useState<"edit" | "running" | "compare" | "saved">("edit")
   const base = lesson?.recipe ?? DEFAULT_RECIPE
+  const version = (base.log?.length ?? 0) + 1
+  const [vote, setVote] = useState<"up" | "down" | null>(null)
+  const [picked, setPicked] = useState<Miss[]>([])
+  const [queue, setQueue] = useState<Miss[] | null>(null)
+  const [answers, setAnswers] = useState<{ id: Miss; said: string; heard: string[] }[]>([])
+  const [draft, setDraft] = useState<GapRecipe>(base)
+  const [text, setText] = useState("")
+  const [stage, setStage] = useState<"ask" | "review" | "scope" | "approved" | "running" | "rerun">("ask")
+  const [scope, setScope] = useState<GapRecipe["scope"]>("account")
+  const current = queue?.find((q) => !answers.some((a) => a.id === q))
+  const miss = MISSES.find((x) => x.id === current)
 
   useEffect(() => {
     if (stage !== "running") return
-    const t = window.setTimeout(() => setStage("compare"), 2600)
+    const t = window.setTimeout(() => setStage("rerun"), 2600)
     return () => window.clearTimeout(t)
   }, [stage])
 
-  function save() {
-    saveKnowledge([
-      { id: LESSON_ID, text: `${lessonText(draft)}.`, retailer: "Amazon", brands: ["Aurelle Candles"], skuGroups: [], author: "Michelle Ortiz", date: DATE, source: "from correcting the gap-to-plan recipe", recipe: draft },
-      ...knowledge.filter((x) => x.id !== LESSON_ID),
-    ])
-    setStage("saved")
+  function answer(said: string) {
+    if (!current || !said.trim()) return
+    const read = current === "logic" ? readLogic(said, draft) : current === "presentation" ? readPresentation(said, draft) : { recipe: draft, heard: [`Flagged to your data team: ${said.trim()}`] }
+    setDraft(read.recipe)
+    setAnswers((a) => [...a, { id: current, said: said.trim(), heard: read.heard.length ? read.heard : ["Nothing to change from that; say it another way?"] }])
+    setText("")
+    if (!queue!.some((q) => q !== current && !answers.some((a) => a.id === q))) setStage("review")
   }
 
-  const gap = node.lastWeek.sales - node.lastWeek.plan
-  const pct = Math.round((node.lastWeek.sales / node.lastWeek.plan) * 100)
-  const summary = (r: GapRecipe) => (
-    <div className="flex flex-col gap-1 text-sm tabular-nums">
-      <span className="font-semibold text-slate-950">
-        Missed plan by {inMeasure(Math.abs(gap), r.measure)}, {pct}% of plan
-      </span>
-      <span className="text-slate-600">
-        {10 + r.steps.length} steps{r.columns.length > 0 && ` · columns: ${r.columns.map((c) => ({ units: "units", weight: "lbs", fill: "fill rate" })[c]).join(", ")}`}
-      </span>
-      {r.steps.includes(FILL_STEP) && (
-        <span className="text-slate-600">
-          Fill rate {FILL.rate}% on {FILL.pos} POs (target {FILL.target}%) explains the Bright Citrus stockout
-        </span>
-      )}
-    </div>
-  )
+  function approve() {
+    const entry = { version: version + 1, who: "Michelle Ortiz", when: DATE, scope, changes: diff(base, draft) }
+    const saved: GapRecipe = { ...draft, scope, log: [...(base.log ?? []), entry] }
+    setDraft(saved)
+    saveKnowledge([
+      { id: LESSON_ID, text: `${lessonText(saved)}.`, retailer: "Amazon", brands: ["Aurelle Candles"], skuGroups: [], author: "Michelle Ortiz", date: DATE, source: `gap-to-plan skill file v${version + 1}`, recipe: saved },
+      ...knowledge.filter((x) => x.id !== LESSON_ID),
+    ])
+    setStage("approved")
+  }
 
+  const changed = diff(base, draft).length > 0
   return (
-    <div className="flex max-w-[900px] flex-col gap-4">
-      {stage !== "saved" && (
+    <div className="flex max-w-[900px] flex-col gap-4 border-t border-slate-100 pt-4">
+      {!queue && (
         <div className="flex flex-wrap items-center gap-2">
           <span className="mr-1 text-sm text-slate-500">Did Ally get this right?</span>
           {(["up", "down"] as const).map((v) => (
@@ -128,10 +237,7 @@ export function RecipeFeedback({ node, render }: { node: GapNode; render: (recip
               aria-label={v === "up" ? "Ally got this right" : "Ally missed something"}
               aria-pressed={vote === v}
               onClick={() => setVote(v)}
-              className={cn(
-                "flex size-9 items-center justify-center rounded-lg border transition-colors",
-                vote === v ? (v === "up" ? "border-success-300 bg-success-50 text-success-600" : "border-slate-300 bg-slate-100 text-slate-700") : "border-slate-200 bg-white text-slate-400 hover:text-slate-600",
-              )}
+              className={cn("flex size-9 items-center justify-center rounded-lg border transition-colors", vote === v ? (v === "up" ? "border-success-300 bg-success-50 text-success-600" : "border-slate-300 bg-slate-100 text-slate-700") : "border-slate-200 bg-white text-slate-400 hover:text-slate-600")}
             >
               {v === "up" ? <ThumbsUp className="size-4" /> : <ThumbsDown className="size-4" />}
             </button>
@@ -140,144 +246,132 @@ export function RecipeFeedback({ node, render }: { node: GapNode; render: (recip
         </div>
       )}
 
-      {vote === "down" && stage === "edit" && (
-        <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="overflow-hidden rounded-xl border border-slate-200 bg-white">
-          <div className="px-5 pt-4 pb-3">
-            <div className="text-sm font-semibold text-slate-950">What did I miss?</div>
-            <div className="mt-2 flex flex-wrap gap-1.5">
-              {PICKS.map((p) => (
-                <button
-                  key={p}
-                  type="button"
-                  onClick={() => setPicks((x) => (x.includes(p) ? x.filter((y) => y !== p) : [...x, p]))}
-                  className={cn("rounded-full border px-3 py-1 text-[13px] transition-colors", picks.includes(p) ? "border-brand-300 bg-brand-50 text-brand-800" : "border-slate-200 text-slate-600 hover:border-slate-300")}
-                >
-                  {p}
-                </button>
-              ))}
-            </div>
-            <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="We plan by weight, and you skipped fill rate" className="mt-3 w-full rounded-md border border-slate-200 px-3 py-2 text-sm outline-none placeholder:text-slate-400 focus:border-brand-300 focus:ring-2 focus:ring-brand-100" />
+      {vote === "down" && !queue && (
+        <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col gap-3">
+          <AllySays delay={0.1}>What did I miss?</AllySays>
+          <div className="flex flex-wrap gap-1.5">
+            {MISSES.map((x) => (
+              <button
+                key={x.id}
+                type="button"
+                aria-pressed={picked.includes(x.id)}
+                onClick={() => setPicked((p) => (p.includes(x.id) ? p.filter((y) => y !== x.id) : [...p, x.id]))}
+                className={cn("inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-sm transition-colors", picked.includes(x.id) ? "border-brand-300 bg-brand-50 text-brand-800" : "border-slate-200 text-slate-700 hover:border-slate-300")}
+              >
+                {picked.includes(x.id) && <Check className="size-3.5" />}
+                {x.label}
+              </button>
+            ))}
           </div>
+          <button type="button" disabled={!picked.length} onClick={() => setQueue(MISSES.map((x) => x.id).filter((id) => picked.includes(id)))} className={cn(PRIMARY, "w-fit disabled:opacity-50")}>
+            Continue
+          </button>
+        </motion.div>
+      )}
 
-          {/* Logic and presentation are corrected separately. */}
-          <div className="grid border-t border-slate-100 md:grid-cols-2">
-            <div className="px-5 py-4">
-              <div className="text-sm font-semibold text-slate-950">Logic</div>
-              <div className="mt-3 text-xs font-medium text-slate-500">Measure plan in</div>
-              <div className="mt-1.5 flex h-9 rounded-lg border border-slate-200 bg-slate-25 p-0.5">
-                {(["sales", "units", "weight"] as const).map((m) => (
-                  <button
-                    key={m}
-                    type="button"
-                    onClick={() => setDraft((d) => ({ ...d, measure: m }))}
-                    className={cn("flex-auto rounded-md px-2 text-[13px] font-medium whitespace-nowrap", draft.measure === m ? "bg-white text-slate-950 shadow-xs ring-1 ring-slate-200" : "text-slate-500 hover:text-slate-800")}
-                  >
-                    {{ sales: "Sales ($)", units: "Units", weight: "Weight (lbs)" }[m]}
-                  </button>
+      {queue && (
+        <div className="flex flex-col gap-4">
+          {/* The conversation so far: each question, what was said, and what Ally took from it. */}
+          {answers.map((a) => (
+            <div key={a.id} className="flex flex-col gap-2">
+              <div className="text-[15px] font-semibold text-slate-950">{MISSES.find((x) => x.id === a.id)!.ask}</div>
+              <div className="w-fit max-w-[80%] self-end rounded-2xl bg-brand-600 px-4 py-2 text-sm text-white">{a.said}</div>
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }} className="flex flex-col gap-1 text-sm text-slate-700">
+                <span className="text-slate-500">Got it. I&apos;ll change:</span>
+                {a.heard.map((h) => (
+                  <span key={h} className="flex items-start gap-2">
+                    <Check className="mt-0.5 size-4 shrink-0 text-brand-600" />
+                    {h}
+                  </span>
                 ))}
-              </div>
-              <div className="mt-4 text-xs font-medium text-slate-500">Steps · 10 Ally ran{draft.steps.length > 0 && `, ${draft.steps.length} you added`}</div>
-              <div className="mt-1.5 flex flex-col gap-1">
-                {draft.steps.map((s) => (
-                  <div key={s} className="flex items-center gap-2 rounded-md bg-brand-25 px-2.5 py-1.5 text-sm text-slate-950">
-                    <Plus className="size-3.5 text-brand-600" />
-                    <span className="flex-1">{s}</span>
-                    <button type="button" aria-label={`Remove ${s}`} onClick={() => setDraft((d) => ({ ...d, steps: d.steps.filter((x) => x !== s) }))} className="text-slate-400 hover:text-slate-700">
-                      <X className="size-3.5" />
+              </motion.div>
+            </div>
+          ))}
+
+          {stage === "ask" && miss && (
+            <div key={miss.id} className="flex flex-col gap-2">
+              <AllySays delay={answers.length ? 0.9 : 0.2}>{miss.ask}</AllySays>
+              {miss.suggest.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {miss.suggest.map((sg) => (
+                    <button key={sg} type="button" onClick={() => setText((t) => (t ? `${t}, ${sg.toLowerCase()}` : sg))} className="rounded-full border border-slate-200 px-3 py-1 text-[13px] text-slate-600 hover:border-brand-300 hover:text-brand-700">
+                      {sg}
                     </button>
-                  </div>
-                ))}
-                {!draft.steps.includes(FILL_STEP) && (
-                  <button type="button" onClick={() => setDraft((d) => ({ ...d, steps: [...d.steps, FILL_STEP] }))} className="flex items-center gap-2 rounded-md border border-dashed border-slate-300 px-2.5 py-1.5 text-left text-sm text-slate-600 hover:border-brand-300 hover:text-brand-700">
-                    <Plus className="size-3.5" /> {FILL_STEP}
-                  </button>
-                )}
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault()
-                    const t = newStep.trim()
-                    if (t && !draft.steps.includes(t)) setDraft((d) => ({ ...d, steps: [...d.steps, t] }))
-                    setNewStep("")
-                  }}
-                >
-                  <input value={newStep} onChange={(e) => setNewStep(e.target.value)} placeholder="Add a step" className="w-full rounded-md border border-slate-200 px-2.5 py-1.5 text-sm outline-none placeholder:text-slate-400 focus:border-brand-300" />
-                </form>
-              </div>
-            </div>
-            <div className="border-t border-slate-100 px-5 py-4 md:border-t-0 md:border-l">
-              <div className="text-sm font-semibold text-slate-950">Presentation</div>
-              <div className="mt-3 text-xs font-medium text-slate-500">Columns in plan vs actual</div>
-              <div className="mt-1.5 flex flex-col gap-1.5 text-sm">
-                {["Actual", "Plan", "Gap"].map((c) => (
-                  <label key={c} className="flex items-center gap-2 text-slate-500">
-                    <input type="checkbox" checked disabled className="accent-slate-400" /> {c}
-                  </label>
-                ))}
-                {(["units", "weight", "fill"] as const).map((c) => (
-                  <label key={c} className="flex cursor-pointer items-center gap-2 text-slate-950">
-                    <input
-                      type="checkbox"
-                      checked={draft.columns.includes(c)}
-                      onChange={() => setDraft((d) => ({ ...d, columns: d.columns.includes(c) ? d.columns.filter((x) => x !== c) : [...d.columns, c] }))}
-                      className="accent-brand-600"
-                    />
-                    {{ units: "Units", weight: "Shipped weight (lbs)", fill: "Fill rate" }[c]}
-                  </label>
-                ))}
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center gap-3 border-t border-slate-100 bg-slate-25 px-5 py-3">
-            <button type="button" onClick={() => setStage("running")} disabled={JSON.stringify(draft) === JSON.stringify(base)} className={cn(PRIMARY, "disabled:opacity-50")}>
-              Re-run with these changes
-            </button>
-            <span className="text-xs text-slate-500">Nothing is saved until you confirm.</span>
-          </div>
-        </motion.div>
-      )}
-
-      {stage === "running" && (
-        <p className="flex items-center gap-2 text-[15px] text-slate-500">
-          <Loader2 className="size-4 animate-spin text-brand-600" />
-          Re-running gap to plan with your recipe…
-        </p>
-      )}
-
-      {stage === "compare" && (
-        <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col gap-4">
-          <div className="grid overflow-hidden rounded-xl border border-slate-200 md:grid-cols-2">
-            <div className="px-5 py-4">
-              <div className="text-xs font-medium text-slate-500">Before</div>
-              <div className="mt-1.5">{summary(base)}</div>
-            </div>
-            <div className="border-t border-slate-100 bg-brand-25 px-5 py-4 md:border-t-0 md:border-l md:border-l-brand-100">
-              <div className="text-xs font-medium text-brand-700">After</div>
-              <div className="mt-1.5">{summary(draft)}</div>
-            </div>
-          </div>
-          {render(draft)}
-          <div className="flex flex-wrap items-center gap-3 rounded-xl border border-slate-200 bg-white px-5 py-4">
-            <span className="text-sm font-semibold text-slate-950">Save this as how Ally runs gap to plan?</span>
-            <div className="flex h-9 rounded-lg border border-slate-200 bg-slate-25 p-0.5">
-              {(["me", "team", "account"] as const).map((sc) => (
-                <button key={sc} type="button" onClick={() => setDraft((d) => ({ ...d, scope: sc }))} className={cn("rounded-md px-2.5 text-[13px] font-medium whitespace-nowrap", draft.scope === sc ? "bg-white text-slate-950 shadow-xs ring-1 ring-slate-200" : "text-slate-500 hover:text-slate-800")}>
-                  {SCOPE_LABEL[sc]}
+                  ))}
+                </div>
+              )}
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  answer(text)
+                }}
+                className="flex gap-2"
+              >
+                <input autoFocus value={text} onChange={(e) => setText(e.target.value)} placeholder={miss.hint} className="min-w-0 flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none placeholder:text-slate-400 focus:border-brand-300 focus:ring-2 focus:ring-brand-100" />
+                <button type="submit" disabled={!text.trim()} className={cn(PRIMARY, "disabled:opacity-50")}>
+                  Send
                 </button>
-              ))}
+              </form>
             </div>
-            <div className="ml-auto flex items-center gap-3">
-              <button type="button" onClick={() => setStage("edit")} className="text-sm font-medium text-slate-600 hover:text-slate-950">
-                Keep editing
-              </button>
-              <button type="button" onClick={save} className={PRIMARY}>
-                <Check className="mr-1 inline size-4" /> Save
-              </button>
-            </div>
-          </div>
-        </motion.div>
-      )}
+          )}
 
-      {stage === "saved" && <MemorySaved text={`Learned: ${lessonText(draft)}. Applies to ${SCOPE_LABEL[draft.scope].toLowerCase().replace("the aurelle account", "the Aurelle account")}.`} />}
+          {stage !== "ask" && (
+            <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: stage === "review" ? 0.9 : 0 }} className="flex flex-col gap-3">
+              <AllySays delay={0}>{stage === "review" ? (changed ? "Here's the skill file with your changes." : "Nothing in the skill file changes from that.") : "Skill file updated."}</AllySays>
+              {/* Before approval: the change against the current version. After: the new version and its log. */}
+              {stage === "review" || stage === "scope" ? <SkillFile base={base} draft={draft} version={version} /> : <SkillFile base={draft} draft={draft} version={version + 1} log={draft.log} />}
+              {stage === "review" && changed && (
+                <div className="flex items-center gap-3">
+                  <button type="button" onClick={() => setStage("scope")} className={PRIMARY}>
+                    Approve the skill file
+                  </button>
+                  <button type="button" onClick={() => setAnswers([])} className="text-sm font-medium text-slate-600 hover:text-slate-950">
+                    Start over
+                  </button>
+                </div>
+              )}
+              {stage === "scope" && (
+                <div className="flex flex-wrap items-center gap-3">
+                  <span className="text-sm text-slate-700">Change it for</span>
+                  <div className="flex h-9 rounded-lg border border-slate-200 bg-slate-25 p-0.5">
+                    {(["me", "team", "account"] as const).map((sc) => (
+                      <button key={sc} type="button" onClick={() => setScope(sc)} className={cn("rounded-md px-2.5 text-[13px] font-medium whitespace-nowrap", scope === sc ? "bg-white text-slate-950 shadow-xs ring-1 ring-slate-200" : "text-slate-500 hover:text-slate-800")}>
+                        {SCOPE_LABEL[sc]}
+                      </button>
+                    ))}
+                  </div>
+                  <button type="button" onClick={approve} className={PRIMARY}>
+                    <Check className="mr-1 inline size-4" /> Approve
+                  </button>
+                </div>
+              )}
+              {stage === "approved" && (
+                <>
+                  <MemorySaved text={`Learned: ${lessonText(draft)}. Applies to ${SCOPE_LABEL[scope].toLowerCase().replace("the aurelle account", "the Aurelle account")}.`} />
+                  <AllySays delay={0.8}>Rerun the analysis with the new skill file?</AllySays>
+                  <motion.button initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1 }} type="button" onClick={() => setStage("running")} className={cn(PRIMARY, "w-fit")}>
+                    Rerun
+                  </motion.button>
+                </>
+              )}
+              {stage === "running" && (
+                <p className="flex items-center gap-2 text-[15px] text-slate-500">
+                  <Loader2 className="size-4 animate-spin text-brand-600" />
+                  Rerunning gap to plan on skill file v{version + 1}…
+                </p>
+              )}
+              {stage === "rerun" && (
+                <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col gap-2">
+                  <div className="text-sm text-slate-500">
+                    Revised answer · skill file v{version + 1} · {node.id === "overall" ? "overall business" : node.name}
+                  </div>
+                  {render(draft)}
+                </motion.div>
+              )}
+            </motion.div>
+          )}
+        </div>
+      )}
     </div>
   )
 }

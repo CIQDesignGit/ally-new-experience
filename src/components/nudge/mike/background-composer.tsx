@@ -150,10 +150,10 @@ export function BackgroundComposer({ section, thumbnailUrl, skuId, onNext }: { s
     scene === "upload" && src ? <img src={src} alt="Your background" className="absolute inset-0 size-full object-cover" /> : <Scene id={scene === "upload" ? "porch" : scene} className="absolute inset-0 size-full" />
 
   return (
-    <div className="overflow-hidden rounded-xl border border-warning-200">
-      <div className="flex items-center justify-between gap-3 border-b border-warning-100 bg-warning-50 px-5 py-2.5">
+    <div className="overflow-hidden rounded-xl border border-slate-200">
+      <div className="flex items-center justify-between gap-3 border-b border-slate-100 bg-slate-25 px-5 py-2.5">
         <span className="text-sm font-semibold text-slate-950">{section.label}</span>
-        <span className="font-mono text-[11px] tracking-wide text-warning-700 uppercase">Your input</span>
+        <span className="text-xs text-slate-500">Your input</span>
       </div>
 
       <div className="grid grid-cols-2 divide-x divide-slate-100">

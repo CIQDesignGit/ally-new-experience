@@ -23,10 +23,10 @@ interface OpsBatchDetailProps {
 /** A field only Michelle's team can fill: what Ally drafted, then a full-width box. Same look as Mike's input fields. */
 function InputRow({ item }: { item: NonNullable<OpsBatch["inputs"]>[number] }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-warning-200">
-      <div className="flex items-center justify-between gap-3 border-b border-warning-100 bg-warning-50 px-5 py-2.5">
+    <div className="overflow-hidden rounded-xl border border-slate-200">
+      <div className="flex items-center justify-between gap-3 border-b border-slate-100 bg-slate-25 px-5 py-2.5">
         <span className="text-sm font-semibold text-slate-950">{item.label}</span>
-        <span className="font-mono text-[11px] tracking-wide text-warning-700 uppercase">Your input</span>
+        <span className="text-xs text-slate-500">Your input</span>
       </div>
       <div className="px-5 py-4">
         <div className="text-sm text-slate-500">{item.detail}</div>
@@ -154,16 +154,11 @@ export function OpsBatchDetail({ batch, onAction, onReviewAll }: OpsBatchDetailP
             {batch.doneLabel}
           </div>
         ) : batch.tier === "input" ? (
-          <div className="flex flex-col gap-4 rounded-xl border border-warning-200 bg-warning-50 px-5 py-4">
-            <div className="text-sm text-slate-700">
-              {batch.inputCount} {batch.inputNoun} need something only your team has. Ally files the rest as soon as you send them.
-            </div>
-            {!reviewing && (
-              <button type="button" onClick={() => setReviewing(true)} className={`${PRIMARY} w-fit`}>
-                Review {batch.inputCount} {batch.inputNoun}
-              </button>
-            )}
-          </div>
+          !reviewing && (
+            <button type="button" onClick={() => setReviewing(true)} className={`${PRIMARY} w-fit`}>
+              Review {batch.inputCount} {batch.inputNoun}
+            </button>
+          )
         ) : (
           <div className="flex flex-col gap-6">
             {/* One action and one status line: the next step, or where the SKUs are now. */}
@@ -219,11 +214,7 @@ export function OpsBatchDetail({ batch, onAction, onReviewAll }: OpsBatchDetailP
           {batch.inputs.map((item) => (
             <InputRow key={item.label} item={item} />
           ))}
-          <div className="text-xs text-slate-500">
-            Showing {batch.inputs.length} of {batch.inputCount}
-          </div>
-          <div className="mt-2 flex items-center gap-4 rounded-xl border border-warning-200 bg-warning-50 px-6 py-5">
-            <div className="min-w-0 flex-1 text-sm font-semibold text-slate-950">Filled in? Ally files every claim and tells you when they land.</div>
+          <div className="mt-1 flex items-center gap-4">
             <button
               type="button"
               onClick={() => {
@@ -234,6 +225,9 @@ export function OpsBatchDetail({ batch, onAction, onReviewAll }: OpsBatchDetailP
             >
               Send to Ally
             </button>
+            <span className="text-sm text-slate-500 tabular-nums">
+              {batch.inputs.length} of {batch.inputCount} shown
+            </span>
           </div>
         </div>
       )}

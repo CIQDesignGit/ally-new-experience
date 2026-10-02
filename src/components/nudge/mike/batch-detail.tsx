@@ -173,16 +173,9 @@ export function BatchDetail({ batch, onApprove, onReviewAll, onSelect, onSelectS
         ) : batch.id === "concepts" && batch.tier === "input" ? (
           <LaunchBriefNeed />
         ) : batch.tier === "input" && batch.need ? (
-          <div className="flex flex-col gap-4 rounded-xl border border-warning-200 bg-warning-50 px-5 py-4">
-            <div className="text-sm text-slate-700">{batch.need.text}</div>
-            <button
-              type="button"
-              onClick={() => onReviewAll(batch)}
-              className={cn(PRIMARY, "w-fit")}
-            >
-              Review {batch.inputSkus} SKUs
-            </button>
-          </div>
+          <button type="button" onClick={() => onReviewAll(batch)} className={cn(PRIMARY, "w-fit")}>
+            Review {batch.inputSkus} SKUs
+          </button>
         ) : batch.id === "concepts" && batch.tier === "approval" ? (
           <div className="flex flex-col gap-4">
             <LaunchSkuStrip onPreview={(skuId) => onSelectSku?.(batch.id, skuId)} />
@@ -241,11 +234,8 @@ function LaunchBriefNeed() {
   const { ask } = useChat()
   const [open, setOpen] = useState(false)
   return (
-    <div className="flex flex-col gap-3 rounded-xl border border-warning-200 bg-warning-50 px-5 py-4">
-      <div className="text-sm text-slate-700">
-        <b className="font-semibold text-slate-950">Ally needs the launch brief.</b>
-        {" Upload the brand team's email and the agency's concept, and Ally drafts the 3 pages."}
-      </div>
+    <div className="flex flex-col gap-3">
+      <div className="text-sm text-slate-700">Ally needs the launch brief: the brand team&apos;s email and the agency&apos;s concept.</div>
       <button type="button" onClick={() => setOpen(true)} className={cn(PRIMARY, "w-fit")}>
         <Upload className="size-4" /> Upload the brief
       </button>

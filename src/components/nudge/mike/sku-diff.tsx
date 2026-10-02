@@ -141,10 +141,10 @@ function HalloweenShot({ src, label }: { src?: string; label: string }) {
 /** A field only Mike can fill: what's live today, then a full-width box for his input. */
 function InputField({ section }: { section: SkuInputSection }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-warning-200">
-      <div className="flex items-center justify-between gap-3 border-b border-warning-100 bg-warning-50 px-5 py-2.5">
+    <div className="overflow-hidden rounded-xl border border-slate-200">
+      <div className="flex items-center justify-between gap-3 border-b border-slate-100 bg-slate-25 px-5 py-2.5">
         <span className="text-sm font-semibold text-slate-950">{section.label}</span>
-        <span className="font-mono text-[11px] tracking-wide text-warning-700 uppercase">Your input</span>
+        <span className="text-xs text-slate-500">Your input</span>
       </div>
       <div className="px-5 py-4">
         <div className="text-sm text-slate-500">

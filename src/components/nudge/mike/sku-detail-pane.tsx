@@ -65,7 +65,7 @@ export function SkuDetailPane({ batch, row, onBack, onApprove, onSelectSku }: Sk
       <AllyFeedback key={row.skuId} id={`mike:${batch.id}:${row.skuId}`} sku={sku.title} author="Mike Chen" className="mt-6" />
 
       {!done && batch.tier === "input" && needsBackground && (
-        <div className="mt-8 flex items-center gap-4 rounded-xl border border-warning-200 bg-warning-50 px-6 py-5">
+        <div className="mt-8 flex items-center gap-4">
           <div className="min-w-0 flex-1">
             {withBg === 0 ? (
               <div className="text-sm font-semibold text-slate-950">Pick a background and apply it to this SKU first.</div>
@@ -100,13 +100,7 @@ export function SkuDetailPane({ batch, row, onBack, onApprove, onSelectSku }: Sk
       )}
 
       {!done && batch.tier === "input" && !needsBackground && (
-        <div className="mt-8 flex items-center gap-4 rounded-xl border border-warning-200 bg-warning-50 px-6 py-5">
-          <div className="min-w-0 flex-1">
-            <div className="text-sm font-semibold text-slate-950">Filled in? Ally drafts the rest and sends them back for one approval.</div>
-            <div className="mt-0.5 text-sm text-slate-500">
-              {batch.inputSkus} SKUs need input. Pick the next one on the left, or send what you have.
-            </div>
-          </div>
+        <div className="mt-8 flex items-center gap-4">
           <button
             type="button"
             onClick={() => {
