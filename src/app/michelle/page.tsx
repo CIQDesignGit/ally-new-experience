@@ -4,6 +4,7 @@ import { AppDrawer } from "@/components/nudge/app-drawer"
 import { useEffect, useRef, useState } from "react"
 import { toast } from "sonner"
 import { AskBar, ChatProvider, ChatThread, useChat, useChatSource } from "@/components/nudge/chat/inline-chat"
+import type { Chip } from "@/components/nudge/chat/inline-chat"
 import { OPEN_ITEM_EVENT } from "@/components/nudge/chat/open-item"
 import type { OpenItemDetail } from "@/components/nudge/chat/open-item"
 import { OpsSkuPane } from "@/components/nudge/ops/ops-sku-pane"
@@ -32,25 +33,23 @@ import type { OpsBatch } from "@/components/nudge/data"
  * then what ops delivered this quarter.
  */
 /** The inbox's questions for the Ask Ally bar (gap-to-plan registers its own per node). */
+// The drill's follow-ups: alerts on the two numbers it found. Each offers the other.
+const BRAND_ALERT: Chip = { q: BRAND_ALERT_ASK, match: /brand(ed)?\s+terms?/i, render: () => <AlertSetAnswer id="brand-terms" /> }
+const GIFT_ALERT: Chip = { q: GIFT_ALERT_ASK, match: /gift\s+terms?/i, render: () => <AlertSetAnswer id="gift-terms" /> }
+BRAND_ALERT.followUps = [GIFT_ALERT]
+GIFT_ALERT.followUps = [BRAND_ALERT]
+
 function InboxChat() {
-  const { turns } = useChat()
-  // The alert asks follow the gift-sets drill: they watch the two numbers it found.
-  const drilled = turns.some((t) => t.chip === GIFT_QUESTION)
   useChatSource(
     {
       chips: [
-        ...(drilled
-          ? [
-              { q: BRAND_ALERT_ASK, match: /brand(ed)?\s+terms?/i, render: () => <AlertSetAnswer id="brand-terms" /> },
-              { q: GIFT_ALERT_ASK, match: /gift\s+terms?/i, render: () => <AlertSetAnswer id="gift-terms" /> },
-            ]
-          : [{ q: GIFT_QUESTION, match: /gift.?sets?/i, render: () => <GiftSetsAnswer /> }]),
+        { q: GIFT_QUESTION, match: /gift.?sets?/i, render: () => <GiftSetsAnswer />, followUps: [BRAND_ALERT, GIFT_ALERT] },
         ...MICHELLE_QUESTIONS.map((q) => ({ q, render: () => <div className="max-w-[860px] rounded-2xl bg-white px-5 py-4 text-[15px] leading-relaxed text-slate-700 ring-1 ring-slate-200">{michelleAnswer(q)}</div> })),
         // A task, not a question about the brief: it opens its own conversation.
         { q: RETRO_TASK, task: "/michelle/retro?new=1", render: () => <StorylineAnswer /> },
       ],
     },
-    drilled ? "inbox-drilled" : "inbox",
+    "inbox",
   )
   return null
 }

@@ -2,7 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react"
 import { motion } from "framer-motion"
-import { Plus, Send, Sparkles } from "lucide-react"
+import { CornerDownRight, Plus, Send, Sparkles } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { FadeAbove, MoreBelow } from "./more-below"
@@ -21,6 +21,8 @@ export interface Chip {
   task?: string
   /** Typed text that means this chip, in any wording; checked before the word-overlap guess. */
   match?: RegExp
+  /** Follow-ups offered at the end of this chip's answer (the bar's chips only get you started). */
+  followUps?: Chip[]
 }
 
 export interface ChatSource {
@@ -37,6 +39,7 @@ interface Turn {
   q: string
   /** The chip it landed on (same as q when the chip was tapped). */
   chip: string
+  followUps?: Chip[]
   about?: string
   anchor?: string
   render: () => React.ReactNode
@@ -59,7 +62,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   const next = useRef(1)
   const ask = useCallback(
     (chip: Chip, anchor?: string, said?: string) =>
-      setTurns((t) => [...t, { id: next.current++, q: said ?? chip.q, chip: chip.q, about: source.about, anchor: anchor ?? source.anchor, render: chip.render }]),
+      setTurns((t) => [...t, { id: next.current++, q: said ?? chip.q, chip: chip.q, followUps: chip.followUps, about: source.about, anchor: anchor ?? source.anchor, render: chip.render }]),
     [source.about, source.anchor],
   )
   return <Ctx.Provider value={{ source, setSource, turns, ask, clear: () => setTurns([]) }}>{children}</Ctx.Provider>
@@ -99,7 +102,8 @@ function closest(chips: Chip[], text: string): Chip | undefined {
  * (placed at the end). Scrolls each new answer into view.
  */
 export function ChatThread({ className, anchor }: { className?: string; anchor?: string }) {
-  const { turns: all } = useChat()
+  const { turns: all, ask } = useChat()
+  const asked = new Set(all.map((t) => t.chip))
   const turns = all.filter((t) => t.anchor === anchor)
   const lastRef = useRef<HTMLDivElement>(null)
   const [thinking, setThinking] = useState<number | null>(null)
@@ -135,7 +139,13 @@ export function ChatThread({ className, anchor }: { className?: string; anchor?:
       aria-label={anchor ? `Conversation about ${anchor}` : "Conversation with Ally"}
     >
       {turns.map((t, i) => (
-        <div key={t.id} ref={i === turns.length - 1 ? lastRef : undefined} className="flex flex-col gap-4 scroll-mt-6">
+        <div
+          key={t.id}
+          ref={i === turns.length - 1 ? lastRef : undefined}
+          className="flex flex-col gap-4 scroll-mt-6"
+          // Like Claude: the newest question gets a screen of its own, so it can sit at the top with its answer below, nothing older in view.
+          style={i === turns.length - 1 && !anchor ? { minHeight: "calc(100vh - var(--askbar-h, 0px) - 56px)" } : undefined}
+        >
           <div className="flex items-center justify-end gap-3">
             {t.about && <span className="text-xs text-slate-500">about {t.about}</span>}
             <div className="max-w-[640px] rounded-2xl rounded-br-md bg-brand-500 px-4 py-2.5 text-[15px] text-white">{t.q}</div>
@@ -159,6 +169,19 @@ export function ChatThread({ className, anchor }: { className?: string; anchor?:
               ) : (
                 <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>
                   {t.render()}
+                  {/* Follow-ups live in the conversation, under the answer they follow from. */}
+                  {i === turns.length - 1 && !!t.followUps?.filter((f) => !asked.has(f.q)).length && (
+                    <div className="mt-4 flex flex-col items-start gap-2">
+                      {t.followUps
+                        .filter((f) => !asked.has(f.q))
+                        .map((f) => (
+                          <button key={f.q} type="button" onClick={() => ask(f, anchor)} className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-left text-sm text-slate-700 transition-colors hover:border-brand-300 hover:text-brand-700">
+                            <CornerDownRight className="size-3.5 shrink-0 text-slate-400" />
+                            {f.q}
+                          </button>
+                        ))}
+                    </div>
+                  )}
                 </motion.div>
               )}
             </div>
@@ -242,8 +265,8 @@ export function AskBar({ placeholder = "What can I take off your plate?" }: { pl
                   type="button"
                   onClick={() => {
                     run(c)
-                    // Stay open: the next follow-ups are right here.
-                    setOpen(true)
+                    // Get out of the answer's way; the follow-ups come back when you click into the bar.
+                    setOpen(false)
                   }}
                   className={cn(
                     "rounded-full border px-3 py-1.5 text-sm transition-colors",
@@ -269,9 +292,13 @@ export function AskBar({ placeholder = "What can I take off your plate?" }: { pl
         <form
           onSubmit={(e) => {
             e.preventDefault()
-            const chip = source.chips.find((c) => c.match?.test(text)) ?? closest(source.chips, text)
-            if (chip) run(chip, text.trim())
-            else setOpen(true)
+            // The latest answer's follow-ups first, then the starters.
+            const pool = [...(turns[turns.length - 1]?.followUps ?? []), ...source.chips]
+            const chip = pool.find((c) => c.match?.test(text)) ?? closest(pool, text)
+            if (chip) {
+              run(chip, text.trim())
+              setOpen(false)
+            } else setOpen(true)
             setText("")
           }}
           className="flex items-center gap-2 py-1.5 pr-1.5 pl-4"
