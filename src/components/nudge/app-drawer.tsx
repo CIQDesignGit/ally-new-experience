@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Bell, BookOpen, Home, LayoutDashboard, MessageSquare, PanelLeft, Presentation } from "lucide-react"
+import { Bell, BookOpen, Home, LayoutDashboard, MessageSquare, PanelLeft, Presentation, Wand2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useNudge } from "./nudge-context"
 import { RETRO } from "./retro/prime-day"
@@ -20,7 +20,7 @@ export function AppDrawer({ home = "/michelle", defaultOpen }: { home?: string; 
   const path = usePathname()
   const kind = path === home ? "brief" : "conversation"
   const [open, setOpen] = useState(defaultOpen ?? kind === "conversation")
-  const { retro, knowledge, alerts, dashboards, decks } = useNudge()
+  const { retro, knowledge, alerts, dashboards, decks, skills } = useNudge()
   const qbr = decks.qbr
   // Being on the conversation counts as started, even before its state has loaded.
   const started = Object.keys(retro).length > 0 || path === "/michelle/retro"
@@ -79,6 +79,7 @@ export function AppDrawer({ home = "/michelle", defaultOpen }: { home?: string; 
       ],
       empty: "Publish a deck or answers as a dashboard",
     },
+    { title: "Skills", icon: Wand2, items: skills.map((k) => ({ label: k.name, sub: `Say "open my negotiation prep" · ${k.shared === "me" ? "only you" : k.shared === "team" ? "your team" : "everyone"}`, href: "/michelle" })), empty: "Skills you teach Ally show here" },
     { title: "Alerts", icon: Bell, fresh: alerts.some((a) => !a.seen), items: alerts.map((a) => ({ label: a.name, sub: a.firing ? "Fired today" : "Watching", href: "/michelle/alerts", on: path === "/michelle/alerts", fresh: !a.seen })), empty: "No custom alerts yet" },
   ]
 

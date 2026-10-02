@@ -35,6 +35,8 @@ interface StoredState {
   launchReady?: boolean
   /** Every other deck built in chat (the QBR, the deep dives), by id; the Prime Day retro keeps `retro`. */
   decks?: Record<string, RetroState>
+  /** Skills Michelle saved from past work, and who they're shared with. */
+  skills?: { id: string; name: string; shared: "me" | "team" | "account"; version?: number }[]
 }
 
 export interface SavedDashboard {
@@ -130,6 +132,8 @@ interface NudgeContextValue extends StoredState {
   setLaunchReady: (v: boolean) => void
   decks: Record<string, RetroState>
   setDeck: (id: string, patch: Partial<RetroState>) => void
+  skills: { id: string; name: string; shared: "me" | "team" | "account"; version?: number }[]
+  saveSkill: (k: { id: string; name: string; shared: "me" | "team" | "account"; version?: number }) => void
   retro: RetroState
   setRetro: (patch: Partial<RetroState>) => void
 }
@@ -253,6 +257,8 @@ export function NudgeProvider({ children }: { children: React.ReactNode }) {
         markAlertsSeen: () => update((prev) => ({ ...prev, alerts: (prev.alerts ?? []).map((x) => ({ ...x, seen: true })) })),
         launchReady: !!state.launchReady,
         decks: state.decks ?? {},
+        skills: state.skills ?? [],
+        saveSkill: (k) => update((prev) => ({ ...prev, skills: [...(prev.skills ?? []).filter((x) => x.id !== k.id), k] })),
         setDeck: (id, patch) => update((prev) => ({ ...prev, decks: { ...(prev.decks ?? {}), [id]: { ...(prev.decks?.[id] ?? {}), ...patch } } })),
         setLaunchReady: (v) => update((prev) => ({ ...prev, launchReady: v })),
         dashboards: state.dashboards ?? [],

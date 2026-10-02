@@ -2,6 +2,7 @@ import type { Chart, RetroSlide } from "../retro/prime-day"
 import { ADS_SLIDE, ALL_SLIDES, DEALS_TABLE, EXEC_SLIDE, RETRO, SLIDES } from "../retro/prime-day"
 import { RETRO_QUESTION } from "../retro/storyline-answer"
 import { QBR, QBR_LAUNCH, QBR_SLIDES } from "./qbr"
+import { NEGOTIATION_SLIDES } from "../skill/data"
 import type { RetroState } from "../nudge-context"
 
 /**
@@ -73,7 +74,22 @@ export const QBR_DECK: DeckSpec = {
   repeat: { title: "Refresh it every Monday", sub: "Same storyline, this week's numbers, on autopilot" },
 }
 
-export const DECKS: Record<string, DeckSpec> = { [PRIME_DAY_DECK.id]: PRIME_DAY_DECK, [QBR_DECK.id]: QBR_DECK }
+/** Built by the negotiation skill: it opens as a finished deck. */
+export const NEGOTIATION_DECK: DeckSpec = {
+  id: "negotiation",
+  name: "FY26 Amazon negotiation",
+  forWhom: "Michelle Ortiz",
+  path: "/michelle/decks/negotiation",
+  ask: "Open my negotiation prep",
+  verdict: "Three asks worth $3.0M a year in margin: the damage allowance, co-op, and $600K of chargebacks and shortages.",
+  sources: "Vendor Central, 12 months · Ally's queue · category benchmarks · FY26 manufacturing cost",
+  file: "FY26-Amazon-negotiation",
+  slides: NEGOTIATION_SLIDES,
+  all: NEGOTIATION_SLIDES,
+  repeat: { title: "Run it again before next year's meeting", sub: "Same skill, fresh numbers, in about 10 minutes" },
+}
+
+export const DECKS: Record<string, DeckSpec> = { [PRIME_DAY_DECK.id]: PRIME_DAY_DECK, [QBR_DECK.id]: QBR_DECK, [NEGOTIATION_DECK.id]: NEGOTIATION_DECK }
 
 /** The deck as Michelle shaped it: her order, her wording, any slide in its other form. */
 export function deckSlides(spec: DeckSpec, order: string[], edits: Pick<RetroState, "alts" | "questions" | "answers"> = {}): RetroSlide[] {

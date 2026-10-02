@@ -22,6 +22,8 @@ import { PromoAnswer, SAVE_ASK, SaveDashboardAnswer } from "@/components/nudge/p
 import { PROMO_QUESTIONS, PROMO_WIDGETS } from "@/components/nudge/promo/data"
 import type { PromoWidget } from "@/components/nudge/promo/data"
 import type { Chip } from "@/components/nudge/chat/inline-chat"
+import { PREP_CHIP, RUN_BY_NAME_CHIP } from "@/components/nudge/skill/answers"
+import { PREP_FILES } from "@/components/nudge/skill/data"
 import { GiftSetsAnswer } from "@/components/nudge/alerts/answers"
 import { GIFT_QUESTION } from "@/components/nudge/alerts/data"
 import { RETRO_TASK, StorylineAnswer } from "@/components/nudge/retro/storyline-answer"
@@ -63,11 +65,15 @@ function InboxChat() {
       chips: [
         PROMO_CHIPS["promo-month"],
         { q: GIFT_QUESTION, match: /gift.?sets?/i, render: () => <GiftSetsAnswer /> },
+        // Run-by-name first: "open my negotiation prep" means the saved skill, not a new prep.
+        RUN_BY_NAME_CHIP,
+        PREP_CHIP,
         ...MICHELLE_QUESTIONS.map((q) => ({ q, render: () => <div className="max-w-[860px] rounded-2xl bg-white px-5 py-4 text-[15px] leading-relaxed text-slate-700 ring-1 ring-slate-200">{michelleAnswer(q)}</div> })),
         // A task, not a question about the brief: it opens its own conversation.
         { q: RETRO_TASK, task: "/michelle/retro?new=1", render: () => <StorylineAnswer /> },
         { q: "Claire's Q4 business review", task: "/michelle/decks/qbr?new=1", match: /\b(qbr|business review)\b/i, render: () => null },
       ],
+      files: PREP_FILES,
     },
     "inbox",
   )
