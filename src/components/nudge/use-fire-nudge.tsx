@@ -17,12 +17,14 @@ export function useFireNudge() {
   const { nudge, policy } = useNudge()
   const showSlackToast = useSlackNudgeToast()
 
+  /** `say`: the message's first line and due chip, when it isn't a plain "Claire nudged you" (Ally's Monday assignment, Claire's deadline). */
   const sendSlack = useCallback(
-    (row: TierRow) => {
+    (row: TierRow, say?: { headline: string; chip: string }) => {
       if (!row.nudgeKey) return
       const t = nudgeTargets(policy)[row.nudgeKey]
       if (!t) return
-      showSlackToast({ batchName: t.batchName, description: row.description, value: t.value, skus: t.skus, deadlineDays: t.deadlineDays, queuePath: t.queuePath })
+      const extra = say ? { headline: say.headline, chip: say.chip, deadlineDays: undefined } : {}
+      showSlackToast({ batchName: t.batchName, description: row.description, value: t.value, skus: t.skus, deadlineDays: t.deadlineDays, queuePath: t.queuePath, ...extra })
       void fetch("/api/nudge", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -34,10 +36,11 @@ export function useFireNudge() {
           deadlineDays: t.deadlineDays,
           recipient: t.recipient,
           queuePath: t.queuePath,
+          ...extra,
         }),
       }).catch(() => {})
       // And by email, to whoever is signed in (they play the nudged person).
-      void emailMe({ kind: "nudge", batchName: t.batchName, description: row.description, value: t.value, skus: t.skus, deadlineDays: t.deadlineDays, recipient: t.recipient, queuePath: t.queuePath })
+      void emailMe({ kind: "nudge", batchName: t.batchName, description: row.description, value: t.value, skus: t.skus, deadlineDays: t.deadlineDays, recipient: t.recipient, queuePath: t.queuePath, ...extra })
     },
     [showSlackToast, policy],
   )

@@ -69,7 +69,7 @@ function AreaGroup({ agent }: { agent: AgentId }) {
 
   function nudgeOwner() {
     nudgeMany(nudgeable.map((r) => r.nudgeKey!) as NudgeKey[])
-    nudgeable.forEach(sendSlack)
+    nudgeable.forEach((r) => sendSlack(r))
   }
 
   return (

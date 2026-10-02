@@ -44,8 +44,10 @@ export function mikeRows(all: Batch[], approved: Record<string, boolean>, filter
  * waterfall above. The open item lists its SKUs under it.
  */
 export function BatchList({ selectedId, selectedSkuId, expandedBatchId, filter, onFilter, onToggleExpand, onSelectBatch, onSelectSku }: BatchListProps) {
-  const { approved, policy, launchReady, asks, day } = useNudge()
-  const claireAsked = asks["approval-content"]
+  const { approved, policy, launchReady, asks, autoShipped, day } = useNudge()
+  // This week's due date on Mike's Halloween work: Ally's Monday assignment, or Claire's ask.
+  const ask = asks["approval-content"]
+  const allyShipped = autoShipped["approval-content"] ?? []
   const bgs = useBackgrounds()
   const all = contentBatches(policy, launchedIds(approved), launchReady)
   const rows = mikeRows(all, approved, filter)
@@ -66,11 +68,19 @@ export function BatchList({ selectedId, selectedSkuId, expandedBatchId, filter, 
             ) : done ? (
               <span className="inline-flex items-center gap-1 text-success-700">
                 <Check className="size-3" />
-                {b.tier === "input" ? "Sent to Ally" : "Published"}
+                {b.tier === "input" ? "Sent to Ally" : allyShipped.includes(b.id) ? "Shipped by Ally" : "Published"}
               </span>
-            ) : claireAsked && b.tier === "approval" && b.deadline ? (
-              // Claire's ask, on the work it's about, with its due date.
-              <span className={day > claireAsked.dueDay ? "text-warning-700" : "text-brand-700"}>Claire asked · {day > claireAsked.dueDay ? "overdue since" : "due"} {claireAsked.due.split(",")[0]}</span>
+            ) : allyShipped.length && b.tier === "approval" && b.deadline ? (
+              // What Ally held back at Claire's deadline: the hero SKUs.
+              <span className="text-warning-700">Held for your review</span>
+            ) : ask && b.tier === "approval" && b.deadline ? (
+              // The due date, on the work it's about.
+              <span className={day >= ask.dueDay || ask.by === "ally" ? "text-warning-700" : "text-brand-700"}>
+                {(() => {
+                  const when = day > ask.dueDay ? `overdue since ${ask.due.split(",")[0]}` : day === ask.dueDay ? "due today" : `due ${ask.due.split(",")[0]}`
+                  return ask.by === "ally" ? when.charAt(0).toUpperCase() + when.slice(1) : `Claire asked · ${when}`
+                })()}
+              </span>
             ) : b.deadline ? (
               <span className="text-warning-700">{!b.chip || b.chip.startsWith("Expires") ? `Expires in ${daysUntil(b.deadline, AS_OF) - day} days` : b.chip}</span>
             ) : null

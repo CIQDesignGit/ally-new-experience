@@ -11,6 +11,9 @@ interface SlackNudgePreview {
   deadlineDays?: number
   /** Where "Open in Ally" and the desktop notification deep-link. */
   queuePath: string
+  /** The first line and the due chip, when it isn't a plain "Claire nudged you". */
+  headline?: string
+  chip?: string
 }
 
 /**
@@ -30,14 +33,17 @@ function SlackToastCard({ preview, onOpen }: { preview: SlackNudgePreview; onOpe
         <span className="text-xs text-slate-400">now</span>
       </div>
       <div className="mt-2 text-sm leading-snug text-slate-800">
-        <span className="font-semibold">Claire</span> nudged you on{" "}
-        <span className="font-semibold">{preview.batchName}</span>
-        {preview.deadlineDays ? `. Window closes in ${preview.deadlineDays} days.` : "."}
+        {preview.headline ?? (
+          <>
+            <span className="font-semibold">Claire</span> nudged you on <span className="font-semibold">{preview.batchName}</span>
+            {preview.deadlineDays ? `. Window closes in ${preview.deadlineDays} days.` : "."}
+          </>
+        )}
       </div>
       <div className="mt-2.5 rounded-md border border-slate-200 border-l-[3px] border-l-brand-500 p-3">
-        {preview.deadlineDays && (
+        {(preview.chip || preview.deadlineDays) && (
           <span className="mb-1.5 inline-block rounded-full bg-warning-100 px-2 py-0.5 text-[11px] font-semibold text-warning-700">
-            {preview.deadlineDays} days to act
+            {preview.chip ?? `${preview.deadlineDays} days to act`}
           </span>
         )}
         <div className="text-sm font-semibold text-slate-950">{preview.batchName}</div>

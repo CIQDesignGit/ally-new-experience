@@ -1,4 +1,6 @@
-import { REPLY_LINE, replyActions } from "./claire/claire-actions"
+import { REPLY_LINE, replyActions, rowStatus, shortDay, type WeekState } from "./claire/claire-actions"
+import { WEEK_START, type Ask } from "./nudge-context"
+import { DEFAULT_POLICY } from "./policy"
 import { AS_OF, BUSINESS, INFLIGHT, deadlineView, fmtBiz, fmtM, fmtValue, getSnapshot, launchedIds, nudgeTargets, openView, tierView, waterfallStages } from "./data"
 import { rankLevers } from "./model"
 import { axisMin, buildColumns } from "./waterfall/waterfall-chart"
@@ -33,8 +35,10 @@ export interface ExecState {
   nudged: Partial<Record<NudgeKey, boolean>>
   policy?: Policy
   /** Claire's asks, own approvals and the demo clock, so the email's reply actions match her page. */
-  asks?: Partial<Record<NudgeKey, { due: string; dueDay: number }>>
-  approvedBy?: Partial<Record<NudgeKey, string>>
+  asks?: Partial<Record<NudgeKey, Ask>>
+  approvedBy?: Partial<Record<NudgeKey, "product" | "email">>
+  autoShipped?: Partial<Record<NudgeKey, string[]>>
+  launchReady?: boolean
   day?: number
 }
 
@@ -55,7 +59,7 @@ function weekStatus(row: TierRow, nudged: ExecState["nudged"]): { text: string; 
  */
 /** Builds the PDF; download or email it with the two helpers below. */
 async function buildExecSummary(period: Period, state: ExecState) {
-  const { approved, nudged, policy, day = 0 } = state
+  const { approved, nudged, policy, day = WEEK_START } = state
   const { jsPDF } = await import("jspdf")
   const doc = new jsPDF({ unit: "pt", format: "letter" })
   const M = 56
@@ -346,7 +350,7 @@ export interface ExecDigest {
  * number ties: where you stand, what's open, what we delivered, and the top
  * three actions (soonest deadline first, then dollars). Links open Ally; they never act.
  */
-export function execDigest(period: Period, { approved, policy, asks = {}, approvedBy = {}, day = 0 }: ExecState): ExecDigest {
+export function execDigest(period: Period, { approved, policy = DEFAULT_POLICY, asks = {}, approvedBy = {}, autoShipped = {}, launchReady, day = WEEK_START }: ExecState): ExecDigest {
   const open = openView(approved, policy, period)
   const approval = tierView("approval", approved, policy, period)
   const dl = deadlineView(approved, "approval", policy, period)
@@ -375,16 +379,34 @@ export function execDigest(period: Period, { approved, policy, asks = {}, approv
   const delivered = levers.reduce((n, a) => n + leverDelivered(done, a).delivered, 0)
   const projected = levers.reduce((n, a) => n + leverDelivered(done, a).promised, 0)
 
-  // The actions Claire can take by replying, numbered as her page numbers them.
-  const replies = replyActions(tierView("approval", approved, policy, period).rows, asks, approvedBy, day, policy)
+  // The week as Claire's page shows it: each owner's status, then the actions she can take by replying.
+  const week: WeekState = { approved, policy, launchReady, asks, approvedBy, autoShipped, day }
+  const owners = approval.rows.filter((r) => r.nudgeKey && asks[r.nudgeKey])
+  const team: DigestRow[] = owners.map((r) => {
+    const st = rowStatus(r, week)
+    const done = st.kind === "shipped" || st.kind === "held"
+    return { label: `${r.analystName} · ${r.agent}`, note: st.text, value: done ? st.shipped : r.value, tone: done ? "done" : st.kind === "due" || st.kind === "overdue" ? "warn" : undefined }
+  })
+  const finished = owners.filter((r) => rowStatus(r, week).kind === "shipped").length
+  const allyShipped = owners.map((r) => rowStatus(r, week)).find((st) => st.kind === "held")
+  const replies = replyActions(approval.rows, week)
   const actions: DigestRow[] = replies.map((r) => ({ label: `${r.n} · ${r.label}`, note: r.note, value: r.row?.value, tone: r.kind === "approve" ? "warn" : undefined }))
+  const teamSections = team.length
+    ? [{ title: `Your team this week · ${shortDay(day)}`, rows: team }, ...(actions.length ? [{ title: "Reply to act", rows: actions }] : [])]
+    : actions.length
+      ? [{ title: "Reply to act", rows: actions }]
+      : []
 
   return {
-    subject: `${quarter}: ${gap > 0 ? `${fmtBiz(gap)} short of plan, ${open.totalLabel} in the pipeline to close it` : `${fmtBiz(-gap)} ahead of plan`}`,
+    subject: team.length
+      ? `${shortDay(day)}: ${finished} of ${team.length} done${allyShipped ? ` · Ally shipped ${allyShipped.byAlly} on your deadline` : actions.length ? ` · ${actions.length} for you to decide` : ""}`
+      : `${quarter}: ${gap > 0 ? `${fmtBiz(gap)} short of plan, ${open.totalLabel} in the pipeline to close it` : `${fmtBiz(-gap)} ahead of plan`}`,
     preheader: deadline ? `${deadline.expiring} expires in ${deadline.days} days` : `${approval.effort} of your team's time unlocks ${approval.value}`,
     chart,
     hero: [`You're tracking to ${fmtBiz(pace)} in sales ${PERIOD_WORDS[period]}.`, `That's ${standing}.`],
+    // In the week, the team and the replies lead: they're what Claire acts on.
     sections: [
+      ...teamSections,
       {
         title: "Where the money is",
         rows: [
@@ -401,7 +423,6 @@ export function execDigest(period: Period, { approved, policy, asks = {}, approv
           return { label: a, note: drill[a]?.did ?? l.reason, value: fmtValue(l.delivered) }
         }),
       },
-      ...(actions.length ? [{ title: "Reply to act", rows: actions }] : []),
     ],
     reply: actions.length ? REPLY_LINE : undefined,
   }

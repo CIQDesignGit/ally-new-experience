@@ -40,7 +40,7 @@ export function NudgeTier({ title, value, effort, rows, canNudgeTeam, defaultOpe
   function nudgeTeam() {
     nudgeMany(nudgeable.map((r) => r.nudgeKey!) as NudgeKey[])
     const targeted = rows.filter((r) => r.nudgeKey && NUDGE_TARGETS[r.nudgeKey])
-    targeted.forEach(sendSlack)
+    targeted.forEach((r) => sendSlack(r))
     if (targeted.length === 0) toast.success("Nudged your team", { position: "top-right" })
   }
 

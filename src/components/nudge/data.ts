@@ -219,7 +219,7 @@ export function contentBatches(policy?: Policy, launched: string[] = [], launchR
       human.push(b)
       continue
     }
-    const plan = shipPlan(policy, { ...b.split, type: b.type })
+    const plan = shipPlan(policy, { ...b.split, type: b.type, batchId: b.id })
     // The only tier in a part names it ("Hero", "Tail"); a mixed part goes unlabeled.
     const label = (m: ReviewMode) => {
       const tiers = TIERS.filter((t) => plan[m].byTier[t]) as SkuTier[]

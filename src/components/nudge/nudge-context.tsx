@@ -24,14 +24,26 @@ export interface Conversation {
 /** The two nudges that page Mike for real — the rest just flip local UI state. */
 const MIKE_NUDGE_KEYS: NudgeKey[] = ["approval-content", "team-content"]
 
+export interface Ask {
+  due: string
+  dueDay: number
+  by: "ally" | "product" | "email"
+  ship?: boolean
+}
+
+/** The week opens Monday, Oct 5: three days before AS_OF. */
+export const WEEK_START = -3
+
 interface StoredState {
   nudged: Partial<Record<NudgeKey, boolean>>
   approved: Record<string, boolean>
-  /** Claire's asks: who she asked to approve, by when, and how she asked (from the product or by email reply). */
-  asks?: Partial<Record<NudgeKey, { due: string; dueDay: number; by: "product" | "email" }>>
+  /** Who owes what by when: Ally's Monday assignment ("ally"), or Claire's ask (from the product or an email reply). `ship`: Ally ships it at the deadline if it isn't approved. */
+  asks?: Partial<Record<NudgeKey, Ask>>
+  /** Work Ally shipped at Claire's deadline because nobody approved it, by row: the batch ids it shipped. */
+  autoShipped?: Partial<Record<NudgeKey, string[]>>
   /** Work Claire approved herself, and how (a button in the product, or a YES reply to her email). */
   approvedBy?: Partial<Record<NudgeKey, "product" | "email">>
-  /** Demo clock: 0 is today (Thu, Oct 8); "Next check-in" moves it to her next visit (twice a week). */
+  /** Demo clock, in days from Thu, Oct 8 (AS_OF): Mon −3, Wed −1, Fri +1. The week opens on Monday. */
   day?: number
   /** Review policy and knowledge from the settings page; absent = defaults. */
   policy?: Policy
@@ -122,7 +134,12 @@ interface NudgeContextValue extends StoredState {
   nudgeMany: (keys: NudgeKey[]) => void
   approve: (batchId: string) => void
   asks: NonNullable<StoredState["asks"]>
-  askBy: (key: NudgeKey, due: string, dueDay: number, by: "product" | "email") => void
+  askBy: (key: NudgeKey, due: string, dueDay: number, by: Ask["by"], ship?: boolean) => void
+  autoShipped: NonNullable<StoredState["autoShipped"]>
+  /** Approves several batches in one update (the team's work as the demo week moves on). */
+  approveMany: (ids: string[]) => void
+  /** Ally ships a row's unapproved work at Claire's deadline. */
+  autoShip: (key: NudgeKey, ids: string[]) => void
   approvedBy: NonNullable<StoredState["approvedBy"]>
   /** Marks Claire's own approval of a row; the batches it covers are approved by the caller. */
   approveAs: (key: NudgeKey, by: "product" | "email", batchIds: string[]) => void
@@ -297,12 +314,16 @@ export function NudgeProvider({ children }: { children: React.ReactNode }) {
         skills: state.skills ?? [],
         conversations: state.conversations ?? [],
         asks: state.asks ?? {},
-        askBy: (key, due, dueDay, by) => update((prev) => ({ ...prev, nudged: { ...prev.nudged, [key]: true }, asks: { ...(prev.asks ?? {}), [key]: { due, dueDay, by } } })),
+        askBy: (key, due, dueDay, by, ship) => update((prev) => ({ ...prev, nudged: { ...prev.nudged, [key]: true }, asks: { ...(prev.asks ?? {}), [key]: { due, dueDay, by, ...(ship ? { ship } : {}) } } })),
+        autoShipped: state.autoShipped ?? {},
+        approveMany: (ids) => update((prev) => ({ ...prev, approved: { ...prev.approved, ...Object.fromEntries(ids.map((id) => [id, true])) } })),
+        autoShip: (key, ids) =>
+          update((prev) => ({ ...prev, approved: { ...prev.approved, ...Object.fromEntries(ids.map((id) => [id, true])) }, autoShipped: { ...(prev.autoShipped ?? {}), [key]: ids } })),
         approvedBy: state.approvedBy ?? {},
         approveAs: (key, by, batchIds) =>
           update((prev) => ({ ...prev, approved: { ...prev.approved, ...Object.fromEntries(batchIds.map((id) => [id, true])) }, approvedBy: { ...(prev.approvedBy ?? {}), [key]: by } })),
-        day: state.day ?? 0,
-        nextMorning: (to) => update((prev) => ({ ...prev, day: to ?? (prev.day ?? 0) + 1 })),
+        day: state.day ?? WEEK_START,
+        nextMorning: (to) => update((prev) => ({ ...prev, day: to ?? (prev.day ?? WEEK_START) + 1 })),
         recordConversation: (c) => update((prev) => ({ ...prev, conversations: [c, ...(prev.conversations ?? []).filter((x) => x.id !== c.id)] })),
         saveSkill: (k) => update((prev) => ({ ...prev, skills: [...(prev.skills ?? []).filter((x) => x.id !== k.id), k] })),
         setDeck: (id, patch) => update((prev) => ({ ...prev, decks: { ...(prev.decks ?? {}), [id]: { ...(prev.decks?.[id] ?? {}), ...patch } } })),

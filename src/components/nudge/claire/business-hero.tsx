@@ -2,6 +2,7 @@
 
 import { BUSINESS, fmtBiz } from "../data"
 import { useLive } from "../live-model"
+import { useNudge } from "../nudge-context"
 import { TopStrip } from "../top-strip"
 import type { Crumb } from "../top-strip"
 import { EmailPdfButton } from "./email-pdf-button"
@@ -18,6 +19,8 @@ const PERIOD_WORDS: Record<Period, string> = { week: "this week", month: "this m
 /** `topLineOnly`: just the top strip (above a Grow view, which has its own headline); `crumbs` replace the greeting there. */
 export function BusinessHero({ topLineOnly = false, crumbs }: { topLineOnly?: boolean; crumbs?: Crumb[] } = {}) {
   const live = useLive()
+  // Counted at the demo's day, as every countdown on the page is.
+  const { day } = useNudge()
   const { period } = live
   const b = { ...BUSINESS[period], pace: live.pace(period) }
   const gap = b.plan - b.pace
@@ -65,7 +68,7 @@ export function BusinessHero({ topLineOnly = false, crumbs }: { topLineOnly?: bo
           <>
             <span className="text-slate-300"> · </span>
             <span className="text-warning-600">
-              {live.deadline.expiring} expires in {live.deadline.days} days
+              {live.deadline.expiring} expires in {live.deadline.days - day} days
             </span>
           </>
         )}

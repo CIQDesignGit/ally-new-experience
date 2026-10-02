@@ -10,6 +10,10 @@ interface NudgeRequestBody {
   recipient?: "mike" | "michelle"
   /** In-app path the "Open in Ally" button deep-links to. */
   queuePath?: string
+  /** The first line, when it isn't "Claire nudged you" (Ally's assignment, Claire's deadline). */
+  headline?: string
+  /** The due chip, in place of "N days to act". */
+  chip?: string
 }
 
 const RECIPIENT_ENV: Record<string, string> = {
@@ -42,7 +46,7 @@ export async function POST(request: NextRequest) {
     (recipient === "michelle" ? process.env.SLACK_PRIYA_USER_ID : undefined)
 
   const blocks = buildSlackBlocks(body, openInAllyHref, userId)
-  const text = `Claire nudged you on ${body.batchName}${body.deadlineDays ? `. Window closes in ${body.deadlineDays} days.` : "."}`
+  const text = body.headline ?? `Claire nudged you on ${body.batchName}${body.deadlineDays ? `. Window closes in ${body.deadlineDays} days.` : "."}`
 
   if (!token || !userId) {
     console.log(
@@ -90,13 +94,14 @@ function buildSlackBlocks(body: NudgeRequestBody, openInAllyHref: string, userId
       type: "section",
       text: {
         type: "mrkdwn",
-        text: `*Claire* nudged you on *${body.batchName}*${body.deadlineDays ? `. Window closes in ${body.deadlineDays} days.` : "."} ${mention}`,
+        text: body.headline ? `${body.headline} ${mention}` : `*Claire* nudged you on *${body.batchName}*${body.deadlineDays ? `. Window closes in ${body.deadlineDays} days.` : "."} ${mention}`,
       },
     },
   ]
 
   const fields: string[] = []
-  if (body.deadlineDays) fields.push(`*${body.deadlineDays} days to act*`)
+  if (body.chip) fields.push(`*${body.chip}*`)
+  else if (body.deadlineDays) fields.push(`*${body.deadlineDays} days to act*`)
   fields.push(`*${body.value}*${body.skus ? `  ·  ${body.skus} SKUs` : ""}`)
 
   blocks.push({ type: "section", text: { type: "mrkdwn", text: `*${body.batchName}*\n${body.description}\n\n${fields.join("\n")}` } })

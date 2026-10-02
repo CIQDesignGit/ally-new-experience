@@ -9,7 +9,7 @@ import type { Digest } from "@/lib/email"
  * Dana when Michelle sends her note). The address comes from the cookie, never the request body.
  */
 type Body =
-  | { kind: "nudge"; batchName: string; description: string; value: string; skus?: number; deadlineDays?: number; recipient?: "mike" | "michelle"; queuePath?: string }
+  | { kind: "nudge"; batchName: string; description: string; value: string; skus?: number; deadlineDays?: number; recipient?: "mike" | "michelle"; queuePath?: string; headline?: string; chip?: string }
   | { kind: "summary"; quarter: string; filename: string; pdfBase64: string; digest?: Digest }
   | { kind: "note"; subject: string; body: string; skus: number; issues: number }
   | { kind: "alert"; name: string; watches: string; when: string; now: string }
@@ -26,24 +26,26 @@ export async function POST(request: NextRequest) {
   let msg: Parameters<typeof sendEmail>[0]
   if (b.kind === "nudge") {
     const who = NAME[b.recipient ?? "mike"]
-    const when = b.deadlineDays ? `${b.deadlineDays} days to act` : undefined
-    const subject = `Claire nudged you: ${b.batchName} · ${b.value}`
+    // Ally's assignment and Claire's deadline say what they are; a plain nudge says who nudged.
+    const when = b.chip ?? (b.deadlineDays ? `${b.deadlineDays} days to act` : undefined)
+    const heading = b.headline ?? `Claire nudged you on ${b.batchName}`
+    const subject = b.headline ? `${b.batchName} · ${b.value} · ${b.chip ?? ""}`.replace(/ · $/, "") : `Claire nudged you: ${b.batchName} · ${b.value}`
     const facts: [string, string][] = [["Value", b.value]]
     if (b.skus) facts.push(["SKUs", String(b.skus)])
-    if (when) facts.push(["Window", when])
+    if (when) facts.push([b.chip ? "Due" : "Window", b.chip ? b.chip.replace(/^Due /, "") : when])
     const href = `${origin}${b.queuePath ?? "/mike"}`
     msg = {
       to,
       subject,
       html: layout({
         preheader: `${b.batchName} · ${b.value}${when ? ` · ${when}` : ""}`,
-        heading: `Claire nudged you on ${b.batchName}`,
+        heading,
         lines: [`Hi ${who},`, b.description],
         facts,
         cta: { label: "Open in Ally", href },
         footer: `${footer} You're receiving it as ${who}.`,
       }),
-      text: `Hi ${who},\n\nClaire nudged you on ${b.batchName}.\n${b.description}\n\n${facts.map(([k, v]) => `${k}: ${v}`).join("\n")}\n\nOpen in Ally: ${href}\n\n${footer}`,
+      text: `Hi ${who},\n\n${b.headline ?? `Claire nudged you on ${b.batchName}.`}\n${b.description}\n\n${facts.map(([k, v]) => `${k}: ${v}`).join("\n")}\n\nOpen in Ally: ${href}\n\n${footer}`,
     }
   } else if (b.kind === "summary") {
     // A PDF of a few pages; anything far bigger isn't ours.

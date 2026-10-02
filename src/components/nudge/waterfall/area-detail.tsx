@@ -43,7 +43,7 @@ function AreaGroup({ agent, buckets, value }: { agent: AgentId; buckets: { label
 
   function nudgeOwner() {
     nudgeMany(toNudge.map((r) => r.nudgeKey!) as NudgeKey[])
-    toNudge.forEach(sendSlack)
+    toNudge.forEach((r) => sendSlack(r))
   }
 
   return (

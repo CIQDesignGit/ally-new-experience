@@ -6,35 +6,35 @@ import { OwnerName } from "../owner-name"
 import { AGENT_DOT } from "../agent-style"
 import { AGENT_LABEL, type TierRow } from "../types"
 import { PRIMARY } from "../mike/buttons"
-import { useNudge } from "../nudge-context"
-import { dueFor, useClaireActions } from "./claire-actions"
+import { countdown, dueFor, useClaireActions } from "./claire-actions"
 
 /**
  * One row of "One approval away" on Claire's page: who, what, where it stands
- * (it moves as the team acts and as days pass), the value, and her move:
- * ask by a date, or approve it herself once it's due. The same moves work from
- * her morning email.
+ * this week (it moves as the team acts and as the demo week moves on), the
+ * value, and her move. The same moves work from her email.
  */
 const TONE: Record<string, string> = {
-  shipped: "text-success-700",
-  "on-pace": "text-info-700",
+  pre: "text-slate-500",
+  assigned: "text-slate-600",
   asked: "text-slate-600",
   due: "text-warning-700",
   overdue: "text-warning-700",
-  behind: "text-warning-700",
-  "not-started": "text-slate-500",
+  held: "text-success-700",
+  shipped: "text-success-700",
 }
 
-export function ClaireRow({ row, grid }: { row: TierRow; grid: string }) {
-  const { statusOf, askFor, approveMyself, autopilotSeasonal, seasonalOn, day } = useClaireActions()
-  const { approvedBy } = useNudge()
-  const st = statusOf(row)
-  // Approving it herself is for the content she can sign off (Mike's Halloween items).
-  const canApprove = row.nudgeKey === "approval-content"
-  const deadline = row.deadline?.replace(/(\d+) days/, (_, n) => `${Math.max(0, Number(n) - day)} days`)
+const LINK = "text-[13px] font-medium text-brand-700 hover:underline"
 
-  // She approved it herself: the next move is never having to.
-  const offerAutopilot = canApprove && st.kind === "shipped" && !!approvedBy["approval-content"]
+export function ClaireRow({ row, grid }: { row: TierRow; grid: string }) {
+  const { statusOf, askFor, approveMyself, autopilotSeasonal, seasonalOn, day, s } = useClaireActions()
+  const st = statusOf(row)
+  const key = row.nudgeKey
+  // Content is the work Claire can sign off herself, and the work Ally ships at her deadline.
+  const content = key === "approval-content"
+  const ask = key ? s.asks[key] : undefined
+  const deadline = st.kind === "shipped" || st.kind === "held" ? undefined : countdown(row.deadline, day)
+  // Content shipped this week, by Claire or by Ally at her deadline: next, never having to.
+  const offerAutopilot = content && (st.kind === "shipped" || st.kind === "held") && (!!s.approvedBy["approval-content"] || !!s.autoShipped["approval-content"]?.length)
 
   const action = offerAutopilot ? (
     seasonalOn ? (
@@ -46,33 +46,33 @@ export function ClaireRow({ row, grid }: { row: TierRow; grid: string }) {
         <button type="button" onClick={() => autopilotSeasonal("product")} className={cn(PRIMARY, "w-[180px]")}>
           Put seasonal on autopilot
         </button>
-        <span className="text-[13px] text-slate-500">Hero SKUs still reviewed</span>
+        <span className="text-[13px] text-slate-500">From the next event</span>
       </span>
     )
-  ) : st.kind === "shipped" || st.kind === "on-pace" ? null : st.kind === "due" || st.kind === "overdue" ? (
-      canApprove ? (
-        <button type="button" onClick={() => approveMyself(row, "product")} className={cn(PRIMARY, "w-[180px]")}>
-          Approve it myself
-        </button>
-      ) : null
-    ) : st.kind === "asked" ? (
-      canApprove ? (
-        <button type="button" onClick={() => approveMyself(row, "product")} className="text-sm font-medium text-brand-700 hover:underline">
-          Approve it myself
-        </button>
-      ) : null
-    ) : (
-      <span className="flex w-[180px] flex-col items-center gap-1.5">
-        <button type="button" onClick={() => askFor(row, "product")} className={cn(PRIMARY, "w-[180px]")}>
-          Ask {row.analystName} by {dueFor(day).short}
-        </button>
-        {canApprove && (
-          <button type="button" onClick={() => approveMyself(row, "product")} className="text-[13px] font-medium text-brand-700 hover:underline">
+  ) : (st.kind === "due" || st.kind === "overdue") && ask?.by === "ally" ? (
+    // Ally's due date came and went: Claire sets the next one.
+    <span className="flex w-[180px] flex-col items-center gap-1.5">
+      <button type="button" onClick={() => askFor(row, "product")} className={cn(PRIMARY, "w-[180px]")}>
+        Ask {row.analystName} by {dueFor(day).short}
+      </button>
+      {content && (
+        <>
+          <span className="text-[13px] text-slate-500">Ally ships it if not approved</span>
+          <button type="button" onClick={() => approveMyself(row, "product")} className={LINK}>
             or approve it myself
           </button>
-        )}
-      </span>
-    )
+        </>
+      )}
+    </span>
+  ) : content && (st.kind === "due" || st.kind === "overdue") ? (
+    <button type="button" onClick={() => approveMyself(row, "product")} className={cn(PRIMARY, "w-[180px]")}>
+      Approve it myself
+    </button>
+  ) : content && st.kind === "asked" ? (
+    <button type="button" onClick={() => approveMyself(row, "product")} className={LINK}>
+      Approve it myself
+    </button>
+  ) : null
 
   return (
     <div className={cn(grid, "group items-center border-t border-slate-100 py-3.5 first:border-t-0")}>
@@ -90,10 +90,10 @@ export function ClaireRow({ row, grid }: { row: TierRow; grid: string }) {
         <p className="text-sm leading-relaxed text-slate-600">{row.description}</p>
         <div className="text-sm">
           <span className={cn("font-medium", TONE[st.kind])}>
-            {st.kind === "shipped" && <Check className="mr-1 inline size-3.5 -translate-y-px" />}
+            {(st.kind === "shipped" || st.kind === "held") && <Check className="mr-1 inline size-3.5 -translate-y-px" />}
             {st.text}
           </span>
-          {deadline && st.kind !== "shipped" && <span className="mt-0.5 block text-[13px] font-medium text-warning-700">{deadline}</span>}
+          {deadline && <span className="mt-0.5 block text-[13px] font-medium text-warning-700">{deadline}</span>}
         </div>
       </div>
       <div className="text-right font-mono text-[15px] font-semibold text-slate-950 tabular-nums">{row.value}</div>

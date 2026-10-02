@@ -63,13 +63,25 @@ function Actions({ batch, onApprove, onReviewAll, children }: BatchDetailProps &
  * never leaves the batch he's about to approve.
  */
 export function BatchDetail({ batch, onApprove, onReviewAll, onSelect, onSelectSku }: BatchDetailProps) {
-  const { approved, nudged, asks, policy, savePolicy } = useNudge()
+  const { approved, nudged, asks, autoShipped, policy, savePolicy } = useNudge()
   // A policy part scheduled on autopilot ("halloween-auto"): Mike can check it and hold it back, just this once.
   const scheduled = batch.tier === "autopilot" && batch.mode === "autopilot"
   const seedId = batch.id.replace(/-auto$/, "")
   const done = !!approved[batch.id]
   const ask = batch.nudgeKey ? asks[batch.nudgeKey] : undefined
-  const source = ask ? `Claire asked you to approve by ${ask.due}` : batch.nudgeKey && nudged[batch.nudgeKey] ? "Nudged by Claire, just now" : batch.nudgeSource
+  const shipped = batch.nudgeKey ? (autoShipped[batch.nudgeKey] ?? []) : []
+  const short = ask?.due.split(",")[0]
+  const source = shipped.includes(batch.id)
+    ? `Shipped by Ally on Claire's ${short} deadline`
+    : shipped.length
+      ? `Ally shipped the core SKUs on Claire's ${short} deadline. These hero SKUs wait for you.`
+      : ask?.by === "ally"
+        ? `Assigned by Ally Mon · due ${ask.due}`
+        : ask
+          ? `Claire asked you to approve by ${ask.due}${ask.ship ? ". If it isn't approved, Ally ships the core SKUs." : ""}`
+          : batch.nudgeKey && nudged[batch.nudgeKey]
+            ? "Nudged by Claire, just now"
+            : batch.nudgeSource
   const [showSample, setShowSample] = useState(false)
   const sampleRef = useRef<HTMLDivElement>(null)
   const row = batch.skuRows[0]
