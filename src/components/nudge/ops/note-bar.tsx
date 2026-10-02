@@ -70,7 +70,8 @@ function draft(groups: { batch: OpsBatch; items: { asin: string }[] }[], perDay:
  * it; it builds up over days; Michelle sends when she's ready, finished or not.
  * When waiting gets expensive, it asks: Send now, or keep reviewing.
  */
-export function NoteBar() {
+/** `onSent`: what went, so the page celebrates it like any other action. */
+export function NoteBar({ onSent }: { onSent?: (sent: { value: number; label: string }) => void }) {
   const { sendNote } = useNudge()
   const { groups, perDay, skus, countOf, started } = useNote()
   const [open, setOpen] = useState(false)
@@ -92,6 +93,8 @@ export function NoteBar() {
       .filter((g) => g.items.some((i) => i.whole) || (opsSkus(g.batch).length >= g.batch.skus && opsSkus(g.batch).every((s) => g.items.some((x) => x.asin === s.asin))))
       .map((g) => g.batch.id)
     sendNote(complete)
+    // Dollars only for issues that went whole, the same amount the progress bar moves by.
+    onSent?.({ value: groups.filter((g) => complete.includes(g.batch.id)).reduce((n, g) => n + g.batch.approveValue, 0), label: `${skus} SKUs sent to ${VENDOR_MANAGER.name}` })
     // The signed-in person gets the email, playing Dana.
     void emailMe({ kind: "note", subject: `${groups.length} ${groups.length === 1 ? "issue" : "issues"} on our Amazon listings · ${skus} SKUs`, body: text, skus, issues: groups.length }, { quiet: true })
     toast.success(`Sent to ${VENDOR_MANAGER.full}, ${VENDOR_MANAGER.role} · ${skus} SKUs across ${groups.length} ${groups.length === 1 ? "issue" : "issues"}, evidence attached`, { position: "top-right" })

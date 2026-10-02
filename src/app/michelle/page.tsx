@@ -170,7 +170,11 @@ function Michelle() {
   function celebrateFor(batches: OpsBatch[]) {
     const one = batches.length === 1 ? batches[0] : null
     const label = one?.tier === "input" ? `${one.skus} ${one.inputNoun}` : `${batches.reduce((s, b) => s + b.skus, 0)} SKUs`
-    setCelebrate({ value: batches.reduce((s, b) => s + b.approveValue, 0), label })
+    celebrateWith({ value: batches.reduce((s, b) => s + b.approveValue, 0), label })
+  }
+
+  function celebrateWith(c: { value: number; label: string }) {
+    setCelebrate(c)
     window.setTimeout(() => setCelebrate(null), 2200)
   }
 
@@ -232,7 +236,12 @@ function Michelle() {
         ) : (
           <>
         <OpsProgress celebrate={celebrate} />
-        <NoteBar />
+        <NoteBar
+          onSent={(c) => {
+            celebrateWith(c)
+            showProgress()
+          }}
+        />
         <div ref={queueRef} className="grid grid-cols-[340px_minmax(0,1fr)]">
           <div className="border-r border-slate-200 bg-white">
             <OpsBatchList

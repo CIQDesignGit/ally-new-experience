@@ -83,7 +83,7 @@ export function OpsProgress({ celebrate }: { celebrate: Celebrate | null }) {
           aside={
             celebrate && (
               <div className="relative text-sm font-semibold text-success-700">
-                +{fmt(celebrate.value)} · {celebrate.label}
+                {celebrate.value > 0 && `+${fmt(celebrate.value)} · `}{celebrate.label}
                 <div className="absolute -top-1 left-0 size-16">
                   <PublishConfetti />
                 </div>
