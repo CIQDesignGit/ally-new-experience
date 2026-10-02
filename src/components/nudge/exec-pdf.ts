@@ -1,4 +1,4 @@
-import { REPLY_LINE, replyActions, rowStatus, shortDay, type WeekState } from "./claire/claire-actions"
+import { ASSIGN_DUE, REPLY_LINE, replyActions, rowStatus, shortDay, type WeekState } from "./claire/claire-actions"
 import { WEEK_START, type Ask } from "./nudge-context"
 import { DEFAULT_POLICY } from "./policy"
 import { AS_OF, BUSINESS, INFLIGHT, deadlineView, fmtBiz, fmtM, fmtValue, getSnapshot, launchedIds, nudgeTargets, openView, tierView, waterfallStages } from "./data"
@@ -322,6 +322,7 @@ export async function execSummaryForEmail(period: Period, state: ExecState) {
 export interface DigestRow {
   label: string
   note?: string
+  flag?: string
   value?: string
   tone?: "warn" | "done"
   href?: string
@@ -340,7 +341,7 @@ export interface ExecDigest {
   preheader: string
   hero: string[]
   chart?: DigestChart
-  sections: { title: string; total?: { note: string; value: string }; rows: DigestRow[] }[]
+  sections: { title: string; total?: { note: string; value: string }; lead?: string; rows: DigestRow[] }[]
   /** How to act by replying: "Reply YES to do all of these, or YES 1…". */
   reply?: string
 }
@@ -391,7 +392,18 @@ export function execDigest(period: Period, { approved, policy = DEFAULT_POLICY, 
   const allyShipped = owners.map((r) => rowStatus(r, week)).find((st) => st.kind === "held")
   const replies = replyActions(approval.rows, week)
   const actions: DigestRow[] = replies.map((r) => ({ label: `${r.n} · ${r.label}`, note: r.note, value: r.row?.value, tone: r.kind === "approve" ? "warn" : undefined }))
-  const teamSections = team.length
+  // Monday: the week's lists, each person's worth and deadline, for Claire to send by replying.
+  const monday = replies.some((r) => r.kind === "assign")
+  const teamSections = monday
+    ? [
+        {
+          title: "This week",
+          total: { value: approval.value, note: "one approval away" },
+          lead: `Reply YES and Ally sends each person their list, due ${shortDay(ASSIGN_DUE)}, and follows up until it's approved.`,
+          rows: replies.map((r) => ({ label: `${r.n} · ${r.label}`, note: r.note, flag: r.flag, value: r.row?.value })),
+        },
+      ]
+    : team.length
     ? [{ title: `Your team this week · ${shortDay(day)}`, rows: team }, ...(actions.length ? [{ title: "Reply to act", rows: actions }] : [])]
     : actions.length
       ? [{ title: "Reply to act", rows: actions }]
@@ -399,7 +411,7 @@ export function execDigest(period: Period, { approved, policy = DEFAULT_POLICY, 
 
   return {
     // Monday: this week's work, for Claire to hand out by replying.
-    subject: replies.some((r) => r.kind === "assign")
+    subject: monday
       ? `${shortDay(day)}: this week's work for your team · ${approval.value} one approval away`
       : team.length
       ? `${shortDay(day)}: ${finished} of ${team.length} done${allyShipped ? ` · Ally shipped ${allyShipped.byAlly} on your deadline` : actions.length ? ` · ${actions.length} for you to decide` : ""}`
@@ -414,8 +426,13 @@ export function execDigest(period: Period, { approved, policy = DEFAULT_POLICY, 
         title: "Where the money is",
         rows: [
           { label: "In the pipeline", note: open.byArea.map((a) => `${a.value} ${a.agent}`).join(" · "), value: open.totalLabel },
-          { label: `${approval.effort} of your team's time unlocks`, value: approval.value },
-          ...(deadline ? [{ label: `Expires in ${deadline.days} days`, value: deadline.expiring, tone: "warn" as const }] : []),
+          // Monday's lists already say both.
+          ...(monday
+            ? []
+            : [
+                { label: `${approval.effort} of your team's time unlocks`, value: approval.value },
+                ...(deadline ? [{ label: `Expires in ${deadline.days} days`, value: deadline.expiring, tone: "warn" as const }] : []),
+              ]),
         ],
       },
       {
@@ -427,6 +444,6 @@ export function execDigest(period: Period, { approved, policy = DEFAULT_POLICY, 
         }),
       },
     ],
-    reply: actions.length ? REPLY_LINE : undefined,
+    reply: monday ? `Reply YES to send ${replies.length === 3 ? "all three" : "all of them"}, or ${replies.map((r) => `YES ${r.n}`).join(", ").replace(/, (YES \d)$/, " or $1")} for one. No need to log in.` : actions.length ? REPLY_LINE : undefined,
   }
 }

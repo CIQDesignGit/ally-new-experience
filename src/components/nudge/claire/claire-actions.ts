@@ -5,7 +5,7 @@ import { BATCHES, contentBatches, getSnapshot, launchedIds, opsBatches } from ".
 import { money } from "../model"
 import { useNudge, WEEK_START, type Ask } from "../nudge-context"
 import { useFireNudge } from "../use-fire-nudge"
-import type { NudgeKey, TierRow } from "../types"
+import { AGENT_LABEL, type NudgeKey, type TierRow } from "../types"
 import type { Policy, ReviewRule } from "../policy"
 
 /**
@@ -94,7 +94,7 @@ export function rowStatus(row: TierRow, s: WeekState): RowState {
   const due = shortOf(ask.due)
   const where = progress || "Not started"
   if (ask.by === "ally") {
-    if (s.day < ask.dueDay) return { kind: "assigned", text: `Assigned ${shortDay(WEEK_START)} · due ${due}${progress ? ` · ${progress}` : ""}` }
+    if (s.day < ask.dueDay) return { kind: "assigned", text: `List sent ${shortDay(WEEK_START)} · due ${due}${progress ? ` · ${progress}` : ""}` }
     if (s.day === ask.dueDay) return { kind: "due", text: `${where} · due today` }
     return { kind: "overdue", text: `${where} · overdue since ${due}` }
   }
@@ -150,13 +150,13 @@ export function useClaireActions() {
 
   const statusOf = (row: TierRow) => rowStatus(row, s)
 
-  /** Monday: Claire assigns this week's work, due Wednesday. Mike hears it in Slack (the only real one). */
+  /** Monday: Claire sends each owner their list, due Wednesday. Mike hears it in Slack (the only real one). */
   const assignFor = (row: TierRow, by: "product" | "email") => {
     if (!row.nudgeKey) return
     const due = dayLabel(ASSIGN_DUE)
     askBy(row.nudgeKey, due, ASSIGN_DUE, "ally")
-    if (row.nudgeKey === "approval-content") sendSlack(row, { headline: `Claire assigned you this week's work: ${row.description.replace(/\.$/, "")}. Due ${due}.`, chip: `Due ${due}` })
-    toast.success(`Assigned ${row.analystName} · due ${shortOf(due)}${by === "email" ? " · from your email reply" : ""}`, { position: "top-right" })
+    if (row.nudgeKey === "approval-content") sendSlack(row, { headline: `Claire sent you this week's list: ${row.description.replace(/\.$/, "")}. Due ${due}.`, chip: `Due ${due}` })
+    toast.success(`Sent ${row.analystName} their list · due ${shortOf(due)}${by === "email" ? " · from your email reply" : ""}`, { position: "top-right" })
   }
 
   /** Claire sets the next due date. On content it carries "or Ally ships it", and Mike hears it in Slack. */
@@ -202,6 +202,8 @@ export interface ReplyAction {
   row?: TierRow
   label: string
   note: string
+  /** A deadline, shown in amber after the note. */
+  flag?: string
 }
 
 /**
@@ -217,7 +219,10 @@ export function replyActions(rows: TierRow[], s: WeekState): ReplyAction[] {
     const st = rowStatus(r, s)
     // Monday: this week's work, waiting for Claire to hand it out.
     if (st.kind === "pre") {
-      acts.push({ kind: "assign", row: r, label: `Assign to ${r.analystName}, due ${shortDay(ASSIGN_DUE)}`, note: r.description.replace(/\.$/, "") })
+      // Who, then the size of the work and what it is; the deadline flagged on its own.
+      const skus = r.agent === "media" ? 0 : itemsFor(r.nudgeKey, s).reduce((n, i) => n + i.skus, 0)
+      const what = r.description.replace(/\.$/, "").replace(/, one email each$/, "")
+      acts.push({ kind: "assign", row: r, label: `${r.analystName} · ${AGENT_LABEL[r.agent]}`, note: [skus ? `${skus} SKUs` : "", what].filter(Boolean).join(" · "), flag: countdown(r.deadline, s.day) })
       continue
     }
     if (st.kind !== "due" && st.kind !== "overdue") continue

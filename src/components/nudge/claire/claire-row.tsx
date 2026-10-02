@@ -47,13 +47,13 @@ export function ClaireRow({ row, grid, showAction }: { row: TierRow; grid: strin
     ) : move === "assign" ? (
       // Monday: Claire hands out the week, due Wednesday.
       <button type="button" onClick={() => assignFor(row, "product")} className={cn(PRIMARY, "w-[180px]")}>
-        Assign {row.analystName} by {shortDay(ASSIGN_DUE)}
+        Send list · due {shortDay(ASSIGN_DUE)}
       </button>
     ) : move === "ask" ? (
       // Wednesday came and went: Claire sets the next date.
       <span className="flex w-[180px] flex-col items-center gap-1.5">
         <button type="button" onClick={() => askFor(row, "product")} className={cn(PRIMARY, "w-[180px]")}>
-          Ask {row.analystName} by {dueFor(day).short}
+          Ask by {dueFor(day).short}
         </button>
         {content && (
           <>
@@ -98,7 +98,8 @@ export function ClaireRow({ row, grid, showAction }: { row: TierRow; grid: strin
         </div>
       </div>
       <div className="text-right font-mono text-[15px] leading-5 font-semibold text-slate-950 tabular-nums">{row.value}</div>
-      {showAction && <div className="self-center justify-self-end">{action}</div>}
+      {/* The button centers on the row's first line, level with the status and value (a 40px button on a 20px line). */}
+      {showAction && <div className="-mt-2.5 self-start justify-self-end">{action}</div>}
     </div>
   )
 }
