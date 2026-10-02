@@ -6,7 +6,6 @@ import { cn } from "@/lib/utils"
 import { candleThumbnail } from "@/lib/candle-thumbnails"
 import { BUSINESS, contentBatches, fmtBiz, launchedIds, opsBatches } from "../data"
 import { ITEM_ACTIVE, ITEM_IDLE } from "../mike/rail"
-import { AGENT_DOT } from "../agent-style"
 import { useLive } from "../live-model"
 import { playById } from "../market"
 import { useLaunch } from "../market/plays"
@@ -15,7 +14,7 @@ import { ChatThread, useChat, useChatSource } from "../chat/inline-chat"
 import type { Chip } from "../chat/inline-chat"
 import type { AgentId, Period } from "../types"
 import { findIn, skusUnder } from "./gap-data"
-import type { Driver, Fix, GapNode } from "./gap-data"
+import type { Fix, GapNode } from "./gap-data"
 import { GapAnalysis } from "./gap-view"
 import { VENDOR_MANAGER } from "./note-bar"
 import { AllyFeedback } from "../ally-feedback"
@@ -94,30 +93,7 @@ function useFixes(onOpenOps: (batchId: string, asin?: string) => void) {
   }
 }
 
-const TONE = { todo: "text-warning-700", moving: "text-info-700", done: "text-success-700" }
 
-function FixLine({ f }: { f: FixView }) {
-  return (
-    <span className="flex items-start gap-2">
-      <span className={cn("mt-1.5 size-2 shrink-0 rounded-sm", AGENT_DOT[f.lever])} />
-      <span className="min-w-0">
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation()
-            f.open()
-          }}
-          className="text-left text-slate-950 underline decoration-slate-300 underline-offset-2 hover:text-brand-700 hover:decoration-brand-300"
-        >
-          {f.name}
-        </button>
-        <span className="block text-xs text-slate-500">
-          {f.owner} · <span className={TONE[f.tone]}>{f.status}</span>
-        </span>
-      </span>
-    </span>
-  )
-}
 
 /* ------------------------------------------------------------------------- */
 /* Rail: the hierarchy, ranked at every level                                  */
@@ -205,78 +181,6 @@ export function BusinessRail({ root, selected, onSelect }: { root: GapNode; sele
 /* Pane: a scope's story (what's wrong, its top SKUs) or one SKU's             */
 /* ------------------------------------------------------------------------- */
 
-/** Status colors, one meaning each: live causes are dark, worth watching amber, resolved faded. The bar and the table share them. */
-const CAUSE_TONE: Record<Driver["tag"], { bar: string; text: string }> = {
-  Live: { bar: "bg-slate-700", text: "text-slate-700" },
-  "Worth watching": { bar: "bg-warning-400", text: "text-warning-700" },
-  Resolved: { bar: "bg-slate-300", text: "text-slate-500" },
-}
-
-const WALK = "grid grid-cols-[8px_minmax(0,1fr)_200px_72px_minmax(0,0.9fr)] items-center gap-x-4 px-5"
-
-/** One step of the walk: where this cause's dollars sit between plan (right) and actual (left). */
-function Step({ from, to, tone }: { from: number; to: number; tone: string }) {
-  return (
-    <div className="relative h-5">
-      <i aria-hidden className="absolute inset-y-0 left-0 right-0 border-x border-dashed border-slate-200" />
-      <i aria-hidden className={cn("absolute inset-y-1 rounded-sm", tone)} style={{ left: `${Math.max(0, to)}%`, width: `${Math.max(from - Math.max(0, to), 1.5)}%` }} />
-    </div>
-  )
-}
-
-/**
- * Plan to actual, one labeled step per cause: the picture and the list are the
- * same rows, so nothing is said twice. Steps run right to left, from plan down
- * to actual, sized to their share of the gap; each row ends in its fix.
- */
-function GapWalk({ n, drivers, fixFor }: { n: GapNode; drivers: Driver[]; fixFor: ReturnType<typeof useFixes> }) {
-  const total = drivers.reduce((s, d) => s + Math.abs(d.value), 0) || 1
-  // Each step's span, from plan (100%) down to actual (0%).
-  const spans = drivers.reduce<{ from: number; to: number }[]>((acc, d) => {
-    const from = acc.length ? acc[acc.length - 1].to : 100
-    return [...acc, { from, to: from - (Math.abs(d.value) / total) * 100 }]
-  }, [])
-  return (
-    <div className="pb-2 text-sm">
-      <div className={cn(WALK, "border-t border-slate-100 py-2.5")}>
-        <span />
-        <span className="font-medium text-slate-950">Plan</span>
-        <span className="relative h-5">
-          <i aria-hidden className="absolute inset-y-0 right-0 w-0.5 rounded bg-slate-950" />
-        </span>
-        <span className="text-right font-semibold text-slate-950 tabular-nums">{m(n.lastWeek.plan)}</span>
-        <span />
-      </div>
-      {drivers.map((d, i) => {
-        const { from, to } = spans[i]
-        const f = d.fix && fixFor(d.fix, n.asin)
-        return (
-          <div key={d.title} className={cn(WALK, "border-t border-slate-100 py-2.5")}>
-            <span className={cn("size-2 rounded-full", CAUSE_TONE[d.tag].bar)} />
-            <span className="min-w-0">
-              <span className="block text-slate-950">{d.title}</span>
-              <span className={cn("mt-0.5 block text-xs", CAUSE_TONE[d.tag].text)}>{d.tag}</span>
-            </span>
-            <Step from={from} to={to} tone={CAUSE_TONE[d.tag].bar} />
-            <span className="text-right font-semibold text-slate-950 tabular-nums">{m(d.value, true)}</span>
-            <span className="min-w-0">{f ? <FixLine f={f} /> : <span className="text-slate-500">{d.tag === "Resolved" ? "No action needed" : d.tag === "Worth watching" ? "Watching" : "No fix in flight"}</span>}</span>
-          </div>
-        )
-      })}
-      <div className={cn(WALK, "border-t border-slate-200 py-2.5")}>
-        <span />
-        <span className="font-medium text-slate-950">Actual</span>
-        <span className="relative h-5">
-          <i aria-hidden className="absolute inset-y-0 left-0 w-0.5 rounded bg-slate-950" />
-        </span>
-        <span className="text-right font-semibold text-slate-950 tabular-nums">{m(n.lastWeek.sales)}</span>
-        <span className="text-xs text-slate-500 tabular-nums">
-          {m(n.lastWeek.sales - n.lastWeek.plan, true)} · {pct(n.lastWeek.sales, n.lastWeek.plan)} of plan
-        </span>
-      </div>
-    </div>
-  )
-}
 
 export function BusinessPane({ root, nodeId, onSelect, onOpenOps }: { root: GapNode; nodeId: string; onSelect: (id: string) => void; onOpenOps: (batchId: string, asin?: string) => void }) {
   const { ask } = useChat()
@@ -286,6 +190,9 @@ export function BusinessPane({ root, nodeId, onSelect, onOpenOps }: { root: GapN
   const g = gapOf(n)
   const eow = n.eow.projected - n.eow.plan
   const byValue = [...n.drivers].sort((a, b) => (g < 0 ? a.value - b.value : b.value - a.value))
+  // What to watch is what's still live (or worth watching), the biggest three; what's resolved is last week's story.
+  const live = byValue.filter((d) => d.tag !== "Resolved").slice(0, 3)
+  const resolved = byValue.filter((d) => d.tag === "Resolved")
   const label = n.id === root.id ? "the overall business" : n.name
   const analysis: Chip = { q: `Run gap-to-plan analysis for ${label} for last week`, render: () => <GapAnalysis node={n} onInbox={(id) => onOpenOps(id, n.asin)} /> }
   useChatSource({ about: n.id === root.id ? undefined : n.name, anchor: n.id, chips: [analysis] }, `business-${n.id}`)
@@ -312,24 +219,67 @@ export function BusinessPane({ root, nodeId, onSelect, onOpenOps }: { root: GapN
         </div>
       </div>
 
-      {/* The week in one block: last week's gap, then the walk from plan to actual, a step per cause with its fix. */}
+      {/* A brief, not the analysis: where it stands, then what to focus on this week and what's already resolved. The breakdown is one click away. */}
       <div className="mt-5 overflow-hidden rounded-xl border border-slate-200">
-        <div className="px-5 pt-4 pb-3">
-          <div className="text-xs font-medium text-slate-500">Last week vs plan</div>
-          <div className="mt-0.5 flex items-baseline gap-2 tabular-nums">
-            <span className={cn("text-[26px] font-semibold tracking-tight", g < 0 ? "text-error-600" : "text-success-700")}>{m(g, true)}</span>
-            <span className="text-sm text-slate-500">
-              {m(n.lastWeek.sales)} of {m(n.lastWeek.plan)} · {pct(n.lastWeek.sales, n.lastWeek.plan)}
-            </span>
+        <div className="grid grid-cols-2 divide-x divide-slate-100">
+          <div className="px-5 py-4">
+            <div className="text-xs font-medium text-slate-500">Last week vs plan</div>
+            <div className="mt-0.5 flex items-baseline gap-2 tabular-nums">
+              <span className={cn("text-[26px] font-semibold tracking-tight", g < 0 ? "text-error-600" : "text-success-700")}>{m(g, true)}</span>
+              <span className="text-sm text-slate-500">
+                {m(n.lastWeek.sales)} of {m(n.lastWeek.plan)} · {pct(n.lastWeek.sales, n.lastWeek.plan)}
+              </span>
+            </div>
           </div>
-          <div className="mt-1 text-sm text-slate-500 tabular-nums">
-            This week, projected <span className="font-semibold text-slate-950">{m(eow, true)}</span> · {pct(n.eow.projected, n.eow.plan)} · Week to date <span className="font-semibold text-slate-950">{m(n.wtd)}</span>
+          <div className="px-5 py-4">
+            <div className="text-xs font-medium text-slate-500">This week, projected</div>
+            <div className="mt-0.5 flex items-baseline gap-2 tabular-nums">
+              <span className="text-[26px] font-semibold tracking-tight text-slate-950">{m(eow, true)}</span>
+              <span className="text-sm text-slate-500">
+                {pct(n.eow.projected, n.eow.plan)} of plan · {m(n.wtd)} so far
+              </span>
+            </div>
           </div>
         </div>
-        {byValue.length > 0 ? (
-          <GapWalk n={n} drivers={byValue} fixFor={fixFor} />
+
+        {live.length > 0 ? (
+          <div className="border-t border-slate-100 px-5 py-4">
+            <div className="text-xs font-medium text-slate-500">Focus on this week</div>
+            <ul className="mt-2 flex flex-col gap-2.5">
+              {live.map((d) => {
+                const f = d.fix && fixFor(d.fix, n.asin)
+                return (
+                  <li key={d.title} className="grid grid-cols-[minmax(0,1fr)_72px] gap-x-4 text-sm">
+                    <span className="min-w-0">
+                      <span className="text-slate-950">{d.title}</span>
+                      {f && (
+                        <button type="button" onClick={f.open} className="mt-0.5 block text-left text-[13px] text-slate-500 hover:text-brand-700">
+                          {f.name} · {f.owner}, {f.status} →
+                        </button>
+                      )}
+                    </span>
+                    <span className="text-right font-semibold text-slate-950 tabular-nums">{m(d.value, true)}</span>
+                  </li>
+                )
+              })}
+            </ul>
+          </div>
         ) : (
           <div className="border-t border-slate-100 px-5 py-3 text-sm text-success-700">On track · nothing pulling it below plan</div>
+        )}
+
+        {resolved.length > 0 && (
+          <div className="border-t border-slate-100 px-5 py-4">
+            <div className="text-xs font-medium text-slate-500">Resolved from last week</div>
+            <ul className="mt-2 flex flex-col gap-1.5">
+              {resolved.map((d) => (
+                <li key={d.title} className="grid grid-cols-[minmax(0,1fr)_72px] gap-x-4 text-sm text-slate-500">
+                  <span className="min-w-0">{d.title}</span>
+                  <span className="text-right tabular-nums">{m(d.value, true)}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
         )}
       </div>
 
