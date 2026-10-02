@@ -3,7 +3,8 @@
 import { Check, ChevronDown } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { candleThumbnail } from "@/lib/candle-thumbnails"
-import { OPS_DAYS_SAVED, fmtValue, opsBatches, opsSkus } from "../data"
+import { AS_OF, OPS_DAYS_SAVED, opsBatches, opsSkus } from "../data"
+import { daysUntil } from "../model"
 import { useNudge } from "../nudge-context"
 import { GROUPS } from "../mike/rail"
 import { useNote } from "./note-bar"
@@ -28,6 +29,11 @@ const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "
 /** "Deal ends Oct 31" → "Oct 31"; a chip with no date has no deadline. */
 const dueOf = (b: OpsBatch) => b.chip?.match(/[A-Z][a-z]{2} \d{1,2}$/)?.[0]
 const dueRank = (d?: string) => (d ? MONTHS.indexOf(d.slice(0, 3)) * 100 + parseInt(d.slice(4)) : Infinity)
+/** Days left, from the chip's date: the same "Expires in N days" as Mike's queue. */
+const daysLeft = (b: OpsBatch) => {
+  const d = dueOf(b)
+  return d ? daysUntil(`${AS_OF.slice(0, 4)}-${String(MONTHS.indexOf(d.slice(0, 3)) + 1).padStart(2, "0")}-${d.slice(4).padStart(2, "0")}`, AS_OF) : undefined
+}
 const perDayOf = (b: OpsBatch) => (b.urgent ? (b.perDay ?? b.approveValue / OPS_DAYS_SAVED) : 0)
 
 /** The waterfall's labels and colors, in the order of the work: what needs her first, autopilot last. */
@@ -86,9 +92,8 @@ export function OpsBatchList({ selectedId, selectedSku, expandedId, checked, fil
           const active = selectedId === b.id
           const done = !!approved[b.id]
           const noted = notedIn(b.id, b.skus)
-          const perDay = perDayOf(b)
-          const due = dueOf(b)
-          // Under the value, the one thing that matters most: what happened, else what it costs, else when it's due.
+          const days = daysLeft(b)
+          // Under the value, the one thing that matters most: what happened, else when it expires (until sent, that outranks being in the note).
           const status =
             b.tier === "autopilot" ? (
               <span className="text-slate-500">Running</span>
@@ -97,12 +102,10 @@ export function OpsBatchList({ selectedId, selectedSku, expandedId, checked, fil
                 <Check className="size-3" />
                 Sent
               </span>
+            ) : days !== undefined ? (
+              <span className="text-warning-700">Expires in {days} days</span>
             ) : noted > 0 ? (
               <span className="text-brand-700">In note</span>
-            ) : perDay > 0 ? (
-              <span className="text-error-600">−{fmtValue(perDay)} a day</span>
-            ) : due ? (
-              <span className="text-warning-700">{due}</span>
             ) : null
           const skus = opsSkus(b)
           const count = b.tier === "input" ? b.inputCount : b.skus
