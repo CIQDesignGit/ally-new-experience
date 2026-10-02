@@ -99,53 +99,55 @@ export function GiftSetsAnswer() {
         <div className="text-[13px] text-slate-500">Ruled out: stock (99% in stock), content (no changes), ratings (steady at 4.6).</div>
       </div>
 
-      {/* The answer to the price cut; the bids below answer the other two. */}
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-5 py-4">
-        <div className="min-w-0">
-          <div className="text-xs font-medium text-slate-500">Answers 1 · price</div>
-          <div className="mt-0.5 text-[15px] font-semibold text-slate-950">A 15% coupon on our 3 gift sets through Nov 30: $29.74, within $2 of Brightwick</div>
+      {/* What to do, one action per kind of move: price, then the search terms. */}
+      <div className="overflow-hidden rounded-xl border border-brand-200 bg-white">
+        <div className="flex items-center gap-2 border-b border-brand-100 bg-brand-25 px-5 py-2.5 text-[13px] font-semibold text-brand-800">
+          <Sparkles className="size-3.5" /> What Ally recommends
         </div>
-        {coupon ? (
-          <span className="inline-flex items-center gap-1.5 text-[14px] font-medium text-success-700">
-            <Check className="size-4" /> Coupon approved
-          </span>
-        ) : (
-          <button type="button" onClick={() => setCoupon(true)} className={SECONDARY}>
-            Approve the coupon
-          </button>
-        )}
-      </div>
 
-      <div className="rounded-xl border border-brand-200 bg-brand-25 px-5 py-4">
-        <div className="flex items-center gap-2 text-xs font-medium text-brand-700">
-          <Sparkles className="size-3.5" /> Answers 2 and 3 · share of voice
-        </div>
-        <p className="mt-1.5 text-[15px] font-semibold text-slate-950">
-          {`Raise bids on our ${BRAND_TERMS.length} brand and ${GIFT_TERMS.length} gift terms until we're back above 20% share of voice.`}
-        </p>
-        <div className="mt-1 text-[14px] text-slate-600">
-          Cap {k$(cap)} a week · about {k$(back(cap))} a week back at the media agent&apos;s ${IROAS.toFixed(2)} IROAS
-        </div>
-        {sent ? (
-          <div className="mt-3 inline-flex items-center gap-1.5 text-[14px] font-medium text-success-700">
-            <Check className="size-4" /> {sent.chip.startsWith("Send") ? "Sent to James" : "Approved"}
+        <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
+          <div className="min-w-0">
+            <div className="text-[15px] font-semibold text-slate-950">Match their price</div>
+            <div className="mt-0.5 text-[14px] text-slate-600">15% coupon on our 3 gift sets through Nov 30: $29.74, within $2 of Brightwick</div>
           </div>
-        ) : (
-          <div className="mt-3 flex flex-wrap items-center gap-3">
-            <button type="button" onClick={() => ask(needsJames ? jamesChip(cap) : approveChip(cap))} className={PRIMARY}>
-              {needsJames ? "Send to James to approve" : "Approve for media agent"}
-            </button>
-            <span className="flex items-center gap-1 text-[13px] text-slate-500">
-              Cap
-              {BID_CAPS.map((c) => (
-                <button key={c} type="button" onClick={() => setCap(c)} aria-pressed={cap === c} className={cn("rounded-md px-2 py-1 font-mono", cap === c ? "bg-white font-semibold text-slate-950 ring-1 ring-slate-300" : "hover:bg-white/70")}>
-                  {k$(c)}
-                </button>
-              ))}
+          {coupon ? (
+            <span className="inline-flex items-center gap-1.5 text-[14px] font-medium text-success-700">
+              <Check className="size-4" /> Approved
             </span>
-            {needsJames && <span className="text-[13px] text-slate-500">Above your {k$(MICHELLE_LIMIT)} a week limit</span>}
+          ) : (
+            <button type="button" onClick={() => setCoupon(true)} className={SECONDARY}>
+              Approve the coupon
+            </button>
+          )}
+        </div>
+
+        <div className="border-t border-slate-100 px-5 py-4">
+          <div className="text-[15px] font-semibold text-slate-950">Win back the search terms</div>
+          <div className="mt-0.5 text-[14px] text-slate-600">
+            {`Raise bids on our ${BRAND_TERMS.length} brand and ${GIFT_TERMS.length} gift terms until we're above 20% share of voice. `}
+            Cap {k$(cap)} a week · about {k$(back(cap))} a week back at ${IROAS.toFixed(2)} IROAS
           </div>
-        )}
+          {sent ? (
+            <div className="mt-3 inline-flex items-center gap-1.5 text-[14px] font-medium text-success-700">
+              <Check className="size-4" /> {sent.chip.startsWith("Send") ? "Sent to James" : "Approved"}
+            </div>
+          ) : (
+            <div className="mt-3 flex flex-wrap items-center gap-3">
+              <button type="button" onClick={() => ask(needsJames ? jamesChip(cap) : approveChip(cap))} className={PRIMARY}>
+                {needsJames ? "Send to James to approve" : "Approve for media agent"}
+              </button>
+              <span className="flex items-center gap-1 text-[13px] text-slate-500">
+                Cap
+                {BID_CAPS.map((c) => (
+                  <button key={c} type="button" onClick={() => setCap(c)} aria-pressed={cap === c} className={cn("rounded-md px-2 py-1 font-mono", cap === c ? "bg-slate-100 font-semibold text-slate-950 ring-1 ring-slate-300" : "hover:bg-slate-50")}>
+                    {k$(c)}
+                  </button>
+                ))}
+              </span>
+              {needsJames && <span className="text-[13px] text-slate-500">Above your {k$(MICHELLE_LIMIT)} a week limit</span>}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
