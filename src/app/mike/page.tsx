@@ -12,7 +12,8 @@ import { MIKE_QUESTIONS, mikeAnswer } from "@/components/nudge/ask-ally-personas
 import { MikeHeader } from "@/components/nudge/mike/mike-header"
 import { MikeDelivered } from "@/components/nudge/mike/mike-delivered"
 import { MikeProgress } from "@/components/nudge/mike/mike-progress"
-import { BatchList } from "@/components/nudge/mike/batch-list"
+import { BatchList, mikeRows } from "@/components/nudge/mike/batch-list"
+import type { InboxFilter } from "@/components/nudge/ops/ops-batch-list"
 import { BatchDetail } from "@/components/nudge/mike/batch-detail"
 import { SkuDetailPane } from "@/components/nudge/mike/sku-detail-pane"
 import { BackgroundProvider } from "@/components/nudge/mike/background-composer"
@@ -41,11 +42,10 @@ function MikeChat() {
 export default function MikePage() {
   const { approve, approved, policy, launchReady } = useNudge()
   const batches = contentBatches(policy, launchedIds(approved), launchReady)
-  // Open on the top of the inbox: the most valuable item one approval away (same order as the rail).
-  const [selectedId, setSelectedId] = useState<Batch["id"]>(() => {
-    const top = batches.filter((b) => b.tier === "approval").sort((x, y) => y.approveValue - x.approveValue)[0]
-    return top?.id ?? batches[0].id
-  })
+  // Open on the top of the inbox (same order as the list).
+  const [selectedId, setSelectedId] = useState<Batch["id"]>(() => mikeRows(batches, approved, "all")[0]?.id ?? batches[0].id)
+  // The inbox filter; the waterfall's bars set it too.
+  const [filter, setFilter] = useState<InboxFilter>("all")
   const [selectedSkuId, setSelectedSkuId] = useState<string | null>(null)
   const [expandedBatchId, setExpandedBatchId] = useState<Batch["id"] | null>(null)
   const [celebrate, setCelebrate] = useState<{ value: number; skus: number } | null>(null)
@@ -87,12 +87,21 @@ export default function MikePage() {
     window.setTimeout(() => setCelebrate(null), 2200)
   }
 
-  /** "Approve all" on a group: ship every pending bulk item in it at once (one-by-one items stay for their review). */
-  function handleApproveAll(batches: Batch[]) {
-    batches.forEach((b) => approve(b.id))
-    showProgress()
-    setCelebrate({ value: batches.reduce((s, b) => s + b.approveValue, 0), skus: batches.reduce((s, b) => s + b.approveSkus, 0) })
-    window.setTimeout(() => setCelebrate(null), 2200)
+  /** A filter (or its waterfall bar) shows that slice and opens its top row. */
+  function pickFilter(f: InboxFilter, scroll = false) {
+    setFilter(f)
+    const rows = mikeRows(batches, approved, f)
+    if (!rows.some((b) => b.id === selectedId) && rows[0]) handleSelectBatch(rows[0].id)
+    if (scroll)
+      window.setTimeout(() => {
+        const pinned = [...document.querySelectorAll<HTMLElement>("[data-sticky-top]")].reduce((m, e) => Math.max(m, e.offsetHeight), 0)
+        const top = queueRef.current ? queueRef.current.getBoundingClientRect().top + window.scrollY - pinned : 0
+        window.scrollTo({ top, behavior: "smooth" })
+        // Some embedded browsers ignore smooth scrolling: land there anyway.
+        window.setTimeout(() => {
+          if (Math.abs(window.scrollY - top) > 4) window.scrollTo({ top })
+        }, 600)
+      }, 50)
   }
 
   function handleSelectBatch(id: Batch["id"]) {
@@ -129,16 +138,17 @@ export default function MikePage() {
       <PageShell className="bg-slate-50">
       <div className="mx-auto max-w-[1280px] overflow-hidden bg-white shadow-pane-lg sm:my-6 sm:rounded-2xl sm:ring-1 sm:ring-slate-900/6">
         <MikeHeader />
-        <MikeProgress celebrate={celebrate} />
+        <MikeProgress celebrate={celebrate} stage={filter === "all" ? undefined : filter} onStage={(st) => pickFilter(st, true)} />
         <div ref={queueRef} className="grid scroll-mt-4 grid-cols-[340px_minmax(0,1fr)]">
           <BatchList
             selectedId={selectedId}
             selectedSkuId={selectedSkuId}
             expandedBatchId={expandedBatchId}
+            filter={filter}
+            onFilter={(f) => pickFilter(f)}
             onToggleExpand={(id) => setExpandedBatchId((prev) => (prev === id ? null : id))}
             onSelectBatch={handleSelectBatch}
             onSelectSku={handleSelectSku}
-            onApproveAll={handleApproveAll}
           />
           {selectedRow ? (
             <SkuDetailPane

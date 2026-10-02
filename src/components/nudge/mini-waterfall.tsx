@@ -30,7 +30,8 @@ export function MiniWaterfall({ values, highlight = "approval", onSelect, classN
   const gap = 15
   const bw = (W - gap * (n - 1)) / n
   let run = 0
-  const fmt = (v: number) => (v >= 1 ? `$${(Math.round(v * 100) / 100).toString()}M` : `$${Math.round(v * 1000)}K`)
+  // Same rounding as the headlines and progress bars beside it, so the totals always read the same.
+  const fmt = (v: number) => (v >= 1 ? `$${+v.toFixed(2)}M` : `$${Math.round(v * 1000)}K`)
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className={cn("w-full", className)} role="img" aria-label={`This quarter: ${stages.map((s) => `${s.label} ${fmt(values[s.k] ?? 0)}`).join(", ")}, ${fmt(total)} in all`}>
       <line x1={0} x2={W} y1={base} y2={base} stroke="#e2e8f0" />

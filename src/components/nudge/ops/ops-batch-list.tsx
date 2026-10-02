@@ -2,12 +2,13 @@
 
 import { Check, ChevronDown } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { candleThumbnail } from "@/lib/candle-thumbnails"
 import { AS_OF, OPS_DAYS_SAVED, opsBatches, opsSkus } from "../data"
 import { daysUntil } from "../model"
 import { useNudge } from "../nudge-context"
 import { GROUPS } from "../mike/rail"
 import { useNote } from "./note-bar"
+import { fillSkus } from "../sku-fill"
+import { SkuFillList } from "../sku-fill-list"
 import type { OpsBatch } from "../data"
 
 export type InboxFilter = "all" | "autopilot" | "approval" | "input"
@@ -46,8 +47,8 @@ const FILTERS: { id: InboxFilter; label: string }[] = [
 const DOT = Object.fromEntries(GROUPS.map((g) => [g.tier, g.dot])) as Record<OpsBatch["tier"], string>
 
 /**
- * Michelle's inbox as a ledger: one row per issue, by urgency (losing money now,
- * then the nearest deadline, then value), with autopilot last. Effort is the dot;
+ * Michelle's inbox as a ledger: one row per issue, by urgency (the nearest deadline,
+ * then losing money now, then value), with autopilot last. Effort is the dot;
  * the filters match the waterfall above. The open issue lists its SKUs under it.
  */
 /** The inbox's order, shared with the page so a filter can open its top row. */
@@ -55,7 +56,7 @@ export function inboxRows(all: OpsBatch[], approved: Record<string, boolean>, fi
   const rank = (b: OpsBatch) => (b.tier === "autopilot" ? 2 : approved[b.id] ? 1 : 0)
   return all
     .filter((b) => filter === "all" || b.tier === filter)
-    .sort((x, y) => rank(x) - rank(y) || perDayOf(y) - perDayOf(x) || dueRank(dueOf(x)) - dueRank(dueOf(y)) || money(y.value) - money(x.value))
+    .sort((x, y) => rank(x) - rank(y) || dueRank(dueOf(x)) - dueRank(dueOf(y)) || perDayOf(y) - perDayOf(x) || money(y.value) - money(x.value))
 }
 
 export function OpsBatchList({ selectedId, selectedSku, expandedId, checked, filter, onFilter, onToggleExpand, onSelect, onSelectSku }: OpsBatchListProps) {
@@ -99,18 +100,13 @@ export function OpsBatchList({ selectedId, selectedSku, expandedId, checked, fil
                 tabIndex={0}
                 onClick={() => onSelect(b.id)}
                 onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), onSelect(b.id))}
-                className="grid w-full cursor-pointer focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-300 grid-cols-[8px_minmax(0,1fr)_auto] items-baseline gap-x-3 px-4 py-2.5 text-left outline-none hover:bg-slate-50 focus-visible:bg-slate-50"
+                className="grid w-full cursor-pointer focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-300 grid-cols-[8px_minmax(0,1fr)_auto] items-baseline gap-x-2.5 px-3.5 py-2.5 text-left outline-none hover:bg-slate-50 focus-visible:bg-slate-50"
               >
                 <span className={cn("size-2 -translate-y-px rounded-full", DOT[b.tier])} aria-label={GROUPS.find((g) => g.tier === b.tier)?.label} />
                 <span className="min-w-0">
                   <span className={cn("block text-[14px] leading-snug", b.tier === "autopilot" ? "text-slate-500" : "font-medium text-slate-950")}>{b.name}</span>
-                  <span className="mt-0.5 flex items-center gap-1.5 text-xs text-slate-500">
-                    {b.partLabel && (
-                      <>
-                        {b.partLabel}
-                        <span className="text-slate-300">·</span>
-                      </>
-                    )}
+                  {/* Count first, so it lines up down the list; then the part. */}
+                  <span className="mt-0.5 flex items-center gap-1.5 text-xs whitespace-nowrap text-slate-500">
                     {skus.length > 0 ? (
                       <button
                         type="button"
@@ -119,7 +115,7 @@ export function OpsBatchList({ selectedId, selectedSku, expandedId, checked, fil
                           onToggleExpand(b.id)
                         }}
                         aria-expanded={expandedId === b.id}
-                        className="inline-flex items-center gap-0.5 rounded outline-none hover:text-brand-700 focus-visible:ring-2 focus-visible:ring-brand-300"
+                        className="inline-flex shrink-0 items-center gap-0.5 rounded outline-none hover:text-brand-700 focus-visible:ring-2 focus-visible:ring-brand-300"
                       >
                         {count} {noun}
                         <ChevronDown className={cn("size-3.5 transition-transform", expandedId === b.id && "rotate-180")} />
@@ -128,6 +124,12 @@ export function OpsBatchList({ selectedId, selectedSku, expandedId, checked, fil
                       <span>
                         {count} {noun}
                       </span>
+                    )}
+                    {b.partLabel && (
+                      <>
+                        <span className="text-slate-300">·</span>
+                        <span className="min-w-0 truncate">{b.partLabel}</span>
+                      </>
                     )}
                   </span>
                 </span>
@@ -138,22 +140,12 @@ export function OpsBatchList({ selectedId, selectedSku, expandedId, checked, fil
                 </span>
               </div>
               {expandedId === b.id && skus.length > 0 && (
-                <div className="flex flex-col gap-0.5 px-3 pb-2">
-                  {skus.map((s) => (
-                    <button
-                      key={s.asin}
-                      type="button"
-                      onClick={() => onSelectSku(b.id, s.asin)}
-                      className={cn("flex w-full items-center gap-2.5 rounded-md px-2.5 py-1.5 text-left transition-colors", selectedSku === s.asin ? "bg-white ring-1 ring-slate-200" : "hover:bg-white")}
-                    >
-                      {/* eslint-disable-next-line @next/next/no-img-element -- local demo thumbnails */}
-                      <img src={candleThumbnail(s.asin)} alt="" className="size-7 shrink-0 rounded object-cover ring-1 ring-slate-200" />
-                      <span className="min-w-0 flex-1 text-[13px] leading-tight text-slate-950">{s.name}</span>
-                      {checked[b.id]?.[s.asin] && <Check className="size-4 shrink-0 text-success-600" aria-label="Checked" />}
-                    </button>
-                  ))}
-                  {skus.length < b.skus && <div className="px-2.5 pt-0.5 text-xs text-slate-500">{skus.length} of {b.skus}</div>}
-                </div>
+                <SkuFillList
+                  rows={fillSkus(b.id, skus.map((x) => ({ id: x.asin, name: x.name })), b.skus)}
+                  selectedId={selectedSku}
+                  onSelect={(asin) => onSelectSku(b.id, asin)}
+                  checked={(asin) => !!checked[b.id]?.[asin]}
+                />
               )}
             </div>
           )

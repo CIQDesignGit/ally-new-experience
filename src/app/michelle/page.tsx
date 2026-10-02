@@ -98,8 +98,8 @@ function Michelle() {
   // Business: the quarterback view (where you stand, why, is the work moving). Ops: the queue of fixes.
   const [view, setView] = useState<"business" | "ops">("ops")
   const OPS_BATCHES = opsBatches(policy)
-  // Open on the top of the inbox: the most valuable item one approval away.
-  const [selectedId, setSelectedId] = useState<OpsBatch["id"]>(() => [...OPS_BATCHES].filter((b) => b.tier === "approval").sort((x, y) => y.approveValue - x.approveValue)[0].id)
+  // Open on the top of the inbox (same order as the list).
+  const [selectedId, setSelectedId] = useState<OpsBatch["id"]>(() => inboxRows(OPS_BATCHES, approved, "all")[0].id)
   const [celebrate, setCelebrate] = useState<{ value: number; label: string } | null>(null)
   // The inbox filter; the waterfall's bars set it too.
   const [filter, setFilter] = useState<InboxFilter>("all")

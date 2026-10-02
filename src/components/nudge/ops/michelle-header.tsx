@@ -20,7 +20,7 @@ export function MichelleHeader({ viewSwitch }: { viewSwitch?: React.ReactNode })
       period
       facts={
         <span>
-          Projected plan gap{" "}
+          Gap to plan{" "}
           <span className={gap < 0 ? "font-semibold text-error-600 tabular-nums" : "font-semibold text-success-700 tabular-nums"}>
             {gap < 0 ? "−" : "+"}
             {fmtBiz(Math.abs(gap))}
