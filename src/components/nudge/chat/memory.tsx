@@ -19,11 +19,11 @@ function Mark() {
 }
 
 /** One line, when Ally keeps a fact. */
-export function MemorySaved({ text }: { text: string }) {
+export function MemorySaved({ text, label = "Remembered" }: { text: string; /** Left out when the text says it already ("Learned: …"). */ label?: string | null }) {
   return (
     <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.3 }} className="flex items-center gap-2.5 text-[14px]">
       <Mark />
-      <span className="text-slate-500">Remembered</span>
+      {label && <span className="text-slate-500">{label}</span>}
       <span className="font-medium text-slate-950">{text}</span>
       <Link href="/settings?tab=knowledge" className="ml-1 text-[13px] text-slate-400 hover:text-brand-700 hover:underline">
         Memory

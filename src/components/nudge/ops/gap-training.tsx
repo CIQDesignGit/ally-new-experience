@@ -9,6 +9,7 @@ import { useNudge } from "../nudge-context"
 import { PRIMARY } from "../mike/buttons"
 import { MemorySaved } from "../chat/memory"
 import type { GapRecipe } from "../policy"
+import { GAP_STEPS } from "./gap-data"
 import type { GapNode } from "./gap-data"
 import type { Chip } from "../chat/inline-chat"
 
@@ -45,6 +46,8 @@ export function inMeasure(m: number, measure: GapRecipe["measure"], signed = fal
   const a = Math.abs(m)
   return `${sign}${a >= 1 ? `$${+a.toFixed(2)}M` : a >= 0.1 ? `$${Math.round(a * 1000)}K` : `$${+(a * 1000).toFixed(1)}K`}`
 }
+/** "Ranked the causes by …" in what plan is measured in. */
+export const BY: Record<GapRecipe["measure"], string> = { sales: "dollars", units: "units", weight: "weight" }
 export const MEASURE_LABEL: Record<GapRecipe["measure"], string> = { sales: "sales ($)", units: "units", weight: "shipped weight (lbs)" }
 
 /** The saved lesson, if Michelle (or her team) taught Ally how gap to plan runs. */
@@ -122,10 +125,14 @@ function AllySays({ children, delay = 0.35 }: { children: React.ReactNode; delay
   )
 }
 
-/** The skill file Ally runs gap to plan from: its lines, what changed, and (once approved) the decision log. */
+/** The skill file Ally runs gap to plan from, in full: what it measures, every step, the columns, who it applies to. Changes are highlighted; once approved, the decision log follows. */
 function SkillFile({ base, draft, version, log }: { base: GapRecipe; draft: GapRecipe; version: number; log?: GapRecipe["log"] }) {
   const changes = diff(base, draft)
   const name = { units: "Units", weight: "Shipped weight", fill: "Fill rate" }
+  // Added steps run before the last two (ranking and matching), the same order the analysis shows.
+  const steps = [...GAP_STEPS.slice(0, -2), ...draft.steps, ...GAP_STEPS.slice(-2)].map((st) => st.replace("by dollars", `by ${BY[draft.measure]}`))
+  const isNew = (st: string) => draft.steps.includes(st) && !base.steps.includes(st)
+  const NEW = "font-medium text-brand-700"
   return (
     <div className="overflow-hidden rounded-xl border border-slate-200 bg-white text-sm">
       <div className="flex items-center justify-between border-b border-slate-100 bg-slate-25 px-5 py-2.5">
@@ -135,28 +142,37 @@ function SkillFile({ base, draft, version, log }: { base: GapRecipe; draft: GapR
           {changes.length > 0 && ` → v${version + 1}`}
         </span>
       </div>
-      <dl className="grid grid-cols-[120px_minmax(0,1fr)] gap-x-4 gap-y-2 px-5 py-3.5">
+      <dl className="grid grid-cols-[120px_minmax(0,1fr)] gap-x-4 gap-y-3 px-5 py-4">
+        <dt className="text-slate-500">Answers</dt>
+        <dd className="text-slate-950">Where a brand, category or SKU stands against plan last week and this week, and why</dd>
         <dt className="text-slate-500">Measure plan in</dt>
         <dd className="text-slate-950">
           {base.measure !== draft.measure && <span className="mr-2 text-slate-400 line-through">{MEASURE_LABEL[base.measure]}</span>}
-          <span className={base.measure !== draft.measure ? "font-medium text-brand-700" : undefined}>{MEASURE_LABEL[draft.measure]}</span>
+          <span className={base.measure !== draft.measure ? NEW : undefined}>{MEASURE_LABEL[draft.measure]}</span>
         </dd>
         <dt className="text-slate-500">Steps</dt>
-        <dd className="text-slate-950">
-          10 standard
-          {draft.steps.map((x) => (
-            <span key={x} className={cn("block", !base.steps.includes(x) && "font-medium text-brand-700")}>
-              + {x}
-            </span>
-          ))}
+        <dd>
+          <ol className="flex flex-col gap-1">
+            {steps.map((st, i) => (
+              <li key={st} className={cn("grid grid-cols-[20px_minmax(0,1fr)] text-slate-950", isNew(st) && NEW)}>
+                <span className="text-xs leading-5 text-slate-400 tabular-nums">{i + 1}</span>
+                <span>
+                  {st}
+                  {isNew(st) && <span className="ml-2 text-xs font-normal">added</span>}
+                </span>
+              </li>
+            ))}
+          </ol>
         </dd>
         <dt className="text-slate-500">Columns</dt>
         <dd className="text-slate-950">
           Actual, Plan, Gap
           {draft.columns.map((c) => (
-            <span key={c} className={cn(!base.columns.includes(c) && "font-medium text-brand-700")}>, {name[c]}</span>
+            <span key={c} className={cn(!base.columns.includes(c) && NEW)}>, {name[c]}</span>
           ))}
         </dd>
+        <dt className="text-slate-500">Applies to</dt>
+        <dd className="text-slate-950">{SCOPE_LABEL[draft.scope]}</dd>
       </dl>
       {log && log.length > 0 && (
         <div className="border-t border-slate-100 px-5 py-3">
@@ -319,7 +335,7 @@ export function RecipeFeedback({ node, render }: { node: GapNode; render: (recip
             <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col gap-3">
               <AllySays delay={0}>{stage === "review" ? (changed ? "Here's the new skill file." : "Nothing in the skill file changes from that.") : "Skill file updated."}</AllySays>
               {/* Before approval: the change against the current version. After: the new version and its log. */}
-              {stage === "review" || stage === "scope" ? <SkillFile base={base} draft={draft} version={version} /> : <SkillFile base={draft} draft={draft} version={version + 1} log={draft.log} />}
+              {stage === "review" || stage === "scope" ? <SkillFile base={base} draft={{ ...draft, scope }} version={version} /> : <SkillFile base={draft} draft={draft} version={version + 1} log={draft.log} />}
               {stage === "review" && changed && (
                 <div className="flex items-center gap-3">
                   <button type="button" onClick={() => setStage("scope")} className={PRIMARY}>
@@ -347,7 +363,7 @@ export function RecipeFeedback({ node, render }: { node: GapNode; render: (recip
               )}
               {stage === "approved" && (
                 <>
-                  <MemorySaved text={`Learned: ${lessonText(draft)}. Applies to ${SCOPE_LABEL[scope].toLowerCase().replace("the aurelle account", "the Aurelle account")}.`} />
+                  <MemorySaved label={null} text={`Learned: ${lessonText(draft)}. Applies to ${SCOPE_LABEL[scope].toLowerCase().replace("the aurelle account", "the Aurelle account")}.`} />
                   <AllySays delay={0.8}>Do you want me to run the analysis again?</AllySays>
                   <motion.button initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1 }} type="button" onClick={() => setStage("running")} className={cn(PRIMARY, "w-fit")}>
                     Run it again
@@ -406,7 +422,7 @@ export function LessonFromChat() {
     // Once, when said.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-  return <MemorySaved text={`Learned: ${lessonText(recipe)}. Applies to the Aurelle account.`} />
+  return <MemorySaved label={null} text={`Learned: ${lessonText(recipe)}. Applies to the Aurelle account.`} />
 }
 
 /** Plain language anywhere: "Remember that we measure plan by weight". Not a starter: it matches what's typed. */

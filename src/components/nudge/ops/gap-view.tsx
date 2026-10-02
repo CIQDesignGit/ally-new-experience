@@ -14,7 +14,7 @@ import { GAP_STEPS, GAP_TREE, GAP_WEEK, gapNode, pathTo } from "./gap-data"
 import type { Driver, GapAction, GapNode, Recommendation } from "./gap-data"
 import type { GapRecipe } from "../policy"
 import { MemoryRecall } from "../chat/memory"
-import { DEFAULT_RECIPE, FILL, FILL_STEP, RecipeFeedback, inMeasure, lbsOf, lessonText, unitsOf, useGapLesson } from "./gap-training"
+import { BY, DEFAULT_RECIPE, FILL, FILL_STEP, RecipeFeedback, inMeasure, lbsOf, lessonText, unitsOf, useGapLesson } from "./gap-training"
 
 /** $M → "$5.8K", "$1.32M"; signed when asked. */
 const m = (v: number, signed = false) => {
@@ -76,9 +76,9 @@ export function GapTree({ selected, onSelect }: { selected: string; onSelect: (i
 /* The analysis, as an answer in the page's conversation                       */
 /* ------------------------------------------------------------------------- */
 
-function Steps({ extra = [] }: { extra?: string[] }) {
+function Steps({ extra = [], measure = "sales" }: { extra?: string[]; measure?: GapRecipe["measure"] }) {
   const [open, setOpen] = useState(false)
-  const steps = [...GAP_STEPS.slice(0, -2), ...extra, ...GAP_STEPS.slice(-2)]
+  const steps = [...GAP_STEPS.slice(0, -2), ...extra, ...GAP_STEPS.slice(-2)].map((st) => st.replace("by dollars", `by ${BY[measure]}`))
   return (
     <div className="text-sm">
       <button type="button" onClick={() => setOpen((o) => !o)} className="inline-flex items-center gap-1.5 text-slate-600 hover:text-slate-900">
@@ -158,7 +158,7 @@ export function GapAnalysis({ node, onInbox, recipe: given, nested }: { node: Ga
           This run uses it.
         </MemoryRecall>
       )}
-      <Steps extra={recipe.steps} />
+      <Steps extra={recipe.steps} measure={recipe.measure} />
 
       <div>
         <p className="text-[17px] leading-snug font-semibold text-slate-950">
