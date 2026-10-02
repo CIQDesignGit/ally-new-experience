@@ -40,18 +40,13 @@ export function BusinessHero({ topLineOnly = false, crumbs }: { topLineOnly?: bo
       />
     <section className={topLineOnly ? "" : "px-12 pt-2 pb-7"}>
       {!topLineOnly && (<>
-      {/* Fact, then the gap, then what closes it. The fact line is the same size as the first line on Mike's and Michelle's pages. */}
+      {/* Two lines: forecast against plan, then the pipeline against the gap. It only says "closes" when it does. */}
       <div className="text-2xl font-semibold tracking-tight text-slate-700">
-        You&apos;re tracking to <span className="font-mono text-slate-950">{fmtBiz(b.pace)}</span> in sales {PERIOD_WORDS[period]}.
+        <span className="font-mono text-slate-950">{fmtBiz(b.pace)}</span> forecast against a <span className="font-mono text-slate-950">{fmtBiz(b.plan)}</span> plan {PERIOD_WORDS[period]}.
       </div>
 
       <h1 className="mt-1 text-[44px] leading-tight font-bold tracking-tight text-slate-950">
-        <span className="block">
-          That&apos;s <span className="font-mono">{fmtBiz(gap)}</span> short of your <span className="font-mono">{fmtBiz(b.plan)}</span> plan.
-        </span>
-        <span className="block">
-          We have <span className="font-mono text-brand-600">{live.open.totalLabel}</span> in the pipeline to close it.
-        </span>
+        <span className="font-mono text-brand-600">{live.open.totalLabel}</span> in the pipeline {live.open.total >= gap ? "closes" : "goes toward"} the <span className="font-mono">{fmtBiz(gap)}</span> gap.
       </h1>
 
       <div className="mt-2 text-base text-slate-500">
