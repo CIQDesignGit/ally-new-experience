@@ -95,3 +95,32 @@ export const GIFT_DRILL = {
 export const BID_CAPS = [2, 4, 6] as const
 export const MICHELLE_LIMIT = 5
 export const IROAS = 3.4
+
+/** Share of voice by term today. Brightwick on our brand terms averages 27%; our share on gift terms averages 18%. */
+export const BRAND_TERM_SOV = [
+  { term: "aurelle candles", them: 34, us: 52 },
+  { term: "aurelle candle", them: 31, us: 55 },
+  { term: "aurelle soy candles", them: 29, us: 48 },
+  { term: "aurelle jar candle", them: 26, us: 50 },
+  { term: "aurelle amber floral", them: 22, us: 58 },
+  { term: "aurelle gift set", them: 20, us: 41 },
+]
+export const GIFT_TERM_SOV = [
+  { term: "candle gift set", them: 38, us: 22 },
+  { term: "candle gifts for her", them: 41, us: 19 },
+  { term: "scented candle set", them: 35, us: 17 },
+  { term: "holiday candle gift", them: 33, us: 16 },
+  { term: "luxury candle gift", them: 36, us: 16 },
+]
+
+/** Gift-set prices on Amazon today: Brightwick's 30% promo undercuts our unchanged price. */
+export const GIFT_PRICES = {
+  them: { name: "Brightwick 3-Wick Holiday Gift Set", list: 39.99, promo: 27.99 },
+  us: { name: "Aurelle Amber & Fig Gift Set", price: 34.99 },
+}
+
+/** Each alert's number over the last 8 weeks, for the card's trend line. */
+export const ALERT_TRENDS: Record<"brand-terms" | "gift-terms", number[]> = {
+  "brand-terms": [8, 9, 11, 15, 19, 22, 25, 27],
+  "gift-terms": [25, 24, 23, 22, 21, 20, 19, 18],
+}

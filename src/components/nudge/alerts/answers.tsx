@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils"
 import { useNudge } from "../nudge-context"
 import { useChat } from "../chat/inline-chat"
 import { PRIMARY, SECONDARY } from "../mike/buttons"
-import { ALERT_RULES, BID_CAPS, BRAND_TERMS, CHANNELS, FREQUENCIES, GIFT_DRILL, GIFT_TERMS, IROAS, MICHELLE_LIMIT, MODE_LABEL, THRESHOLDS } from "./data"
+import { ALERT_RULES, BID_CAPS, BRAND_TERM_SOV, BRAND_TERMS, GIFT_PRICES, GIFT_TERM_SOV, CHANNELS, FREQUENCIES, GIFT_DRILL, GIFT_TERMS, IROAS, MICHELLE_LIMIT, MODE_LABEL, THRESHOLDS } from "./data"
 import type { AlertMode, CustomAlert } from "./data"
 import { TYPED_EVENT } from "../chat/inline-chat"
 
@@ -57,18 +57,25 @@ export function GiftSetsAnswer() {
         </div>
       </div>
 
-      <div>
+      <div className="flex flex-col gap-4">
         <div className="text-[13px] font-medium text-slate-950">Why traffic fell</div>
-        <ul className="mt-1.5 flex flex-col gap-1 text-[14px]">
-          <li>· Brightwick has run 30% off gift sets since Prime Day.</li>
-          <li>
-            · Brightwick is bidding on our brand terms: <b className="font-semibold text-slate-950">27% share of voice</b>, up from 8%.
-          </li>
-          <li>
-            · Brightwick is outbidding us on gift terms: <b className="font-semibold text-slate-950">our share is 18%</b>, down from 25%.
-          </li>
-        </ul>
-        <div className="mt-1.5 text-[13px] text-slate-500">Ruled out: stock (99% in stock), content (no changes), ratings (steady at 4.6).</div>
+
+        <Why title="Brightwick cut gift-set prices 30%. We're $7 above their promo.">
+          <div className="grid grid-cols-2 gap-3">
+            <PriceTile who="Brightwick" name={GIFT_PRICES.them.name} list={GIFT_PRICES.them.list} price={GIFT_PRICES.them.promo} />
+            <PriceTile who="Us" name={GIFT_PRICES.us.name} price={GIFT_PRICES.us.price} ours />
+          </div>
+        </Why>
+
+        <Why title="Brightwick is buying our brand terms: 27% share of voice, up from 8%.">
+          <SovTable rows={BRAND_TERM_SOV} label="All 6 brand keywords" />
+        </Why>
+
+        <Why title="Brightwick outbids us on gift terms: our share is 18%, down from 25%.">
+          <SovTable rows={GIFT_TERM_SOV} label="All 5 gift keywords" />
+        </Why>
+
+        <div className="text-[13px] text-slate-500">Ruled out: stock (99% in stock), content (no changes), ratings (steady at 4.6).</div>
       </div>
 
       <div className="rounded-xl border border-brand-200 bg-brand-25 px-5 py-4">
@@ -103,6 +110,61 @@ export function GiftSetsAnswer() {
         )}
       </div>
     </div>
+  )
+}
+
+function Why({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <div className="mb-2 text-[14px] text-slate-800">{title}</div>
+      {children}
+    </div>
+  )
+}
+
+const $ = (n: number) => `$${n.toFixed(2)}`
+
+function PriceTile({ who, name, list, price, ours }: { who: string; name: string; list?: number; price: number; ours?: boolean }) {
+  return (
+    <div className={cn("rounded-xl border px-4 py-3", ours ? "border-brand-200 bg-white" : "border-slate-200 bg-white")}>
+      <div className="text-xs font-medium text-slate-500">{who}</div>
+      <div className="mt-0.5 truncate text-[13px] text-slate-700">{name}</div>
+      <div className="mt-1.5 flex items-baseline gap-2 font-mono">
+        {list && <s className="text-[14px] text-slate-400">{$(list)}</s>}
+        <span className={cn("text-[20px] font-semibold", ours ? "text-slate-950" : "text-error-600")}>{$(price)}</span>
+        {list && <span className="font-sans text-[12px] font-medium text-error-600">{Math.round((1 - price / list) * 100)}% off</span>}
+      </div>
+    </div>
+  )
+}
+
+/** Share of voice by keyword, ours and Brightwick's; the last row is the average the headline quotes. */
+function SovTable({ rows, label }: { rows: { term: string; them: number; us: number }[]; label: string }) {
+  const avg = (k: "us" | "them") => Math.round(rows.reduce((n, r) => n + r[k], 0) / rows.length)
+  return (
+    <table className="w-full overflow-hidden rounded-xl border border-slate-200 bg-white text-[14px]">
+      <thead>
+        <tr className="text-left text-[12px] text-slate-500">
+          <th className="px-4 py-2 font-medium">Keyword</th>
+          <th className="w-[160px] px-4 py-2 text-right font-medium">Our share of voice</th>
+          <th className="w-[200px] px-4 py-2 text-right font-medium">Brightwick&apos;s share of voice</th>
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((r) => (
+          <tr key={r.term} className="border-t border-slate-100">
+            <td className="px-4 py-2 text-slate-800">{r.term}</td>
+            <td className="px-4 py-2 text-right font-mono text-slate-950">{r.us}%</td>
+            <td className="px-4 py-2 text-right font-mono text-slate-950">{r.them}%</td>
+          </tr>
+        ))}
+        <tr className="border-t border-slate-200 bg-slate-25 font-semibold">
+          <td className="px-4 py-2 text-slate-950">{label}</td>
+          <td className="px-4 py-2 text-right font-mono text-slate-950">{avg("us")}%</td>
+          <td className="px-4 py-2 text-right font-mono text-slate-950">{avg("them")}%</td>
+        </tr>
+      </tbody>
+    </table>
   )
 }
 
