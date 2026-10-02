@@ -204,7 +204,7 @@ export function AskBar({ placeholder = "Ask Ally: what can I take from your plat
 
   const tray = showChips || turns.length > 0
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-6 z-40 flex justify-center px-4">
+    <div className="pointer-events-none fixed inset-x-0 bottom-6 z-40 flex justify-center px-4 xl:left-[var(--sidebar-w,0px)]">
       {/* One solid panel: suggestions sit in a tray above the input, never floating over the page. */}
       <div
         ref={rootRef}
