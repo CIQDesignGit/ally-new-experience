@@ -54,6 +54,9 @@ interface ChatValue {
   clear: () => void
 }
 
+/** Typed text, offered to whatever on screen can take it before Ally answers; a listener calls preventDefault to claim it. */
+export const TYPED_EVENT = "ally-typed"
+
 const Ctx = createContext<ChatValue | null>(null)
 
 export function ChatProvider({ children }: { children: React.ReactNode }) {
@@ -293,6 +296,11 @@ export function AskBar({ placeholder = "What can I take off your plate?" }: { pl
         <form
           onSubmit={(e) => {
             e.preventDefault()
+            // Something on screen may take typed changes itself (an alert sentence being edited).
+            if (!window.dispatchEvent(new CustomEvent(TYPED_EVENT, { detail: text, cancelable: true }))) {
+              setText("")
+              return
+            }
             // The latest answer's follow-ups first, then the starters.
             const pool = [...(turns[turns.length - 1]?.followUps ?? []), ...source.chips]
             const chip = pool.find((c) => c.match?.test(text)) ?? closest(pool, text)

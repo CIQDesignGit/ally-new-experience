@@ -7,14 +7,17 @@ import { PageShell } from "@/components/layout/page-shell"
 import { TopStrip } from "@/components/nudge/top-strip"
 import { AppDrawer } from "@/components/nudge/app-drawer"
 import { useNudge } from "@/components/nudge/nudge-context"
-import { BUILT_IN_ALERTS } from "@/components/nudge/alerts/data"
+import { ALERT_RULES, BUILT_IN_ALERTS, alertTrigger } from "@/components/nudge/alerts/data"
+import { modeLabel } from "@/components/nudge/alerts/answers"
 
 /**
  * Michelle's alerts: the ones she wrote in chat, then the signals Ally watches
  * for everyone. New ones are flagged in the sidebar until she opens this page.
  */
 export default function AlertsPage() {
-  const { alerts, markAlertsSeen } = useNudge()
+  const { alerts: saved, markAlertsSeen } = useNudge()
+  // Alerts saved by an older version of the demo get today's fields.
+  const alerts = saved.map((a) => ({ ...ALERT_RULES[a.id], ...a }))
 
   // Opening the page is what clears the sidebar's "new" dot (after the store has loaded).
   useEffect(() => {
@@ -34,15 +37,14 @@ export default function AlertsPage() {
             {alerts.length ? (
               <ul className="mt-2 flex flex-col">
                 {alerts.map((a) => (
-                  <li key={a.id} className={cn("grid grid-cols-[20px_minmax(0,1fr)_minmax(0,1fr)_120px] items-start gap-4 border-t border-slate-100 py-4", !a.seen && "bg-brand-25")}>
+                  <li key={a.id} className={cn("grid grid-cols-[20px_minmax(0,1.3fr)_minmax(0,1fr)_220px] items-start gap-4 border-t border-slate-100 py-4", !a.seen && "bg-brand-25")}>
                     <Bell className="mt-0.5 size-4 text-brand-600" />
                     <div>
                       <div className="flex items-center gap-2 text-[15px] font-semibold text-slate-950">
                         {a.name}
                         {!a.seen && <span className="text-xs font-semibold text-brand-700">New</span>}
                       </div>
-                      <div className="mt-0.5 text-[13px] text-slate-500">{a.watches}</div>
-                      <div className="mt-0.5 text-[13px] font-medium text-slate-800">Alerts when: {a.when}</div>
+                                            <div className="mt-0.5 text-[13px] text-slate-600">{alertTrigger(a)}, the media agent raises our bids.</div>
                     </div>
                     <div className="text-[14px]">
                       {a.firing ? (
@@ -55,9 +57,9 @@ export default function AlertsPage() {
                       )}
                     </div>
                     <div className="text-right text-[13px] text-slate-500">
-                      {a.respond ? "Media agent responds" : "Tells you"}
+                      {modeLabel(a.mode)}
                       <br />
-                      Email · 12× a day
+                      {a.frequency[0].toUpperCase() + a.frequency.slice(1)} · {a.channel}
                     </div>
                   </li>
                 ))}

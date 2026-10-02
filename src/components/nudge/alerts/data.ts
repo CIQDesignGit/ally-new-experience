@@ -4,33 +4,41 @@
  * tie to the Prime Day retro (Brightwick's 30% off, our 3 of 12 slots = 25%).
  */
 
+/** What happens when an alert fires, in the demo's three states. */
+export type AlertMode = "input" | "approval" | "autopilot"
+export const MODE_LABEL: Record<AlertMode, string> = { input: "Needs your input", approval: "One approval away", autopilot: "On autopilot, up to $4K a week" }
+export const FREQUENCIES = ["every morning", "twice a day", "weekly"] as const
+export const CHANNELS = ["your email", "Slack", "your email and Slack", "your Ally inbox"] as const
+export const THRESHOLDS = [15, 20, 25, 30] as const
+
 export interface CustomAlert {
   id: "brand-terms" | "gift-terms"
   name: string
-  /** What it watches, in a phrase. */
-  watches: string
-  /** When it fires. */
-  when: string
+  threshold: number
+  mode: AlertMode
+  frequency: (typeof FREQUENCIES)[number]
+  channel: (typeof CHANNELS)[number]
   terms: string[]
-  /** Where the number is today, and whether that already breaks the rule. */
+  /** Where the number is today. */
   now: string
   firing: boolean
   created: string
   /** Opened on the alerts page since it was made (the sidebar stops flagging it). */
   seen?: boolean
-  /** When it fires: tell Michelle, or tell her and let the media agent respond within the cap (a standing order). */
-  respond?: boolean
 }
 
 export const BRAND_TERMS = ["aurelle candles", "aurelle candle", "aurelle soy candles", "aurelle jar candle", "aurelle amber floral", "aurelle gift set"]
 export const GIFT_TERMS = ["candle gift set", "candle gifts for her", "scented candle set", "holiday candle gift", "luxury candle gift"]
 
+/** The two alerts the gift-sets task implies. The brand one starts on autopilot and the gift one one approval away, to show both ways of working. */
 export const ALERT_RULES: Record<CustomAlert["id"], Omit<CustomAlert, "created" | "seen">> = {
   "brand-terms": {
     id: "brand-terms",
     name: "Competitors on our brand terms",
-    watches: "Each competitor's share of voice on our 6 brand terms",
-    when: "Any competitor goes above 20%",
+    threshold: 20,
+    mode: "autopilot",
+    frequency: "every morning",
+    channel: "your email",
     terms: BRAND_TERMS,
     now: "Brightwick at 27% today; the media agent is on it, rechecks Oct 15",
     firing: false,
@@ -38,12 +46,19 @@ export const ALERT_RULES: Record<CustomAlert["id"], Omit<CustomAlert, "created" 
   "gift-terms": {
     id: "gift-terms",
     name: "Our share on gift terms",
-    watches: "Our share of voice on 5 top gift terms",
-    when: "We drop below 20%",
+    threshold: 20,
+    mode: "approval",
+    frequency: "every morning",
+    channel: "your email",
     terms: GIFT_TERMS,
     now: "We're at 18% today; the media agent is on it, rechecks Oct 15",
     firing: false,
   },
+}
+
+/** The alert as one sentence: the trigger. */
+export function alertTrigger(a: Pick<CustomAlert, "id" | "threshold">) {
+  return a.id === "brand-terms" ? `When any competitor gets more than ${a.threshold}% share of voice on our ${BRAND_TERMS.length} brand terms` : `When our share of voice on ${GIFT_TERMS.length} gift terms drops below ${a.threshold}%`
 }
 
 /** The signals Ally watches for every customer that Michelle's demo shows (the library has about 30). */
