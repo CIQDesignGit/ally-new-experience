@@ -304,7 +304,7 @@ export function GapAnalysis({ node, onInbox, recipe: given, nested }: { node: Ga
       </div>
 
       <div>
-        <div className={SEC}>Why, by {recipe.measure === "sales" ? "dollars" : recipe.measure === "units" ? "units" : "weight"}</div>
+        <div className={SEC}>Why last week missed · by {recipe.measure === "sales" ? "dollars" : recipe.measure === "units" ? "units" : "weight"}</div>
         <div className="mt-2">
           {drivers.map((d) => (
             <div key={d.title} className={cn("grid grid-cols-[8px_minmax(0,1fr)_72px] items-baseline gap-x-3 py-2.5 text-sm", ROW)}>
@@ -322,7 +322,8 @@ export function GapAnalysis({ node, onInbox, recipe: given, nested }: { node: Ga
         </div>
       </div>
 
-      <ActionCard>
+      {/* Actions only look forward: what happened is explained above; this is what to do now. */}
+      <ActionCard title="What to do this week">
         {recs.map((r) => (
           <ActionRow key={r.title} title={r.title} detail={r.points.length > 0 ? r.points.join(" · ") : undefined} action={<ActionButton action={r.action} onInbox={onInbox} />} />
         ))}

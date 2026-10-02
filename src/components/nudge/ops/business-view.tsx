@@ -1,23 +1,19 @@
 "use client"
 
 import { Fragment, useEffect, useRef, useState } from "react"
-import { Check, ChevronRight } from "lucide-react"
+import { ChevronRight } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { PRIMARY } from "../mike/buttons"
 import { candleThumbnail } from "@/lib/candle-thumbnails"
-import { BUSINESS, contentBatches, fmtBiz, launchedIds, opsBatches } from "../data"
+import { BUSINESS, fmtBiz } from "../data"
 import { ITEM_ACTIVE, ITEM_IDLE } from "../mike/rail"
 import { useLive } from "../live-model"
-import { playById } from "../market"
-import { useLaunch } from "../market/plays"
 import { useNudge } from "../nudge-context"
-import { useFireNudge } from "../use-fire-nudge"
-import { toast } from "sonner"
 import { ChatThread, useChat, useChatSource } from "../chat/inline-chat"
 import type { Chip } from "../chat/inline-chat"
-import type { AgentId, Period } from "../types"
-import { findIn, skusUnder } from "./gap-data"
-import type { Fix, GapNode } from "./gap-data"
+import type { Period } from "../types"
+import { GAP_WEEK, findIn, skusUnder } from "./gap-data"
+import type { GapNode } from "./gap-data"
 import { GapAnalysis } from "./gap-view"
 import { AllyFeedback } from "../ally-feedback"
 
@@ -51,58 +47,6 @@ export function BusinessHero() {
     </div>
   )
 }
-
-/* ------------------------------------------------------------------------- */
-/* Fixes: what's in flight for a cause, named for a business reader, linked    */
-/* ------------------------------------------------------------------------- */
-
-interface FixView {
-  lever: AgentId
-  name: string
-  owner: string
-  status: string
-  tone: "todo" | "moving" | "done"
-  open: () => void
-  openLabel: string
-  /** Once acted on: what was done, shown in place of the button. */
-  acted?: string
-}
-
-// Fixes act in place (send, ask, approve); none navigates away.
-function useFixes() {
-  const { approved, approve, nudged, policy, note } = useNudge()
-  const { launch, isLaunched } = useLaunch()
-  const { fire } = useFireNudge()
-  const ops = opsBatches(policy)
-  const content = contentBatches(policy, launchedIds(approved))
-  return (fix: Fix, asin?: string): FixView | undefined => {
-    if (fix.kind === "ops") {
-      const b = ops.find((x) => x.id === fix.id) ?? ops.find((x) => x.id.startsWith(fix.id))
-      if (!b) return undefined
-      const mine = note.filter((i) => i.batchId === b.id && (!asin || i.asin === asin))
-      const sentOn = mine.find((i) => i.sentOn)?.sentOn
-      const status = approved[b.id] || sentOn ? `sent to Amazon VM, ${sentOn ?? "Oct 8"}` : mine.length ? "in your note to Amazon VM · not sent" : "ready to review"
-      return { lever: "ops", name: b.fixName ?? b.name, owner: "You", status, tone: approved[b.id] || sentOn ? "done" : mine.length ? "moving" : "todo", acted: approved[b.id] || sentOn ? "Sent to Amazon VM" : undefined, open: () => {
-          approve(b.id)
-          toast.success(`Sent to your Amazon vendor manager · ${b.fixName ?? b.name}, evidence attached`, { position: "top-right" })
-        }, openLabel: "Send to Amazon VM" }
-    }
-    if (fix.kind === "content") {
-      const b = content.find((x) => x.id === fix.id)
-      if (!b) return undefined
-      const done = !!approved[b.id]
-      const pinged = b.nudgeKey && nudged[b.nudgeKey]
-      const status = done ? (b.tier === "input" ? "sent to Ally" : "approved") : b.tier === "input" ? "waiting on your team" : pinged ? "nudged, waiting for approval" : "waiting for approval"
-      return { lever: "content", name: b.fixName ?? b.name, owner: "Mike", status, tone: done ? "done" : b.tier === "input" ? "todo" : "moving", acted: done ? "Approved" : pinged ? "Asked Mike" : undefined, open: () => b.nudgeKey && fire({ agent: "content", analystName: "Mike", description: b.name, value: b.value, nudgeKey: b.nudgeKey }), openLabel: "Ask Mike to approve" }
-    }
-    const p = playById(fix.id)
-    if (!p) return undefined
-    const on = isLaunched(p)
-    return { lever: p.owner === "human" ? "content" : p.owner, name: p.what, owner: p.owner === "media" ? "Ally for Media" : "Ally", status: on ? "launched" : "ready to launch", tone: on ? "moving" : "todo", acted: on ? "Approved" : undefined, open: () => launch([p]), openLabel: "Approve the bids" }
-  }
-}
-
-
 
 /* ------------------------------------------------------------------------- */
 /* Rail: the hierarchy, ranked at every level                                  */
@@ -191,18 +135,19 @@ export function BusinessRail({ root, selected, onSelect }: { root: GapNode; sele
 /* ------------------------------------------------------------------------- */
 
 
+/** A % change colored by direction (DESIGN.md): up green, down red, flat neutral. */
+function Pct({ v }: { v: number }) {
+  return <span className={cn("font-semibold", v < 0 ? "text-error-600" : v > 0 ? "text-success-700" : "text-slate-950")}>{v > 0 ? "+" : v < 0 ? "−" : ""}{v === 0 ? "flat" : `${Math.abs(v)}%`}</span>
+}
+
 export function BusinessPane({ root, nodeId, onSelect, onOpenOps }: { root: GapNode; nodeId: string; onSelect: (id: string) => void; onOpenOps: (batchId: string, asin?: string) => void }) {
   const { ask } = useChat()
-  const fixFor = useFixes()
   const found = findIn(root, nodeId) ?? { node: root, trail: [] }
   const n = found.node
   const g = gapOf(n)
   const eow = n.eow.projected - n.eow.plan
-  const byValue = [...n.drivers].sort((a, b) => (g < 0 ? a.value - b.value : b.value - a.value))
-  // What to focus on is what's still live (or worth watching), the biggest three; what's resolved is last week's story, in the analysis.
-  const live = byValue.filter((d) => d.tag !== "Resolved").slice(0, 3)
   const label = n.id === root.id ? "the overall business" : n.name
-  const analysis: Chip = { q: `Why did ${label === "the overall business" ? "we" : label} miss plan last week?`, render: () => <GapAnalysis node={n} onInbox={(id) => onOpenOps(id, n.asin)} /> }
+  const analysis: Chip = { q: `Run detailed gap-to-plan analysis for ${label}`, render: () => <GapAnalysis node={n} onInbox={(id) => onOpenOps(id, n.asin)} /> }
   useChatSource({ about: n.id === root.id ? undefined : n.name, anchor: n.id, chips: [analysis] }, `business-${n.id}`)
 
   return (
@@ -227,59 +172,42 @@ export function BusinessPane({ root, nodeId, onSelect, onOpenOps }: { root: GapN
         </div>
       </div>
 
-      {/* Forward-looking by default: where this week lands and what closes the gap. Why last week missed is one click away (the analysis). */}
+      {/* What the product knows without running anything: where it lands, so far, last week, and the simple reason.
+          The detailed analysis (causes and this week's actions) runs only when asked. */}
       <div className="mt-5 overflow-hidden rounded-xl border border-slate-200">
-        {/* Forward first: where this week lands is the lead. Last week is the small link into why. */}
-        <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-2 px-5 py-4">
-          <div>
-            <div className="text-xs font-medium text-slate-500">This week, projected</div>
-            <div className="mt-0.5 flex items-baseline gap-2 tabular-nums">
-              <span className={cn("text-[26px] font-semibold tracking-tight", eow < 0 ? "text-error-600" : "text-success-700")}>{m(eow, true)}</span>
-              <span className="text-sm text-slate-500">
-                {m(n.eow.projected)} of {m(n.eow.plan)} · {pct(n.eow.projected, n.eow.plan)} · {m(n.wtd)} so far
-              </span>
+        <div className="px-5 pt-4 pb-3">
+          <div className="text-xs font-medium text-slate-500">This week, projected</div>
+          <div className="mt-0.5 flex items-baseline gap-2 tabular-nums">
+            <span className={cn("text-[26px] font-semibold tracking-tight", eow < 0 ? "text-error-600" : "text-success-700")}>{m(eow, true)}</span>
+            <span className="text-sm text-slate-500">
+              {m(n.eow.projected)} of {m(n.eow.plan)} plan · {pct(n.eow.projected, n.eow.plan)}
+            </span>
+          </div>
+        </div>
+        <div className="grid grid-cols-2 divide-x divide-slate-100 border-t border-slate-100 text-sm tabular-nums">
+          <div className="px-5 py-3">
+            <div className="text-xs text-slate-500">So far this week</div>
+            <div className="mt-0.5 text-slate-950">
+              <span className="font-semibold">{m(n.wtd)}</span> <span className="text-slate-500">· {Math.round(GAP_WEEK.elapsed * 100)}% of the week gone</span>
             </div>
           </div>
-          <button type="button" onClick={() => ask(analysis, n.id)} className="text-sm text-slate-500 tabular-nums hover:text-brand-700">
-            Last week <span className={cn("font-semibold", g < 0 ? "text-error-600" : "text-success-700")}>{m(g, true)}</span> · {pct(n.lastWeek.sales, n.lastWeek.plan)} · <span className="font-medium text-brand-700">Why did we miss? →</span>
-          </button>
-        </div>
-
-        {live.length > 0 ? (
-          <div className="border-t border-slate-100 px-5 py-4">
-            <div className="text-xs font-medium text-slate-500">Focus on this week</div>
-            <ul className="mt-2 flex flex-col gap-2.5">
-              {live.map((d) => {
-                const f = d.fix && fixFor(d.fix, n.asin)
-                return (
-                  <li key={d.title} className="grid grid-cols-[minmax(0,1fr)_72px_200px] items-center gap-x-4 text-sm">
-                    <span className="min-w-0">
-                      <span className="block text-slate-950">{d.title}</span>
-                      {/* Once acted on, the done label on the right says it; the line keeps only what and who. */}
-                      {f && <span className="mt-0.5 block text-[13px] text-slate-500">{f.name} · {f.acted ? f.owner : `${f.owner}, ${f.status}`}</span>}
-                    </span>
-                    <span className="text-right font-semibold text-slate-950 tabular-nums">{m(d.value, true)}</span>
-                    {/* Every action is purple (DESIGN.md); peers share one width. */}
-                    <span className="flex justify-end [&>button]:w-full">
-                      {f?.acted ? (
-                        <span className="inline-flex items-center gap-1.5 text-[14px] font-medium text-success-700">
-                          <Check className="size-4" /> {f.acted}
-                        </span>
-                      ) : f ? (
-                        <button type="button" onClick={f.open} className={PRIMARY}>
-                          {f.openLabel}
-                        </button>
-                      ) : null}
-                    </span>
-                  </li>
-                )
-              })}
-            </ul>
+          <div className="px-5 py-3">
+            <div className="text-xs text-slate-500">Last week vs plan</div>
+            <div className="mt-0.5 text-slate-950">
+              <span className={cn("font-semibold", g < 0 ? "text-error-600" : "text-success-700")}>{m(g, true)}</span> <span className="text-slate-500">· {m(n.lastWeek.sales)} of {m(n.lastWeek.plan)} · {pct(n.lastWeek.sales, n.lastWeek.plan)}</span>
+            </div>
           </div>
-        ) : (
-          <div className="border-t border-slate-100 px-5 py-3 text-sm text-success-700">On track · nothing pulling it below plan</div>
-        )}
+        </div>
+        {/* The simple reason: sales split into traffic, conversion and price. */}
+        <div className="border-t border-slate-100 px-5 py-3 text-sm text-slate-600 tabular-nums">
+          <span className="text-slate-500">Why</span> · Sales <Pct v={n.equation.sales} /> vs the week before: traffic <Pct v={n.equation.traffic} />, conversion <Pct v={n.equation.conversion} />, price <Pct v={n.equation.price} />
+        </div>
+      </div>
 
+      <div className="mt-5">
+        <button type="button" onClick={() => ask(analysis, n.id)} className={PRIMARY}>
+          Run detailed gap-to-plan analysis
+        </button>
       </div>
 
       {n.level === "SKU" && (
