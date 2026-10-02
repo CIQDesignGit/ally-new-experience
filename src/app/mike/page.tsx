@@ -68,6 +68,8 @@ export default function MikePage() {
       else {
         handleSelectBatch(pick.id)
         queueRef.current?.scrollIntoView({ block: "start" })
+        // And the item itself, wherever it sits in the rail.
+        window.setTimeout(() => document.querySelector(`[data-batch="${pick.id}"]`)?.scrollIntoView({ block: "nearest" }), 80)
       }
     }
     window.addEventListener(OPEN_ITEM_EVENT, onOpen)
@@ -146,7 +148,7 @@ export default function MikePage() {
               onSelectSku={(skuId) => handleSelectSku(selected.id, skuId)}
             />
           ) : (
-            <BatchDetail batch={selected} onApprove={handleApprove} onReviewAll={handleReviewAll} onSelect={handleSelectBatch} />
+            <BatchDetail batch={selected} onApprove={handleApprove} onReviewAll={handleReviewAll} onSelect={handleSelectBatch} onSelectSku={handleSelectSku} />
           )}
         </div>
         <MikeDelivered />

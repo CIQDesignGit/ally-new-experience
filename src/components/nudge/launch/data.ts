@@ -29,12 +29,8 @@ export const LAUNCH_FACTS = [
   { id: "legal", text: "Never claim \"non-toxic\" on any product", scope: "Content · Legal" },
 ] as const
 
-/** The rules Ally applied per retailer when adapting the concept. */
-export const RETAILER_CHECKS = [
-  { retailer: "Amazon", rules: ["Main image on pure white, product fills 85% of the frame", "At least 2,000 px on the long side, under 10 MB", "No text or logos added to the main image"] },
-  { retailer: "Walmart", rules: ["Lifestyle images in slots 2–4", "Title cut to 75 characters"] },
-  { retailer: "Target", rules: ["No promo language on any image", "Scent notes in the second bullet"] },
-]
+/** Amazon's rules Ally applied when localizing the concept for each SKU. */
+export const AMAZON_CHECKS = ["Main image on pure white, product fills 85% of the frame", "At least 2,000 px on the long side, under 10 MB", "No text or logos on the main image", "Title under 200 characters, tagline included"]
 
 /** The 3 new SKUs. Two are previewed with their images; all three get drafted. */
 export const NEW_SKUS: Sku[] = [
@@ -85,14 +81,28 @@ export const NEW_SKUS: Sku[] = [
   },
 ]
 
+/** A product traced out of its photo: polygons in % of the photo, and their bounding box [x0, y0, x1, y1]. */
+export interface Cut {
+  src: string
+  shapes: string[]
+  bbox: [number, number, number, number]
+}
+
+const HEARTH = "/images/aurelle/soy-candle-golden-hour.jpg"
+const TRIO = "/images/aurelle/soy-candle-trio-gift-set.jpg"
+/** The amber jar by the fire, flame included. */
+const JAR_CUT: Cut = { src: HEARTH, bbox: [39.25, 27.5, 60.75, 89.4], shapes: ["48.6% 30.5%, 50% 27.5%, 51.4% 30.5%, 51.6% 34.6%, 60% 34.6%, 60.75% 37.5%, 60.75% 87.5%, 59.5% 89.4%, 40.5% 89.4%, 39.25% 87.5%, 39.25% 37.5%, 40% 34.6%, 48.4% 34.6%"] }
+const MARBLE = "29.3% 38%, 30% 34.9%, 30.7% 38%, 30.9% 41.8%, 35% 42.3%, 38.75% 44.5%, 38.75% 79.5%, 37.5% 81%, 22.7% 81%, 21.5% 79.5%, 21.5% 44.5%, 25% 42.3%, 29.1% 41.8%"
+const STONE = "49.3% 43%, 50% 40.1%, 50.7% 43%, 50.9% 44.9%, 55% 45.4%, 59.4% 47.8%, 59.4% 86.3%, 58% 87.8%, 42% 87.8%, 40.6% 86.3%, 40.6% 47.8%, 45% 45.4%, 49.1% 44.9%"
+const LIDDED = "61.9% 38.3%, 75.7% 38.3%, 76% 40%, 76% 73%, 75.2% 74.1%, 62.4% 74.1%, 61.6% 73%, 61.6% 40%"
+
 /** Each previewed SKU's page: its three images from the concept, and its copy. */
 export const LAUNCH_PAGES = [
   {
     skuId: "sku-new-1",
     photo: "/images/aurelle/soy-candle-golden-hour.jpg",
     focus: "50% 62%",
-    /** The white main image: how far to zoom on the product, and the white mask around it. */
-    main: { zoom: 1.55, mask: "26% 44% at 50% 52%" },
+    cut: JAR_CUT,
     title: "Aurelle Winter Hearth Soy Jar Candle, 16 oz · Cedar, Clove and Vanilla · Gather round the glow",
     bullets: ["Hand-poured soy wax in an amber glass jar, 60-hour burn", "Notes of cedar, clove and warm vanilla", "Gift-ready for the holidays"],
     notes: ["Cedar", "Clove", "Vanilla"],
@@ -103,7 +113,7 @@ export const LAUNCH_PAGES = [
     skuId: "sku-new-2",
     photo: "/images/aurelle/soy-candle-trio-gift-set.jpg",
     focus: "48% 58%",
-    main: { zoom: 1.2, mask: "50% 38% at 50% 58%" },
+    cut: { src: TRIO, bbox: [21.5, 34.9, 76, 87.8], shapes: [MARBLE, STONE, LIDDED] } as Cut,
     title: "Aurelle Frost Fig Travel Tin Trio, 3 × 4 oz · Fig, Pine and Snow Musk · Gather round the glow",
     bullets: ["Three travel candles, 20-hour burn each", "Notes of black fig, pine and snow musk", "Arrives in a gift box, ready to give"],
     notes: ["Black fig", "Pine", "Snow musk"],
@@ -114,7 +124,7 @@ export const LAUNCH_PAGES = [
     skuId: "sku-new-3",
     photo: "/images/aurelle/soy-candle-trio-gift-set.jpg",
     focus: "30% 58%",
-    main: { zoom: 1.9, mask: "24% 40% at 50% 56%" },
+    cut: { src: TRIO, bbox: [21.5, 34.9, 38.75, 81], shapes: [MARBLE] } as Cut,
     title: "Aurelle Cedar Ember Pillar Candle, 3 × 6 in · Cedar, Ember and Amber · Gather round the glow",
     bullets: ["Hand-poured soy pillar in a stone vessel, 80-hour burn", "Notes of cedarwood, smoked ember and amber", "Made to anchor a mantel or a holiday table"],
     notes: ["Cedarwood", "Ember", "Amber"],
@@ -137,9 +147,9 @@ export const LAUNCH_MEMORY = {
   source: "Priya's launch brief",
 }
 
-/** Retail readiness for the 3 new SKUs: two are ready, the travel tin trio is blocked on Walmart attributes. */
+/** Retail readiness for the 3 new SKUs: two are ready, the travel tin trio is blocked on Amazon attributes. */
 export const LAUNCH_READINESS = [
   { name: "Winter Hearth Jar", ready: true },
   { name: "Cedar Ember Pillar", ready: true },
-  { name: "Frost Fig Travel Tin Trio", ready: false, missing: ["Burn time", "Wick type", "Item form", "Safety warning"], retailer: "Walmart" },
+  { name: "Frost Fig Travel Tin Trio", ready: false, missing: ["Burn time", "Wick type", "Item form", "Safety warning"], retailer: "Amazon" },
 ]

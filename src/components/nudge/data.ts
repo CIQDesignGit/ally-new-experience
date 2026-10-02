@@ -124,8 +124,8 @@ export const BATCHES: Batch[] = [
     after: "",
     changesTitle: "What Ally does with the concept",
     changes: [
-      { text: "Adapts the one concept into images for every SKU", detail: "White main image, lifestyle, scent notes and gift shots", skus: 3 },
-      { text: "Applies each retailer's rules", detail: "Amazon, Walmart and Target image specs, title lengths and promo rules", skus: 3 },
+      { text: "Turns the one concept into each SKU's Amazon image set", detail: "Main image, lifestyle and infographic", skus: 3 },
+      { text: "Localizes it for each SKU on Amazon", detail: "Main image on pure white, image size and title rules", skus: 3 },
       { text: "Drafts titles and bullets, then sends them back for one approval", skus: 3 },
     ],
     need: {

@@ -29,7 +29,7 @@ export function BatchListItem({ batch, active, selectedSkuId, expanded, onToggle
   const value = done ? (batch.approveValue >= 1 ? `$${batch.approveValue.toFixed(2)}M` : `$${Math.round(batch.approveValue * 1000)}K`) : batch.value
 
   return (
-    <div className={cn("rounded-lg transition-colors", active ? ITEM_ACTIVE : ITEM_IDLE)}>
+    <div data-batch={batch.id} className={cn("rounded-lg transition-colors", active ? ITEM_ACTIVE : ITEM_IDLE)}>
       <button type="button" onClick={onSelectBatch} className="block w-full rounded-lg px-3.5 pt-3 text-left outline-none focus-visible:ring-2 focus-visible:ring-brand-300">
         <div className="flex items-baseline justify-between gap-3">
           <span className="text-[15px] font-semibold text-slate-950">

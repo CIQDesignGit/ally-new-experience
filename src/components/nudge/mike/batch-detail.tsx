@@ -7,7 +7,8 @@ import { Upload } from "lucide-react"
 import { useChat } from "../chat/inline-chat"
 import { UploadDialog } from "../chat/upload-dialog"
 import { LAUNCH_CHIP } from "../launch/answers"
-import { LAUNCH_FILES } from "../launch/data"
+import { LAUNCH_FILES, LAUNCH_PAGES, NEW_SKUS, PAGE_FACTS } from "../launch/data"
+import { AdaptedImage } from "../launch/images"
 import { LaunchPagePreview } from "../launch/page-preview"
 import { skuById } from "../data"
 import { useNudge } from "../nudge-context"
@@ -21,6 +22,8 @@ interface BatchDetailProps {
   onReviewAll: (batch: Batch) => void
   /** Select another item, e.g. the held part once Mike holds an autopilot part back. */
   onSelect?: (id: string) => void
+  /** Open one SKU of this item (the launch's page previews). */
+  onSelectSku?: (batchId: string, skuId: string) => void
 }
 
 /**
@@ -59,7 +62,7 @@ function Actions({ batch, onApprove, onReviewAll, children }: BatchDetailProps &
  * a sample SKU" opens one real SKU's edit right here and scrolls to it, so Mike
  * never leaves the batch he's about to approve.
  */
-export function BatchDetail({ batch, onApprove, onReviewAll, onSelect }: BatchDetailProps) {
+export function BatchDetail({ batch, onApprove, onReviewAll, onSelect, onSelectSku }: BatchDetailProps) {
   const { approved, nudged, policy, savePolicy } = useNudge()
   // A policy part scheduled on autopilot ("halloween-auto"): Mike can check it and hold it back, just this once.
   const scheduled = batch.tier === "autopilot" && batch.mode === "autopilot"
@@ -180,6 +183,11 @@ export function BatchDetail({ batch, onApprove, onReviewAll, onSelect }: BatchDe
               Review {batch.inputSkus} SKUs
             </button>
           </div>
+        ) : batch.id === "concepts" && batch.tier === "approval" ? (
+          <div className="flex flex-col gap-4">
+            <LaunchSkuStrip onPreview={(skuId) => onSelectSku?.(batch.id, skuId)} />
+            <Actions batch={batch} onApprove={onApprove} onReviewAll={onReviewAll} />
+          </div>
         ) : (
           <Actions batch={batch} onApprove={onApprove} onReviewAll={onReviewAll}>
             {sampleButton}
@@ -252,6 +260,27 @@ function LaunchBriefNeed() {
           }}
         />
       )}
+    </div>
+  )
+}
+
+/** The 3 new SKUs at a glance: each one's image set, name and price, and its page preview. */
+function LaunchSkuStrip({ onPreview }: { onPreview: (skuId: string) => void }) {
+  return (
+    <div className="grid grid-cols-3 gap-3">
+      {LAUNCH_PAGES.map((p) => {
+        const sku = NEW_SKUS.find((x) => x.id === p.skuId)!
+        return (
+          <div key={p.skuId} className="flex flex-col rounded-xl border border-slate-200 bg-white p-3">
+            <AdaptedImage kind="main" photo={p.photo} focus={p.focus} notes={p.notes} story={p.story} cut={p.cut} facts={PAGE_FACTS[p.skuId]} bare />
+            <div className="mt-2.5 text-[13px] leading-snug font-semibold text-slate-950">{sku.title.replace("Aurelle ", "").split(",")[0]}</div>
+            <div className="text-[12px] text-slate-500">{`${PAGE_FACTS[p.skuId].price} · ${PAGE_FACTS[p.skuId].size} · 3 images`}</div>
+            <button type="button" onClick={() => onPreview(p.skuId)} className="mt-2.5 w-fit text-[13px] font-medium text-brand-700 hover:underline">
+              Preview page
+            </button>
+          </div>
+        )
+      })}
     </div>
   )
 }

@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Check, ChevronRight, Upload } from "lucide-react"
+import { Check, Loader2, Upload } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useNudge } from "../nudge-context"
 import { useChat, useTurn } from "../chat/inline-chat"
@@ -10,7 +10,7 @@ import type { Chip } from "../chat/inline-chat"
 import { OpenItem } from "../chat/open-item"
 import { PRIMARY } from "../mike/buttons"
 import { AS_OF } from "../data"
-import { LAUNCH, LAUNCH_FILES, LAUNCH_MEMORY, LAUNCH_PAGES, NEW_SKUS } from "./data"
+import { AMAZON_CHECKS, LAUNCH, LAUNCH_FILES, LAUNCH_MEMORY, LAUNCH_PAGES, NEW_SKUS, PAGE_FACTS } from "./data"
 import { MemorySaved } from "../chat/memory"
 import { AdaptedImage, ConceptImage } from "./images"
 import { motion } from "framer-motion"
@@ -72,12 +72,18 @@ function BriefRead() {
 
   return (
     <div className="flex max-w-[860px] flex-col gap-5 text-[15px] leading-relaxed text-slate-700">
-      <p>{`Got Priya's brief: ${NEW_SKUS.length} new SKUs launch ${LAUNCH.launch} for the Hudson Valley Winter Market, with the agency's concept, "${LAUNCH.tagline}." Adapting it for each SKU now.`}</p>
+      <p className="font-semibold text-slate-950">Here&apos;s the brand brief and the creative asset.</p>
+      <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] gap-3">
+        <BriefCard />
+        <div className="flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white">
+          <ConceptImage compact className="rounded-none" />
+          <div className="px-3 py-2 text-[12px] text-slate-500">{`Creative asset · ${LAUNCH.concept.name}`}</div>
+        </div>
+      </div>
       <ConceptTransform onDone={() => setShown(true)} />
       {shown && (
         <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col gap-4">
           <SentLine />
-
           <MemorySaved text={LAUNCH_MEMORY.text} />
         </motion.div>
       )}
@@ -85,7 +91,22 @@ function BriefRead() {
   )
 }
 
-// Once per page load, even when React mounts the answer twice in development.
+/** The email, read: who it's from and the lines that matter. */
+function BriefCard() {
+  return (
+    <div className="flex flex-col rounded-xl border border-slate-200 bg-white px-4 py-3.5">
+      <div className="text-[12px] text-slate-500">Brand brief · from Priya, brand team</div>
+      <div className="mt-0.5 text-[14px] font-semibold text-slate-950">Re: Winter Hearth launch</div>
+      <ul className="mt-2.5 flex flex-col gap-1.5 text-[13px] text-slate-700">
+        <li>{`· ${NEW_SKUS.length} new SKUs launch ${LAUNCH.launch}`}</li>
+        <li>· Official candle of the Hudson Valley Winter Market, Nov 13–15</li>
+        <li>{`· Tagline: "${LAUNCH.tagline}"`}</li>
+        <li>· Legal: no &quot;non-toxic&quot; claims</li>
+      </ul>
+    </div>
+  )
+}
+
 const handled = { current: false }
 
 function SentLine() {
@@ -110,58 +131,57 @@ export const LAUNCH_CHIP: Chip = {
 }
 
 /**
- * The one concept becoming many images: the concept, a scan across it while
- * Ally works, then the first SKU's three images landing one by one, and the
- * other two SKUs stacked as "+2 more". The pages themselves wait in the queue.
+ * Localizing the one concept for each SKU on Amazon: the steps check off as
+ * Ally works, and the first SKU's image set lands beside them, then the other
+ * two SKUs. The pages themselves wait in the queue.
  */
 function ConceptTransform({ onDone }: { onDone: () => void }) {
   const first = LAUNCH_PAGES[0]
   const rest = LAUNCH_PAGES.slice(1)
   const [step, setStep] = useState(0)
   useEffect(() => {
-    const t = [450, 1100, 1700, 2300, 2900].map((ms, i) => window.setTimeout(() => setStep(i + 1), ms))
-    t.push(window.setTimeout(onDone, 3200))
+    const t = [700, 1400, 2100, 2800, 3400].map((ms, i) => window.setTimeout(() => setStep(i + 1), ms))
+    t.push(window.setTimeout(onDone, 3700))
     return () => t.forEach(window.clearTimeout)
     // Runs once, when the answer appears.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-  const status = ["Reading the concept…", "Placing the jar on white for Amazon's main image…", "Grading the lifestyle shot to the concept…", "Writing the scent notes…", "Doing the same for the other 2 SKUs…", `${NEW_SKUS.length * 3} images ready, checked against Amazon, Walmart and Target rules.`]
+  const steps = ["Main image on pure white", "Lifestyle shot in the concept", "Infographic with scent notes and burn time", `Checked against Amazon's rules (${AMAZON_CHECKS.length})`, "The other 2 SKUs"]
   const sku = NEW_SKUS.find((x) => x.id === first.skuId)!
   return (
-    <div className="flex flex-col gap-3">
-      <div className="grid grid-cols-[minmax(0,1fr)_28px_minmax(0,1.5fr)] items-center gap-3">
-        <div className="relative overflow-hidden rounded-xl">
-          <ConceptImage compact />
-          {step < 5 && (
-            <motion.i
-              aria-hidden
-              className="pointer-events-none absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-white/35 to-transparent"
-              initial={{ left: "-35%" }}
-              animate={{ left: "105%" }}
-              transition={{ duration: 1.1, repeat: Infinity, ease: "easeInOut" }}
-            />
-          )}
-        </div>
-        <ChevronRight className="size-5 text-slate-400" />
-        <div className="rounded-xl border border-slate-200 bg-white p-3">
+    <div className="rounded-xl border border-slate-200 bg-white p-4">
+      <div className="flex items-center gap-2 text-[14px] font-semibold text-slate-950">
+        {step < 5 ? <Loader2 className="size-4 animate-spin text-brand-600" /> : <Check className="size-4 text-success-600" />}
+        {step < 5 ? "Localizing the creative for each SKU on Amazon…" : `Localized for ${NEW_SKUS.length} SKUs on Amazon: ${NEW_SKUS.length * 3} images`}
+      </div>
+      <div className="mt-3 grid grid-cols-[200px_minmax(0,1fr)] gap-5">
+        <ul className="flex flex-col gap-2 text-[13px]">
+          {steps.map((label, i) => (
+            <li key={label} className={cn("flex items-center gap-2", step > i ? "text-slate-800" : step === i ? "text-slate-950" : "text-slate-400")}>
+              {step > i ? <Check className="size-3.5 shrink-0 text-success-600" /> : step === i ? <Loader2 className="size-3.5 shrink-0 animate-spin text-brand-600" /> : <i className="size-3.5 shrink-0 rounded-full border border-slate-300" />}
+              {label}
+            </li>
+          ))}
+        </ul>
+        <div>
           <div className="mb-2 text-[12px] font-medium text-slate-500">{sku.title.replace("Aurelle ", "")}</div>
           <div className="grid grid-cols-3 gap-2">
             {(["main", "lifestyle", "story"] as const).map((k, i) =>
               step > i ? (
-                <motion.div key={k} initial={{ opacity: 0, scale: 0.7, x: -60 }} animate={{ opacity: 1, scale: 1, x: 0 }} transition={{ type: "spring", stiffness: 240, damping: 22 }}>
-                  <AdaptedImage kind={k} photo={first.photo} focus={first.focus} notes={first.notes} story={first.story} main={first.main} />
+                <motion.div key={k} initial={{ opacity: 0, scale: 0.85, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ type: "spring", stiffness: 260, damping: 24 }}>
+                  <AdaptedImage kind={k} photo={first.photo} focus={first.focus} notes={first.notes} story={first.story} cut={first.cut} facts={PAGE_FACTS[first.skuId]} />
                 </motion.div>
               ) : (
                 <div key={k} className="aspect-square animate-pulse rounded-lg bg-slate-100" />
               ),
             )}
           </div>
-          {step >= 4 && (
+          {step >= 5 && (
             <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="mt-3 flex items-center gap-3 border-t border-slate-100 pt-3">
-              <span className="flex -space-x-3">
+              <span className="flex -space-x-2">
                 {rest.map((p) => (
                   <span key={p.skuId} className="block w-10 overflow-hidden rounded-md ring-2 ring-white">
-                    <AdaptedImage kind="main" photo={p.photo} focus={p.focus} notes={p.notes} story={p.story} main={p.main} bare />
+                    <AdaptedImage kind="main" photo={p.photo} focus={p.focus} notes={p.notes} story={p.story} cut={p.cut} facts={PAGE_FACTS[p.skuId]} bare />
                   </span>
                 ))}
               </span>
@@ -173,7 +193,6 @@ function ConceptTransform({ onDone }: { onDone: () => void }) {
           )}
         </div>
       </div>
-      <div className={cn("text-[13px]", step >= 5 ? "text-success-700" : "text-slate-500")}>{status[step]}</div>
     </div>
   )
 }

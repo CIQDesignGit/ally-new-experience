@@ -44,14 +44,14 @@ export function LaunchPagePreview({ skuId }: { skuId: string }) {
           <div className="flex flex-col gap-2">
             {KINDS.map((k, i) => (
               <button key={k} type="button" onClick={() => setShown(i)} aria-label={`Image ${i + 1}`} className={cn("overflow-hidden rounded-md ring-2", i === shown ? "ring-[#e77600]" : "ring-transparent hover:ring-slate-300")}>
-                <AdaptedImage kind={k} photo={page.photo} focus={page.focus} notes={page.notes} story={page.story} main={page.main} bare />
+                <AdaptedImage kind={k} photo={page.photo} focus={page.focus} notes={page.notes} story={page.story} cut={page.cut} facts={PAGE_FACTS[page.skuId]} bare />
               </button>
             ))}
           </div>
 
           {/* Main image with the carousel */}
           <div className="relative">
-            <AdaptedImage kind={KINDS[shown]} photo={page.photo} focus={page.focus} notes={page.notes} story={page.story} main={page.main} bare />
+            <AdaptedImage kind={KINDS[shown]} photo={page.photo} focus={page.focus} notes={page.notes} story={page.story} cut={page.cut} facts={PAGE_FACTS[page.skuId]} bare />
             <button type="button" onClick={() => go(-1)} aria-label="Previous image" className="absolute top-1/2 left-2 flex size-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-slate-700 shadow ring-1 ring-slate-200 hover:bg-white">
               <ChevronLeft className="size-4" />
             </button>
@@ -138,7 +138,7 @@ export function LaunchPagePreview({ skuId }: { skuId: string }) {
                   return (
                     <td key={s.id} className={cn("px-2 pb-2 text-center align-bottom", s.id === page.skuId && "bg-[#fff8e6]")}>
                       <div className="mx-auto w-20">
-                        <AdaptedImage kind="main" photo={p.photo} focus={p.focus} notes={p.notes} story={p.story} main={p.main} bare />
+                        <AdaptedImage kind="main" photo={p.photo} focus={p.focus} notes={p.notes} story={p.story} cut={p.cut} facts={PAGE_FACTS[p.skuId]} bare />
                       </div>
                       <div className="mt-1 text-[12px] font-medium text-slate-950">{s.title.replace("Aurelle ", "").split(",")[0]}</div>
                     </td>
