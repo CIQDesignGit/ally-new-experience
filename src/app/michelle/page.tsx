@@ -3,7 +3,7 @@
 import { AppDrawer } from "@/components/nudge/app-drawer"
 import { useEffect, useRef, useState } from "react"
 import { toast } from "sonner"
-import { AskBar, ChatProvider, ChatThread, useChat, useChatSource } from "@/components/nudge/chat/inline-chat"
+import { AskBar, ChatProvider, ChatThread, useChatSource } from "@/components/nudge/chat/inline-chat"
 import { OPEN_ITEM_EVENT } from "@/components/nudge/chat/open-item"
 import type { OpenItemDetail } from "@/components/nudge/chat/open-item"
 import { OpsSkuPane } from "@/components/nudge/ops/ops-sku-pane"
@@ -48,17 +48,6 @@ PROMO_CHIPS["promo-badge"].followUps = [PROMO_CHIPS["promo-vs-brightwick"], PROM
 PROMO_CHIPS["promo-vs-brightwick"].followUps = [PROMO_CHIPS["promo-badge"], PROMO_CHIPS["promo-month"], SAVE_CHIP]
 
 function InboxChat() {
-  const { ask } = useChat()
-  // A dashboard widget's "Ask about this" lands here with its question asked again.
-  useEffect(() => {
-    const id = new URLSearchParams(window.location.search).get("ask") as PromoWidget | null
-    if (!id || !PROMO_CHIPS[id]) return
-    window.history.replaceState(null, "", "/michelle")
-    // Not cancelled on cleanup: the dev double-run's second pass finds no ?ask and does nothing.
-    window.setTimeout(() => ask(PROMO_CHIPS[id]), 300)
-    // Once, on arrival.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
   useChatSource(
     {
       chips: [

@@ -1,21 +1,21 @@
 "use client"
 
 import { use, useEffect, useState } from "react"
-import Link from "next/link"
-import { MessageSquare } from "lucide-react"
 import { PageShell } from "@/components/layout/page-shell"
 import { TopStrip } from "@/components/nudge/top-strip"
 import { AppDrawer } from "@/components/nudge/app-drawer"
 import { useNudge } from "@/components/nudge/nudge-context"
 import { AnswerCard, AskBar, ChatProvider, ChatThread, StarterChips } from "@/components/nudge/chat/inline-chat"
 import { DateRange, Menu } from "@/components/nudge/dashboard/filters"
-import { PromoWidgetBody, WIDGET_HEADLINE } from "@/components/nudge/promo/answers"
+import { PromoAnswer, PromoWidgetBody, WIDGET_HEADLINE } from "@/components/nudge/promo/answers"
+import { SelectToAsk } from "@/components/nudge/chat/select-to-ask"
+import type { Chip } from "@/components/nudge/chat/inline-chat"
 import { PROMO_DEPTH, PROMO_QUESTIONS } from "@/components/nudge/promo/data"
 import type { PromoWidget } from "@/components/nudge/promo/data"
 
 /**
- * A dashboard saved from chat. Each widget is one of the answers, still live,
- * and "Ask about this" opens it back into the conversation it came from.
+ * A dashboard saved from chat. Each widget is one of the answers, still live.
+ * One way to ask: the bar, about the whole page, or a highlighted piece of it.
  */
 
 const RANGES = [
@@ -48,7 +48,7 @@ function SavedDashboard({ id }: { id: string }) {
   const widgets = ((d?.widgets ?? []) as PromoWidget[]).slice().sort((a, b) => Number(a === "promo-badge") - Number(b === "promo-badge"))
   return (
     <PageShell className="bg-slate-50 xl:bg-white">
-      <StarterChips id={`dashboard-${id}`} chips={STARTERS} />
+      <StarterChips id={`dashboard-${id}`} chips={[...STARTERS, ...WIDGET_CHIPS]} />
       <div className="mx-auto max-w-[1280px] overflow-clip bg-white shadow-pane-lg sm:my-6 sm:rounded-2xl sm:ring-1 sm:ring-slate-900/6 xl:my-0 xl:rounded-none xl:shadow-none xl:ring-0">
         <TopStrip person="michelle" crumbs={[{ label: "Daily brief", href: "/michelle" }, { label: "Dashboards" }, { label: d?.name ?? "Dashboard" }]} />
 
@@ -68,19 +68,17 @@ function SavedDashboard({ id }: { id: string }) {
               <Menu label="Category" value={category} options={PROMO_DEPTH.map((r) => r.category)} onChange={setCategory} />
             </div>
 
-            <div className="grid grid-cols-2 gap-4 px-10 pt-6 pb-16">
+            {/* Ask from the bar about the whole page, or highlight anything to ask about just that. */}
+            <SelectToAsk className="grid grid-cols-2 gap-4 px-10 pt-6 pb-16">
               {widgets.map((w) => (
                 <section key={w} aria-label={PROMO_QUESTIONS[w]} className={w === "promo-badge" ? "col-span-2 flex flex-col rounded-xl border border-slate-200 p-5" : "flex flex-col rounded-xl border border-slate-200 p-5"}>
                   <div className="text-[15px] font-semibold text-slate-950">{WIDGET_HEADLINE[w]}</div>
                   <div className="mt-4 flex-1">
                     <PromoWidgetBody id={w} focus={category} />
                   </div>
-                  <Link href={`/michelle?ask=${w}`} className="mt-4 inline-flex w-fit items-center gap-1.5 text-[13px] font-medium text-brand-700 hover:underline">
-                    <MessageSquare className="size-3.5" /> Ask about this
-                  </Link>
                 </section>
               ))}
-            </div>
+            </SelectToAsk>
           </>
         ) : (
           <p className="px-10 pt-6 pb-16 text-[15px] text-slate-500">Loading…</p>
@@ -106,4 +104,11 @@ const STARTERS = [
       </AnswerCard>
     ),
   },
+]
+
+/** What a highlighted piece of a widget is about, answered here with that widget's own answer (not offered as starters). */
+const WIDGET_CHIPS: Chip[] = [
+  { q: PROMO_QUESTIONS["promo-badge"], hidden: true, match: /badge|halloween|days without|at risk|noir|coastal|fig|citrus/i, render: () => <PromoAnswer id="promo-badge" /> },
+  { q: PROMO_QUESTIONS["promo-vs-brightwick"], hidden: true, match: /brightwick|depth|gift sets?|wax melts|pillar|travel tins|full price/i, render: () => <PromoAnswer id="promo-vs-brightwick" /> },
+  { q: PROMO_QUESTIONS["promo-month"], hidden: true, match: /lightning|bundles?|coupons?|lift|promo sales|\$1\.2M/i, render: () => <PromoAnswer id="promo-month" /> },
 ]

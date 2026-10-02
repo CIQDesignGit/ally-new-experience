@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react"
 import { motion } from "framer-motion"
+import { QUOTE_EVENT } from "./select-to-ask"
 import { UploadDialog } from "./upload-dialog"
 import { CornerDownRight, Mail, Paperclip, Plus, Send, Sparkles, X } from "lucide-react"
 import { useRouter } from "next/navigation"
@@ -254,6 +255,17 @@ export function AskBar({ placeholder = "What can I take off your plate?" }: { pl
   }
   const [text, setText] = useState("")
   const [open, setOpen] = useState(false)
+  // A selection quoted from the page ("Ask Ally" on highlighted text): it scopes the next question.
+  const [quote, setQuote] = useState<string | null>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+  useEffect(() => {
+    const onQuote = (e: Event) => {
+      setQuote((e as CustomEvent<string>).detail)
+      inputRef.current?.focus()
+    }
+    window.addEventListener(QUOTE_EVENT, onQuote)
+    return () => window.removeEventListener(QUOTE_EVENT, onQuote)
+  }, [])
   const rootRef = useRef<HTMLDivElement>(null)
   const dockRef = useRef<HTMLDivElement>(null)
   const askedHere = new Set(turns.filter((t) => t.about === source.about && t.anchor === source.anchor).map((t) => t.chip))
@@ -373,15 +385,29 @@ export function AskBar({ placeholder = "What can I take off your plate?" }: { pl
             const pool = [...(turns[turns.length - 1]?.followUps ?? []), ...source.chips]
             // Files sent on their own (or with any words) go to whatever takes files.
             const filesChip = attach.length ? pool.find((c) => c.takesFiles) : undefined
-            const chip = filesChip ?? pool.find((c) => c.match?.test(text)) ?? closest(pool, text)
+            // A quote counts toward what's being asked about.
+            const about = quote ? `${quote} ${text}` : text
+            const chip = filesChip ?? pool.find((c) => c.match?.test(about)) ?? closest(pool, about)
             if (chip) {
-              run(chip, text.trim() || (attach.length ? `Here ${attach.length === 1 ? "is a file" : `are ${attach.length} files`}.` : chip.q))
+              const said = text.trim() || (attach.length ? `Here ${attach.length === 1 ? "is a file" : `are ${attach.length} files`}.` : quote ? "Tell me more" : chip.q)
+              run(chip, quote ? `“${quote}” ${said}` : said)
               setOpen(false)
+              setQuote(null)
             } else setOpen(true)
             setText("")
           }}
           className="flex flex-wrap items-center gap-2 py-1.5 pr-1.5 pl-4"
         >
+          {quote && (
+            <span className="flex w-full items-center gap-2 pt-1.5 pb-1">
+              <span className="flex min-w-0 items-center gap-2 rounded-lg border-l-2 border-brand-400 bg-slate-50 py-1 pr-1 pl-2.5 text-[13px] text-slate-700">
+                <span className="truncate">“{quote}”</span>
+                <button type="button" onClick={() => setQuote(null)} aria-label="Remove quote" className="flex size-5 shrink-0 items-center justify-center rounded text-slate-400 hover:bg-slate-200 hover:text-slate-700">
+                  ×
+                </button>
+              </span>
+            </span>
+          )}
           {!!attach.length && (
             <span className="flex w-full flex-wrap items-center gap-2 pt-1.5 pb-1">
               {attach.map((f) => (
@@ -391,11 +417,12 @@ export function AskBar({ placeholder = "What can I take off your plate?" }: { pl
           )}
           <Sparkles className="size-4 shrink-0 text-brand-600" />
           <input
+            ref={inputRef}
             value={text}
             onChange={(e) => setText(e.target.value)}
             onFocus={() => setOpen(true)}
             onClick={() => setOpen(true)}
-            placeholder={placeholder}
+            placeholder={quote ? "Ask about this" : placeholder}
             className="flex-1 bg-transparent text-sm text-slate-950 outline-none placeholder:text-slate-400"
           />
           {!!source.files?.length && (
