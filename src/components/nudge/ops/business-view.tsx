@@ -1,7 +1,7 @@
 "use client"
 
 import { Fragment, useEffect, useRef, useState } from "react"
-import { ChevronRight, Sparkles } from "lucide-react"
+import { Check, ChevronRight, Sparkles } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { PRIMARY } from "../mike/buttons"
 import { candleThumbnail } from "@/lib/candle-thumbnails"
@@ -11,6 +11,8 @@ import { useLive } from "../live-model"
 import { playById } from "../market"
 import { useLaunch } from "../market/plays"
 import { useNudge } from "../nudge-context"
+import { useFireNudge } from "../use-fire-nudge"
+import { toast } from "sonner"
 import { ChatThread, useChat, useChatSource } from "../chat/inline-chat"
 import type { Chip } from "../chat/inline-chat"
 import type { AgentId, Period } from "../types"
@@ -63,11 +65,15 @@ interface FixView {
   tone: "todo" | "moving" | "done"
   open: () => void
   openLabel: string
+  /** Once acted on: what was done, shown in place of the button. */
+  acted?: string
 }
 
-function useFixes(onOpenOps: (batchId: string, asin?: string) => void) {
-  const { approved, nudged, policy, note } = useNudge()
+// Fixes act in place (send, ask, approve); none navigates away.
+function useFixes() {
+  const { approved, approve, nudged, policy, note } = useNudge()
   const { launch, isLaunched } = useLaunch()
+  const { fire } = useFireNudge()
   const ops = opsBatches(policy)
   const content = contentBatches(policy, launchedIds(approved))
   return (fix: Fix, asin?: string): FixView | undefined => {
@@ -77,7 +83,10 @@ function useFixes(onOpenOps: (batchId: string, asin?: string) => void) {
       const mine = note.filter((i) => i.batchId === b.id && (!asin || i.asin === asin))
       const sentOn = mine.find((i) => i.sentOn)?.sentOn
       const status = approved[b.id] || sentOn ? `sent to ${VENDOR_MANAGER.name}, ${sentOn ?? "Oct 8"}` : mine.length ? `in your note to ${VENDOR_MANAGER.name} · not sent` : "ready to review"
-      return { lever: "ops", name: b.fixName ?? b.name, owner: "You", status, tone: approved[b.id] || sentOn ? "done" : mine.length ? "moving" : "todo", open: () => onOpenOps(b.id, asin), openLabel: "Review the escalation" }
+      return { lever: "ops", name: b.fixName ?? b.name, owner: "You", status, tone: approved[b.id] || sentOn ? "done" : mine.length ? "moving" : "todo", acted: approved[b.id] || sentOn ? `Sent to ${VENDOR_MANAGER.name}` : undefined, open: () => {
+          approve(b.id)
+          toast.success(`Sent to ${VENDOR_MANAGER.name} · ${b.fixName ?? b.name}, evidence attached`, { position: "top-right" })
+        }, openLabel: `Send to ${VENDOR_MANAGER.name}` }
     }
     if (fix.kind === "content") {
       const b = content.find((x) => x.id === fix.id)
@@ -85,12 +94,12 @@ function useFixes(onOpenOps: (batchId: string, asin?: string) => void) {
       const done = !!approved[b.id]
       const pinged = b.nudgeKey && nudged[b.nudgeKey]
       const status = done ? (b.tier === "input" ? "sent to Ally" : "approved") : b.tier === "input" ? "waiting on your team" : pinged ? "nudged, waiting for approval" : "waiting for approval"
-      return { lever: "content", name: b.fixName ?? b.name, owner: "Mike", status, tone: done ? "done" : b.tier === "input" ? "todo" : "moving", open: () => (window.location.href = `/mike?batch=${b.id}&from=michelle`), openLabel: "See Mike's queue" }
+      return { lever: "content", name: b.fixName ?? b.name, owner: "Mike", status, tone: done ? "done" : b.tier === "input" ? "todo" : "moving", acted: done ? "Approved" : pinged ? "Asked Mike" : undefined, open: () => b.nudgeKey && fire({ agent: "content", analystName: "Mike", description: b.name, value: b.value, nudgeKey: b.nudgeKey }), openLabel: "Ask Mike to approve" }
     }
     const p = playById(fix.id)
     if (!p) return undefined
     const on = isLaunched(p)
-    return { lever: p.owner === "human" ? "content" : p.owner, name: p.what, owner: p.owner === "media" ? "Ally for Media" : "Ally", status: on ? "launched" : "ready to launch", tone: on ? "moving" : "todo", open: () => launch([p]), openLabel: on ? "Launched" : "Launch the play" }
+    return { lever: p.owner === "human" ? "content" : p.owner, name: p.what, owner: p.owner === "media" ? "Ally for Media" : "Ally", status: on ? "launched" : "ready to launch", tone: on ? "moving" : "todo", acted: on ? "Approved" : undefined, open: () => launch([p]), openLabel: "Approve the bids" }
   }
 }
 
@@ -185,7 +194,7 @@ export function BusinessRail({ root, selected, onSelect }: { root: GapNode; sele
 
 export function BusinessPane({ root, nodeId, onSelect, onOpenOps }: { root: GapNode; nodeId: string; onSelect: (id: string) => void; onOpenOps: (batchId: string, asin?: string) => void }) {
   const { ask } = useChat()
-  const fixFor = useFixes(onOpenOps)
+  const fixFor = useFixes()
   const found = findIn(root, nodeId) ?? { node: root, trail: [] }
   const n = found.node
   const g = gapOf(n)
@@ -258,12 +267,14 @@ export function BusinessPane({ root, nodeId, onSelect, onOpenOps }: { root: GapN
                     <span className="text-right font-semibold text-slate-950 tabular-nums">{m(d.value, true)}</span>
                     {/* Every action is purple (DESIGN.md); peers share one width. */}
                     <span className="flex justify-end [&>button]:w-full">
-                      {f && f.tone !== "done" ? (
+                      {f?.acted ? (
+                        <span className="inline-flex items-center gap-1.5 text-[14px] font-medium text-success-700">
+                          <Check className="size-4" /> {f.acted}
+                        </span>
+                      ) : f ? (
                         <button type="button" onClick={f.open} className={PRIMARY}>
                           {f.openLabel}
                         </button>
-                      ) : f ? (
-                        <span className="text-[14px] font-medium text-success-700">Done</span>
                       ) : null}
                     </span>
                   </li>

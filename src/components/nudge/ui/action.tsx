@@ -26,8 +26,8 @@ export function ActionRow({ title, detail, setup, action, done }: { title: strin
         <div className="text-[15px] font-semibold text-slate-950">{title}</div>
         {detail && <div className="mt-0.5 text-[14px] text-slate-600">{detail}</div>}
       </div>
-      {/* Peer buttons share one width, so their edges line up down the card. */}
-      <div className="flex min-w-[176px] justify-end [&>button]:w-full">
+      {/* Peer buttons share one fixed width (not a minimum), so their edges line up down the card. */}
+      <div className="flex w-[200px] justify-end [&>button]:w-full">
         {done ? (
           <span className="inline-flex items-center gap-1.5 text-[14px] font-medium text-success-700">
             <Check className="size-4" /> {done}

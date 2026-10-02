@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
-import { ArrowRight, Check, ChevronDown, ChevronRight, Loader2, Sparkles } from "lucide-react"
+import { Check, ChevronDown, ChevronRight, Loader2, Sparkles } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { OPS_BATCHES, fmtValue } from "../data"
@@ -15,6 +15,7 @@ import { GAP_STEPS, GAP_TREE, GAP_WEEK, gapNode, pathTo } from "./gap-data"
 import type { Driver, GapAction, GapNode, Recommendation } from "./gap-data"
 import type { GapRecipe } from "../policy"
 import { MemoryRecall } from "../chat/memory"
+import { useNudge } from "../nudge-context"
 import { ActionCard, ActionRow } from "../ui/action"
 import { PRIMARY } from "../mike/buttons"
 import { DidYouKnow } from "../chat/agent-run"
@@ -159,28 +160,34 @@ function Steps({ extra = [], measure = "sales", onDone }: { extra?: string[]; me
   )
 }
 
-export function ActionButton({ action, onInbox }: { action: GapAction; onInbox: (batchId: string) => void }) {
+/** What the button did, said in the past tense: "Send to Dana" → "Sent to Dana". */
+const pastTense = (label: string) => label.replace(/^Send to /, "Sent to ").replace(/^File .*/, "Filed").replace(/^Reinstate .*/, "Reinstated").replace(/^Approve .*/, "Approved")
+
+/** A recommendation's button does the thing, in place (DESIGN.md: actions act; done replaces the button). */
+export function ActionButton({ action }: { action: GapAction; onInbox?: (batchId: string) => void }) {
   const { launch, isLaunched } = useLaunch()
+  const { approved, approve } = useNudge()
   const play = action.kind === "play" ? playById(action.playId) : undefined
-  // Done replaces the button in place (DESIGN.md).
-  if (play && isLaunched(play))
+  const done = (play && isLaunched(play)) || (action.kind === "inbox" && approved[action.batchId])
+  if (done)
     return (
       <span className="inline-flex items-center gap-1.5 text-[14px] font-medium text-success-700">
-        <Check className="size-4" /> Launched
+        <Check className="size-4" /> {pastTense(action.label)}
       </span>
     )
   return (
     <button
       type="button"
       onClick={() => {
-        if (action.kind === "inbox") onInbox(action.batchId)
-        else if (play) launch([play])
+        if (action.kind === "inbox") {
+          approve(action.batchId)
+          toast.success(`${pastTense(action.label)} · evidence attached`, { position: "top-right" })
+        } else if (play) launch([play])
         else toast.success(`${action.label}: Ally will tell you the moment it moves.`, { position: "top-right" })
       }}
       className={PRIMARY}
     >
       {action.label}
-      <ArrowRight className="size-3.5" />
     </button>
   )
 }
@@ -206,7 +213,7 @@ export function GapAnalysis({ node, onInbox, recipe: given, nested }: { node: Ga
     .sort((a, b) => a.value - b.value)
     .map((d) => (fill && /out of stock/i.test(d.title) ? { ...d, points: [`Cause: fill rate ${FILL.rate}% on ${FILL.pos} POs (target ${FILL.target}%)`, ...d.points] } : d))
   const recs: Recommendation[] = fill
-    ? [...node.recommendations, { title: `Claim the ${FILL.pos} short-shipped POs`, points: [`Fill rate ${FILL.rate}% vs ${FILL.target}% target`, "The same POs as Shorted POs in your queue"], action: { kind: "inbox", label: "Open the claims", batchId: "shorted-pos" } }]
+    ? [...node.recommendations, { title: `Claim the ${FILL.pos} short-shipped POs`, points: [`Fill rate ${FILL.rate}% vs ${FILL.target}% target`, "The same POs as Shorted POs in your queue"], action: { kind: "inbox", label: `File the ${FILL.pos} claims`, batchId: "shorted-pos" } }]
     : node.recommendations
   const extra = (["units", "weight", "fill"] as const).filter((c) => recipe.columns.includes(c) && !(c === "units" && recipe.measure === "units") && !(c === "weight" && recipe.measure === "weight"))
   const cols = `minmax(0,1fr) repeat(${3 + extra.length}, 88px)`
