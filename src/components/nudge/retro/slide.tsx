@@ -65,8 +65,16 @@ function ink(tone: Bar["tone"], theme: ThemeId) {
 
 const MONO = "var(--font-mono), ui-monospace, monospace"
 
-function ChartView({ chart, theme }: { chart: Chart; theme: ThemeId }) {
+/**
+ * One chart, any size (em-scaled). `focus` is a dashboard filter: in a chart
+ * that has that label, every other mark steps back.
+ */
+export function ChartView({ chart, theme, focus }: { chart: Chart; theme: ThemeId; focus?: string }) {
   const t = THEMES[theme]
+  const labels = chart.kind === "columns" || chart.kind === "rows" ? chart.bars.map((b) => b.label) : chart.kind === "slots" ? chart.rows.map((r) => r.label) : chart.kind === "table" ? chart.rows.map((r) => r.cells[0]) : []
+  const hit = (label: string) => label.toLowerCase().includes((focus ?? "").toLowerCase())
+  const active = !!focus && labels.some(hit)
+  const dim = (label: string) => (active && !hit(label) ? 0.25 : 1)
   if (chart.kind === "kpis") {
     // The summary's headline numbers: big figures, short labels, two by two.
     return (
@@ -94,7 +102,7 @@ function ChartView({ chart, theme }: { chart: Chart; theme: ThemeId }) {
           <span />
         </div>
         {chart.rows.map((r) => (
-          <div key={r.cells[0]} style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) 3em 3.6em 4.2em", gap: "0.5em", alignItems: "center", padding: "0.45em 0", borderBottom: `1px solid ${t.rule}` }}>
+          <div key={r.cells[0]} style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) 3em 3.6em 4.2em", gap: "0.5em", alignItems: "center", padding: "0.45em 0", borderBottom: `1px solid ${t.rule}`, opacity: dim(r.cells[0]) }}>
             <span style={{ fontSize: "0.46em", fontWeight: 600, color: t.ink }}>{r.cells[0]}</span>
             <span style={{ fontFamily: MONO, fontSize: "0.46em", fontWeight: 700, textAlign: "right", color: t.ink }}>{r.cells[1]}</span>
             <span style={{ fontFamily: MONO, fontSize: "0.46em", fontWeight: 700, textAlign: "right", color: t.ink }}>{r.cells[2]}</span>
@@ -110,7 +118,7 @@ function ChartView({ chart, theme }: { chart: Chart; theme: ThemeId }) {
       <>
         <div style={{ height: "100%", display: "flex", alignItems: "flex-end", justifyContent: "space-around", gap: "0.6em", borderBottom: `1px solid ${t.rule}` }}>
           {chart.bars.map((b) => (
-            <div key={b.label} style={{ flex: 1, maxWidth: "3.4em", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", gap: "0.15em" }}>
+            <div key={b.label} style={{ flex: 1, maxWidth: "3.4em", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", gap: "0.15em", opacity: dim(b.label) }}>
               <span style={{ fontFamily: MONO, fontSize: "0.5em", fontWeight: 700, color: ink(b.tone, theme) }}>{b.display}</span>
               {/* One scale for every bar, leaving room above the tallest for its value. */}
               <span style={{ width: "100%", height: `${(b.value / max) * 82}%`, background: fill(b.tone, theme), borderRadius: "0.2em 0.2em 0 0" }} />
@@ -119,7 +127,7 @@ function ChartView({ chart, theme }: { chart: Chart; theme: ThemeId }) {
         </div>
         <div style={{ marginTop: "0.25em", display: "flex", justifyContent: "space-around", gap: "0.6em" }}>
           {chart.bars.map((b) => (
-            <span key={b.label} style={{ flex: 1, maxWidth: "3.4em", textAlign: "center", fontSize: "0.42em", color: t.muted, whiteSpace: "nowrap" }}>{b.label}</span>
+            <span key={b.label} style={{ flex: 1, maxWidth: "3.4em", textAlign: "center", fontSize: "0.42em", color: t.muted, whiteSpace: "nowrap", opacity: dim(b.label) }}>{b.label}</span>
           ))}
         </div>
       </>
@@ -135,7 +143,7 @@ function ChartView({ chart, theme }: { chart: Chart; theme: ThemeId }) {
     return (
       <div style={{ height: "100%", display: "flex", flexDirection: "column", justifyContent: "center", gap: "0.45em" }}>
         {chart.bars.map((b) => (
-          <div key={b.label} style={{ display: "grid", gridTemplateColumns: "max-content minmax(0, 1fr) max-content", gap: "0.45em", alignItems: "center" }}>
+          <div key={b.label} style={{ display: "grid", gridTemplateColumns: "max-content minmax(0, 1fr) max-content", gap: "0.45em", alignItems: "center", opacity: dim(b.label) }}>
             <span style={{ fontSize: "0.44em", color: t.ink, whiteSpace: "nowrap", minWidth: "6.5em" }}>{b.label}</span>
             <span style={{ position: "relative", height: "0.55em" }}>
               {zero > 0 && <i style={{ position: "absolute", left: `${zero * 100}%`, top: "-0.2em", bottom: "-0.2em", width: 1, background: t.footer }} />}
@@ -160,7 +168,7 @@ function ChartView({ chart, theme }: { chart: Chart; theme: ThemeId }) {
     return (
       <div style={{ height: "100%", display: "flex", flexDirection: "column", justifyContent: "center", gap: "0.5em" }}>
         {chart.rows.map((r) => (
-          <div key={r.label}>
+          <div key={r.label} style={{ opacity: dim(r.label) }}>
             <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.44em", color: t.ink }}>
               <span>{r.label}</span>
               <span style={{ fontFamily: MONO, fontWeight: 700 }}>

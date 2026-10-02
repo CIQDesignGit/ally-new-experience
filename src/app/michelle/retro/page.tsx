@@ -64,7 +64,7 @@ export default function RetroPage() {
       // A new task opens as a conversation: the ask and Ally's storyline, nothing else.
       window.setTimeout(() => setView("answer"), 0)
       // After the saved demo state has loaded (it loads in the provider's effect, which runs after this one).
-      window.setTimeout(() => setRetro({ order: undefined, theme: undefined, locked: false, deck: false, sentToClaire: false, dashboard: false, saved: [], alts: [] }), 0)
+      window.setTimeout(() => setRetro({ order: undefined, theme: undefined, locked: false, deck: false, sentToClaire: false, dashboard: false, dashboardSeen: false, saved: [], alts: [] }), 0)
       window.history.replaceState(null, "", "/michelle/retro")
       return
     }
@@ -190,7 +190,7 @@ export default function RetroPage() {
       onExpand={() => setExpanded((e) => !e)}
       onLock={() => { setRetro({ locked: !retro.locked }); toast.success(retro.locked ? "Unlocked" : "Storyline locked", { position: "top-right" }) }}
       onDeck={makeDeck}
-      onDashboard={() => { setRetro({ dashboard: true }); toast.success("Published as a live dashboard · Dashboards › Prime Day retro", { position: "top-right" }) }}
+      onDashboard={() => { setRetro({ dashboard: true, dashboardSeen: false }); toast.success("Published as a live dashboard · Dashboards › Prime Day retro", { position: "top-right" }) }}
     />
   ) : (
     <Deck slides={slides} current={current} setCurrent={setCurrent} theme={before ? "default" : theme} branded={theme === "aurelle"} before={before} setBefore={setBefore} onBrand={applyBrand} onExport={exportPptx} onShare={() => setShare(true)} onStoryboard={() => setView("storyboard")} />

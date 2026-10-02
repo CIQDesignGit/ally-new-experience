@@ -36,6 +36,8 @@ export interface RetroState {
   deck?: boolean
   sentToClaire?: boolean
   dashboard?: boolean
+  /** The dashboard has been opened since it was published (the sidebar stops flagging it). */
+  dashboardSeen?: boolean
   /** Lessons kept (each is also a Knowledge entry). */
   saved?: string[]
   /** Slides shown in their other form (deals as a scorecard instead of bars). */
