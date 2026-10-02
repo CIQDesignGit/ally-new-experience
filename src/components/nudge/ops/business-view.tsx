@@ -1,7 +1,7 @@
 "use client"
 
 import { Fragment, useEffect, useRef, useState } from "react"
-import { Check, ChevronRight, Sparkles } from "lucide-react"
+import { Check, ChevronRight } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { PRIMARY } from "../mike/buttons"
 import { candleThumbnail } from "@/lib/candle-thumbnails"
@@ -82,7 +82,7 @@ function useFixes() {
       if (!b) return undefined
       const mine = note.filter((i) => i.batchId === b.id && (!asin || i.asin === asin))
       const sentOn = mine.find((i) => i.sentOn)?.sentOn
-      const status = approved[b.id] || sentOn ? `sent to ${VENDOR_MANAGER.name}, ${sentOn ?? "Oct 8"}` : mine.length ? `in your note to ${VENDOR_MANAGER.name} · not sent` : "ready to review"
+      const status = approved[b.id] || sentOn ? `sent to Amazon VM, ${sentOn ?? "Oct 8"}` : mine.length ? "in your note to Amazon VM · not sent" : "ready to review"
       return { lever: "ops", name: b.fixName ?? b.name, owner: "You", status, tone: approved[b.id] || sentOn ? "done" : mine.length ? "moving" : "todo", acted: approved[b.id] || sentOn ? "Sent to Amazon VM" : undefined, open: () => {
           approve(b.id)
           toast.success(`Sent to your Amazon vendor manager · ${b.fixName ?? b.name}, evidence attached`, { position: "top-right" })
@@ -200,11 +200,10 @@ export function BusinessPane({ root, nodeId, onSelect, onOpenOps }: { root: GapN
   const g = gapOf(n)
   const eow = n.eow.projected - n.eow.plan
   const byValue = [...n.drivers].sort((a, b) => (g < 0 ? a.value - b.value : b.value - a.value))
-  // What to watch is what's still live (or worth watching), the biggest three; what's resolved is last week's story.
+  // What to focus on is what's still live (or worth watching), the biggest three; what's resolved is last week's story, in the analysis.
   const live = byValue.filter((d) => d.tag !== "Resolved").slice(0, 3)
-  const resolved = byValue.filter((d) => d.tag === "Resolved")
   const label = n.id === root.id ? "the overall business" : n.name
-  const analysis: Chip = { q: `Run gap-to-plan analysis for ${label} for last week`, render: () => <GapAnalysis node={n} onInbox={(id) => onOpenOps(id, n.asin)} /> }
+  const analysis: Chip = { q: `Why did ${label === "the overall business" ? "we" : label} miss plan last week?`, render: () => <GapAnalysis node={n} onInbox={(id) => onOpenOps(id, n.asin)} /> }
   useChatSource({ about: n.id === root.id ? undefined : n.name, anchor: n.id, chips: [analysis] }, `business-${n.id}`)
 
   return (
@@ -229,27 +228,22 @@ export function BusinessPane({ root, nodeId, onSelect, onOpenOps }: { root: GapN
         </div>
       </div>
 
-      {/* A brief, not the analysis: where it stands, then what to focus on this week and what's already resolved. The breakdown is one click away. */}
+      {/* Forward-looking by default: where this week lands and what closes the gap. Why last week missed is one click away (the analysis). */}
       <div className="mt-5 overflow-hidden rounded-xl border border-slate-200">
-        <div className="grid grid-cols-2 divide-x divide-slate-100">
-          <div className="px-5 py-4">
-            <div className="text-xs font-medium text-slate-500">Last week vs plan</div>
-            <div className="mt-0.5 flex items-baseline gap-2 tabular-nums">
-              <span className={cn("text-[26px] font-semibold tracking-tight", g < 0 ? "text-error-600" : "text-success-700")}>{m(g, true)}</span>
-              <span className="text-sm text-slate-500">
-                {m(n.lastWeek.sales)} of {m(n.lastWeek.plan)} · {pct(n.lastWeek.sales, n.lastWeek.plan)}
-              </span>
-            </div>
-          </div>
-          <div className="px-5 py-4">
+        {/* Forward first: where this week lands is the lead. Last week is the small link into why. */}
+        <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-2 px-5 py-4">
+          <div>
             <div className="text-xs font-medium text-slate-500">This week, projected</div>
             <div className="mt-0.5 flex items-baseline gap-2 tabular-nums">
               <span className={cn("text-[26px] font-semibold tracking-tight", eow < 0 ? "text-error-600" : "text-success-700")}>{m(eow, true)}</span>
               <span className="text-sm text-slate-500">
-                {pct(n.eow.projected, n.eow.plan)} of plan · {m(n.wtd)} so far
+                {m(n.eow.projected)} of {m(n.eow.plan)} · {pct(n.eow.projected, n.eow.plan)} · {m(n.wtd)} so far
               </span>
             </div>
           </div>
+          <button type="button" onClick={() => ask(analysis, n.id)} className="text-sm text-slate-500 tabular-nums hover:text-brand-700">
+            Last week <span className={cn("font-semibold", g < 0 ? "text-error-600" : "text-success-700")}>{m(g, true)}</span> · {pct(n.lastWeek.sales, n.lastWeek.plan)} · <span className="font-medium text-brand-700">Why did we miss? →</span>
+          </button>
         </div>
 
         {live.length > 0 ? (
@@ -262,7 +256,8 @@ export function BusinessPane({ root, nodeId, onSelect, onOpenOps }: { root: GapN
                   <li key={d.title} className="grid grid-cols-[minmax(0,1fr)_72px_200px] items-center gap-x-4 text-sm">
                     <span className="min-w-0">
                       <span className="block text-slate-950">{d.title}</span>
-                      {f && <span className="mt-0.5 block text-[13px] text-slate-500">{f.name} · {f.owner}, {f.status}</span>}
+                      {/* Once acted on, the done label on the right says it; the line keeps only what and who. */}
+                      {f && <span className="mt-0.5 block text-[13px] text-slate-500">{f.name} · {f.acted ? f.owner : `${f.owner}, ${f.status}`}</span>}
                     </span>
                     <span className="text-right font-semibold text-slate-950 tabular-nums">{m(d.value, true)}</span>
                     {/* Every action is purple (DESIGN.md); peers share one width. */}
@@ -286,19 +281,6 @@ export function BusinessPane({ root, nodeId, onSelect, onOpenOps }: { root: GapN
           <div className="border-t border-slate-100 px-5 py-3 text-sm text-success-700">On track · nothing pulling it below plan</div>
         )}
 
-        {resolved.length > 0 && (
-          <div className="border-t border-slate-100 px-5 py-4">
-            <div className="text-xs font-medium text-slate-500">Resolved from last week</div>
-            <ul className="mt-2 flex flex-col gap-1.5">
-              {resolved.map((d) => (
-                <li key={d.title} className="grid grid-cols-[minmax(0,1fr)_72px] gap-x-4 text-sm text-slate-500">
-                  <span className="min-w-0">{d.title}</span>
-                  <span className="text-right tabular-nums">{m(d.value, true)}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
       </div>
 
       {n.level === "SKU" && (
@@ -307,11 +289,6 @@ export function BusinessPane({ root, nodeId, onSelect, onOpenOps }: { root: GapN
         </div>
       )}
 
-      <div className="mt-5">
-        <button type="button" onClick={() => ask(analysis, n.id)} className="inline-flex items-center gap-1.5 rounded-lg border border-brand-200 bg-white px-4 py-2 text-sm font-medium text-brand-700 transition-colors hover:bg-brand-50">
-          <Sparkles className="size-3.5" /> Run gap-to-plan analysis
-        </button>
-      </div>
       {/* Answers about what's open here appear here. */}
       <ChatThread anchor={n.id} className="mt-4" />
     </div>
