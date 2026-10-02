@@ -1,15 +1,23 @@
 "use client"
 
 import { ClaireRow } from "../claire/claire-row"
+import { rowAction, useClaireActions } from "../claire/claire-actions"
 import { AutopilotDetail } from "./autopilot-detail"
-/** Owner and status · value · Claire's move (a 180px button). */
-const TIER_GRID = "grid grid-cols-[minmax(0,1fr)_100px_190px_0px] items-center gap-4"
+/** Owner and status · value · Claire's move (a 180px button), when any row has one; else the value meets the card's edge. */
+const gridFor = (moves: boolean) => `grid ${moves ? "grid-cols-[minmax(0,1fr)_100px_190px]" : "grid-cols-[minmax(0,1fr)_100px]"} items-center gap-4`
 import { fmtM } from "../data"
 import type { WaterfallStage } from "../data"
 
 /** The drill-down for a selected waterfall stage: its line items, with a nudge on each row whose owner hasn't started. */
 export function StageDetail({ stage }: { stage: WaterfallStage }) {
   if (stage.id === "autopilot") return <AutopilotDetail stage={stage} />
+  return <TierDetail stage={stage} />
+}
+
+function TierDetail({ stage }: { stage: WaterfallStage }) {
+  const { s } = useClaireActions()
+  const moves = stage.rows.some((r) => rowAction(r, s))
+  const TIER_GRID = gridFor(moves)
 
   return (
     <div className="mt-6 overflow-hidden rounded-xl border border-slate-200">
@@ -17,8 +25,7 @@ export function StageDetail({ stage }: { stage: WaterfallStage }) {
       <div className={`${TIER_GRID} border-b border-slate-100 bg-slate-25 px-6 py-4`}>
         <span className="text-lg font-semibold text-slate-950">{stage.label}</span>
         <span className="text-right font-mono text-[15px] font-bold text-slate-950 tabular-nums">{fmtM(stage.value)}</span>
-        <div />
-        <div />
+        {moves && <div />}
       </div>
 
       {stage.rows.length > 0 && (
@@ -30,15 +37,14 @@ export function StageDetail({ stage }: { stage: WaterfallStage }) {
             <span className="hidden lg:block">This week</span>
           </div>
           <span className="text-right">Value</span>
-          <span />
-          <span />
+          {moves && <span />}
         </div>
       )}
       {stage.rows.length > 0 ? (
         <div className="px-6 pb-1.5">
           {stage.rows.map((row, i) => (
             // Each row says where it stands and offers Claire's move: ask by a date, or approve it herself once it's due.
-            <ClaireRow key={i} row={row} grid={TIER_GRID} />
+            <ClaireRow key={i} row={row} grid={TIER_GRID} showAction={moves} />
           ))}
         </div>
       ) : (

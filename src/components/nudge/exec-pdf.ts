@@ -398,7 +398,10 @@ export function execDigest(period: Period, { approved, policy = DEFAULT_POLICY, 
       : []
 
   return {
-    subject: team.length
+    // Monday: this week's work, for Claire to hand out by replying.
+    subject: replies.some((r) => r.kind === "assign")
+      ? `${shortDay(day)}: this week's work for your team · ${approval.value} one approval away`
+      : team.length
       ? `${shortDay(day)}: ${finished} of ${team.length} done${allyShipped ? ` · Ally shipped ${allyShipped.byAlly} on your deadline` : actions.length ? ` · ${actions.length} for you to decide` : ""}`
       : `${quarter}: ${gap > 0 ? `${fmtBiz(gap)} short of plan, ${open.totalLabel} in the pipeline to close it` : `${fmtBiz(-gap)} ahead of plan`}`,
     preheader: deadline ? `${deadline.expiring} expires in ${deadline.days} days` : `${approval.effort} of your team's time unlocks ${approval.value}`,

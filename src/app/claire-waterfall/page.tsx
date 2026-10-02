@@ -127,7 +127,7 @@ function ClaireWaterfall() {
             <HomeChat />
             <ChatThread />
             {/* Demo-only control, kept out of the product chrome. Room below for the floating Ask Ally bar. */}
-            <div className="flex justify-end gap-4 px-12 pt-6 pb-24 opacity-50 hover:opacity-100">
+            <div className="flex justify-end gap-6 px-12 pt-6 pb-24">
               <DemoControls />
               <ResetDemoButton />
             </div>

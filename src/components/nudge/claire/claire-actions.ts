@@ -122,6 +122,22 @@ const seasonalRule = (date: string): ReviewRule => ({
   date,
 })
 
+/** Claire's move on a row, the same on her page and in her email; null when there's nothing for her to do. */
+export type RowAction = "assign" | "ask" | "approve" | "approve-link" | "autopilot" | "autopilot-done" | null
+export function rowAction(row: TierRow, s: WeekState): RowAction {
+  const st = rowStatus(row, s)
+  const key = row.nudgeKey
+  const content = key === "approval-content"
+  const ask = key ? s.asks[key] : undefined
+  const late = st.kind === "due" || st.kind === "overdue"
+  if (content && (st.kind === "shipped" || st.kind === "held") && (!!s.approvedBy[key] || !!s.autoShipped[key]?.length)) return hasSeasonalAutopilot(s.policy) ? "autopilot-done" : "autopilot"
+  if (st.kind === "pre") return "assign"
+  if (late && ask?.by === "ally") return "ask"
+  if (content && late) return "approve"
+  if (content && st.kind === "asked") return "approve-link"
+  return null
+}
+
 /** Content Claire or Ally shipped this week: the next move is putting that kind of work on autopilot. */
 export const autopilotReady = (s: Pick<WeekState, "approvedBy" | "autoShipped" | "policy">) =>
   (!!s.approvedBy["approval-content"] || !!s.autoShipped["approval-content"]?.length) && !hasSeasonalAutopilot(s.policy)
@@ -133,6 +149,15 @@ export function useClaireActions() {
   const s: WeekState = n
 
   const statusOf = (row: TierRow) => rowStatus(row, s)
+
+  /** Monday: Claire assigns this week's work, due Wednesday. Mike hears it in Slack (the only real one). */
+  const assignFor = (row: TierRow, by: "product" | "email") => {
+    if (!row.nudgeKey) return
+    const due = dayLabel(ASSIGN_DUE)
+    askBy(row.nudgeKey, due, ASSIGN_DUE, "ally")
+    if (row.nudgeKey === "approval-content") sendSlack(row, { headline: `Claire assigned you this week's work: ${row.description.replace(/\.$/, "")}. Due ${due}.`, chip: `Due ${due}` })
+    toast.success(`Assigned ${row.analystName} · due ${shortOf(due)}${by === "email" ? " · from your email reply" : ""}`, { position: "top-right" })
+  }
 
   /** Claire sets the next due date. On content it carries "or Ally ships it", and Mike hears it in Slack. */
   const askFor = (row: TierRow, by: "product" | "email") => {
@@ -167,13 +192,13 @@ export function useClaireActions() {
     toast.success(`Seasonal content on autopilot from the next event · core SKUs ship without review${by === "email" ? " · from your email reply" : ""}`, { position: "top-right" })
   }
 
-  return { statusOf, askFor, approveMyself, autopilotSeasonal, seasonalOn, day, s }
+  return { statusOf, assignFor, askFor, approveMyself, autopilotSeasonal, seasonalOn, day, s }
 }
 
 /** One action Claire can take by replying to her email, numbered the same in the email and the demo's reply buttons. */
 export interface ReplyAction {
   n: number
-  kind: "deadline" | "ask" | "approve" | "autopilot"
+  kind: "assign" | "deadline" | "ask" | "approve" | "autopilot"
   row?: TierRow
   label: string
   note: string
@@ -190,6 +215,11 @@ export function replyActions(rows: TierRow[], s: WeekState): ReplyAction[] {
   const ranked = [...rows].sort((a, b) => (a.days ?? Infinity) - (b.days ?? Infinity) || (b.valueM ?? 0) - (a.valueM ?? 0))
   for (const r of ranked) {
     const st = rowStatus(r, s)
+    // Monday: this week's work, waiting for Claire to hand it out.
+    if (st.kind === "pre") {
+      acts.push({ kind: "assign", row: r, label: `Assign to ${r.analystName}, due ${shortDay(ASSIGN_DUE)}`, note: r.description.replace(/\.$/, "") })
+      continue
+    }
     if (st.kind !== "due" && st.kind !== "overdue") continue
     const ask = r.nudgeKey ? s.asks[r.nudgeKey] : undefined
     const due = dueFor(s.day)
