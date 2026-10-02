@@ -45,7 +45,7 @@ export function ClaireRow({ row, grid }: { row: TierRow; grid: string }) {
         </button>
       ) : null
     ) : (
-      <span className="flex flex-col items-end gap-1">
+      <span className="flex w-[180px] flex-col items-center gap-1.5">
         <button type="button" onClick={() => askFor(row, "product")} className={cn(PRIMARY, "w-[180px]")}>
           Ask {row.analystName} by {dueFor(day).short}
         </button>
