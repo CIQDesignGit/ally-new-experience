@@ -15,6 +15,8 @@ import { GAP_STEPS, GAP_TREE, GAP_WEEK, gapNode, pathTo } from "./gap-data"
 import type { Driver, GapAction, GapNode, Recommendation } from "./gap-data"
 import type { GapRecipe } from "../policy"
 import { MemoryRecall } from "../chat/memory"
+import { ActionCard, ActionRow } from "../ui/action"
+import { SECONDARY } from "../mike/buttons"
 import { DidYouKnow } from "../chat/agent-run"
 import { BY, DEFAULT_RECIPE, FILL, FILL_STEP, RecipeFeedback, inMeasure, lbsOf, lessonText, unitsOf, useGapLesson } from "./gap-training"
 
@@ -157,23 +159,25 @@ function Steps({ extra = [], measure = "sales", onDone }: { extra?: string[]; me
 export function ActionButton({ action, onInbox }: { action: GapAction; onInbox: (batchId: string) => void }) {
   const { launch, isLaunched } = useLaunch()
   const play = action.kind === "play" ? playById(action.playId) : undefined
-  const done = play && isLaunched(play)
+  // Done replaces the button in place (DESIGN.md).
+  if (play && isLaunched(play))
+    return (
+      <span className="inline-flex items-center gap-1.5 text-[14px] font-medium text-success-700">
+        <Check className="size-4" /> Launched
+      </span>
+    )
   return (
     <button
       type="button"
-      disabled={done}
       onClick={() => {
         if (action.kind === "inbox") onInbox(action.batchId)
         else if (play) launch([play])
         else toast.success(`${action.label}: Ally will tell you the moment it moves.`, { position: "top-right" })
       }}
-      className={cn(
-        "inline-flex w-fit items-center gap-1.5 rounded-lg px-3.5 py-2 text-sm font-medium transition-colors",
-        done ? "bg-success-50 text-success-700" : "bg-slate-50 text-slate-800 ring-1 ring-slate-200 hover:bg-white hover:ring-brand-300",
-      )}
+      className={SECONDARY}
     >
-      {done ? "✓ Launched" : action.label}
-      {!done && <ArrowRight className="size-3.5" />}
+      {action.label}
+      <ArrowRight className="size-3.5" />
     </button>
   )
 }
@@ -308,20 +312,11 @@ export function GapAnalysis({ node, onInbox, recipe: given, nested }: { node: Ga
         </div>
       </div>
 
-      <div>
-        <div className={SEC}>What Ally recommends</div>
-        <div className="mt-2">
-          {recs.map((r) => (
-            <div key={r.title} className={cn("flex flex-wrap items-center justify-between gap-3 py-2.5", ROW)}>
-              <div className="min-w-0">
-                <div className="text-sm text-slate-950">{r.title}</div>
-                {r.points.length > 0 && <div className="mt-0.5 text-xs text-slate-500">{r.points.join(" · ")}</div>}
-              </div>
-              <ActionButton action={r.action} onInbox={onInbox} />
-            </div>
-          ))}
-        </div>
-      </div>
+      <ActionCard>
+        {recs.map((r) => (
+          <ActionRow key={r.title} title={r.title} detail={r.points.length > 0 ? r.points.join(" · ") : undefined} action={<ActionButton action={r.action} onInbox={onInbox} />} />
+        ))}
+      </ActionCard>
       {!nested && <RecipeFeedback node={node} render={(r) => <GapAnalysis node={node} onInbox={onInbox} recipe={r} nested />} />}
       </div>
       </motion.div>

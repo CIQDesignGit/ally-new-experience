@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { Bell, Check, Sparkles } from "lucide-react"
+import { Bell, Check } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useNudge } from "../nudge-context"
 import { useChat } from "../chat/inline-chat"
 import { PRIMARY, SECONDARY } from "../mike/buttons"
+import { ActionCard, ActionRow } from "../ui/action"
 import { ALERT_RULES, BID_CAPS, BRAND_TERM_SOV, BRAND_TERMS, GIFT_DRILL, GIFT_PRICES, GIFT_TERM_SOV, GIFT_TERMS, IROAS, MICHELLE_LIMIT } from "./data"
 import type { CustomAlert } from "./data"
 import { AlertCard, draftOf, editFromText, isCrossed, modeLabel } from "./alert-card"
@@ -99,56 +100,41 @@ export function GiftSetsAnswer() {
         <div className="text-[13px] text-slate-500">Ruled out: stock (99% in stock), content (no changes), ratings (steady at 4.6).</div>
       </div>
 
-      {/* What to do, one action per kind of move: price, then the search terms. */}
-      <div className="overflow-hidden rounded-xl border border-brand-200 bg-white">
-        <div className="flex items-center gap-2 border-b border-brand-100 bg-brand-25 px-5 py-2.5 text-[13px] font-semibold text-brand-800">
-          <Sparkles className="size-3.5" /> What Ally recommends
-        </div>
-
-        <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
-          <div className="min-w-0">
-            <div className="text-[15px] font-semibold text-slate-950">Match their price</div>
-            <div className="mt-0.5 text-[14px] text-slate-600">15% coupon on our 3 gift sets through Nov 30: $29.74, within $2 of Brightwick</div>
-          </div>
-          {coupon ? (
-            <span className="inline-flex items-center gap-1.5 text-[14px] font-medium text-success-700">
-              <Check className="size-4" /> Approved
-            </span>
-          ) : (
+      {/* What to do, one action per kind of move (DESIGN.md: ActionCard, peers alike). */}
+      <ActionCard>
+        <ActionRow
+          title="Match their price"
+          detail="15% coupon on our 3 gift sets through Nov 30 · $29.74, within $2 of Brightwick"
+          done={coupon && "Approved"}
+          action={
             <button type="button" onClick={() => setCoupon(true)} className={SECONDARY}>
               Approve the coupon
             </button>
-          )}
-        </div>
-
-        <div className="border-t border-slate-100 px-5 py-4">
-          <div className="text-[15px] font-semibold text-slate-950">Win back the search terms</div>
-          <div className="mt-0.5 text-[14px] text-slate-600">
-            {`Raise bids on our ${BRAND_TERMS.length} brand and ${GIFT_TERMS.length} gift terms until we're above 20% share of voice. `}
-            Cap {k$(cap)} a week · about {k$(back(cap))} a week back at ${IROAS.toFixed(2)} IROAS
-          </div>
-          {sent ? (
-            <div className="mt-3 inline-flex items-center gap-1.5 text-[14px] font-medium text-success-700">
-              <Check className="size-4" /> {sent.chip.startsWith("Send") ? "Sent to James" : "Approved"}
-            </div>
-          ) : (
-            <div className="mt-3 flex flex-wrap items-center gap-3">
-              <button type="button" onClick={() => ask(needsJames ? jamesChip(cap) : approveChip(cap))} className={PRIMARY}>
-                {needsJames ? "Send to James to approve" : "Approve for media agent"}
-              </button>
-              <span className="flex items-center gap-1 text-[13px] text-slate-500">
-                Cap
-                {BID_CAPS.map((c) => (
-                  <button key={c} type="button" onClick={() => setCap(c)} aria-pressed={cap === c} className={cn("rounded-md px-2 py-1 font-mono", cap === c ? "bg-slate-100 font-semibold text-slate-950 ring-1 ring-slate-300" : "hover:bg-slate-50")}>
-                    {k$(c)}
-                  </button>
-                ))}
-              </span>
-              {needsJames && <span className="text-[13px] text-slate-500">Above your {k$(MICHELLE_LIMIT)} a week limit</span>}
-            </div>
-          )}
-        </div>
-      </div>
+          }
+        />
+        <ActionRow
+          title="Win back the search terms"
+          detail={`Raise bids on our ${BRAND_TERMS.length} brand and ${GIFT_TERMS.length} gift terms until we're back above 20% share of voice`}
+          setup={
+            <span className="flex flex-wrap items-center gap-1 text-[13px] text-slate-500">
+              Weekly cap
+              {BID_CAPS.map((c) => (
+                <button key={c} type="button" onClick={() => setCap(c)} aria-pressed={cap === c} disabled={!!sent} className={cn("rounded-md px-2 py-1 tabular-nums", cap === c ? "bg-slate-100 font-semibold text-slate-950 ring-1 ring-slate-300" : "hover:bg-slate-50")}>
+                  {k$(c)}
+                </button>
+              ))}
+              <span className="ml-1 tabular-nums">· about {k$(back(cap))} a week back at ${IROAS.toFixed(2)} IROAS</span>
+              {needsJames && <span className="ml-1">· above your {k$(MICHELLE_LIMIT)} limit, goes to James</span>}
+            </span>
+          }
+          done={!!sent && (sent.chip.startsWith("Send") ? "Sent to James" : "Approved")}
+          action={
+            <button type="button" onClick={() => ask(needsJames ? jamesChip(cap) : approveChip(cap))} className={SECONDARY}>
+              {needsJames ? "Send to James" : "Approve the bids"}
+            </button>
+          }
+        />
+      </ActionCard>
     </div>
   )
 }
