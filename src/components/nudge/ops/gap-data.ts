@@ -81,7 +81,7 @@ const amber: GapNode = {
     { title: "Standard delivery 3 days slower than Prime", value: -0.0005, tag: "Worth watching", points: ["4.5 days vs 1.5 days in 8 of 12 ZIPs"] },
   ],
   recommendations: [
-    { title: "Enforce MAP with your vendor manager", points: ["Drafted, with crawl evidence", "Recovers about $4K a week"], action: { kind: "inbox", label: "Send to Dana", batchId: "buybox-review" } },
+    { title: "Enforce MAP with your vendor manager", points: ["Drafted, with crawl evidence", "Recovers about $4K a week"], action: { kind: "inbox", label: "Send to Amazon VM", batchId: "buybox-review" } },
     { title: "Keep the offer from being suppressed again", points: ["Watch availability on every crawl", "Tell Michelle the moment it drops"], action: { kind: "watch", label: "Watch availability" } },
   ],
 }
@@ -100,7 +100,7 @@ const noir: GapNode = {
     { fix: { kind: "ops", id: "buybox-review" }, title: "Lost the buy box on 3 of 12 crawls", value: -0.001, tag: "Live", points: ["WickWorks below MAP in Chicago and Miami"] },
   ],
   recommendations: [
-    { title: "Restore the deal badge", points: ["Drafted to your vendor manager"], action: { kind: "inbox", label: "Send to Dana", batchId: "promo-badge" } },
+    { title: "Restore the deal badge", points: ["Drafted to your vendor manager"], action: { kind: "inbox", label: "Send to Amazon VM", batchId: "promo-badge" } },
   ],
 }
 
@@ -127,7 +127,7 @@ const cedar: GapNode = {
   eow: { projected: 0.04, plan: 0.046 },
   equation: { traffic: -8, conversion: -3, price: 0, sales: -11 },
   drivers: [{ fix: { kind: "ops", id: "buybox-review" }, title: "Lost the buy box to WickWorks", value: -0.0042, tag: "Live", points: ["WickWorks below your MAP floor", "Part of the hero MAP escalation"] }],
-  recommendations: [{ title: "Included in the MAP escalation", points: ["Hero SKU, reviewed one by one"], action: { kind: "inbox", label: "Send to Dana", batchId: "buybox-review" } }],
+  recommendations: [{ title: "Included in the MAP escalation", points: ["Hero SKU, reviewed one by one"], action: { kind: "inbox", label: "Send to Amazon VM", batchId: "buybox-review" } }],
 }
 
 const tinTrio: GapNode = {
@@ -143,7 +143,7 @@ const tinTrio: GapNode = {
     { fix: { kind: "ops", id: "shipping" }, title: "Shipping 3.4 days slower than Prime", value: -0.001, tag: "Worth watching", points: ["Slower in 8 of 12 ZIPs"] },
     { fix: { kind: "ops", id: "buybox" }, title: "Lost the buy box on 9 of 12 crawls", value: -0.0007, tag: "Live", points: ["CandleDepot below MAP"] },
   ],
-  recommendations: [{ title: "Send the core MAP escalation", points: ["Core SKU, sends in bulk"], action: { kind: "inbox", label: "Send to Dana", batchId: "buybox" } }],
+  recommendations: [{ title: "Send the core MAP escalation", points: ["Core SKU, sends in bulk"], action: { kind: "inbox", label: "Send to Amazon VM", batchId: "buybox" } }],
 }
 
 const citrusMini: GapNode = {
@@ -176,7 +176,7 @@ const jar: GapNode = {
     { title: "Offers suppressed on 5 SKUs", value: -0.02, tag: "Resolved", points: ["Reinstated Oct 2"] },
   ],
   recommendations: [
-    { title: "Enforce MAP on the 4 hero SKUs", points: ["Drafted, with crawl evidence"], action: { kind: "inbox", label: "Send to Dana", batchId: "buybox-review" } },
+    { title: "Enforce MAP on the 4 hero SKUs", points: ["Drafted, with crawl evidence"], action: { kind: "inbox", label: "Send to Amazon VM", batchId: "buybox-review" } },
     { title: "Get the Halloween content live", points: ["Nudge Mike: $660K one approval away"], action: { kind: "watch", label: "Tell me when it's live" } },
   ],
   children: [amber, noir, linen],
@@ -225,7 +225,7 @@ const aurelle: GapNode = {
     { fix: { kind: "ops", id: "shipping" }, title: "Travel tins shipping slower than Prime", value: -0.01, tag: "Worth watching", points: ["2.5 days slower in 8 ZIPs"] },
   ],
   recommendations: [
-    { title: "Enforce MAP on 4 hero jar candles", points: ["Biggest single cause"], action: { kind: "inbox", label: "Send to Dana", batchId: "buybox-review" } },
+    { title: "Enforce MAP on 4 hero jar candles", points: ["Biggest single cause"], action: { kind: "inbox", label: "Send to Amazon VM", batchId: "buybox-review" } },
     { title: "Answer Brightwick in gift sets", points: ["Win back sponsored slots"], action: { kind: "play", label: "Approve the bids", playId: "bw-media" } },
   ],
   children: [jar, gift, tins],
@@ -240,7 +240,7 @@ const hearthwood: GapNode = {
   eow: { projected: 0.81, plan: 0.81 },
   equation: { traffic: -2, conversion: 0, price: 0, sales: -2 },
   drivers: [{ fix: { kind: "ops", id: "buybox-review" }, title: "Cedar & Smoke lost the buy box", value: -0.02, tag: "Live", points: ["Part of the MAP escalation"] }],
-  recommendations: [{ title: "Included in the MAP escalation", points: ["Hero SKU, reviewed one by one"], action: { kind: "inbox", label: "Send to Dana", batchId: "buybox-review" } }],
+  recommendations: [{ title: "Included in the MAP escalation", points: ["Hero SKU, reviewed one by one"], action: { kind: "inbox", label: "Send to Amazon VM", batchId: "buybox-review" } }],
   children: [
     {
       id: "hw-jar",
@@ -251,7 +251,7 @@ const hearthwood: GapNode = {
       eow: { projected: 0.81, plan: 0.81 },
       equation: { traffic: -2, conversion: 0, price: 0, sales: -2 },
       drivers: [{ fix: { kind: "ops", id: "buybox-review" }, title: "Cedar & Smoke lost the buy box", value: -0.02, tag: "Live", points: ["Part of the MAP escalation"] }],
-      recommendations: [{ title: "Included in the MAP escalation", points: ["Hero SKU, reviewed one by one"], action: { kind: "inbox", label: "Send to Dana", batchId: "buybox-review" } }],
+      recommendations: [{ title: "Included in the MAP escalation", points: ["Hero SKU, reviewed one by one"], action: { kind: "inbox", label: "Send to Amazon VM", batchId: "buybox-review" } }],
       children: [cedar],
       more: 23,
     },
@@ -301,7 +301,7 @@ export const GAP_TREE: GapNode = {
     { fix: { kind: "ops", id: "shipping" }, title: "Travel tins shipping slower than Prime", value: -0.01, tag: "Worth watching", points: ["2.5 days slower in 8 ZIPs"] },
   ],
   recommendations: [
-    { title: "Enforce MAP on 4 hero SKUs", points: ["Biggest cause: about $100K of last week's gap"], action: { kind: "inbox", label: "Send to Dana", batchId: "buybox-review" } },
+    { title: "Enforce MAP on 4 hero SKUs", points: ["Biggest cause: about $100K of last week's gap"], action: { kind: "inbox", label: "Send to Amazon VM", batchId: "buybox-review" } },
     { title: "Answer Brightwick in gift sets", points: ["Ally for Media"], action: { kind: "play", label: "Approve the bids", playId: "bw-media" } },
   ],
   children: [aurelle, hearthwood, bright],

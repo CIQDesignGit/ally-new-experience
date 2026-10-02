@@ -83,10 +83,10 @@ function useFixes() {
       const mine = note.filter((i) => i.batchId === b.id && (!asin || i.asin === asin))
       const sentOn = mine.find((i) => i.sentOn)?.sentOn
       const status = approved[b.id] || sentOn ? `sent to ${VENDOR_MANAGER.name}, ${sentOn ?? "Oct 8"}` : mine.length ? `in your note to ${VENDOR_MANAGER.name} · not sent` : "ready to review"
-      return { lever: "ops", name: b.fixName ?? b.name, owner: "You", status, tone: approved[b.id] || sentOn ? "done" : mine.length ? "moving" : "todo", acted: approved[b.id] || sentOn ? `Sent to ${VENDOR_MANAGER.name}` : undefined, open: () => {
+      return { lever: "ops", name: b.fixName ?? b.name, owner: "You", status, tone: approved[b.id] || sentOn ? "done" : mine.length ? "moving" : "todo", acted: approved[b.id] || sentOn ? "Sent to Amazon VM" : undefined, open: () => {
           approve(b.id)
-          toast.success(`Sent to ${VENDOR_MANAGER.name} · ${b.fixName ?? b.name}, evidence attached`, { position: "top-right" })
-        }, openLabel: `Send to ${VENDOR_MANAGER.name}` }
+          toast.success(`Sent to your Amazon vendor manager · ${b.fixName ?? b.name}, evidence attached`, { position: "top-right" })
+        }, openLabel: "Send to Amazon VM" }
     }
     if (fix.kind === "content") {
       const b = content.find((x) => x.id === fix.id)
