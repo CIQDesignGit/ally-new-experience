@@ -1,6 +1,7 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
+import { motion } from "framer-motion"
 import { Check, Mail, Paperclip } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
@@ -73,7 +74,7 @@ function draft(groups: { batch: OpsBatch; items: { asin: string }[] }[], perDay:
 /** `onSent`: what went, so the page celebrates it like any other action. */
 export function NoteBar({ onSent }: { onSent?: (sent: { value: number; label: string }) => void }) {
   const { sendNote } = useNudge()
-  const { groups, perDay, skus, countOf, started } = useNote()
+  const { groups, perDay, skus, countOf } = useNote()
   const [open, setOpen] = useState(false)
   const [snoozedAt, setSnoozedAt] = useState(0)
   const [body, setBody] = useState<string | null>(null)
@@ -102,8 +103,17 @@ export function NoteBar({ onSent }: { onSent?: (sent: { value: number; label: st
     setBody(null)
   }
 
+  // The first add explains the note once, at the moment it starts; later adds just confirm.
+  const hadNote = useRef(skus > 0)
+  useEffect(() => {
+    if (skus > 0 && !hadNote.current) toast.success(`Added ${skus} ${skus === 1 ? "SKU" : "SKUs"} to your note to ${VENDOR_MANAGER.name}`, { description: "Everything you add goes out as one email when you send.", position: "top-right" })
+    hadNote.current = skus > 0
+  }, [skus])
+
+  // Nothing in the note, nothing to show: the bar appears with the first add.
+  if (!skus && !open) return null
   return (
-    <div data-sticky-top className="sticky top-0 z-30 border-y border-slate-200 bg-white/95 backdrop-blur">
+    <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} data-sticky-top className="sticky top-0 z-30 border-y border-slate-200 bg-white/95 backdrop-blur">
       <div className={cn("flex flex-wrap items-center gap-x-4 gap-y-2 px-10 py-3", nudge && !open && "bg-warning-50")}>
         <Mail className={cn("size-4 shrink-0", skus ? "text-brand-600" : "text-slate-400")} />
         {skus ? (
@@ -111,7 +121,7 @@ export function NoteBar({ onSent }: { onSent?: (sent: { value: number; label: st
             <span className="font-semibold text-slate-950">Note to {VENDOR_MANAGER.name}, {VENDOR_MANAGER.role}</span>
             <span className="text-slate-500">
               {" "}
-              · {skus} {skus === 1 ? "SKU" : "SKUs"} across {groups.length} {groups.length === 1 ? "issue" : "issues"} · started {started}
+              · {skus} {skus === 1 ? "SKU" : "SKUs"} across {groups.length} {groups.length === 1 ? "issue" : "issues"}
             </span>
             {nudge && !open ? (
               <span className="ml-2 font-medium text-warning-700">Losing {fmtValue(perDay)} a day while these wait.</span>
@@ -184,6 +194,6 @@ export function NoteBar({ onSent }: { onSent?: (sent: { value: number; label: st
           </div>
         </div>
       )}
-    </div>
+    </motion.div>
   )
 }

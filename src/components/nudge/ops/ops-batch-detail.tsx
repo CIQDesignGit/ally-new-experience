@@ -58,12 +58,13 @@ export function OpsBatchDetail({ batch, onAction, onReviewAll }: OpsBatchDetailP
   }, [batch.id])
   const each = batch.mode === "each"
   const { addToNote } = useNudge()
-  const { sent, notedIn } = useNote()
+  const { sent, notedIn, skus: inNoteNow } = useNote()
   const noted = notedIn(batch.id, batch.skus)
   const sentAll = skus.length > 0 && skus.every((x) => sent(batch.id, x.asin))
   const addAll = () => {
     addToNote(batch.id, skus.map((x) => x.asin), true)
-    toast.success(`Added ${batch.skus} SKUs to your note to ${VENDOR_MANAGER.name}`, { position: "top-right" })
+    // The first add is confirmed by the note bar as it appears (with how the note works).
+    if (inNoteNow > 0) toast.success(`Added ${batch.skus} SKUs to your note to ${VENDOR_MANAGER.name}`, { position: "top-right" })
   }
   // Buy box issues get the picture: the lead SKU's offers and crawls.
   const lead = batch.sellerSkus?.find((x) => x.asin === batch.exampleSku) ?? batch.sellerSkus?.[0]
@@ -94,7 +95,7 @@ export function OpsBatchDetail({ batch, onAction, onReviewAll }: OpsBatchDetailP
         <div className="shrink-0 text-right">
           <div className={`font-mono text-[28px] font-bold tracking-tight tabular-nums ${done ? "text-success-700" : "text-slate-950"}`}>+{batch.value}</div>
           {(batch.tier === "autopilot" || done) && <div className="mt-0.5 text-sm text-slate-500">{batch.tier === "autopilot" ? "leakage prevented this quarter" : "sent"}</div>}
-          {batch.urgent && !done && <div className="mt-0.5 font-mono text-sm font-semibold text-error-600">−{daily} a day</div>}
+          {batch.urgent && !done && <div className="mt-0.5 text-sm font-semibold text-error-600 tabular-nums">−{daily} a day</div>}
         </div>
       </div>
 

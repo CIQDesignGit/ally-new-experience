@@ -30,12 +30,12 @@ const dueOf = (b: OpsBatch) => b.chip?.match(/[A-Z][a-z]{2} \d{1,2}$/)?.[0]
 const dueRank = (d?: string) => (d ? MONTHS.indexOf(d.slice(0, 3)) * 100 + parseInt(d.slice(4)) : Infinity)
 const perDayOf = (b: OpsBatch) => (b.urgent ? (b.perDay ?? b.approveValue / OPS_DAYS_SAVED) : 0)
 
-/** The same labels and colors as the waterfall's bars, so a bar and its filter read as one control. */
+/** The waterfall's labels and colors, in the order of the work: what needs her first, autopilot last. */
 const FILTERS: { id: InboxFilter; label: string }[] = [
   { id: "all", label: "All" },
-  { id: "autopilot", label: "Autopilot" },
   { id: "approval", label: "1 approval" },
   { id: "input", label: "Your input" },
+  { id: "autopilot", label: "Autopilot" },
 ]
 const DOT = Object.fromEntries(GROUPS.map((g) => [g.tier, g.dot])) as Record<OpsBatch["tier"], string>
 
@@ -88,21 +88,21 @@ export function OpsBatchList({ selectedId, selectedSku, expandedId, checked, fil
           const noted = notedIn(b.id, b.skus)
           const perDay = perDayOf(b)
           const due = dueOf(b)
-          // One status per row, the most useful: what happened, else what it costs, else when it's due.
+          // Under the value, the one thing that matters most: what happened, else what it costs, else when it's due.
           const status =
             b.tier === "autopilot" ? (
-              <span className="text-info-700">Running</span>
+              <span className="text-slate-500">Running</span>
             ) : done ? (
               <span className="inline-flex items-center gap-1 text-success-700">
-                <Check className="size-3.5" />
+                <Check className="size-3" />
                 Sent
               </span>
             ) : noted > 0 ? (
               <span className="text-brand-700">In note</span>
             ) : perDay > 0 ? (
-              <span className="font-mono text-error-600">−{fmtValue(perDay)} a day</span>
+              <span className="text-error-600">−{fmtValue(perDay)} a day</span>
             ) : due ? (
-              <span className="text-warning-700">{b.chip}</span>
+              <span className="text-warning-700">{due}</span>
             ) : null
           const skus = opsSkus(b)
           const count = b.tier === "input" ? b.inputCount : b.skus
@@ -115,13 +115,18 @@ export function OpsBatchList({ selectedId, selectedSku, expandedId, checked, fil
                 tabIndex={0}
                 onClick={() => onSelect(b.id)}
                 onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), onSelect(b.id))}
-                className="grid w-full cursor-pointer grid-cols-[8px_minmax(0,1fr)_58px] items-baseline gap-x-2.5 px-4 py-2.5 text-left outline-none hover:bg-slate-50 focus-visible:bg-slate-50"
+                className="grid w-full cursor-pointer focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-300 grid-cols-[8px_minmax(0,1fr)_auto] items-baseline gap-x-3 px-4 py-2.5 text-left outline-none hover:bg-slate-50 focus-visible:bg-slate-50"
               >
                 <span className={cn("size-2 -translate-y-px rounded-full", DOT[b.tier])} aria-label={GROUPS.find((g) => g.tier === b.tier)?.label} />
                 <span className="min-w-0">
                   <span className={cn("block text-[14px] leading-snug", b.tier === "autopilot" ? "text-slate-500" : "font-medium text-slate-950")}>{b.name}</span>
-                  {/* Count (opens the SKUs), the part, then the urgency or status when there is one. */}
-                  <span className="mt-0.5 flex flex-wrap items-center gap-x-1.5 text-xs font-medium text-slate-500">
+                  <span className="mt-0.5 flex items-center gap-1.5 text-xs text-slate-500">
+                    {b.partLabel && (
+                      <>
+                        {b.partLabel}
+                        <span className="text-slate-300">·</span>
+                      </>
+                    )}
                     {skus.length > 0 ? (
                       <button
                         type="button"
@@ -130,7 +135,7 @@ export function OpsBatchList({ selectedId, selectedSku, expandedId, checked, fil
                           onToggleExpand(b.id)
                         }}
                         aria-expanded={expandedId === b.id}
-                        className="inline-flex items-center gap-0.5 text-slate-700 hover:text-brand-700"
+                        className="inline-flex items-center gap-0.5 rounded outline-none hover:text-brand-700 focus-visible:ring-2 focus-visible:ring-brand-300"
                       >
                         {count} {noun}
                         <ChevronDown className={cn("size-3.5 transition-transform", expandedId === b.id && "rotate-180")} />
@@ -140,21 +145,13 @@ export function OpsBatchList({ selectedId, selectedSku, expandedId, checked, fil
                         {count} {noun}
                       </span>
                     )}
-                    {b.partLabel && (
-                      <>
-                        <span className="text-slate-300">·</span>
-                        {b.partLabel}
-                      </>
-                    )}
-                    {status && (
-                      <>
-                        <span className="text-slate-300">·</span>
-                        {status}
-                      </>
-                    )}
                   </span>
                 </span>
-                <span className={cn("text-right font-mono text-[14px] font-semibold tabular-nums", done ? "text-success-700" : b.tier === "autopilot" ? "text-slate-500" : "text-slate-950")}>{b.value}</span>
+                {/* The money column: value, and under it the status or urgency. */}
+                <span className="text-right">
+                  <span className={cn("block font-mono text-[14px] font-semibold tabular-nums", done ? "text-success-700" : b.tier === "autopilot" ? "text-slate-500" : "text-slate-950")}>{b.value}</span>
+                  {status && <span className="mt-0.5 block text-xs font-medium whitespace-nowrap tabular-nums">{status}</span>}
+                </span>
               </div>
               {expandedId === b.id && skus.length > 0 && (
                 <div className="flex flex-col gap-0.5 px-3 pb-2">

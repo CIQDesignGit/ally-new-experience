@@ -89,7 +89,8 @@ export interface NoteItem {
 }
 
 /** The demo's note starts with yesterday's work, so it's clearly built up over time. */
-const SEED_NOTE: NoteItem[] = ["B07GR5MSKD", "B09HWCD118", "B0ATT30313"].map((asin) => ({ batchId: "deal-page", asin, addedOn: "Oct 7" }))
+/** The note starts empty: its bar appears with the first SKU Michelle adds. */
+const SEED_NOTE: NoteItem[] = []
 
 export type BusinessSort = "gap" | "sales"
 export type BusinessGroup = "Category" | "Brand"
