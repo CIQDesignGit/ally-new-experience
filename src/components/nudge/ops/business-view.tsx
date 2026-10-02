@@ -135,10 +135,6 @@ export function BusinessRail({ root, selected, onSelect }: { root: GapNode; sele
 /* ------------------------------------------------------------------------- */
 
 
-/** A % change colored by direction (DESIGN.md): up green, down red, flat neutral. */
-function Pct({ v }: { v: number }) {
-  return <span className={cn("font-semibold", v < 0 ? "text-error-600" : v > 0 ? "text-success-700" : "text-slate-950")}>{v > 0 ? "+" : v < 0 ? "−" : ""}{v === 0 ? "flat" : `${Math.abs(v)}%`}</span>
-}
 
 export function BusinessPane({ root, nodeId, onSelect, onOpenOps }: { root: GapNode; nodeId: string; onSelect: (id: string) => void; onOpenOps: (batchId: string, asin?: string) => void }) {
   const { ask } = useChat()
@@ -190,7 +186,12 @@ export function BusinessPane({ root, nodeId, onSelect, onOpenOps }: { root: GapN
           </div>
           <div className="mt-2 text-sm text-slate-600 tabular-nums">
             {/* Pacing: so far against the plan for the days gone. */}
-            So far <span className="font-semibold text-slate-950">{m(n.wtd)}</span> · <span className={cn("font-semibold", n.wtd < toDate ? "text-error-600" : "text-success-700")}>{m(n.wtd - toDate, true)}</span> vs plan to date ({pct(n.wtd, toDate)})
+            <span className="block">
+              So far <span className="font-semibold text-slate-950">{m(n.wtd)}</span> · {Math.round(GAP_WEEK.elapsed * 100)}% of the week gone
+            </span>
+            <span className="mt-0.5 block">
+              <span className={cn("font-semibold", n.wtd < toDate ? "text-error-600" : "text-success-700")}>{m(n.wtd - toDate, true)}</span> vs plan to date · {pct(n.wtd, toDate)}
+            </span>
           </div>
           <div className="mt-auto pt-4">
             <button type="button" onClick={() => ask(forward, n.id)} className={cn(PRIMARY, "w-[200px]")}>
@@ -206,9 +207,6 @@ export function BusinessPane({ root, nodeId, onSelect, onOpenOps }: { root: GapN
             <span className="text-sm text-slate-500">
               {m(n.lastWeek.sales)} of {m(n.lastWeek.plan)} · {pct(n.lastWeek.sales, n.lastWeek.plan)}
             </span>
-          </div>
-          <div className="mt-2 text-sm text-slate-600 tabular-nums">
-            Sales <Pct v={n.equation.sales} /> vs the week before: traffic <Pct v={n.equation.traffic} />, conversion <Pct v={n.equation.conversion} />, price <Pct v={n.equation.price} />
           </div>
           <div className="mt-auto pt-4">
             <button type="button" onClick={() => ask(backward, n.id)} className={cn(PRIMARY, "w-[200px]")}>

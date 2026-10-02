@@ -381,7 +381,7 @@ export function ForwardAnalysis({ node, onInbox }: { node: GapNode; onInbox?: (b
             <div className="grid grid-cols-3 divide-x divide-slate-100 rounded-xl border border-slate-200 text-sm tabular-nums">
               {[
                 { k: "Last week", v: m(lw, true), sub: `${pct(node.lastWeek.sales, node.lastWeek.plan)} of plan`, bad: lw < 0 },
-                { k: "So far this week", v: m(node.wtd), sub: `${m(node.wtd - toDate, true)} vs plan to date (${pct(node.wtd, toDate)})` },
+                { k: "So far this week", v: m(node.wtd), sub: `${Math.round(GAP_WEEK.elapsed * 100)}% of the week gone · ${m(node.wtd - toDate, true)} vs plan to date` },
                 { k: "Projected", v: m(gap, true), sub: `${pct(node.eow.projected, node.eow.plan)} of plan`, bad: gap < 0 },
               ].map((c) => (
                 <div key={c.k} className="px-4 py-3">
