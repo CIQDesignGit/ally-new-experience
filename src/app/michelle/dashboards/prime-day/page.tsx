@@ -10,7 +10,7 @@ import { AppDrawer } from "@/components/nudge/app-drawer"
 import { useNudge } from "@/components/nudge/nudge-context"
 import { SECONDARY } from "@/components/nudge/mike/buttons"
 import { ChartView } from "@/components/nudge/retro/slide"
-import { CATEGORY_SPLIT, DEAL_SPLIT, DEALS_TABLE, RETRO, SLIDES } from "@/components/nudge/retro/prime-day"
+import { CATEGORY_SPLIT, DEAL_SPLIT, RETRO, SLIDES, retroSlides } from "@/components/nudge/retro/prime-day"
 
 /**
  * The retro as a live dashboard: the deck's charts as tiles, refreshed daily,
@@ -38,7 +38,6 @@ export default function PrimeDayDashboard() {
   const [category, setCategory] = useState<string>()
   const [agent, setAgent] = useState<(typeof AGENTS)[number]>()
   const [deal, setDeal] = useState<string>()
-  const alts = retro.alts ?? []
 
   // Opening it is what clears the sidebar's "new" dot (after the store has loaded).
   useEffect(() => {
@@ -46,11 +45,9 @@ export default function PrimeDayDashboard() {
     return () => window.clearTimeout(t)
   }, [setRetro])
 
+  // The deck's slides as Michelle shaped them; the summary is the KPI row, not a tile.
   const order = retro.order?.length ? retro.order : SLIDES.map((s) => s.id)
-  const tiles = order
-    .map((id) => SLIDES.find((s) => s.id === id))
-    .filter((s): s is (typeof SLIDES)[number] => !!s)
-    .map((s) => (s.id === "deals" && alts.includes("deals") ? { ...s, chart: DEALS_TABLE } : s))
+  const tiles = retroSlides(order.filter((id) => id !== "summary"), retro)
   const focus = (id: string) => (id === "ally" ? agent : id === "deals" ? deal : category)
   // The top numbers recalculate for the filters; the charts below put the pick forward.
   const cat = category ? CATEGORY_SPLIT[category] : undefined

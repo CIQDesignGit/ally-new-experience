@@ -14,8 +14,10 @@ import { useNudge } from "@/components/nudge/nudge-context"
 import { AS_OF } from "@/components/nudge/data"
 import { PRIMARY, SECONDARY } from "@/components/nudge/mike/buttons"
 import { Slide } from "@/components/nudge/retro/slide"
-import { ALL_SLIDES, BRAND_FILE, DEALS_TABLE, LESSONS, RETRO, SLIDES, THEMES } from "@/components/nudge/retro/prime-day"
-import { RETRO_QUESTION, StorylineAnswer } from "@/components/nudge/retro/storyline-answer"
+import { ADS_SLIDE, ALL_SLIDES, BRAND_FILE, LESSONS, RETRO, SLIDES, THEMES, retroSlides } from "@/components/nudge/retro/prime-day"
+import type { RetroSlide } from "@/components/nudge/retro/prime-day"
+import { RETRO_QUESTION } from "@/components/nudge/retro/storyline-answer"
+import { StorylineStep } from "@/components/nudge/retro/storyline-step"
 import { exportRetroPptx } from "@/components/nudge/retro/export-pptx"
 import { lato, playfair } from "@/components/nudge/retro/fonts"
 
@@ -33,15 +35,16 @@ type Msg = { id: number; from: "you" | "ally"; text?: string; file?: boolean; le
 export default function RetroPage() {
   const { retro, setRetro, knowledge, saveKnowledge } = useNudge()
   const router = useRouter()
-  // A saved order is kept only if every id is a slide we know (the summary may have been added).
+  // A saved order is kept only if every id is a slide we know (questions can be dropped or added).
   const known = new Set(ALL_SLIDES.map((s) => s.id))
-  const order = retro.order && retro.order.length >= SLIDES.length && retro.order.every((id) => known.has(id)) ? retro.order : DEFAULT_ORDER
+  const order = retro.order?.length && retro.order.every((id) => known.has(id)) ? retro.order : DEFAULT_ORDER
   const alts = retro.alts ?? []
   // What just changed in the storyboard, labelled under its card.
   const [changed, setChanged] = useState<Record<string, string>>({})
   const theme = retro.theme ?? "default"
   const [view, setView] = useState<"answer" | "storyboard" | "deck">("storyboard")
-  const [tab, setTab] = useState<"outline" | "questions" | "storyboard">("storyboard")
+  // A new request starts on the storyline: the questions first, then Ally's answers.
+  const [step, setStep] = useState<"questions" | "answers">("questions")
   const [expanded, setExpanded] = useState(false)
   const [current, setCurrent] = useState(0)
   const [before, setBefore] = useState(false)
@@ -64,7 +67,7 @@ export default function RetroPage() {
       // A new task opens as a conversation: the ask and Ally's storyline, nothing else.
       window.setTimeout(() => setView("answer"), 0)
       // After the saved demo state has loaded (it loads in the provider's effect, which runs after this one).
-      window.setTimeout(() => setRetro({ order: undefined, theme: undefined, locked: false, deck: false, sentToClaire: false, dashboard: false, dashboardSeen: false, saved: [], alts: [] }), 0)
+      window.setTimeout(() => setRetro({ order: undefined, theme: undefined, locked: false, deck: false, sentToClaire: false, dashboard: false, dashboardSeen: false, saved: [], alts: [], questions: {}, answers: {} }), 0)
       window.history.replaceState(null, "", "/michelle/retro")
       return
     }
@@ -79,7 +82,23 @@ export default function RetroPage() {
   }, [retro.deck, setRetro])
 
   const say = (...m: Omit<Msg, "id">[]) => setMsgs((prev) => [...prev, ...m.map((x) => ({ ...x, id: next.current++ }))])
-  const slides = order.map((id) => ALL_SLIDES.find((s) => s.id === id)!).map((s) => (s.id === "deals" && alts.includes("deals") ? { ...s, chart: DEALS_TABLE } : s))
+  const slides = retroSlides(order, retro)
+
+  // The storyline: edits to the questions and answers before any slide exists.
+  function addQuestion(text: string) {
+    if (!/\b(ad|ads|advertising|media|sponsored|roas|iroas|spend)\b/i.test(text)) return false
+    if (!order.includes("ads")) setRetro({ order: [...order, "ads"] })
+    // Her wording is kept; Ally's answer is the ads slide.
+    if (text.replace(/[?\s]+$/, "").toLowerCase() !== ADS_SLIDE.question.replace(/\?$/, "").toLowerCase()) setRetro({ questions: { ...(retro.questions ?? {}), ads: text } })
+    return true
+  }
+  function openStoryboard() {
+    setMsgs([
+      { id: 1, from: "you", text: RETRO_QUESTION },
+      { id: 2, from: "ally", text: `Here's the storyline. The storyboard is open on the right: ${slides.length} slides, one per beat. Drag to reorder, or tell me what to change.` },
+    ])
+    setView("storyboard")
+  }
 
   function addSummary(text: string) {
     if (order.includes("summary")) return say({ from: "you", text }, { from: "ally", text: "Slide 1 is already the executive summary." })
@@ -133,7 +152,7 @@ export default function RetroPage() {
 
   async function exportPptx() {
     try {
-      await exportRetroPptx(order, theme, alts)
+      await exportRetroPptx(slides, theme)
       toast.success(`Exported ${theme === "aurelle" ? "Prime-Day-retro (Aurelle).pptx" : "Prime-Day-retro.pptx"} · ${slides.length} editable slides`, { position: "top-right" })
     } catch {
       toast.error("Couldn't build the PowerPoint. Try again.", { position: "top-right" })
@@ -150,7 +169,7 @@ export default function RetroPage() {
   // Suggestions follow the stage; typed text lands on the closest one.
   const chips: { q: string; run: () => void }[] =
     view === "answer"
-      ? [{ q: "Open the storyboard", run: () => setView("storyboard") }]
+      ? []
       : view === "storyboard"
       ? [
           { q: "Put deals right after the market slide", run: () => { move(order.indexOf("deals"), order.indexOf("market") + 1); say({ from: "you", text: "Put deals right after the market slide" }, { from: "ally", text: `Done. Deals is slide ${order.indexOf("market") + 2}.` }) } },
@@ -166,6 +185,12 @@ export default function RetroPage() {
           ]
 
   function ask(text: string) {
+    if (view === "answer") {
+      const t = text.toLowerCase()
+      if (step === "questions" && addQuestion(text)) return
+      if (step === "questions" && /\banswer\b/.test(t)) return setStep("answers")
+      if (step === "answers" && /\bstoryboard\b/.test(t)) return openStoryboard()
+    }
     // Edits with no chip: typed in any wording, they land on what they mean.
     if (view === "storyboard") {
       const t = text.toLowerCase()
@@ -181,8 +206,6 @@ export default function RetroPage() {
   const objectPane = view === "storyboard" ? (
     <Storyboard
       expanded={expanded}
-      tab={tab}
-      setTab={setTab}
       locked={!!retro.locked}
       slides={slides}
       changed={changed}
@@ -208,7 +231,18 @@ export default function RetroPage() {
               </div>
               <div className="flex gap-3">
                 <AllyMark />
-                <StorylineAnswer onOpen={() => setView("storyboard")} />
+                <StorylineStep
+                  step={step}
+                  slides={slides}
+                  onRename={(id, t) => setRetro({ questions: { ...(retro.questions ?? {}), [id]: t } })}
+                  onReword={(id, t) => setRetro({ answers: { ...(retro.answers ?? {}), [id]: t } })}
+                  onRemove={(id) => setRetro({ order: order.filter((x) => x !== id) })}
+                  onMove={move}
+                  onAdd={addQuestion}
+                  onAnswer={() => setStep("answers")}
+                  onBack={() => setStep("questions")}
+                  onStoryboard={openStoryboard}
+                />
               </div>
               <div className="sticky bottom-0 mt-auto">
                 <div className="relative">
@@ -419,10 +453,8 @@ function Composer({ onAsk, placeholder, className }: { onAsk: (t: string) => voi
 
 function Storyboard(p: {
   expanded: boolean
-  tab: "outline" | "questions" | "storyboard"
-  setTab: (t: "outline" | "questions" | "storyboard") => void
   locked: boolean
-  slides: typeof SLIDES
+  slides: RetroSlide[]
   changed: Record<string, string>
   onMove: (from: number, to: number) => void
   onExpand: () => void
@@ -441,13 +473,6 @@ function Storyboard(p: {
             Storyboard · {p.locked ? "locked" : "draft"} · for {RETRO.forWhom} · {p.slides.length} slides{p.locked ? "" : " · drag to reorder"}
           </div>
         </div>
-        <div role="tablist" className="flex rounded-lg border border-slate-200 bg-slate-25 p-0.5">
-          {(["outline", "questions", "storyboard"] as const).map((t) => (
-            <button key={t} role="tab" aria-selected={p.tab === t} type="button" onClick={() => p.setTab(t)} className={cn("h-8 rounded-md px-3 text-[13px] capitalize", p.tab === t ? "bg-white font-semibold text-slate-950 shadow-xs ring-1 ring-slate-200" : "text-slate-500 hover:text-slate-800")}>
-              {t}
-            </button>
-          ))}
-        </div>
         <button type="button" onClick={p.onExpand} className={cn(SECONDARY, SMALL)}>
           {p.expanded ? <Minimize2 className="size-4" /> : <Maximize2 className="size-4" />}
           {p.expanded ? "Collapse" : "Expand"}
@@ -464,7 +489,7 @@ function Storyboard(p: {
         </button>
       </div>
 
-      {p.tab === "storyboard" ? (
+      {
         <div className={cn("grid grid-cols-3 content-start", p.expanded ? "gap-x-6 gap-y-7 px-8 pt-6 pb-40" : "gap-x-4 gap-y-5 px-7 py-5")}>
           {p.slides.map((s, i) => (
             <div
@@ -495,25 +520,13 @@ function Storyboard(p: {
             </div>
           ))}
         </div>
-      ) : (
-        <ol className="flex flex-col px-7 py-5">
-          {p.slides.map((s, i) => (
-            <li key={s.id} className="grid grid-cols-[28px_minmax(0,1fr)] gap-3 border-b border-slate-100 py-3.5">
-              <span className="font-mono text-[13px] text-slate-400">{i + 1}</span>
-              <span>
-                <span className="block text-[15px] font-semibold text-slate-950">{p.tab === "outline" ? s.title : s.question}</span>
-                <span className="mt-0.5 block text-[13px] text-slate-500">{p.tab === "outline" ? s.eyebrow : s.title}</span>
-              </span>
-            </li>
-          ))}
-        </ol>
-      )}
+      }
     </div>
   )
 }
 
 function Deck(p: {
-  slides: typeof SLIDES
+  slides: RetroSlide[]
   current: number
   setCurrent: (i: number) => void
   theme: "default" | "aurelle"

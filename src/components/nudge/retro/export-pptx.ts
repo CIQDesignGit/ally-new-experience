@@ -1,6 +1,6 @@
 "use client"
 
-import { ALL_SLIDES, DEALS_TABLE, THEMES } from "./prime-day"
+import { THEMES } from "./prime-day"
 import type { Bar, RetroSlide, ThemeId } from "./prime-day"
 
 /** Font names PowerPoint knows (the page uses CSS variables for the same faces). */
@@ -15,13 +15,12 @@ const hex = (c: string) => c.replace("#", "").toUpperCase()
  * The deck as a real .pptx: every slide in the chosen look, with native,
  * editable charts (not pictures), in the order the storyboard set.
  */
-export async function exportRetroPptx(order: string[], theme: ThemeId, alts: string[] = []) {
+export async function exportRetroPptx(slides: RetroSlide[], theme: ThemeId) {
   const { default: PptxGenJS } = await import("pptxgenjs")
   const pptx = new PptxGenJS()
   pptx.layout = "LAYOUT_WIDE" // 13.33 × 7.5 in
   const t = THEMES[theme]
   const f = FONTS[theme]
-  const slides = order.map((id) => ALL_SLIDES.find((s) => s.id === id)!).filter(Boolean).map((s) => (alts.includes(s.id) && s.id === "deals" ? { ...s, chart: DEALS_TABLE } : s))
 
   slides.forEach((s, i) => {
     const slide = pptx.addSlide()

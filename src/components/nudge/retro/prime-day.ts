@@ -55,7 +55,7 @@ export const LESSONS = [
 export const SLIDES: RetroSlide[] = [
   {
     id: "market",
-    question: "Did we grow faster than the market?",
+    question: "How did we compare against the market?",
     eyebrow: "Prime Day 2026 · Market",
     title: "We grew 28%, 2 points faster than the market",
     chart: { kind: "columns", bars: [{ label: "Market", value: 26, display: "+26%", tone: "muted" }, { label: "Aurelle", value: 28, display: "+28%", tone: "accent" }] },
@@ -67,7 +67,7 @@ export const SLIDES: RetroSlide[] = [
   },
   {
     id: "categories-up",
-    question: "Which categories drove the gain?",
+    question: "Which categories led?",
     eyebrow: "Prime Day 2026 · Categories",
     title: "Jar candles and clean-burn soy carried the event",
     chart: {
@@ -87,7 +87,7 @@ export const SLIDES: RetroSlide[] = [
   },
   {
     id: "categories-down",
-    question: "Which categories lagged, and why?",
+    question: "Which categories trailed, and why?",
     eyebrow: "Prime Day 2026 · Categories",
     title: "Gift sets and travel tins lagged the market",
     chart: {
@@ -107,7 +107,7 @@ export const SLIDES: RetroSlide[] = [
   },
   {
     id: "deals",
-    question: "Which deals paid off, and which didn't?",
+    question: "How did each deal perform?",
     eyebrow: "Prime Day 2026 · Deals",
     title: "Lightning deals worked; the blanket coupon didn't",
     chart: {
@@ -146,7 +146,7 @@ export const SLIDES: RetroSlide[] = [
   },
   {
     id: "lessons",
-    question: "What should we do differently next time?",
+    question: "What do we carry into Black Friday?",
     eyebrow: "Prime Day 2026 · Learnings",
     title: "Four lessons for Black Friday",
     chart: { kind: "list", items: LESSONS.map((l) => l.text) },
@@ -157,7 +157,7 @@ export const SLIDES: RetroSlide[] = [
   },
   {
     id: "ally",
-    question: "What did Ally add, and how?",
+    question: "What did Ally contribute?",
     eyebrow: "Prime Day 2026 · Ally",
     title: "Ally added $410K, fixing issues within hours",
     chart: {
@@ -233,7 +233,7 @@ export const BRAND_FILE = { name: "Aurelle_Brand_2026.potx", size: "4.2 MB", lay
 /** "Add an executive summary at the start": the slide Ally writes and puts first. */
 export const EXEC_SLIDE: RetroSlide = {
   id: "summary",
-  question: "What should Claire take away in one slide?",
+  question: "What should Claire take away?",
   eyebrow: "Prime Day 2026 · Executive summary",
   title: "We outgrew the market; four lessons carry into Black Friday",
   chart: {
@@ -253,7 +253,44 @@ export const EXEC_SLIDE: RetroSlide = {
 }
 
 /** Every slide the storyboard can hold, the summary included. */
-export const ALL_SLIDES: RetroSlide[] = [EXEC_SLIDE, ...SLIDES]
+/** The question Michelle can add to the storyline (scripted: Ally has the ads data). Ties to the media agent's $190K, its $3.40 IROAS and the 3 of 12 slots. */
+export const ADS_SLIDE: RetroSlide = {
+  id: "ads",
+  question: "How did our ads perform?",
+  eyebrow: "Prime Day 2026 · Ads",
+  title: "Ads returned $3.40 for every $1, above our $3.01 average",
+  chart: {
+    kind: "columns",
+    bars: [
+      { label: "Average", value: 3.01, display: "$3.01", tone: "muted" },
+      { label: "Prime Day", value: 3.4, display: "$3.40", tone: "media" },
+    ],
+  },
+  insights: [
+    { figure: "$190K", text: "added by the media agent" },
+    { figure: "$3.40", text: "IROAS, vs $3.01 average" },
+    { figure: "3 of 12", text: "top sponsored slots we held on day 1" },
+  ],
+}
+
+export const ALL_SLIDES: RetroSlide[] = [EXEC_SLIDE, ...SLIDES, ADS_SLIDE]
+
+/**
+ * The retro as Michelle has shaped it: her order, her rewording of a question or
+ * an answer (the answer is the slide's title), and any slide shown in its other
+ * form. The storyboard, the deck, the PowerPoint and the dashboard all read this.
+ */
+export function retroSlides(order: string[], edits: { alts?: string[]; questions?: Record<string, string>; answers?: Record<string, string> } = {}): RetroSlide[] {
+  return order
+    .map((id) => ALL_SLIDES.find((s) => s.id === id))
+    .filter((s): s is RetroSlide => !!s)
+    .map((s) => ({
+      ...s,
+      chart: s.id === "deals" && edits.alts?.includes("deals") ? DEALS_TABLE : s.chart,
+      question: edits.questions?.[s.id] ?? s.question,
+      title: edits.answers?.[s.id] ?? s.title,
+    }))
+}
 
 /** "Convert slide 4's bar chart": the deals as a scorecard, which says worked or didn't outright. */
 export const DEALS_TABLE: Chart = {
