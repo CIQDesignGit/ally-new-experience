@@ -364,3 +364,29 @@
   border-radius: 8px;
 }
 .dragging { opacity: 0.4; }
+
+/* Ally's answers arrive in sections, top to bottom, the way a streamed reply reads.
+   Applied to every answer: the answer's own blocks come in one after another. */
+@keyframes ally-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.ally-reveal > :first-child > * {
+  animation: ally-in 0.35s ease-out both;
+}
+.ally-reveal > :first-child > :nth-child(2) { animation-delay: 0.18s; }
+.ally-reveal > :first-child > :nth-child(3) { animation-delay: 0.36s; }
+.ally-reveal > :first-child > :nth-child(4) { animation-delay: 0.54s; }
+.ally-reveal > :first-child > :nth-child(5) { animation-delay: 0.72s; }
+.ally-reveal > :first-child > :nth-child(6) { animation-delay: 0.9s; }
+.ally-reveal > :first-child > :nth-child(7) { animation-delay: 1.08s; }
+.ally-reveal > :first-child > :nth-child(n + 8) { animation-delay: 1.26s; }
+@media (prefers-reduced-motion: reduce) {
+  .ally-reveal > :first-child > * { animation: none; }
+}

@@ -213,7 +213,8 @@ export function GapAnalysis({ node, onInbox, recipe: given, nested }: { node: Ga
       )}
       <Steps extra={recipe.steps} measure={recipe.measure} onDone={() => setReady(true)} />
       {ready && (
-      <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="flex flex-col gap-5">
+      <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="ally-reveal flex flex-col gap-5">
+      <div className="flex flex-col gap-5">
 
       <div>
         <p className="text-[17px] leading-snug font-semibold text-slate-950">
@@ -322,6 +323,7 @@ export function GapAnalysis({ node, onInbox, recipe: given, nested }: { node: Ga
         </div>
       </div>
       {!nested && <RecipeFeedback node={node} render={(r) => <GapAnalysis node={node} onInbox={onInbox} recipe={r} nested />} />}
+      </div>
       </motion.div>
       )}
     </div>

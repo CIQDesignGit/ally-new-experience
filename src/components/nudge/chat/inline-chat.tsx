@@ -150,23 +150,51 @@ export function ChatThread({ className, anchor }: { className?: string; anchor?:
     if (lastId === undefined) return
     setThinking(lastId)
     const t = window.setTimeout(() => setThinking(null), lastThink)
-    // Land on the new question. Smooth where the browser supports it; jump if it didn't move (some ignore smooth scroll).
+    return () => window.clearTimeout(t)
+  }, [lastId, lastThink])
+
+  // Like ChatGPT: the question lands just above the bar, then the page follows the answer up as it
+  // arrives, until the question reaches the top, and stops there. A longer answer is yours to scroll.
+  // Stops early if you scroll yourself. Checked on a short timer (size events don't fire everywhere).
+  useEffect(() => {
+    if (lastId === undefined) return
     const el = lastRef.current
-    let fallback: number | undefined
-    if (el) {
-      // Land below anything pinned to the top of the page (the note to Dana, a filter bar), so the question is never hidden under it.
+    if (!el) return
+    let following = true
+    let asked: number | undefined
+    const stop = () => (following = false)
+    const keys = (e: KeyboardEvent) => ["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End", " "].includes(e.key) && e.target === document.body && stop()
+    window.addEventListener("wheel", stop, { passive: true })
+    window.addEventListener("touchmove", stop, { passive: true })
+    window.addEventListener("keydown", keys)
+    const step = () => {
+      if (!following) return
+      const body = el.querySelector<HTMLElement>("[data-turn-body]")
+      // Below anything pinned to the top (the note to Dana, a filter bar), so the question is never under it.
       const pinned = [...document.querySelectorAll<HTMLElement>("[data-sticky-top]")].reduce((m, e) => Math.max(m, e.offsetHeight), 0)
       const top = el.getBoundingClientRect().top + window.scrollY - 24 - pinned
-      window.scrollTo({ top, behavior: "smooth" })
-      fallback = window.setTimeout(() => {
-        if (Math.abs(window.scrollY - top) > 8) window.scrollTo({ top })
-      }, 500)
+      const dock = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--askbar-h")) || 120
+      const bottom = (body ?? el).getBoundingClientRect().bottom + window.scrollY
+      const target = Math.min(top, bottom - (window.innerHeight - dock - 24))
+      if (target > window.scrollY + 4) {
+        // Smooth where the browser animates it; a jump where it didn't move since the last try.
+        const stuck = asked !== undefined && Math.abs(window.scrollY - asked) < 2
+        window.scrollTo({ top: target, behavior: stuck ? "auto" : "smooth" })
+        asked = window.scrollY
+      }
+      if (target >= top - 2) stop()
     }
+    step()
+    const tick = window.setInterval(step, 250)
+    const off = window.setTimeout(stop, 30000)
     return () => {
-      window.clearTimeout(t)
-      window.clearTimeout(fallback)
+      window.clearInterval(tick)
+      window.clearTimeout(off)
+      window.removeEventListener("wheel", stop)
+      window.removeEventListener("touchmove", stop)
+      window.removeEventListener("keydown", keys)
     }
-  }, [lastId, lastThink])
+  }, [lastId])
 
   if (!turns.length) return null
   return (
@@ -201,7 +229,7 @@ export function ChatThread({ className, anchor }: { className?: string; anchor?:
               {thinking === t.id && <span className="absolute -inset-1 animate-spin rounded-full border-2 border-brand-200 border-t-brand-600" style={{ animationDuration: "1.1s" }} aria-hidden />}
               <Sparkles className="size-3.5 text-brand-600" />
             </span>
-            <div className="min-w-0 flex-1">
+            <div data-turn-body className="min-w-0 flex-1">
               {thinking === t.id ? (
                 <div className="flex items-center gap-3 py-2" aria-label="Ally is working on it">
                   <span className="flex gap-1.5">
@@ -217,7 +245,7 @@ export function ChatThread({ className, anchor }: { className?: string; anchor?:
                   <span className="text-[14px] text-slate-500">{t.think?.label ?? "Thinking"}</span>
                 </div>
               ) : (
-                <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}>
+                <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="ally-reveal">
                   <TurnCtx.Provider value={t}>{t.render()}</TurnCtx.Provider>
                   {/* Follow-ups live in the conversation, under the answer they follow from. */}
                   {i === turns.length - 1 && !!t.followUps?.filter((f) => !asked.has(f.q)).length && (
