@@ -121,7 +121,9 @@ export function ChatThread({ className, anchor }: { className?: string; anchor?:
   if (!turns.length) return null
   return (
     <section
-      className={cn(anchor ? "flex flex-col gap-6 pt-2" : "flex flex-col gap-8 border-t border-slate-200 px-12 pt-8 pb-8", className)}
+      className={cn(anchor ? "flex flex-col gap-6 pt-2" : "flex flex-col gap-8 border-t border-slate-200 px-12 pt-8", className)}
+      // Page-level answers end the page: leave room for the bar (and its suggestions) below the last one.
+      style={anchor ? undefined : { paddingBottom: "calc(var(--askbar-h, 0px) + 48px)" }}
       aria-label={anchor ? `Conversation about ${anchor}` : "Conversation with Ally"}
     >
       {turns.map((t, i) => (
@@ -167,6 +169,20 @@ export function AskBar({ placeholder = "Ask Ally: what can I take from your plat
   const rootRef = useRef<HTMLDivElement>(null)
   const askedHere = new Set(turns.filter((t) => t.about === source.about && t.anchor === source.anchor).map((t) => t.q))
   const chips = source.chips.filter((c) => !askedHere.has(c.q))
+
+  // The page reserves the bar's height under its last answer, so the bar and its
+  // suggestions never sit on top of what Ally just said.
+  useEffect(() => {
+    const el = rootRef.current
+    if (!el) return
+    const root = document.documentElement
+    const ro = new ResizeObserver(() => root.style.setProperty("--askbar-h", `${el.offsetHeight}px`))
+    ro.observe(el)
+    return () => {
+      ro.disconnect()
+      root.style.removeProperty("--askbar-h")
+    }
+  }, [])
 
   useEffect(() => {
     if (!open) return

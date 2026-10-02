@@ -45,18 +45,29 @@ export default function RetroPage() {
   ])
   const next = useRef(3)
 
-  // "Go straight to the deck" opens on the deck, and so does coming back once a deck exists.
+  // A new request (?new=1) starts a fresh retro on the storyboard. Coming back to one
+  // that has a deck (or Claire's "Open deck") reopens on the deck.
   const opened = useRef(false)
+  const fresh = useRef(false)
   useEffect(() => {
+    const q = new URLSearchParams(window.location.search)
+    if (q.get("new") === "1" && !fresh.current) {
+      fresh.current = true
+      opened.current = true
+      // After the saved demo state has loaded (it loads in the provider's effect, which runs after this one).
+      window.setTimeout(() => setRetro({ order: undefined, theme: undefined, locked: false, deck: false, sentToClaire: false, dashboard: false, saved: [] }), 0)
+      window.history.replaceState(null, "", "/michelle/retro")
+      return
+    }
     if (opened.current) return
-    const wantsDeck = new URLSearchParams(window.location.search).get("view") === "deck"
+    const wantsDeck = q.get("view") === "deck"
     if (!wantsDeck && !retro.deck) return
     const t = window.setTimeout(() => {
       opened.current = true
       setView("deck")
     }, 0)
     return () => window.clearTimeout(t)
-  }, [retro.deck])
+  }, [retro.deck, setRetro])
 
   const say = (...m: Omit<Msg, "id">[]) => setMsgs((prev) => [...prev, ...m.map((x) => ({ ...x, id: next.current++ }))])
   const slides = order.map((id) => SLIDES.find((s) => s.id === id)!)

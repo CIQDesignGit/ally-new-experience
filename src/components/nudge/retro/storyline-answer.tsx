@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { PRIMARY, SECONDARY } from "../mike/buttons"
+import { PRIMARY } from "../mike/buttons"
 import { RETRO, STORYLINE } from "./prime-day"
 
 export const RETRO_QUESTION = "I need a deck on our Prime Day performance for Claire"
@@ -26,11 +26,9 @@ export function StorylineAnswer() {
         </ol>
       </div>
       <div className="flex flex-wrap gap-2">
-        <Link href="/michelle/retro" className={PRIMARY}>
+        {/* A new request is a new retro: it starts at the storyboard, never on an older deck. */}
+        <Link href="/michelle/retro?new=1" className={PRIMARY}>
           Open storyboard
-        </Link>
-        <Link href="/michelle/retro?view=deck" className={SECONDARY}>
-          Go straight to the deck
         </Link>
       </div>
       <div className="text-[13px] text-slate-500">{RETRO.sources}</div>
