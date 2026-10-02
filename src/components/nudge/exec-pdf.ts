@@ -376,8 +376,8 @@ export function execDigest(period: Period, { approved, policy, asks = {}, approv
   const projected = levers.reduce((n, a) => n + leverDelivered(done, a).promised, 0)
 
   // The actions Claire can take by replying, numbered as her page numbers them.
-  const replies = replyActions(tierView("approval", approved, policy, period).rows, asks, approvedBy, day)
-  const actions: DigestRow[] = replies.map((r) => ({ label: `${r.n} · ${r.label}`, note: r.note, value: r.row.value, tone: r.kind === "approve" ? "warn" : undefined }))
+  const replies = replyActions(tierView("approval", approved, policy, period).rows, asks, approvedBy, day, policy)
+  const actions: DigestRow[] = replies.map((r) => ({ label: `${r.n} · ${r.label}`, note: r.note, value: r.row?.value, tone: r.kind === "approve" ? "warn" : undefined }))
 
   return {
     subject: `${quarter}: ${gap > 0 ? `${fmtBiz(gap)} short of plan, ${open.totalLabel} in the pipeline to close it` : `${fmtBiz(-gap)} ahead of plan`}`,

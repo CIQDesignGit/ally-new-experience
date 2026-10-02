@@ -6,6 +6,7 @@ import { OwnerName } from "../owner-name"
 import { AGENT_DOT } from "../agent-style"
 import { AGENT_LABEL, type TierRow } from "../types"
 import { PRIMARY } from "../mike/buttons"
+import { useNudge } from "../nudge-context"
 import { dueFor, useClaireActions } from "./claire-actions"
 
 /**
@@ -25,14 +26,30 @@ const TONE: Record<string, string> = {
 }
 
 export function ClaireRow({ row, grid }: { row: TierRow; grid: string }) {
-  const { statusOf, askFor, approveMyself, day } = useClaireActions()
+  const { statusOf, askFor, approveMyself, autopilotSeasonal, seasonalOn, day } = useClaireActions()
+  const { approvedBy } = useNudge()
   const st = statusOf(row)
   // Approving it herself is for the content she can sign off (Mike's Halloween items).
   const canApprove = row.nudgeKey === "approval-content"
   const deadline = row.deadline?.replace(/(\d+) days/, (_, n) => `${Math.max(0, Number(n) - day)} days`)
 
-  const action =
-    st.kind === "shipped" || st.kind === "on-pace" ? null : st.kind === "due" || st.kind === "overdue" ? (
+  // She approved it herself: the next move is never having to.
+  const offerAutopilot = canApprove && st.kind === "shipped" && !!approvedBy["approval-content"]
+
+  const action = offerAutopilot ? (
+    seasonalOn ? (
+      <span className="inline-flex items-center gap-1.5 text-sm font-medium text-success-700">
+        <Check className="size-4" /> Seasonal on autopilot
+      </span>
+    ) : (
+      <span className="flex w-[180px] flex-col items-center gap-1.5">
+        <button type="button" onClick={() => autopilotSeasonal("product")} className={cn(PRIMARY, "w-[180px]")}>
+          Put seasonal on autopilot
+        </button>
+        <span className="text-[13px] text-slate-500">Hero SKUs still reviewed</span>
+      </span>
+    )
+  ) : st.kind === "shipped" || st.kind === "on-pace" ? null : st.kind === "due" || st.kind === "overdue" ? (
       canApprove ? (
         <button type="button" onClick={() => approveMyself(row, "product")} className={cn(PRIMARY, "w-[180px]")}>
           Approve it myself

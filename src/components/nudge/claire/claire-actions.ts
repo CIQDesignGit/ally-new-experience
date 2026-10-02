@@ -6,6 +6,7 @@ import { contentBatches, launchedIds, opsBatches } from "../data"
 import { useNudge } from "../nudge-context"
 import { useFireNudge } from "../use-fire-nudge"
 import type { NudgeKey, TierRow } from "../types"
+import type { Policy, ReviewRule } from "../policy"
 
 /**
  * Claire's three moves on anything waiting, the same from her page and from her
@@ -52,7 +53,7 @@ export type RowState =
   | { kind: "not-started"; text: string }
 
 export function useClaireActions() {
-  const { approved, policy, launchReady, asks, askBy, approvedBy, approveAs, day } = useNudge()
+  const { approved, policy, savePolicy, launchReady, asks, askBy, approvedBy, approveAs, day } = useNudge()
   const { sendSlack } = useFireNudge()
 
   /** The batches a row stands for, so approving it approves them. */
@@ -82,7 +83,7 @@ export function useClaireActions() {
     }
     if (row.weekly?.state === "in-progress") {
       // A day on with no movement, the campaigns fall behind the pace they need.
-      if (isBehind(row, day)) return { kind: "behind", text: `Behind · ${row.weekly.progress}, no movement since ${dayLabel(0).split(",")[0]}` }
+      if (isBehind(row, day)) return { kind: "behind", text: `Behind · ${row.weekly.progress}, no movement since ${dayLabel(0).split(", ")[1]}` }
       return { kind: "on-pace", text: `In progress · ${row.weekly.progress} · on pace` }
     }
     if (row.weekly?.state === "done") return { kind: "shipped", text: row.weekly.progress ?? "Done" }
@@ -109,14 +110,26 @@ export function useClaireActions() {
     toast.success(`${by === "email" ? "Your email reply approved" : "Approved"}: ${row.description.replace(/\.$/, "")} · ${row.value}`, { position: "top-right" })
   }
 
-  return { statusOf, askFor, approveMyself, day }
+  /** After approving seasonal content herself: core SKUs ship on autopilot next time; hero SKUs still get Mike's review. */
+  const seasonalOn = hasSeasonalAutopilot(policy)
+  const autopilotSeasonal = (by: "product" | "email") => {
+    if (seasonalOn) return
+    savePolicy({ ...policy, rules: [...policy.rules, seasonalRule(`${dayLabel(day).split(", ")[1]}, 2026`)] })
+    toast.success(`Seasonal content on autopilot · core SKUs ship without review${by === "email" ? " · from your email reply" : ""}`, { position: "top-right" })
+  }
+
+  return { statusOf, askFor, approveMyself, autopilotSeasonal, seasonalOn, day }
 }
+
+const SEASONAL_RULE = "r-seasonal-core"
+export const hasSeasonalAutopilot = (policy?: Policy) => !!policy?.rules.some((r) => r.id === SEASONAL_RULE)
+const seasonalRule = (date: string): ReviewRule => ({ id: SEASONAL_RULE, retailer: "Amazon", brands: [], skuGroups: [], tier: "core", workType: "Seasonal", mode: "autopilot", author: "Claire Bennett", date })
 
 /** One action Claire can take by replying to her email, numbered the same in the email and the product. */
 export interface ReplyAction {
   n: number
-  kind: "approve" | "ask"
-  row: TierRow
+  kind: "approve" | "ask" | "autopilot"
+  row?: TierRow
   label: string
   note: string
 }
@@ -126,8 +139,8 @@ export interface ReplyAction {
  * deadline), then by value. Content she already asked about becomes "approve
  * it yourself"; the rest are asks with Friday's date. Anything done is left out.
  */
-export function replyActions(rows: TierRow[], asks: Partial<Record<NudgeKey, { due: string; dueDay: number }>>, approvedBy: Partial<Record<NudgeKey, string>> = {}, day = 0): ReplyAction[] {
-  return rows
+export function replyActions(rows: TierRow[], asks: Partial<Record<NudgeKey, { due: string; dueDay: number }>>, approvedBy: Partial<Record<NudgeKey, string>> = {}, day = 0, policy?: Policy): ReplyAction[] {
+  const acts: ReplyAction[] = rows
     // Only what needs Claire: not done, and not work already moving on pace.
     .filter((r) => r.nudgeKey && !approvedBy[r.nudgeKey] && (r.valueM ?? 0) > 0 && (r.weekly?.state !== "in-progress" || isBehind(r, day)) && (!asks[r.nudgeKey] || r.nudgeKey === "approval-content"))
     .sort((a, b) => (a.days ?? Infinity) - (b.days ?? Infinity) || (b.valueM ?? 0) - (a.valueM ?? 0))
@@ -139,12 +152,16 @@ export function replyActions(rows: TierRow[], asks: Partial<Record<NudgeKey, { d
       const due = dueFor(day)
       return {
         n: i + 1,
-        kind: approve ? "approve" : "ask",
+        kind: approve ? ("approve" as const) : ("ask" as const),
         row: r,
         label: approve ? `Approve it yourself: ${what}` : `Ask ${r.analystName} to finish by ${due.short}: ${what}`,
         note: [r.analystName, approve ? (day > ask.dueDay ? `overdue since ${ask.due}` : day === ask.dueDay ? "due today" : `asked, due ${ask.due}`) : r.deadline?.toLowerCase()].filter(Boolean).join(" · "),
       }
     })
+  // Once she's approved seasonal content herself, the next move is never having to.
+  if (approvedBy["approval-content"] && !hasSeasonalAutopilot(policy))
+    acts.push({ n: acts.length + 1, kind: "autopilot", label: "Put seasonal content on autopilot", note: "Core SKUs ship without review · hero SKUs still reviewed" })
+  return acts
 }
 
 export const REPLY_LINE = "Reply YES to do all of these, or YES 1, YES 2 or YES 3 for just one. No need to log in."

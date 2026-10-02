@@ -166,6 +166,7 @@ export function ReviewPolicy() {
                     r.retailer,
                     ...(r.brands.length ? r.brands : ["All brands"]),
                     ...(r.skuGroups.length ? r.skuGroups : []),
+                    ...(r.workType ? [r.workType] : []),
                     r.tier ? TIER_INFO[r.tier].label : "Every tier",
                     r.field ? FIELD_LABEL[r.field] : "Any change",
                   ]}

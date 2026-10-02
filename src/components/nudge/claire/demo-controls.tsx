@@ -15,9 +15,9 @@ import { dayLabel, nextCheckIn, replyActions, useClaireActions } from "./claire-
  */
 export function DemoControls() {
   const { approved, nudged, policy, period, asks, approvedBy, day, nextMorning } = useNudge()
-  const { askFor, approveMyself } = useClaireActions()
+  const { askFor, approveMyself, autopilotSeasonal } = useClaireActions()
   const [busy, setBusy] = useState(false)
-  const replies = replyActions(tierView("approval", approved, policy, period).rows, asks, approvedBy, day)
+  const replies = replyActions(tierView("approval", approved, policy, period).rows, asks, approvedBy, day, policy)
   const next = nextCheckIn(day)
 
   async function morning() {
@@ -34,8 +34,9 @@ export function DemoControls() {
 
   function reply(which?: number) {
     for (const r of replies.filter((x) => which === undefined || x.n === which)) {
-      if (r.kind === "approve") approveMyself(r.row, "email")
-      else askFor(r.row, "email")
+      if (r.kind === "autopilot") autopilotSeasonal("email")
+      else if (r.kind === "approve") approveMyself(r.row!, "email")
+      else askFor(r.row!, "email")
     }
   }
 

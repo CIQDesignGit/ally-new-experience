@@ -38,6 +38,8 @@ export interface ReviewRule extends Scope {
   tier?: SkuTier
   /** Undefined = any change. */
   field?: Field
+  /** A kind of work ("Seasonal"); undefined = all work. */
+  workType?: string
   mode: ReviewMode
   author: string
   date: string
@@ -103,10 +105,10 @@ export const DEFAULT_KNOWLEDGE: KnowledgeEntry[] = [
   },
 ]
 
-/** How specific a rule is: SKU groups beat brands, brands beat retailer-only. */
-const specificity = (r: ReviewRule) => (r.skuGroups.length ? 4 : 0) + (r.brands.length ? 2 : 0) + (r.tier ? 1 : 0)
+/** How specific a rule is: SKU groups beat brands, brands beat retailer-only; a kind of work counts like a tier. */
+const specificity = (r: ReviewRule) => (r.skuGroups.length ? 4 : 0) + (r.brands.length ? 2 : 0) + (r.tier ? 1 : 0) + (r.workType ? 1 : 0)
 
-type SkuKey = { retailer: string; brand: string; skuGroup: string; tier: SkuTier }
+type SkuKey = { retailer: string; brand: string; skuGroup: string; tier: SkuTier; type?: string }
 
 /** The rule that governs a SKU (or one field of it), if any: matching scope, most specific first, newest on a tie. */
 export function ruleFor(policy: Policy, sku: SkuKey, field?: Field) {
@@ -117,7 +119,8 @@ export function ruleFor(policy: Policy, sku: SkuKey, field?: Field) {
         r.retailer === sku.retailer &&
         (r.brands.length === 0 || r.brands.includes(sku.brand)) &&
         (r.skuGroups.length === 0 || r.skuGroups.includes(sku.skuGroup)) &&
-        (!r.tier || r.tier === sku.tier),
+        (!r.tier || r.tier === sku.tier) &&
+        (!r.workType || r.workType === sku.type),
     )
     .sort((a, b) => specificity(b) - specificity(a) || b.id.localeCompare(a.id))[0]
 }
@@ -132,6 +135,8 @@ export interface TierSplit {
   retailer: string
   brand: string
   skuGroup: string
+  /** The kind of work ("Seasonal"), for rules scoped to it. */
+  type?: string
   tiers: Record<SkuTier, { skus: number; value: number }>
   /** SKUs whose change touches the title / the main image. */
   titleSkus: number
