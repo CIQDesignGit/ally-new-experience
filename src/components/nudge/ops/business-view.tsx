@@ -3,6 +3,7 @@
 import { Fragment, useEffect, useRef, useState } from "react"
 import { ChevronRight, Sparkles } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { PRIMARY } from "../mike/buttons"
 import { candleThumbnail } from "@/lib/candle-thumbnails"
 import { BUSINESS, contentBatches, fmtBiz, launchedIds, opsBatches } from "../data"
 import { ITEM_ACTIVE, ITEM_IDLE } from "../mike/rail"
@@ -76,7 +77,7 @@ function useFixes(onOpenOps: (batchId: string, asin?: string) => void) {
       const mine = note.filter((i) => i.batchId === b.id && (!asin || i.asin === asin))
       const sentOn = mine.find((i) => i.sentOn)?.sentOn
       const status = approved[b.id] || sentOn ? `sent to ${VENDOR_MANAGER.name}, ${sentOn ?? "Oct 8"}` : mine.length ? `in your note to ${VENDOR_MANAGER.name} · not sent` : "ready to review"
-      return { lever: "ops", name: b.fixName ?? b.name, owner: "You", status, tone: approved[b.id] || sentOn ? "done" : mine.length ? "moving" : "todo", open: () => onOpenOps(b.id, asin), openLabel: "Open" }
+      return { lever: "ops", name: b.fixName ?? b.name, owner: "You", status, tone: approved[b.id] || sentOn ? "done" : mine.length ? "moving" : "todo", open: () => onOpenOps(b.id, asin), openLabel: "Review the escalation" }
     }
     if (fix.kind === "content") {
       const b = content.find((x) => x.id === fix.id)
@@ -84,12 +85,12 @@ function useFixes(onOpenOps: (batchId: string, asin?: string) => void) {
       const done = !!approved[b.id]
       const pinged = b.nudgeKey && nudged[b.nudgeKey]
       const status = done ? (b.tier === "input" ? "sent to Ally" : "approved") : b.tier === "input" ? "waiting on your team" : pinged ? "nudged, waiting for approval" : "waiting for approval"
-      return { lever: "content", name: b.fixName ?? b.name, owner: "Mike", status, tone: done ? "done" : b.tier === "input" ? "todo" : "moving", open: () => (window.location.href = `/mike?batch=${b.id}&from=michelle`), openLabel: "Open in Mike's queue" }
+      return { lever: "content", name: b.fixName ?? b.name, owner: "Mike", status, tone: done ? "done" : b.tier === "input" ? "todo" : "moving", open: () => (window.location.href = `/mike?batch=${b.id}&from=michelle`), openLabel: "See Mike's queue" }
     }
     const p = playById(fix.id)
     if (!p) return undefined
     const on = isLaunched(p)
-    return { lever: p.owner === "human" ? "content" : p.owner, name: p.what, owner: p.owner === "media" ? "Ally for Media" : "Ally", status: on ? "launched" : "ready to launch", tone: on ? "moving" : "todo", open: () => launch([p]), openLabel: on ? "Launched" : "Launch" }
+    return { lever: p.owner === "human" ? "content" : p.owner, name: p.what, owner: p.owner === "media" ? "Ally for Media" : "Ally", status: on ? "launched" : "ready to launch", tone: on ? "moving" : "todo", open: () => launch([p]), openLabel: on ? "Launched" : "Launch the play" }
   }
 }
 
@@ -234,7 +235,7 @@ export function BusinessPane({ root, nodeId, onSelect, onOpenOps }: { root: GapN
           <div className="px-5 py-4">
             <div className="text-xs font-medium text-slate-500">This week, projected</div>
             <div className="mt-0.5 flex items-baseline gap-2 tabular-nums">
-              <span className="text-[26px] font-semibold tracking-tight text-slate-950">{m(eow, true)}</span>
+              <span className={cn("text-[26px] font-semibold tracking-tight", eow < 0 ? "text-error-600" : "text-success-700")}>{m(eow, true)}</span>
               <span className="text-sm text-slate-500">
                 {pct(n.eow.projected, n.eow.plan)} of plan · {m(n.wtd)} so far
               </span>
@@ -249,16 +250,22 @@ export function BusinessPane({ root, nodeId, onSelect, onOpenOps }: { root: GapN
               {live.map((d) => {
                 const f = d.fix && fixFor(d.fix, n.asin)
                 return (
-                  <li key={d.title} className="grid grid-cols-[minmax(0,1fr)_72px] gap-x-4 text-sm">
+                  <li key={d.title} className="grid grid-cols-[minmax(0,1fr)_72px_200px] items-center gap-x-4 text-sm">
                     <span className="min-w-0">
-                      <span className="text-slate-950">{d.title}</span>
-                      {f && (
-                        <button type="button" onClick={f.open} className="mt-0.5 block text-left text-[13px] text-slate-500 hover:text-brand-700">
-                          {f.name} · {f.owner}, {f.status} →
-                        </button>
-                      )}
+                      <span className="block text-slate-950">{d.title}</span>
+                      {f && <span className="mt-0.5 block text-[13px] text-slate-500">{f.name} · {f.owner}, {f.status}</span>}
                     </span>
                     <span className="text-right font-semibold text-slate-950 tabular-nums">{m(d.value, true)}</span>
+                    {/* Every action is purple (DESIGN.md); peers share one width. */}
+                    <span className="flex justify-end [&>button]:w-full">
+                      {f && f.tone !== "done" ? (
+                        <button type="button" onClick={f.open} className={PRIMARY}>
+                          {f.openLabel}
+                        </button>
+                      ) : f ? (
+                        <span className="text-[14px] font-medium text-success-700">Done</span>
+                      ) : null}
+                    </span>
                   </li>
                 )
               })}
