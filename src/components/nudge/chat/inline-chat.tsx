@@ -2,7 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react"
 import { motion } from "framer-motion"
-import { CornerDownRight, Plus, Send, Sparkles } from "lucide-react"
+import { CornerDownRight, Paperclip, Plus, Send, Sparkles, X } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { FadeAbove, MoreBelow } from "./more-below"
@@ -23,6 +23,14 @@ export interface Chip {
   match?: RegExp
   /** Follow-ups offered at the end of this chip's answer (the bar's chips only get you started). */
   followUps?: Chip[]
+  /** A starter that fills the bar instead of asking: pasted text, and a file attached, ready to send. */
+  prefill?: { text: string; attach?: Attachment }
+}
+
+export interface Attachment {
+  name: string
+  size: string
+  src: string
 }
 
 export interface ChatSource {
@@ -31,6 +39,8 @@ export interface ChatSource {
   /** The object on screen the answers belong under (a row's id); none = the end of the page. */
   anchor?: string
   chips: Chip[]
+  /** Files the 📎 can attach on this screen (the demo's stand-in for a file picker). */
+  files?: Attachment[]
 }
 
 interface Turn {
@@ -40,6 +50,7 @@ interface Turn {
   /** The chip it landed on (same as q when the chip was tapped). */
   chip: string
   followUps?: Chip[]
+  attach?: Attachment
   about?: string
   anchor?: string
   render: () => React.ReactNode
@@ -50,7 +61,7 @@ interface ChatValue {
   setSource: (s: ChatSource) => void
   turns: Turn[]
   /** Ask; the answer goes under `anchor` (defaults to what's on screen). */
-  ask: (chip: Chip, anchor?: string, said?: string) => void
+  ask: (chip: Chip, anchor?: string, said?: string, attach?: Attachment) => void
   clear: () => void
 }
 
@@ -64,8 +75,8 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   const [turns, setTurns] = useState<Turn[]>([])
   const next = useRef(1)
   const ask = useCallback(
-    (chip: Chip, anchor?: string, said?: string) =>
-      setTurns((t) => [...t, { id: next.current++, q: said ?? chip.q, chip: chip.q, followUps: chip.followUps, about: source.about, anchor: anchor ?? source.anchor, render: chip.render }]),
+    (chip: Chip, anchor?: string, said?: string, attach?: Attachment) =>
+      setTurns((t) => [...t, { id: next.current++, q: said ?? chip.q, chip: chip.q, followUps: chip.followUps, attach, about: source.about, anchor: anchor ?? source.anchor, render: chip.render }]),
     [source.about, source.anchor],
   )
   return <Ctx.Provider value={{ source, setSource, turns, ask, clear: () => setTurns([]) }}>{children}</Ctx.Provider>
@@ -149,9 +160,12 @@ export function ChatThread({ className, anchor }: { className?: string; anchor?:
           // Like Claude: the newest question gets a screen of its own, so it can sit at the top with its answer below, nothing older in view.
           style={i === turns.length - 1 && !anchor ? { minHeight: "calc(100vh - var(--askbar-h, 0px) - 56px)" } : undefined}
         >
-          <div className="flex items-center justify-end gap-3">
-            {t.about && <span className="text-xs text-slate-500">about {t.about}</span>}
-            <div className="max-w-[640px] rounded-2xl rounded-br-md bg-brand-500 px-4 py-2.5 text-[15px] text-white">{t.q}</div>
+          <div className="flex flex-col items-end gap-2">
+            {t.attach && <AttachmentCard file={t.attach} />}
+            <div className="flex items-center justify-end gap-3">
+              {t.about && <span className="text-xs text-slate-500">about {t.about}</span>}
+              <div className="max-w-[640px] rounded-2xl rounded-br-md bg-brand-500 px-4 py-2.5 text-[15px] whitespace-pre-line text-white">{t.q}</div>
+            </div>
           </div>
           <div className="flex gap-3">
             <span className="mt-1 flex size-7 shrink-0 items-center justify-center rounded-full bg-brand-50">
@@ -201,7 +215,12 @@ export function AskBar({ placeholder = "What can I take off your plate?" }: { pl
   const { source, turns, ask, clear } = useChat()
   const router = useRouter()
   // Questions about this screen answer here; tasks (make a deck, plan an event) open their own conversation.
-  const run = (c: Chip, said?: string) => (c.task ? router.push(c.task) : ask(c, undefined, said))
+  const [attach, setAttach] = useState<Attachment | null>(null)
+  const run = (c: Chip, said?: string) => {
+    if (c.task) return router.push(c.task)
+    ask(c, undefined, said, attach ?? undefined)
+    setAttach(null)
+  }
   const [text, setText] = useState("")
   const [open, setOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
@@ -268,6 +287,12 @@ export function AskBar({ placeholder = "What can I take off your plate?" }: { pl
                   key={c.q}
                   type="button"
                   onClick={() => {
+                    // A paste-and-attach starter fills the bar for you to send; the rest ask now.
+                    if (c.prefill) {
+                      setText(c.prefill.text)
+                      if (c.prefill.attach) setAttach(c.prefill.attach)
+                      return
+                    }
                     run(c)
                     // Get out of the answer's way; the follow-ups come back when you click into the bar.
                     setOpen(false)
@@ -310,8 +335,13 @@ export function AskBar({ placeholder = "What can I take off your plate?" }: { pl
             } else setOpen(true)
             setText("")
           }}
-          className="flex items-center gap-2 py-1.5 pr-1.5 pl-4"
+          className="flex flex-wrap items-center gap-2 py-1.5 pr-1.5 pl-4"
         >
+          {attach && (
+            <span className="flex w-full items-center gap-2 pt-1.5 pb-1">
+              <AttachmentCard file={attach} onRemove={() => setAttach(null)} />
+            </span>
+          )}
           <Sparkles className="size-4 shrink-0 text-brand-600" />
           <input
             value={text}
@@ -321,6 +351,11 @@ export function AskBar({ placeholder = "What can I take off your plate?" }: { pl
             placeholder={placeholder}
             className="flex-1 bg-transparent text-sm text-slate-950 outline-none placeholder:text-slate-400"
           />
+          {!!source.files?.length && (
+            <button type="button" onClick={() => setAttach(source.files![0])} aria-label="Attach a file" title="Attach a file" className="flex size-8 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 hover:text-slate-900">
+              <Paperclip className="size-4" />
+            </button>
+          )}
           <button type="submit" aria-label="Ask Ally" className="flex size-8 items-center justify-center rounded-full bg-brand-500 text-white transition-colors hover:bg-brand-600">
             <Send className="size-4" />
           </button>
@@ -341,4 +376,23 @@ export function StarterChips({ chips, id }: { chips: Chip[]; id: string }) {
 /** The look of a short scripted answer: bullets in a card. */
 export function AnswerCard({ children }: { children: React.ReactNode }) {
   return <div className="max-w-[860px] rounded-2xl bg-white px-5 py-4 text-[15px] leading-relaxed text-slate-700 ring-1 ring-slate-200">{children}</div>
+}
+
+/** A file in a message or waiting in the bar: thumbnail, name, size. */
+function AttachmentCard({ file, onRemove }: { file: Attachment; onRemove?: () => void }) {
+  return (
+    <span className="inline-flex items-center gap-2.5 rounded-xl border border-slate-200 bg-white py-1.5 pr-2 pl-1.5 text-[13px]">
+      {/* eslint-disable-next-line @next/next/no-img-element -- a local demo asset */}
+      <img src={file.src} alt="" className="size-9 rounded-md object-cover" />
+      <span className="text-left">
+        <b className="block font-semibold text-slate-950">{file.name}</b>
+        <span className="text-slate-500">{file.size}</span>
+      </span>
+      {onRemove && (
+        <button type="button" onClick={onRemove} aria-label="Remove the attachment" className="rounded p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-700">
+          <X className="size-3.5" />
+        </button>
+      )}
+    </span>
+  )
 }

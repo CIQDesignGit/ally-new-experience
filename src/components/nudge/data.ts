@@ -7,6 +7,7 @@ import { TIERS, TIER_INFO, shipPlan } from "./policy"
 import type { Policy, ReviewMode, SkuTier } from "./policy"
 import { playById } from "./market"
 import type { Play } from "./market"
+import { LAUNCH, NEW_SKUS } from "./launch/data"
 
 /**
  * Real numbers from the Ally_Home reference artifact — keep exactly as given.
@@ -22,6 +23,8 @@ const HALLOWEEN_PUBLISH_BY = "2026-10-26"
 const HALLOWEEN = "2026-10-31"
 /** Q4 FY26 runs Oct–Dec; FY26 ends with it. */
 const QUARTER_END = "2026-12-31"
+/** The Winter Hearth launch's pages are due before the Nov 9 launch. */
+const LAUNCH_DUE = "2026-11-06"
 const expiresChip = (iso: string) => `Expires in ${daysUntil(iso, AS_OF)} days`
 
 export const BATCHES: Batch[] = [
@@ -101,34 +104,34 @@ export const BATCHES: Batch[] = [
   },
   {
     id: "concepts",
-    fixName: "Halloween creative needed",
+    fixName: "Launch creative needed",
     tier: "input",
-    type: "Seasonal",
-    inputSkus: 245,
-    name: "Add Halloween concepts",
-    chip: expiresChip(HALLOWEEN_PUBLISH_BY),
-    deadline: HALLOWEEN_PUBLISH_BY,
+    type: "New launch",
+    inputSkus: 3,
+    name: "Launch the Winter Hearth collection",
+    chip: `Due ${LAUNCH.due}`,
+    deadline: LAUNCH_DUE,
     nudgeSource: "Flagged by Ally, 2 days ago",
-    skus: 245,
+    skus: 3,
     reviewMinutes: 15,
     value: "$420K",
-    approveSkus: 245,
+    approveSkus: 3,
     approveValue: 0.42,
-    doneLabel: "Concepts received · drafts in about a day",
-    rationale: "245 SKUs that need your Halloween creative before Ally can draft them. Publish by Oct 8.",
-    exampleSkuId: "sku-4",
+    doneLabel: "Creative received · drafts in about an hour",
+    rationale: `3 new SKUs launch ${LAUNCH.launch}. Ally needs the concept and launch facts before it can draft their pages. Pages due ${LAUNCH.due}.`,
+    exampleSkuId: "sku-new-1",
     before: "",
     after: "",
-    changesTitle: "What Ally does with your concepts",
+    changesTitle: "What Ally does with the concept",
     changes: [
-      { text: "Localizes each concept for every retailer", detail: "Amazon, Walmart and Target title rules, image specs and character limits", skus: 245 },
-      { text: "Customizes it for each SKU", detail: "Scent, size and gifting angle per product", skus: 245 },
-      { text: "Drafts titles, bullets and images, then sends them back for one approval", skus: 245 },
+      { text: "Adapts the one concept into images for every SKU", detail: "White main image, lifestyle, scent notes and gift shots", skus: 3 },
+      { text: "Applies each retailer's rules", detail: "Amazon, Walmart and Target image specs, title lengths and promo rules", skus: 3 },
+      { text: "Drafts titles and bullets, then sends them back for one approval", skus: 3 },
     ],
     need: {
-      text: "Each SKU needs a Halloween main image and tagline. Pick a background or upload your own: Ally places each product on it and adapts it for every retailer.",
-      toast: "Background sent to Ally. Drafts for 245 SKUs in about a day.",
-      cta: "Apply to all 245 SKUs",
+      text: "Each new SKU needs the agency's concept and the launch facts. Paste the brand team's email and attach the concept in Ask Ally, or upload a background here.",
+      toast: "Concept sent to Ally. Drafts for 3 SKUs in about an hour.",
+      cta: "Apply to all 3 SKUs",
     },
     skuRows: SKU_ROWS.concepts,
   },
@@ -204,12 +207,14 @@ const fmtPart = (v: number) => (v >= 1 ? `$${+v.toFixed(2)}M` : `$${Math.round(v
  * one-by-one part is "<id>-review"; the autopilot part is "<id>-auto" and moves
  * to the autopilot band with its go-live date. No policy = the seed batches.
  */
-export function contentBatches(policy?: Policy, launched: string[] = []): Batch[] {
+export function contentBatches(policy?: Policy, launched: string[] = [], launchReady = false): Batch[] {
   const plays = launched.map(playById).filter((p): p is Play => !!p && p.owner === "content").map(playBatch)
-  if (!policy) return plays.length ? [...BATCHES, ...plays] : BATCHES
+  // Once the concept is in and drafted (use case 7), the launch waits one approval, not Mike's input.
+  const seed = launchReady ? BATCHES.map((b) => (b.id === "concepts" ? { ...b, tier: "approval" as const, mode: "bulk" as const, doneLabel: "3 published · $420K", rationale: `Ally drafted the 3 new pages from the agency's concept. Approve to publish before ${LAUNCH.due}.` } : b)) : BATCHES
+  if (!policy) return plays.length ? [...seed, ...plays] : seed
   const human: Batch[] = []
   const auto: Batch[] = []
-  for (const b of BATCHES) {
+  for (const b of seed) {
     if (!b.split || b.tier !== "approval") {
       human.push(b)
       continue
@@ -357,11 +362,11 @@ function playBatch(p: Play): Batch {
 }
 
 export function batchExampleSku(batch: Batch) {
-  return MOCK_SKUS.find((sku) => sku.id === batch.exampleSkuId) ?? MOCK_SKUS[0]
+  return MOCK_SKUS.find((sku) => sku.id === batch.exampleSkuId) ?? NEW_SKUS.find((sku) => sku.id === batch.exampleSkuId) ?? MOCK_SKUS[0]
 }
 
 export function skuById(id: string) {
-  return MOCK_SKUS.find((sku) => sku.id === id) ?? MOCK_SKUS[0]
+  return MOCK_SKUS.find((sku) => sku.id === id) ?? NEW_SKUS.find((sku) => sku.id === id) ?? MOCK_SKUS[0]
 }
 
 export function findBatch(id: string) {
@@ -945,7 +950,7 @@ const SNAPSHOT: Snapshot = {
       effort: "~3 days",
       canNudgeTeam: true,
       describe: {
-        content: "Halloween concepts and attributes blocking syndication.",
+        content: "Winter Hearth launch creative and attributes blocking syndication.",
         ops: "Chargebacks, fees, and shorted POs waiting on finance.",
         media: "Media plan for the $1M in newly unlocked budget.",
       },
@@ -1104,7 +1109,7 @@ function target(tier: Tier, lever: AgentId, recipient: NudgeTarget["recipient"],
 export function nudgeTargets(policy?: Policy): Partial<Record<NudgeKey, NudgeTarget>> {
   return {
     "approval-content": target("approval", "content", "mike", "/mike", "Halloween jar candles and gift sets", policy),
-    "team-content": target("input", "content", "mike", "/mike", "Halloween concepts and retail readiness", policy),
+    "team-content": target("input", "content", "mike", "/mike", "Winter Hearth launch and retail readiness", policy),
     "approval-ops": target("approval", "ops", "michelle", "/michelle", "Buy box, promo and listing fixes", policy),
   }
 }

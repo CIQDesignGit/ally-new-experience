@@ -27,8 +27,8 @@ interface Celebrate {
  * he approves, against what's open.
  */
 export function MikeProgress({ celebrate }: { celebrate: Celebrate | null }) {
-  const { approved, policy } = useNudge()
-  const BATCHES = contentBatches(policy, launchedIds(approved))
+  const { approved, policy, launchReady } = useNudge()
+  const BATCHES = contentBatches(policy, launchedIds(approved), launchReady)
 
   const approvalBatches = BATCHES.filter((b) => b.tier === "approval")
   const doneValue = approvalBatches.reduce((sum, b) => sum + (approved[b.id] ? b.approveValue : 0), 0)

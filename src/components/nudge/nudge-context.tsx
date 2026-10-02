@@ -31,6 +31,8 @@ interface StoredState {
   alerts?: CustomAlert[]
   /** Dashboards saved from chat answers; each widget is an answer, still live. */
   dashboards?: SavedDashboard[]
+  /** The Winter Hearth launch's pages are drafted from the agency concept (use case 7). */
+  launchReady?: boolean
 }
 
 export interface SavedDashboard {
@@ -120,6 +122,8 @@ interface NudgeContextValue extends StoredState {
   /** Adds or replaces a dashboard by id. */
   saveDashboard: (d: SavedDashboard) => void
   markDashboardSeen: (id: string) => void
+  launchReady: boolean
+  setLaunchReady: (v: boolean) => void
   retro: RetroState
   setRetro: (patch: Partial<RetroState>) => void
 }
@@ -241,6 +245,8 @@ export function NudgeProvider({ children }: { children: React.ReactNode }) {
         alerts: state.alerts ?? [],
         addAlert: (a) => update((prev) => ({ ...prev, alerts: [...(prev.alerts ?? []).filter((x) => x.id !== a.id), a] })),
         markAlertsSeen: () => update((prev) => ({ ...prev, alerts: (prev.alerts ?? []).map((x) => ({ ...x, seen: true })) })),
+        launchReady: !!state.launchReady,
+        setLaunchReady: (v) => update((prev) => ({ ...prev, launchReady: v })),
         dashboards: state.dashboards ?? [],
         saveDashboard: (d) => update((prev) => ({ ...prev, dashboards: [...(prev.dashboards ?? []).filter((x) => x.id !== d.id), d] })),
         markDashboardSeen: (id) => update((prev) => ({ ...prev, dashboards: (prev.dashboards ?? []).map((x) => (x.id === id ? { ...x, seen: true } : x)) })),

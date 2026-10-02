@@ -26,8 +26,8 @@ const money = (s: string) => parseFloat(s.replace(/[$KM,]/g, "")) / (s.endsWith(
  * one action. Each carries its own deadline; Approve all ships the bulk items.
  */
 export function BatchList({ selectedId, selectedSkuId, expandedBatchId, onToggleExpand, onSelectBatch, onSelectSku, onApproveAll }: BatchListProps) {
-  const { approved, policy } = useNudge()
-  const all = contentBatches(policy, launchedIds(approved))
+  const { approved, policy, launchReady } = useNudge()
+  const all = contentBatches(policy, launchedIds(approved), launchReady)
 
   return (
     <div className="border-r border-slate-200 bg-white">

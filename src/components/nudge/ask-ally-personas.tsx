@@ -40,10 +40,10 @@ export function mikeAnswer(q: string) {
     return (
       <div>
         <p>
-          Your Halloween concepts for <N>245</N> SKUs (<N>$420K</N>), and <N>58</N> attributes on <N>21</N> SKUs that are blocked from syndication (<N>$140K</N>).
+          Your Winter Hearth launch creative for <N>3</N> new SKUs (<N>$420K</N>), and <N>58</N> attributes on <N>21</N> SKUs that are blocked from syndication (<N>$140K</N>).
         </p>
         <OpenItem batch="concepts" primary>
-          Add Halloween concepts
+          Open the Winter Hearth launch
         </OpenItem>
       </div>
     )

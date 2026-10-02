@@ -54,7 +54,7 @@ export interface Batch {
   /** Which of Claire's buckets it sits in, so Mike's inbox groups the same way her page does. */
   tier: "approval" | "input" | "autopilot"
   /** The kind of content work, as Claire's page names it. */
-  type: "Seasonal" | "Foundational" | "Retail readiness"
+  type: "Seasonal" | "Foundational" | "Retail readiness" | "New launch"
   /** ISO date the value expires, when it does. */
   deadline?: string
   /** SKUs by revenue tier and the fields the changes touch, for the review policy. */

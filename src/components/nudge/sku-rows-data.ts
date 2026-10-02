@@ -148,17 +148,24 @@ export const SKU_ROWS: Record<string, SkuRow[]> = {
 
   concepts: [
     {
-      skuId: "sku-3",
+      skuId: "sku-new-1",
       sections: [
-        input("Halloween concept", "Warm Amber Floral Soy Jar Candle, 16 oz, Best Seller", "Theme or tagline, e.g. a warm glow for trick-or-treat night"),
-        { kind: "background", label: "Main image", liveLabel: "Standard pack shot" },
+        input("Launch concept", "New SKU · no page yet", "Theme or tagline, e.g. Gather round the glow"),
+        { kind: "background", label: "Main image", liveLabel: "No image yet" },
       ],
     },
     {
-      skuId: "sku-8",
+      skuId: "sku-new-2",
       sections: [
-        input("Halloween concept", "Aurelle Candles Coastal Linen Large Scented Jar, 22 oz", "Theme or tagline, e.g. clean linen for the morning after the party"),
-        { kind: "background", label: "Main image", liveLabel: "Standard pack shot" },
+        input("Launch concept", "New SKU · no page yet", "Theme or tagline, e.g. Gather round the glow"),
+        { kind: "background", label: "Main image", liveLabel: "No image yet" },
+      ],
+    },
+    {
+      skuId: "sku-new-3",
+      sections: [
+        input("Launch concept", "New SKU · no page yet", "Theme or tagline, e.g. Gather round the glow"),
+        { kind: "background", label: "Main image", liveLabel: "No image yet" },
       ],
     },
   ],
