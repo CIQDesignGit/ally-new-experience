@@ -55,7 +55,7 @@ export function AppDrawer({ home = "/michelle", defaultOpen }: { home?: string; 
     } catch {}
     if (next) setOpen(true)
   }
-  const { retro, knowledge, alerts, dashboards, decks, skills } = useNudge()
+  const { retro, knowledge, alerts, dashboards, decks, skills, conversations } = useNudge()
   const qbr = decks.qbr
   // Being on the conversation counts as started, even before its state has loaded.
   const started = Object.keys(retro).length > 0 || path === "/michelle/retro"
@@ -91,7 +91,8 @@ export function AppDrawer({ home = "/michelle", defaultOpen }: { home?: string; 
       icon: MessageSquare,
       items: [
         ...(started ? [{ label: RETRO.name, sub: retro.sentToClaire ? "Sent to Claire" : retro.deck ? "Deck built" : retro.stage === "storyline" ? "Storyline" : "Storyboard", href: "/michelle/retro", on: path === "/michelle/retro" }] : []),
-        ...(path === "/michelle/c/negotiation" || skills.length ? [{ label: "Amazon vendor negotiation", sub: skills.length ? "Skill saved" : "In progress", href: skills.length ? "/michelle/c/negotiation?run=1" : "/michelle/c/negotiation", on: path === "/michelle/c/negotiation" }] : []),
+        // Every conversation in this person's history, newest first: where it was asked and when.
+        ...conversations.filter((c) => c.home === home).map((c) => ({ label: c.title, sub: `${c.where} · ${c.at}`, href: c.href, on: path === c.href.split("?")[0] })),
         ...(qbr || path === "/michelle/decks/qbr" ? [{ label: "Q4 business review", sub: qbr?.sentToClaire ? "Sent to Claire" : qbr?.deck ? "Deck built" : qbr?.stage === "storyboard" ? "Storyboard" : "Storyline", href: "/michelle/decks/qbr", on: path === "/michelle/decks/qbr" }] : []),
       ],
       empty: "Ask Ally a new task to start one",
@@ -209,7 +210,7 @@ export function AppDrawer({ home = "/michelle", defaultOpen }: { home?: string; 
           </Link>
           {/* Lists live in the open sidebar: an icon opens it. */}
           {sections.map((sec) => (
-            <button key={sec.title} type="button" onClick={() => toggle(true)} aria-label={sec.fresh ? `${sec.title}: 1 new` : sec.title} title={sec.title} className={cn(iconBtn((sec.title === "Conversations" && (path === "/michelle/retro" || path.startsWith("/michelle/c/"))) || (sec.title === "Dashboards" && path.startsWith("/michelle/dashboards")) || (sec.title === "Alerts" && path === "/michelle/alerts")), "relative")}>
+            <button key={sec.title} type="button" onClick={() => toggle(true)} aria-label={sec.fresh ? `${sec.title}: 1 new` : sec.title} title={sec.title} className={cn(iconBtn((sec.title === "Conversations" && (path === "/michelle/retro" || path.startsWith("/michelle/c/") || path.startsWith("/c/"))) || (sec.title === "Dashboards" && path.startsWith("/michelle/dashboards")) || (sec.title === "Alerts" && path === "/michelle/alerts")), "relative")}>
               <sec.icon className="size-4" />
               {sec.fresh && <span aria-hidden className="absolute top-2 right-2 size-2 rounded-full bg-brand-500 ring-2 ring-slate-50" />}
             </button>

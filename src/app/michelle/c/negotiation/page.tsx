@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react"
 import { PageShell } from "@/components/layout/page-shell"
 import { TopStrip } from "@/components/nudge/top-strip"
 import { AppDrawer } from "@/components/nudge/app-drawer"
-import { AskBar, ChatProvider, ChatThread, useChat, useChatSource } from "@/components/nudge/chat/inline-chat"
+import { AskBar, ChatProvider, ChatThread, hasThread, useChat, useChatSource } from "@/components/nudge/chat/inline-chat"
 import { PREP_CHIP, RUN_BY_NAME_CHIP } from "@/components/nudge/skill/answers"
 import { PREP_FILES } from "@/components/nudge/skill/data"
 
@@ -16,7 +16,7 @@ import { PREP_FILES } from "@/components/nudge/skill/data"
  */
 export default function NegotiationThread() {
   return (
-    <ChatProvider>
+    <ChatProvider thread={{ id: "negotiation", where: "New thread", home: "/michelle", href: "/michelle/c/negotiation" }}>
       <Thread />
     </ChatProvider>
   )
@@ -31,7 +31,9 @@ function Thread() {
     if (started.current) return
     started.current = true
     const run = new URLSearchParams(window.location.search).get("run")
-    window.setTimeout(() => ask(run ? RUN_BY_NAME_CHIP : PREP_CHIP), 200)
+    // Reopened from history: it's already there. Otherwise start the task it was opened for.
+    if (run) window.setTimeout(() => ask(RUN_BY_NAME_CHIP), 200)
+    else if (!hasThread("negotiation")) window.setTimeout(() => ask(PREP_CHIP), 200)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   return (

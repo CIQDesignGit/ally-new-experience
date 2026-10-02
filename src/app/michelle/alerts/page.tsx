@@ -20,7 +20,7 @@ import { AlertCard, isCrossed, modeLabel } from "@/components/nudge/alerts/alert
  */
 export default function AlertsPage() {
   return (
-    <ChatProvider>
+    <ChatProvider thread={{ where: "Alerts", home: "/michelle" }}>
       <Alerts />
     </ChatProvider>
   )

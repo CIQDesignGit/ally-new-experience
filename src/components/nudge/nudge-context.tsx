@@ -8,6 +8,19 @@ import type { KnowledgeEntry, Policy } from "./policy"
 
 const STORAGE_KEY = "ally-nudge-demo-state"
 
+/** One conversation in history: its first question as the title, where it was asked, and its page. */
+export interface Conversation {
+  id: string
+  title: string
+  /** "Daily brief", "Gap to plan", "New thread". */
+  where: string
+  /** Whose history it's in: the person's home page ("/michelle", "/mike", "/claire-waterfall"). */
+  home: string
+  href: string
+  /** "Oct 8, 9:41 AM". */
+  at: string
+}
+
 /** The two nudges that page Mike for real — the rest just flip local UI state. */
 const MIKE_NUDGE_KEYS: NudgeKey[] = ["approval-content", "team-content"]
 
@@ -37,6 +50,8 @@ interface StoredState {
   decks?: Record<string, RetroState>
   /** Skills Michelle saved from past work, and who they're shared with. */
   skills?: { id: string; name: string; shared: "me" | "team" | "account"; version?: number }[]
+  /** Every conversation, newest first: what was asked, where, and how to open it again. */
+  conversations?: Conversation[]
 }
 
 export interface SavedDashboard {
@@ -135,6 +150,8 @@ interface NudgeContextValue extends StoredState {
   setDeck: (id: string, patch: Partial<RetroState>) => void
   skills: { id: string; name: string; shared: "me" | "team" | "account"; version?: number }[]
   saveSkill: (k: { id: string; name: string; shared: "me" | "team" | "account"; version?: number }) => void
+  conversations: Conversation[]
+  recordConversation: (c: Conversation) => void
   retro: RetroState
   setRetro: (patch: Partial<RetroState>) => void
 }
@@ -265,6 +282,8 @@ export function NudgeProvider({ children }: { children: React.ReactNode }) {
         launchReady: !!state.launchReady,
         decks: state.decks ?? {},
         skills: state.skills ?? [],
+        conversations: state.conversations ?? [],
+        recordConversation: (c) => update((prev) => ({ ...prev, conversations: [c, ...(prev.conversations ?? []).filter((x) => x.id !== c.id)] })),
         saveSkill: (k) => update((prev) => ({ ...prev, skills: [...(prev.skills ?? []).filter((x) => x.id !== k.id), k] })),
         setDeck: (id, patch) => update((prev) => ({ ...prev, decks: { ...(prev.decks ?? {}), [id]: { ...(prev.decks?.[id] ?? {}), ...patch } } })),
         setLaunchReady: (v) => update((prev) => ({ ...prev, launchReady: v })),

@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils"
 import { OPS_BATCHES, fmtValue } from "../data"
 import { playById } from "../market"
 import { Points } from "../points"
-import { ChatThread, useChat, useChatSource } from "../chat/inline-chat"
+import { ChatThread, useChat, useChatSource, useTurn } from "../chat/inline-chat"
 import type { Chip } from "../chat/inline-chat"
 import { useLaunch } from "../market/plays"
 import { GAP_STEPS, GAP_TREE, GAP_WEEK, gapNode, pathTo } from "./gap-data"
@@ -90,11 +90,14 @@ function Steps({ extra = [], measure = "sales", onDone }: { extra?: string[]; me
   // How long each step takes: slow for the data pulls, quick for the rest.
   const [plan] = useState(() => steps.map((_, i) => (i < 5 ? 1100 + ((i * 397) % 700) : 260 + ((i * 131) % 160))))
   const total = plan.reduce((a, b) => a + b, 0)
-  const [ran, setRan] = useState(0)
+  // Reopened from history: already done, nothing replays.
+  const restored = !!useTurn()?.restored
+  const [ran, setRan] = useState(() => (restored ? steps.length : 0))
   const [open, setOpen] = useState(false)
   const [elapsed, setElapsed] = useState(0)
   const running = ran < steps.length
   useEffect(() => {
+    if (restored) return
     const at = plan.reduce<number[]>((acc, ms) => [...acc, (acc[acc.length - 1] ?? 0) + ms], [])
     const ts = at.map((t, i) => window.setTimeout(() => setRan(i + 1), t))
     const tick = window.setInterval(() => setElapsed((e) => e + 1), 1000)

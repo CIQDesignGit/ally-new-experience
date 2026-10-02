@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import { Check, ChevronDown, FileSpreadsheet, FileText, Loader2, Sparkles } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useTurn } from "./inline-chat"
 
 /**
  * A big piece of work, shown the way an agent works: Ally's mark turning, the
@@ -75,9 +76,12 @@ export function AgentRun({ title, files = [], steps, readMs, slow = 5, facts = t
   // When each step finishes: slow for the data reads, quick after.
   const [plan] = useState(() => steps.map((_, i) => (i < slow ? 1000 + ((i * 397) % 700) : 240 + ((i * 131) % 160))))
   const total = read + plan.reduce((a, b) => a + b, 0)
-  const [now, setNow] = useState(0)
+  // Reopened from history: already done, nothing replays.
+  const restored = !!useTurn()?.restored
+  const [now, setNow] = useState(() => (restored ? total : 0))
   const [open, setOpen] = useState(false)
   useEffect(() => {
+    if (restored) return
     const start = Date.now()
     const t = window.setInterval(() => {
       const e = Date.now() - start

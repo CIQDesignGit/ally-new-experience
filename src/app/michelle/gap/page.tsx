@@ -29,7 +29,7 @@ export default function GapToPlanPage() {
   const tree = treeFor(businessGroup)
   const [nodeId, setNodeId] = useState("overall")
   return (
-    <ChatProvider>
+    <ChatProvider thread={{ where: "Gap to plan", home: "/michelle" }}>
       <GapChat />
       <PageShell className="bg-slate-50 xl:bg-white">
         <div className="mx-auto max-w-[1280px] overflow-clip bg-white shadow-pane-lg sm:my-6 sm:rounded-2xl sm:ring-1 sm:ring-slate-900/6 xl:my-0 xl:rounded-none xl:shadow-none xl:ring-0">

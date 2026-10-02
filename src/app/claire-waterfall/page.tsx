@@ -44,7 +44,7 @@ function HomeChat() {
 
 export default function ClaireWaterfallPage() {
   return (
-    <ChatProvider>
+    <ChatProvider thread={{ where: "Daily brief", home: "/claire-waterfall" }}>
       <ClaireWaterfall />
     </ChatProvider>
   )

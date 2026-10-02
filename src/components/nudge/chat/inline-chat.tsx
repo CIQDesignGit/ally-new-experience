@@ -3,6 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react"
 import { motion } from "framer-motion"
 import { QUOTE_EVENT } from "./select-to-ask"
+import { useNudge } from "../nudge-context"
 import { UploadDialog } from "./upload-dialog"
 import { CornerDownRight, Mail, Paperclip, Plus, Send, Sparkles, X } from "lucide-react"
 import { useRouter } from "next/navigation"
@@ -67,7 +68,18 @@ interface Turn {
   about?: string
   anchor?: string
   render: () => React.ReactNode
+  /** Reopened from history: shows as it ended, with no thinking or animation replayed. */
+  restored?: boolean
 }
+
+/**
+ * Conversations kept while the app is open (a refresh starts the demo over), by
+ * id. A page's chat gets a new id each visit, so the page opens clean; its
+ * conversation stays in history and opens on its own page.
+ */
+const THREADS = new Map<string, Turn[]>()
+export const hasThread = (id: string) => (THREADS.get(id)?.length ?? 0) > 0
+let mounts = 0
 
 interface ChatValue {
   source: ChatSource
@@ -89,10 +101,23 @@ export function useTurn() {
   return useContext(TurnCtx)
 }
 
-export function ChatProvider({ children }: { children: React.ReactNode }) {
+export function ChatProvider({ children, thread }: { children: React.ReactNode; /** Where this chat lives, for history. A fixed `id` (a thread page) reopens as it was; without one, each visit is a new conversation. */ thread?: { id?: string; where: string; home: string; href?: string } }) {
+  const { recordConversation } = useNudge()
+  const [id] = useState(() => thread?.id ?? `${thread?.where.toLowerCase().replace(/\W+/g, "-") ?? "chat"}-${Date.now().toString(36)}-${++mounts}`)
   const [source, setSource] = useState<ChatSource>({ chips: [] })
-  const [turns, setTurns] = useState<Turn[]>([])
-  const next = useRef(1)
+  const [turns, setTurns] = useState<Turn[]>(() => (thread?.id ? (THREADS.get(thread.id) ?? []).map((t) => ({ ...t, restored: true })) : []))
+  const next = useRef(Math.max(0, ...turns.map((t) => t.id)) + 1)
+  const [at] = useState(() => new Date(`2026-10-08T${new Date().toTimeString().slice(0, 8)}`).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }))
+  // Kept and recorded as it grows: the first question is its title.
+  // Reopening doesn't re-record it; only something new does.
+  const [reopened] = useState(turns.length)
+  useEffect(() => {
+    if (!thread || !turns.length || turns.length <= reopened) return
+    THREADS.set(id, turns)
+    recordConversation({ id, title: turns[0].q, where: thread.where, home: thread.home, href: thread.href ?? `/c/${id}`, at })
+    // Recorded when the conversation changes, not when the callback's identity does.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [turns.length, id])
   const ask = useCallback(
     (chip: Chip, anchor?: string, said?: string, attach?: Attachment[]) =>
       setTurns((t) => [...t, { id: next.current++, q: said ?? chip.q, chip: chip.q, followUps: chip.needsFiles && !attach?.length ? undefined : chip.followUps, attach, think: chip.think && { ms: chip.think.ms, label: attach?.length ? (chip.think.filesLabel ?? chip.think.label) : chip.think.label }, about: source.about, anchor: anchor ?? source.anchor, render: chip.render }]),
@@ -146,18 +171,19 @@ export function ChatThread({ className, anchor }: { className?: string; anchor?:
   const lastId = turns[turns.length - 1]?.id
   // A quick question still gets a beat: about a second, never instant.
   const lastThink = turns[turns.length - 1]?.think?.ms ?? 1100
+  const lastRestored = turns[turns.length - 1]?.restored
   useEffect(() => {
-    if (lastId === undefined) return
+    if (lastId === undefined || lastRestored) return
     setThinking(lastId)
     const t = window.setTimeout(() => setThinking(null), lastThink)
     return () => window.clearTimeout(t)
-  }, [lastId, lastThink])
+  }, [lastId, lastThink, lastRestored])
 
   // Like ChatGPT: the question lands just above the bar, then the page follows the answer up as it
   // arrives, until the question reaches the top, and stops there. A longer answer is yours to scroll.
   // Stops early if you scroll yourself. Checked on a short timer (size events don't fire everywhere).
   useEffect(() => {
-    if (lastId === undefined) return
+    if (lastId === undefined || lastRestored) return
     const el = lastRef.current
     if (!el) return
     let following = true
@@ -194,7 +220,7 @@ export function ChatThread({ className, anchor }: { className?: string; anchor?:
       window.removeEventListener("touchmove", stop)
       window.removeEventListener("keydown", keys)
     }
-  }, [lastId])
+  }, [lastId, lastRestored])
 
   if (!turns.length) return null
   return (

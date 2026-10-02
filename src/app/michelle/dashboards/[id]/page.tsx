@@ -27,7 +27,7 @@ const RANGES = [
 export default function SavedDashboardPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   return (
-    <ChatProvider>
+    <ChatProvider thread={{ where: "Promo health dashboard", home: "/michelle" }}>
       <SavedDashboard id={id} />
     </ChatProvider>
   )

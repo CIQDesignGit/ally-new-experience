@@ -36,7 +36,7 @@ const RANGES = [
 
 export default function PrimeDayDashboard() {
   return (
-    <ChatProvider>
+    <ChatProvider thread={{ where: "Prime Day dashboard", home: "/michelle" }}>
       <Dashboard />
     </ChatProvider>
   )

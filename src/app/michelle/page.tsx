@@ -22,7 +22,6 @@ import type { PromoWidget } from "@/components/nudge/promo/data"
 import type { Chip } from "@/components/nudge/chat/inline-chat"
 import { PREP_CHIP, RUN_BY_NAME_CHIP } from "@/components/nudge/skill/answers"
 import { LESSON_CHIP } from "@/components/nudge/ops/gap-training"
-import { GiftSetsAnswer } from "@/components/nudge/alerts/answers"
 import { GIFT_QUESTION } from "@/components/nudge/alerts/data"
 import { RETRO_TASK, StorylineAnswer } from "@/components/nudge/retro/storyline-answer"
 import { ResetDemoButton } from "@/components/nudge/reset-demo-button"
@@ -51,7 +50,8 @@ function InboxChat() {
     {
       chips: [
         PROMO_CHIPS["promo-month"],
-        { q: GIFT_QUESTION, match: /gift.?sets?/i, render: () => <GiftSetsAnswer /> },
+        // An investigation that ends in actions and alerts: its own thread.
+        { q: GIFT_QUESTION, match: /gift.?sets?/i, task: "/michelle/c/gift-sets", render: () => null },
         LESSON_CHIP,
         // Run-by-name first: "open my negotiation prep" means the saved skill, not a new prep.
         // A new task, so a new thread: the negotiation opens in its own conversation.
@@ -74,7 +74,7 @@ function InboxChat() {
 
 export default function MichellePage() {
   return (
-    <ChatProvider>
+    <ChatProvider thread={{ where: "Daily brief", home: "/michelle" }}>
       <Michelle />
     </ChatProvider>
   )
