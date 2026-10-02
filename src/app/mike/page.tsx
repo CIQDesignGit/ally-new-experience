@@ -30,7 +30,7 @@ import type { Batch } from "@/components/nudge/types"
 function MikeChat() {
   useChatSource(
     {
-      chips: [LAUNCH_CHIP, ...MIKE_QUESTIONS.map((q) => ({ q, render: () => <div className="max-w-[860px] rounded-2xl bg-white px-5 py-4 text-[15px] leading-relaxed text-slate-700 ring-1 ring-slate-200">{mikeAnswer(q)}</div> }))],
+      chips: [LAUNCH_CHIP, ...MIKE_QUESTIONS.map((q, i) => ({ q, match: i === 2 ? /how am i doing|how('s| is| did).*(quarter|content)/i : undefined, render: () => <div className="max-w-[860px] rounded-2xl bg-white px-5 py-4 text-[15px] leading-relaxed text-slate-700 ring-1 ring-slate-200">{mikeAnswer(q)}</div> }))],
       files: LAUNCH_FILES,
     },
     "mike",

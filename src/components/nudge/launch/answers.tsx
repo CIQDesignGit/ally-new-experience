@@ -1,8 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import Link from "next/link"
-import { BookOpen, Check, ShieldCheck, Upload } from "lucide-react"
+import { Check, ShieldCheck, Upload } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useNudge } from "../nudge-context"
 import { useChat, useTurn } from "../chat/inline-chat"
@@ -11,7 +10,8 @@ import type { Chip } from "../chat/inline-chat"
 import { OpenItem } from "../chat/open-item"
 import { PRIMARY } from "../mike/buttons"
 import { AS_OF } from "../data"
-import { LAUNCH, LAUNCH_FACTS, LAUNCH_FILES, LAUNCH_PAGES, NEW_SKUS, RETAILER_CHECKS } from "./data"
+import { LAUNCH, LAUNCH_FILES, LAUNCH_MEMORY, LAUNCH_PAGES, NEW_SKUS, RETAILER_CHECKS } from "./data"
+import { MemorySaved } from "../chat/memory"
 import { AdaptedImage } from "./images"
 
 /**
@@ -63,8 +63,9 @@ function BriefRead() {
     if (handled.current) return
     handled.current = true
     setLaunchReady(true)
-    const entries = LAUNCH_FACTS.map((f) => ({ id: `launch-${f.id}`, text: f.text, retailer: "Amazon", brands: [] as string[], skuGroups: [] as string[], author: "Mike Chen", date: DATE, source: "from the brand team's launch email" }))
-    saveKnowledge([...entries, ...knowledge.filter((k) => !k.id.startsWith("launch-"))])
+    // One fact, not the whole email: the thing worth bringing back later.
+    const entry = { id: LAUNCH_MEMORY.id, text: LAUNCH_MEMORY.text, retailer: "Amazon", brands: [] as string[], skuGroups: [] as string[], author: "Mike Chen", date: DATE, source: `from ${LAUNCH_MEMORY.source}` }
+    saveKnowledge([entry, ...knowledge.filter((k) => k.id !== entry.id && !k.id.startsWith("launch-"))])
   }, [knowledge, saveKnowledge, setLaunchReady])
 
   return (
@@ -104,19 +105,7 @@ function BriefRead() {
 
       <SentLine />
 
-      <div className="rounded-xl bg-slate-25 px-4 py-3 ring-1 ring-slate-200">
-        <div className="flex items-center gap-2 text-[14px] font-semibold text-slate-950">
-          <BookOpen className="size-4 text-brand-600" /> I&apos;ve put this in memory, so future work follows it
-        </div>
-        <ul className="mt-1.5 flex flex-col gap-0.5 text-[13px] text-slate-700">
-          {LAUNCH_FACTS.map((f) => (
-            <li key={f.id}>· {f.text}</li>
-          ))}
-        </ul>
-        <Link href="/settings?tab=knowledge" className="mt-2 inline-block text-[13px] font-medium text-brand-700 hover:underline">
-          Change it in Knowledge
-        </Link>
-      </div>
+      <MemorySaved text={LAUNCH_MEMORY.text} />
     </div>
   )
 }

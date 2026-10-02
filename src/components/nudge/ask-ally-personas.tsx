@@ -1,3 +1,4 @@
+import { LaunchRecall } from "./launch/recall"
 import Link from "next/link"
 import { ArrowRight } from "lucide-react"
 import { OpenItem } from "./chat/open-item"
@@ -55,6 +56,8 @@ export function mikeAnswer(q: string) {
           <N>{fmtValue(DELIVERED.quarter.content.delivered)}</N> delivered of <N>{fmtValue(DELIVERED.quarter.content.promised)}</N> projected. {DELIVERED.quarter.content.summary[1]}
         </p>
         <Results />
+        {/* The memory callback: shown only once the launch brief was kept. */}
+        <LaunchRecall />
       </div>
     )
   return (

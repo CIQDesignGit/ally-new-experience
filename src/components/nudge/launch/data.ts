@@ -111,3 +111,17 @@ export const LAUNCH_PAGES = [
     removed: undefined,
   },
 ]
+
+/** What Ally keeps from the brief: one fact, recalled later when it matters. */
+export const LAUNCH_MEMORY = {
+  id: "launch-winter-hearth",
+  text: "3 new Winter Hearth SKUs launch Nov 9",
+  source: "Priya's launch brief",
+}
+
+/** Retail readiness for the 3 new SKUs: two are ready, the travel tin trio is blocked on Walmart attributes. */
+export const LAUNCH_READINESS = [
+  { name: "Winter Hearth Jar", ready: true },
+  { name: "Cedar Ember Pillar", ready: true },
+  { name: "Frost Fig Travel Tin Trio", ready: false, missing: ["Burn time", "Wick type", "Item form", "Safety warning"], retailer: "Walmart" },
+]
