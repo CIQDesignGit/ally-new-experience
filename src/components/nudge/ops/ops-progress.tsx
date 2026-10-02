@@ -26,7 +26,7 @@ interface Celebrate {
  * one approval from live and what's losing sales now. The bar is the quarter's
  * ops work: banked, then what she acts on, against what's open. Same as Mike's.
  */
-export function OpsProgress({ celebrate }: { celebrate: Celebrate | null }) {
+export function OpsProgress({ celebrate, stage, onStage }: { celebrate: Celebrate | null; /** The inbox filter, shown on its bar. */ stage?: Stage; onStage?: (s: Exclude<Stage, "banked">) => void }) {
   const { approved, policy } = useNudge()
   const OPS_BATCHES = opsBatches(policy)
 
@@ -45,7 +45,7 @@ export function OpsProgress({ celebrate }: { celebrate: Celebrate | null }) {
   const stages = { banked: BANKED + actedValue, autopilot: openIn("autopilot"), approval: left, input: openIn("input") }
   const jump = (s: Stage) => {
     if (s === "banked") return document.getElementById("ops-delivered")?.scrollIntoView({ behavior: "smooth", block: "start" })
-    document.querySelector(`[data-tier="${s}"]`)?.scrollIntoView({ behavior: "smooth", block: "start" })
+    onStage?.(s)
   }
 
   return (
@@ -74,7 +74,7 @@ export function OpsProgress({ celebrate }: { celebrate: Celebrate | null }) {
           )}
         </h1>
         </div>
-        <MiniWaterfall values={stages} onSelect={jump} />
+        <MiniWaterfall values={stages} highlight={stage ?? "approval"} onSelect={jump} />
       </div>
       <div className="relative border-y border-slate-200 bg-brand-25 px-10 py-4">
         <SplitBar

@@ -14,7 +14,8 @@ import { cn } from "@/lib/utils"
 import { PageShell } from "@/components/layout/page-shell"
 import { MichelleHeader } from "@/components/nudge/ops/michelle-header"
 import { OpsProgress } from "@/components/nudge/ops/ops-progress"
-import { OpsBatchList } from "@/components/nudge/ops/ops-batch-list"
+import { OpsBatchList, inboxRows } from "@/components/nudge/ops/ops-batch-list"
+import type { InboxFilter } from "@/components/nudge/ops/ops-batch-list"
 import { OpsBatchDetail } from "@/components/nudge/ops/ops-batch-detail"
 import { OpsDelivered } from "@/components/nudge/ops/ops-delivered"
 import { MICHELLE_QUESTIONS, michelleAnswer } from "@/components/nudge/ask-ally-personas"
@@ -90,7 +91,7 @@ export default function MichellePage() {
 
 function Michelle() {
   const { clear } = useChat()
-  const { approve, policy, businessGroup, note, addToNote } = useNudge()
+  const { approve, approved, policy, businessGroup, note, addToNote } = useNudge()
   // The Business view's hierarchy in the customer's order; the pane starts on the whole of Amazon.
   const tree = treeFor(businessGroup)
   const [nodeId, setNodeId] = useState("overall")
@@ -100,6 +101,8 @@ function Michelle() {
   // Open on the top of the inbox: the most valuable item one approval away.
   const [selectedId, setSelectedId] = useState<OpsBatch["id"]>(() => [...OPS_BATCHES].filter((b) => b.tier === "approval").sort((x, y) => y.approveValue - x.approveValue)[0].id)
   const [celebrate, setCelebrate] = useState<{ value: number; label: string } | null>(null)
+  // The inbox filter; the waterfall's bars set it too.
+  const [filter, setFilter] = useState<InboxFilter>("all")
 
   const selected = OPS_BATCHES.find((b) => b.id === selectedId) ?? OPS_BATCHES[0]
   // Same model as Mike's page: a SKU open side by side, its issue's list open in the rail.
@@ -112,12 +115,22 @@ function Michelle() {
 
   function scrollToQueue() {
     window.setTimeout(() => {
-      const top = queueRef.current ? queueRef.current.getBoundingClientRect().top + window.scrollY - 16 : 0
+      // Clear of the pinned note bar, so the pane's header isn't under it.
+      const pinned = [...document.querySelectorAll<HTMLElement>("[data-sticky-top]")].reduce((m, e) => Math.max(m, e.offsetHeight), 0)
+      const top = queueRef.current ? queueRef.current.getBoundingClientRect().top + window.scrollY - pinned : 0
       window.scrollTo({ top, behavior: "smooth" })
       window.setTimeout(() => {
         if (Math.abs(window.scrollY - top) > 4) window.scrollTo({ top })
       }, 600)
     }, 50)
+  }
+
+  /** A filter (or its waterfall bar) shows that slice and opens its top row. */
+  function pickFilter(f: InboxFilter, scroll = false) {
+    setFilter(f)
+    const rows = inboxRows(OPS_BATCHES, approved, f)
+    if (!rows.some((b) => b.id === selectedId) && rows[0]) selectBatch(rows[0].id)
+    if (scroll) scrollToQueue()
   }
 
   function selectBatch(id: string) {
@@ -185,11 +198,6 @@ function Michelle() {
     if (batch.email) toast.success(`Sent to ${batch.email.to}, ${batch.email.role} · evidence attached`, { position: "top-right" })
   }
 
-  function handleApproveAll(batches: OpsBatch[]) {
-    batches.forEach((b) => approve(b.id))
-    showProgress()
-    celebrateFor(batches)
-  }
 
   return (
     <PageShell className="bg-slate-50 xl:bg-white">
@@ -235,7 +243,7 @@ function Michelle() {
           </>
         ) : (
           <>
-        <OpsProgress celebrate={celebrate} />
+        <OpsProgress celebrate={celebrate} stage={filter === "all" ? undefined : filter} onStage={(st) => pickFilter(st, true)} />
         <NoteBar
           onSent={(c) => {
             celebrateWith(c)
@@ -249,13 +257,14 @@ function Michelle() {
               selectedSku={selectedSku}
               expandedId={expandedId}
               checked={checked}
+              filter={filter}
+              onFilter={(f) => pickFilter(f)}
               onToggleExpand={(id) => setExpandedId((e) => (e === id ? null : id))}
               onSelect={selectBatch}
               onSelectSku={(batchId, asin) => {
                 setSelectedId(batchId)
                 setSelectedSku(asin)
               }}
-              onApproveAll={handleApproveAll}
             />
           </div>
           {selectedSku ? (
