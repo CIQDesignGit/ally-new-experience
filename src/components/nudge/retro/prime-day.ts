@@ -10,6 +10,8 @@
 export type Bar = { label: string; value: number; display: string; tone: "accent" | "muted" | "loss" | "media" | "ops" }
 
 export type Chart =
+  | { kind: "kpis"; items: { figure: string; label: string; loss?: boolean }[] }
+  | { kind: "table"; columns: string[]; rows: { cells: string[]; verdict: "worked" | "didnt" }[] }
   | { kind: "columns"; bars: Bar[] }
   | { kind: "rows"; bars: Bar[]; zeroAt?: number }
   | { kind: "slots"; rows: { label: string; slots: number; tone: Bar["tone"] }[]; of: number }
@@ -227,3 +229,40 @@ export const THEMES: Record<ThemeId, { name: string; bg: string; ink: string; mu
 
 /** The brand template file Michelle attaches in the demo. */
 export const BRAND_FILE = { name: "Aurelle_Brand_2026.potx", size: "4.2 MB", layouts: 9, used: 4, colors: 4 }
+
+/** "Add an executive summary at the start": the slide Ally writes and puts first. */
+export const EXEC_SLIDE: RetroSlide = {
+  id: "summary",
+  question: "What should Claire take away in one slide?",
+  eyebrow: "Prime Day 2026 · Executive summary",
+  title: "We outgrew the market; four lessons carry into Black Friday",
+  chart: {
+    kind: "kpis",
+    items: [
+      { figure: "$4.6M", label: "Prime Day sales, up 28%" },
+      { figure: "+2 pts", label: "faster than the market" },
+      { figure: "$410K", label: "added by Ally" },
+      { figure: "4", label: "lessons kept for Black Friday" },
+    ],
+  },
+  insights: [
+    { figure: "+41%", text: "jar candles carried the event" },
+    { figure: "+9%", text: "gift sets lagged behind Brightwick's 30% off" },
+    { figure: "+52%", text: "lightning deals beat the coupon's +6%" },
+  ],
+}
+
+/** Every slide the storyboard can hold, the summary included. */
+export const ALL_SLIDES: RetroSlide[] = [EXEC_SLIDE, ...SLIDES]
+
+/** "Convert slide 4's bar chart": the deals as a scorecard, which says worked or didn't outright. */
+export const DEALS_TABLE: Chart = {
+  kind: "table",
+  columns: ["Deal", "Lift", "Added"],
+  rows: [
+    { cells: ["Lightning deals · 12 hero jar candles", "+52%", "+$310K"], verdict: "worked" },
+    { cells: ["3-wick bundle", "+18%", "+$90K"], verdict: "worked" },
+    { cells: ["20% gift-set coupon", "+6%", "+$40K"], verdict: "didnt" },
+  ],
+}
+

@@ -38,6 +38,8 @@ export interface RetroState {
   dashboard?: boolean
   /** Lessons kept (each is also a Knowledge entry). */
   saved?: string[]
+  /** Slides shown in their other form (deals as a scorecard instead of bars). */
+  alts?: string[]
 }
 
 /** A vote on Ally's call, and the context sent with it. */

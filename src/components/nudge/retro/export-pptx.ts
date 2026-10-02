@@ -1,6 +1,6 @@
 "use client"
 
-import { SLIDES, THEMES } from "./prime-day"
+import { ALL_SLIDES, DEALS_TABLE, THEMES } from "./prime-day"
 import type { Bar, RetroSlide, ThemeId } from "./prime-day"
 
 /** Font names PowerPoint knows (the page uses CSS variables for the same faces). */
@@ -15,13 +15,13 @@ const hex = (c: string) => c.replace("#", "").toUpperCase()
  * The deck as a real .pptx: every slide in the chosen look, with native,
  * editable charts (not pictures), in the order the storyboard set.
  */
-export async function exportRetroPptx(order: string[], theme: ThemeId) {
+export async function exportRetroPptx(order: string[], theme: ThemeId, alts: string[] = []) {
   const { default: PptxGenJS } = await import("pptxgenjs")
   const pptx = new PptxGenJS()
   pptx.layout = "LAYOUT_WIDE" // 13.33 × 7.5 in
   const t = THEMES[theme]
   const f = FONTS[theme]
-  const slides = order.map((id) => SLIDES.find((s) => s.id === id)!).filter(Boolean)
+  const slides = order.map((id) => ALL_SLIDES.find((s) => s.id === id)!).filter(Boolean).map((s) => (alts.includes(s.id) && s.id === "deals" ? { ...s, chart: DEALS_TABLE } : s))
 
   slides.forEach((s, i) => {
     const slide = pptx.addSlide()
@@ -58,6 +58,32 @@ function addChart(pptx: InstanceType<typeof import("pptxgenjs").default>, slide:
   const f = FONTS[theme]
   const box = { x: 0.6, y: 2.0, w: 7.1, h: 4.6 }
   const c = s.chart
+  if (c.kind === "kpis") {
+    c.items.forEach((k, i) => {
+      const x = box.x + (i % 2) * 3.6
+      const y = box.y + 0.3 + Math.floor(i / 2) * 2.1
+      slide.addText(
+        [
+          { text: `${k.figure}\n`, options: { fontFace: f.display, fontSize: 40, bold: true, color: hex(k.loss ? t.loss : t.ink) } },
+          { text: k.label, options: { fontFace: f.body, fontSize: 14, color: hex(t.muted) } },
+        ],
+        { x, y, w: 3.4, h: 1.9, valign: "top" },
+      )
+    })
+    return
+  }
+  if (c.kind === "table") {
+    const good = theme === "default" ? "067647" : "4D6B2F"
+    const head = [...c.columns, ""].map((h, i) => ({ text: h.toUpperCase(), options: { bold: true, fontSize: 11, color: hex(t.muted), align: (i === 0 ? "left" : "right") as "left" | "right" } }))
+    const rows = c.rows.map((r) => [
+      { text: r.cells[0], options: { bold: true, fontSize: 15, color: hex(t.ink) } },
+      { text: r.cells[1], options: { bold: true, fontSize: 15, color: hex(t.ink), align: "right" as const } },
+      { text: r.cells[2], options: { bold: true, fontSize: 15, color: hex(t.ink), align: "right" as const } },
+      { text: r.verdict === "worked" ? "✓ Worked" : "✕ Didn't", options: { bold: true, fontSize: 14, color: r.verdict === "worked" ? good : hex(t.loss), align: "right" as const } },
+    ])
+    slide.addTable([head, ...rows], { x: box.x, y: box.y + 0.6, w: box.w, colW: [3.6, 1.0, 1.2, 1.3], fontFace: f.body, border: { type: "solid", pt: 0.75, color: hex(t.rule) }, rowH: 0.7, valign: "middle" })
+    return
+  }
   if (c.kind === "columns" || c.kind === "rows") {
     slide.addChart(
       pptx.ChartType.bar,

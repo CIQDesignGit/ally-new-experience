@@ -13,7 +13,7 @@ import { useNudge } from "@/components/nudge/nudge-context"
 import { AS_OF } from "@/components/nudge/data"
 import { PRIMARY, SECONDARY } from "@/components/nudge/mike/buttons"
 import { Slide } from "@/components/nudge/retro/slide"
-import { BRAND_FILE, LESSONS, RETRO, SLIDES, THEMES } from "@/components/nudge/retro/prime-day"
+import { ALL_SLIDES, BRAND_FILE, DEALS_TABLE, LESSONS, RETRO, SLIDES, THEMES } from "@/components/nudge/retro/prime-day"
 import { RETRO_QUESTION, StorylineAnswer } from "@/components/nudge/retro/storyline-answer"
 import { exportRetroPptx } from "@/components/nudge/retro/export-pptx"
 import { lato, playfair } from "@/components/nudge/retro/fonts"
@@ -32,7 +32,12 @@ type Msg = { id: number; from: "you" | "ally"; text?: string; file?: boolean; le
 export default function RetroPage() {
   const { retro, setRetro, knowledge, saveKnowledge } = useNudge()
   const router = useRouter()
-  const order = retro.order?.length === SLIDES.length ? retro.order : DEFAULT_ORDER
+  // A saved order is kept only if every id is a slide we know (the summary may have been added).
+  const known = new Set(ALL_SLIDES.map((s) => s.id))
+  const order = retro.order && retro.order.length >= SLIDES.length && retro.order.every((id) => known.has(id)) ? retro.order : DEFAULT_ORDER
+  const alts = retro.alts ?? []
+  // What just changed in the storyboard, labelled under its card.
+  const [changed, setChanged] = useState<Record<string, string>>({})
   const theme = retro.theme ?? "default"
   const [view, setView] = useState<"answer" | "storyboard" | "deck">("storyboard")
   const [tab, setTab] = useState<"outline" | "questions" | "storyboard">("storyboard")
@@ -58,7 +63,7 @@ export default function RetroPage() {
       // A new task opens as a conversation: the ask and Ally's storyline, nothing else.
       window.setTimeout(() => setView("answer"), 0)
       // After the saved demo state has loaded (it loads in the provider's effect, which runs after this one).
-      window.setTimeout(() => setRetro({ order: undefined, theme: undefined, locked: false, deck: false, sentToClaire: false, dashboard: false, saved: [] }), 0)
+      window.setTimeout(() => setRetro({ order: undefined, theme: undefined, locked: false, deck: false, sentToClaire: false, dashboard: false, saved: [], alts: [] }), 0)
       window.history.replaceState(null, "", "/michelle/retro")
       return
     }
@@ -73,7 +78,26 @@ export default function RetroPage() {
   }, [retro.deck, setRetro])
 
   const say = (...m: Omit<Msg, "id">[]) => setMsgs((prev) => [...prev, ...m.map((x) => ({ ...x, id: next.current++ }))])
-  const slides = order.map((id) => SLIDES.find((s) => s.id === id)!)
+  const slides = order.map((id) => ALL_SLIDES.find((s) => s.id === id)!).map((s) => (s.id === "deals" && alts.includes("deals") ? { ...s, chart: DEALS_TABLE } : s))
+
+  function addSummary() {
+    setRetro({ order: ["summary", ...order.filter((id) => id !== "summary")] })
+    setChanged((c) => ({ ...c, summary: "New" }))
+    say(
+      { from: "you", text: "Add an executive summary slide at the start" },
+      { from: "ally", text: "Added an executive summary as slide 1: the 4 headline numbers on the left, the 3 messages Claire needs on the right." },
+    )
+  }
+
+  function dealsAsTable() {
+    const n = order.indexOf("deals") + 1
+    setRetro({ alts: [...alts.filter((a) => a !== "deals"), "deals"] })
+    setChanged((c) => ({ ...c, deals: "Changed" }))
+    say(
+      { from: "you", text: `Convert slide ${n}'s bar chart to something else` },
+      { from: "ally", text: `Slide ${n} is now a scorecard: each deal, its lift, what it added, and whether it worked. The question is which deals worked, and a table answers that outright; the bars made you compare.` },
+    )
+  }
 
   function move(from: number, to: number) {
     if (from === to) return
@@ -106,7 +130,7 @@ export default function RetroPage() {
 
   async function exportPptx() {
     try {
-      await exportRetroPptx(order, theme)
+      await exportRetroPptx(order, theme, alts)
       toast.success(`Exported ${theme === "aurelle" ? "Prime-Day-retro (Aurelle).pptx" : "Prime-Day-retro.pptx"} · ${slides.length} editable slides`, { position: "top-right" })
     } catch {
       toast.error("Couldn't build the PowerPoint. Try again.", { position: "top-right" })
@@ -126,7 +150,9 @@ export default function RetroPage() {
       ? [{ q: "Open the storyboard", run: () => setView("storyboard") }]
       : view === "storyboard"
       ? [
-          { q: "Put deals right after the market slide", run: () => { move(order.indexOf("deals"), 1); say({ from: "you", text: "Put deals right after the market slide" }, { from: "ally", text: "Done. Deals is now slide 2." }) } },
+          ...(order.includes("summary") ? [] : [{ q: "Add an executive summary slide at the start", run: addSummary }]),
+          ...(alts.includes("deals") ? [] : [{ q: `Convert slide ${order.indexOf("deals") + 1}'s bar chart to something else`, run: dealsAsTable }]),
+          { q: "Put deals right after the market slide", run: () => { move(order.indexOf("deals"), order.indexOf("market") + 1); say({ from: "you", text: "Put deals right after the market slide" }, { from: "ally", text: `Done. Deals is slide ${order.indexOf("market") + 2}.` }) } },
           { q: "Lock it and build the deck", run: () => { say({ from: "you", text: "Lock it and build the deck" }); makeDeck() } },
         ]
       : theme === "default"
@@ -152,6 +178,7 @@ export default function RetroPage() {
       setTab={setTab}
       locked={!!retro.locked}
       slides={slides}
+      changed={changed}
       onMove={move}
       onExpand={() => setExpanded((e) => !e)}
       onLock={() => { setRetro({ locked: !retro.locked }); toast.success(retro.locked ? "Unlocked" : "Storyline locked", { position: "top-right" }) }}
@@ -361,6 +388,7 @@ function Storyboard(p: {
   setTab: (t: "outline" | "questions" | "storyboard") => void
   locked: boolean
   slides: typeof SLIDES
+  changed: Record<string, string>
   onMove: (from: number, to: number) => void
   onExpand: () => void
   onLock: () => void
@@ -421,12 +449,13 @@ function Storyboard(p: {
                 setDrag(null)
                 setOver(null)
               }}
-              className={cn("rounded-[10px] transition-transform", !p.locked && "cursor-grab active:cursor-grabbing", drag === i && "opacity-40", over === i && drag !== i && "ring-2 ring-brand-300 ring-offset-4 ring-offset-slate-50")}
+              className={cn("rounded-[10px] transition-transform", !p.locked && "cursor-grab active:cursor-grabbing", drag === i && "opacity-40", (over === i && drag !== i) || p.changed[s.id] ? "ring-2 ring-brand-300 ring-offset-4 ring-offset-slate-50" : "")}
             >
               <Slide slide={s} index={i + 1} size={p.expanded ? 19 : 11} />
               <div className="mt-2 flex items-center gap-1.5 text-xs text-slate-500">
                 {!p.locked && <GripVertical className="size-3.5 text-slate-400" />}
                 <span className="font-mono">{i + 1}</span>
+                {p.changed[s.id] && <span className="ml-auto font-semibold text-brand-700">{p.changed[s.id]}</span>}
               </div>
             </div>
           ))}

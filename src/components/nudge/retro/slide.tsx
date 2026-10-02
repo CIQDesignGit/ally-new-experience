@@ -67,6 +67,43 @@ const MONO = "var(--font-mono), ui-monospace, monospace"
 
 function ChartView({ chart, theme }: { chart: Chart; theme: ThemeId }) {
   const t = THEMES[theme]
+  if (chart.kind === "kpis") {
+    // The summary's headline numbers: big figures, short labels, two by two.
+    return (
+      <div style={{ height: "100%", display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", alignContent: "center", gap: "0.9em 0.8em" }}>
+        {chart.items.map((k) => (
+          <div key={k.label}>
+            <div style={{ fontFamily: theme === "default" ? MONO : t.display, fontSize: "1.25em", lineHeight: 1.05, fontWeight: 700, color: k.loss ? t.loss : t.ink }}>{k.figure}</div>
+            <div style={{ marginTop: "0.25em", fontSize: "0.46em", lineHeight: 1.3, color: t.muted }}>{k.label}</div>
+          </div>
+        ))}
+      </div>
+    )
+  }
+  if (chart.kind === "table") {
+    // A scorecard: each row ends in its verdict, so "worked or didn't" reads without comparing bars.
+    const good = theme === "default" ? "#067647" : "#4d6b2f"
+    return (
+      <div style={{ height: "100%", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) 3em 3.6em 4.2em", gap: "0.5em", paddingBottom: "0.3em", borderBottom: `1px solid ${t.rule}`, fontSize: "0.4em", color: t.muted, textTransform: "uppercase", letterSpacing: "0.06em" }}>
+          {chart.columns.map((c, i) => (
+            <span key={c} style={{ textAlign: i === 0 ? "left" : "right" }}>
+              {c}
+            </span>
+          ))}
+          <span />
+        </div>
+        {chart.rows.map((r) => (
+          <div key={r.cells[0]} style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) 3em 3.6em 4.2em", gap: "0.5em", alignItems: "center", padding: "0.45em 0", borderBottom: `1px solid ${t.rule}` }}>
+            <span style={{ fontSize: "0.46em", fontWeight: 600, color: t.ink }}>{r.cells[0]}</span>
+            <span style={{ fontFamily: MONO, fontSize: "0.46em", fontWeight: 700, textAlign: "right", color: t.ink }}>{r.cells[1]}</span>
+            <span style={{ fontFamily: MONO, fontSize: "0.46em", fontWeight: 700, textAlign: "right", color: t.ink }}>{r.cells[2]}</span>
+            <span style={{ fontSize: "0.44em", fontWeight: 700, textAlign: "right", color: r.verdict === "worked" ? good : t.loss }}>{r.verdict === "worked" ? "✓ Worked" : "✕ Didn't"}</span>
+          </div>
+        ))}
+      </div>
+    )
+  }
   if (chart.kind === "columns") {
     const max = Math.max(...chart.bars.map((b) => b.value))
     return (
