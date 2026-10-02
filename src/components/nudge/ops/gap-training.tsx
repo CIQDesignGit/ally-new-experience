@@ -86,13 +86,13 @@ function readLogic(text: string, r: GapRecipe): { recipe: GapRecipe; heard: stri
   }
   if (/fill.?rate/.test(t) && !next.steps.includes(FILL_STEP)) {
     next.steps.push(FILL_STEP)
-    heard.push(`Add a step: ${FILL_STEP.toLowerCase().replace("pos", "POs")}`)
+    heard.push(`Add a step: ${FILL_STEP.replace(/^Checked/, "check")}`)
   }
   if (!heard.length && t.trim()) {
     const st = text.trim().replace(/^(you )?(should|need to|missed|forgot to)\s*/i, "")
     const step = `Checked ${st.charAt(0).toLowerCase()}${st.slice(1)}`.replace(/^Checked check(ed)? /i, "Checked ")
     next.steps.push(step)
-    heard.push(`Add a step: ${step.toLowerCase()}`)
+    heard.push(`Add a step: ${step.replace(/^Checked/, "check")}`)
   }
   return { recipe: next, heard }
 }
@@ -185,8 +185,9 @@ function SkillFile({ base, draft, version, log }: { base: GapRecipe; draft: GapR
 export function RecipeFeedback({ node, render }: { node: GapNode; render: (recipe: GapRecipe) => React.ReactNode }) {
   const { knowledge, saveKnowledge } = useNudge()
   const lesson = useGapLesson()
-  const base = lesson?.recipe ?? DEFAULT_RECIPE
-  const version = (base.log?.length ?? 0) + 1
+  const [base] = useState(lesson?.recipe ?? DEFAULT_RECIPE)
+  // The version this correction started from; approving makes the next one (and doesn't renumber itself).
+  const [version] = useState((base.log?.length ?? 0) + 1)
   const [vote, setVote] = useState<"up" | "down" | null>(null)
   const [picked, setPicked] = useState<Miss[]>([])
   const [queue, setQueue] = useState<Miss[] | null>(null)

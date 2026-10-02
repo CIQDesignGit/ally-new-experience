@@ -40,7 +40,7 @@ const perDayOf = (b: OpsBatch) => (b.urgent ? (b.perDay ?? b.approveValue / OPS_
 /** The waterfall's labels and colors, in the order of the work: what needs her first, autopilot last. */
 const FILTERS: { id: InboxFilter; label: string }[] = [
   { id: "all", label: "All" },
-  { id: "approval", label: "1 approval" },
+  { id: "approval", label: "One approval" },
   { id: "input", label: "Your input" },
   { id: "autopilot", label: "Autopilot" },
 ]

@@ -1,9 +1,9 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Bell, BookOpen, Home, LayoutDashboard, MessageSquare, PanelLeft, Presentation, TrendingDown, Wand2 } from "lucide-react"
+import { Bell, BookOpen, Home, LayoutDashboard, MessageSquare, PanelLeft, Pin, PinOff, Presentation, TrendingDown, Wand2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useNudge } from "./nudge-context"
 import { RETRO } from "./retro/prime-day"
@@ -19,7 +19,42 @@ const SHUT_W = "64px"
 export function AppDrawer({ home = "/michelle", defaultOpen }: { home?: string; /** Overrides the page-kind default, e.g. collapsed while a deck is open. */ defaultOpen?: boolean }) {
   const path = usePathname()
   const kind = path === home ? "brief" : "conversation"
+  // Pinned stays open everywhere; unpinned closes on its own a few seconds after the pointer leaves it.
+  const [pinned, setPinned] = useState(false)
   const [open, setOpen] = useState(defaultOpen ?? kind === "conversation")
+  // Read after mount, so the server and the first client render agree.
+  useEffect(() => {
+    const t = window.setTimeout(() => {
+      try {
+        if (window.localStorage.getItem("ally-drawer-pinned") === "1") {
+          setPinned(true)
+          setOpen(true)
+        }
+      } catch {}
+    }, 0)
+    return () => window.clearTimeout(t)
+  }, [])
+  const timer = useRef<number | undefined>(undefined)
+  const hovering = useRef(false)
+  const scheduleClose = () => {
+    window.clearTimeout(timer.current)
+    if (pinned) return
+    timer.current = window.setTimeout(() => {
+      if (!hovering.current) setOpen(false)
+    }, 3000)
+  }
+  useEffect(() => {
+    if (open && !pinned) scheduleClose()
+    return () => window.clearTimeout(timer.current)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, pinned])
+  function pin(next: boolean) {
+    setPinned(next)
+    try {
+      window.localStorage.setItem("ally-drawer-pinned", next ? "1" : "0")
+    } catch {}
+    if (next) setOpen(true)
+  }
   const { retro, knowledge, alerts, dashboards, decks, skills } = useNudge()
   const qbr = decks.qbr
   // Being on the conversation counts as started, even before its state has loaded.
@@ -89,13 +124,38 @@ export function AppDrawer({ home = "/michelle", defaultOpen }: { home?: string; 
     <aside
       aria-label="Ally"
       style={{ width: open ? OPEN_W : SHUT_W }}
+      onMouseEnter={() => {
+        hovering.current = true
+        window.clearTimeout(timer.current)
+      }}
+      onMouseLeave={() => {
+        hovering.current = false
+        if (open) scheduleClose()
+      }}
       className="fixed inset-y-0 left-0 z-40 hidden flex-col overflow-hidden border-r border-slate-200 bg-slate-50 transition-[width] duration-200 xl:flex"
     >
       <div className={cn("flex h-16 shrink-0 items-center", open ? "justify-between px-4" : "justify-center")}>
         {open && <span className="text-[15px] font-semibold text-slate-950">Ally</span>}
-        <button type="button" onClick={() => toggle()} aria-label={open ? "Collapse sidebar" : "Expand sidebar"} title={open ? "Collapse sidebar" : "Expand sidebar"} className={iconBtn()}>
-          <PanelLeft className="size-4" />
-        </button>
+        <span className="flex items-center gap-0.5">
+          {open && (
+            <button type="button" onClick={() => pin(!pinned)} aria-pressed={pinned} aria-label={pinned ? "Unpin sidebar" : "Pin sidebar open"} title={pinned ? "Unpin sidebar" : "Pin sidebar open"} className={iconBtn(pinned)}>
+              {pinned ? <PinOff className="size-4" /> : <Pin className="size-4" />}
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => {
+              // Collapsing by hand also unpins: the person asked for it closed.
+              if (open && pinned) pin(false)
+              toggle()
+            }}
+            aria-label={open ? "Collapse sidebar" : "Expand sidebar"}
+            title={open ? "Collapse sidebar" : "Expand sidebar"}
+            className={iconBtn()}
+          >
+            <PanelLeft className="size-4" />
+          </button>
+        </span>
       </div>
 
       {open ? (

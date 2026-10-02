@@ -1,4 +1,5 @@
 /* eslint-disable @next/next/no-img-element -- local demo thumbnails */
+import { cn } from "@/lib/utils"
 import { candleThumbnail } from "@/lib/candle-thumbnails"
 import type { OpsBatch } from "../data"
 
@@ -27,16 +28,23 @@ const short = (name: string) => name.replace(/^Aurelle /, "").split(",")[0]
 /** Issue types that have a picture; the rest keep the evidence list. */
 export const hasIssueVisual = (b: OpsBatch) => ["promo-badge", "deal-page", "oos", "shipping", "chargebacks", "shorted-pos"].includes(b.id)
 
-export function IssueVisual({ batch }: { batch: OpsBatch }) {
+/** The SKU a picture is about: the one asked for, else the issue's lead example. */
+const skuOf = (batch: OpsBatch, asin?: string) => {
+  const list = batch.skuList ?? []
+  return list.find((x) => x.asin === (asin ?? batch.exampleSku)) ?? list[0] ?? { asin: batch.exampleSku, name: batch.exampleName, note: [] as string[] }
+}
+
+/** The issue as a picture: for the lead SKU on the issue, or for one SKU when reviewing SKU by SKU. */
+export function IssueVisual({ batch, asin }: { batch: OpsBatch; asin?: string }) {
   switch (batch.id) {
     case "promo-badge":
-      return <BadgeVisual batch={batch} />
+      return <BadgeVisual batch={batch} asin={asin} />
     case "deal-page":
-      return <DealPageVisual batch={batch} />
+      return <DealPageVisual batch={batch} asin={asin} />
     case "oos":
-      return <StockVisual batch={batch} />
+      return <StockVisual batch={batch} asin={asin} />
     case "shipping":
-      return <ShippingVisual batch={batch} />
+      return <ShippingVisual batch={batch} asin={asin} />
     case "chargebacks":
     case "shorted-pos":
       return <ClaimsVisual batch={batch} />
@@ -46,21 +54,21 @@ export function IssueVisual({ batch }: { batch: OpsBatch }) {
 }
 
 /** One Amazon price tile: without the deal showing, or with it. */
-function Tile({ asin, label, deal }: { asin: string; label: string; deal: boolean }) {
+function Tile({ asin, label, deal, badge, price, list }: { asin: string; label: string; deal: boolean; badge: boolean; price: number; list: number }) {
   return (
     <div className="min-w-0">
       <div className="text-xs font-medium text-slate-500">{label}</div>
       <div className="mt-1.5 flex items-center gap-3 rounded-lg border border-slate-200 bg-white p-3">
         <img src={candleThumbnail(asin)} alt="" className="size-14 shrink-0 rounded-md object-cover ring-1 ring-slate-200" />
         <div className="min-w-0">
-          {deal ? (
+          {deal || badge ? (
             <span className="inline-block rounded bg-slate-900 px-1.5 py-0.5 text-[11px] font-semibold text-white">Halloween deal · 20% off</span>
           ) : (
             <span className="inline-block rounded border border-dashed border-slate-300 px-1.5 py-0.5 text-[11px] text-slate-400">No badge</span>
           )}
           <div className="mt-1 flex items-baseline gap-2 tabular-nums">
-            <span className="text-[17px] font-semibold text-slate-950">$30.40</span>
-            {deal ? <span className="text-xs text-slate-500 line-through">List $38.00</span> : <span className="text-xs text-slate-400">no list price shown</span>}
+            <span className="text-[17px] font-semibold text-slate-950">${price.toFixed(2)}</span>
+            {deal ? <span className="text-xs text-slate-500 line-through">List ${list.toFixed(2)}</span> : <span className="text-xs text-slate-400">no list price shown</span>}
           </div>
         </div>
       </div>
@@ -68,21 +76,32 @@ function Tile({ asin, label, deal }: { asin: string; label: string; deal: boolea
   )
 }
 
+/** List prices for the deal SKUs; the deal is 20% off. */
+const LIST: Record<string, number> = { B08NF9KBZ4: 38, B00FLYWNYQ: 38, B0BCM08080: 16 }
+
 /** The price tile as shoppers see it now, and as the live deal should show it. */
-function BadgeVisual({ batch }: { batch: OpsBatch }) {
-  const asin = batch.exampleSku
+function BadgeVisual({ batch, asin }: { batch: OpsBatch; asin?: string }) {
+  const sku = skuOf(batch, asin)
+  const list = LIST[sku.asin] ?? 38
+  const price = +(list * 0.8).toFixed(2)
+  // Some SKUs show the badge but not the strike-through: only what's missing is missing.
+  const badgeShows = !sku.note.some((n) => /badge not showing/i.test(n))
   return (
-    <Frame title="What shoppers see" sub={short(batch.exampleName)} line={<>Deal live Oct 1–31 · badge and strike-through missing on <span className="font-semibold text-slate-950">{batch.skus} SKUs</span></>}>
+    <Frame
+      title="What shoppers see"
+      sub={short(sku.name)}
+      line={asin ? <>Deal live Oct 1–31 · {badgeShows ? "strike-through missing" : "badge and strike-through missing"}</> : <>Deal live Oct 1–31 · badge and strike-through missing on <span className="font-semibold text-slate-950">{batch.skus} SKUs</span></>}
+    >
       <div className="grid grid-cols-2 gap-4">
-        <Tile asin={asin} label="Now" deal={false} />
-        <Tile asin={asin} label="With the deal showing" deal />
+        <Tile asin={sku.asin} label="Now" deal={false} badge={badgeShows} price={price} list={list} />
+        <Tile asin={sku.asin} label="With the deal showing" deal badge price={price} list={list} />
       </div>
     </Frame>
   )
 }
 
 /** Pages 1–4 of the deals page and "not listed", with each SKU where it is. */
-function DealPageVisual({ batch }: { batch: OpsBatch }) {
+function DealPageVisual({ batch, asin }: { batch: OpsBatch; asin?: string }) {
   const slots = ["Page 1", "Page 2", "Page 3", "Page 4", "Not listed"]
   const where = (note: string[]) => {
     const page = note.join(" ").match(/page (\d)/)?.[1]
@@ -90,7 +109,7 @@ function DealPageVisual({ batch }: { batch: OpsBatch }) {
   }
   const list = batch.skuList ?? []
   return (
-    <Frame title="Where your deals appear" sub="Amazon deals page" line={<>Deal-page traffic is <span className="font-semibold text-slate-950">40%</span> of event sales</>}>
+    <Frame title="Where your deals appear" sub={asin ? short(skuOf(batch, asin).name) : "Amazon deals page"} line={<>Deal-page traffic is <span className="font-semibold text-slate-950">40%</span> of event sales</>}>
       <div className="grid grid-cols-5 gap-2">
         {slots.map((label, i) => {
           const here = list.filter((s) => where(s.note) === i)
@@ -99,7 +118,7 @@ function DealPageVisual({ batch }: { batch: OpsBatch }) {
               <div className={i === 4 ? "text-xs font-medium text-slate-950" : "text-xs text-slate-500"}>{label}</div>
               <div className="mt-1.5 flex min-h-[64px] flex-wrap content-start gap-1.5 rounded-lg border border-slate-200 bg-slate-25 p-2">
                 {here.map((s) => (
-                  <img key={s.asin} src={candleThumbnail(s.asin)} alt={s.name} title={s.name} className="size-9 rounded-md object-cover ring-1 ring-slate-200" />
+                  <img key={s.asin} src={candleThumbnail(s.asin)} alt={s.name} title={s.name} className={cn("size-9 rounded-md object-cover", asin === s.asin ? "ring-2 ring-brand-500" : asin ? "opacity-40 ring-1 ring-slate-200" : "ring-1 ring-slate-200")} />
                 ))}
               </div>
             </div>
@@ -111,12 +130,12 @@ function DealPageVisual({ batch }: { batch: OpsBatch }) {
 }
 
 /** Stock on hand beside what the page tells shoppers. */
-function StockVisual({ batch }: { batch: OpsBatch }) {
-  const lead = batch.skuList?.find((s) => s.asin === batch.exampleSku) ?? batch.skuList?.[0]
+function StockVisual({ batch, asin }: { batch: OpsBatch; asin?: string }) {
+  const lead = skuOf(batch, asin)
   const units = lead?.note[0]?.match(/[\d,]+/)?.[0] ?? ""
   const share = lead?.note[1]?.match(/\d+%/)?.[0] ?? ""
   return (
-    <Frame title="Stock vs the page" sub={short(batch.exampleName)} line={<>Unavailable in <span className="font-semibold text-slate-950">{share}</span> of crawls · offer suppressed Sep 30</>}>
+    <Frame title="Stock vs the page" sub={short(lead.name)} line={<>Unavailable in <span className="font-semibold text-slate-950">{share}</span> of crawls{lead.note[2] ? ` · ${lead.note[2].charAt(0).toLowerCase()}${lead.note[2].slice(1)}` : ""}</>}>
       <div className="grid grid-cols-2 gap-4">
         <div>
           <div className="text-xs font-medium text-slate-500">At your DC</div>
@@ -128,7 +147,7 @@ function StockVisual({ batch }: { batch: OpsBatch }) {
         <div>
           <div className="text-xs font-medium text-slate-500">On Amazon</div>
           <div className="mt-1.5 flex items-center gap-3 rounded-lg border border-slate-200 p-3">
-            <img src={candleThumbnail(batch.exampleSku)} alt="" className="size-10 shrink-0 rounded-md object-cover opacity-60 ring-1 ring-slate-200" />
+            <img src={candleThumbnail(lead.asin)} alt="" className="size-10 shrink-0 rounded-md object-cover opacity-60 ring-1 ring-slate-200" />
             <div>
               <div className="text-[15px] font-semibold text-slate-950">Currently unavailable.</div>
               <div className="text-xs text-slate-500">No buy button</div>
@@ -141,8 +160,9 @@ function StockVisual({ batch }: { batch: OpsBatch }) {
 }
 
 /** The delivery promise in days: the Prime bar against yours. */
-function ShippingVisual({ batch }: { batch: OpsBatch }) {
-  const lead = batch.skuList?.find((s) => s.asin === batch.exampleSku) ?? batch.skuList?.[0]
+function ShippingVisual({ batch, asin }: { batch: OpsBatch; asin?: string }) {
+  const lead = skuOf(batch, asin)
+  const zips = lead.note[1]?.match(/(\d+) of (\d+)/)
   const [ours, prime] = (lead?.note[0]?.match(/[\d.]+/g) ?? ["0", "0"]).map(Number)
   const max = Math.ceil(ours + 0.5)
   const rows = [
@@ -150,7 +170,7 @@ function ShippingVisual({ batch }: { batch: OpsBatch }) {
     { label: "You", days: ours, tone: "bg-brand-500", ink: "text-brand-700" },
   ]
   return (
-    <Frame title="Delivery promise" sub={short(batch.exampleName)} line={<>Slower in <span className="font-semibold text-slate-950">8 of 12</span> ZIPs sampled</>}>
+    <Frame title="Delivery promise" sub={short(lead.name)} line={<>Slower in <span className="font-semibold text-slate-950">{zips ? `${zips[1]} of ${zips[2]}` : "8 of 12"}</span> ZIPs sampled</>}>
       <div className="flex flex-col gap-2">
         {rows.map((r) => (
           <div key={r.label} className="grid grid-cols-[48px_minmax(0,1fr)_72px] items-center gap-3">

@@ -1,17 +1,16 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Check, ChevronDown, Mail, RefreshCw, Search } from "lucide-react"
+import { Check, Mail, RefreshCw, Search } from "lucide-react"
 import { toast } from "sonner"
 import { useNudge } from "../nudge-context"
 import { PRIMARY } from "../mike/buttons"
 import { OPS_DAYS_SAVED, fmtValue, opsSkus } from "../data"
 import type { OpsBatch } from "../data"
-import { SkillsTrace, SkuEvidence, SkuHeader } from "./ops-evidence"
+import { SkillsTrace } from "./ops-evidence"
 import { BuyBoxVisual } from "./buybox-visual"
 import { IssueVisual, hasIssueVisual } from "./issue-visuals"
 import { VENDOR_MANAGER, useNote } from "./note-bar"
-import { cn } from "@/lib/utils"
 
 interface OpsBatchDetailProps {
   batch: OpsBatch
@@ -50,11 +49,8 @@ export function OpsBatchDetail({ batch, onAction, onReviewAll }: OpsBatchDetailP
   const done = !!approved[batch.id]
   const [reviewing, setReviewing] = useState(false)
   const skus = opsSkus(batch)
-  const sample = skus[0]
-  const [showSample, setShowSample] = useState(false)
   useEffect(() => {
     setReviewing(false)
-    setShowSample(false)
   }, [batch.id])
   const each = batch.mode === "each"
   const { addToNote } = useNudge()
@@ -179,30 +175,10 @@ export function OpsBatchDetail({ batch, onAction, onReviewAll }: OpsBatchDetailP
                       Add {batch.skus} SKUs to your note
                     </button>
                   )}
-                  {!each && sample && (
-                    <button type="button" onClick={() => setShowSample((v) => !v)} className="inline-flex items-center gap-1 text-sm font-medium text-slate-600 hover:text-brand-700">
-                      {showSample ? "Hide the sample" : "Check a sample first"}
-                      <ChevronDown className={cn("size-4 transition-transform", showSample && "rotate-180")} />
-                    </button>
-                  )}
                 </div>
                 {(noted > 0 || batch.reassure) && (
                   <div className="text-sm text-slate-500">{noted > 0 ? `${noted} of ${batch.skus} in your note to ${VENDOR_MANAGER.name}` : batch.reassure}</div>
                 )}
-              </div>
-            )}
-            {showSample && sample && !each && (
-              <div className="border-t border-slate-100 pt-8">
-                <SkuHeader asin={sample.asin} name={sample.name} label="Sample" />
-                <div className="mt-4">
-                  <SkuEvidence batch={batch} asin={sample.asin} />
-                </div>
-                <div className="mt-6 flex flex-col gap-3 rounded-xl border border-brand-200 bg-brand-25 px-6 py-5">
-                  <div className="text-sm font-semibold text-slate-950">Looks right? The other {batch.skus - 1} SKUs have the same issue.</div>
-                  <button type="button" onClick={addAll} disabled={noted === batch.skus} className={cn(PRIMARY, "w-fit disabled:opacity-50")}>
-                    {noted === batch.skus ? "All in your note" : `Add ${batch.skus} SKUs to your note`}
-                  </button>
-                </div>
               </div>
             )}
           </div>

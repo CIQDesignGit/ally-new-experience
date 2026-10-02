@@ -7,6 +7,8 @@ import { candleThumbnail } from "@/lib/candle-thumbnails"
 import { opsSkus } from "../data"
 import type { OpsBatch, SellerSku } from "../data"
 import { Points } from "../points"
+import { BuyBoxVisual } from "./buybox-visual"
+import { IssueVisual, hasIssueVisual } from "./issue-visuals"
 
 /** "Found by 3 skills · Show steps": what Ally ran to find and size the issue, collapsed by default. */
 export function SkillsTrace({ skills }: { skills: NonNullable<OpsBatch["skills"]> }) {
@@ -156,7 +158,19 @@ export function SkuHeader({ asin, name, label }: { asin: string; name: string; l
 /** What Ally saw on one SKU: the seller comparison for buy-box issues, else its notes. */
 export function SkuEvidence({ batch, asin }: { batch: OpsBatch; asin: string }) {
   const seller = batch.sellerSkus?.find((x) => x.asin === asin)
-  if (seller) return <SellerEvidence sku={seller} />
+  // SKU by SKU, the same picture as the issue, with this SKU's own numbers.
+  if (seller)
+    return (
+      <div className="overflow-hidden rounded-xl border border-slate-200">
+        <BuyBoxVisual sku={seller} />
+      </div>
+    )
+  if (hasIssueVisual(batch))
+    return (
+      <div className="overflow-hidden rounded-xl border border-slate-200">
+        <IssueVisual batch={batch} asin={asin} />
+      </div>
+    )
   const sku = opsSkus(batch).find((x) => x.asin === asin)
   return (
     <div className="overflow-hidden rounded-xl border border-slate-200">
