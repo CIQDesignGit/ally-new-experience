@@ -1,5 +1,6 @@
 "use client"
 
+import { LaunchPagePreview } from "../launch/page-preview"
 import { ArrowLeft } from "lucide-react"
 import { toast } from "sonner"
 import { skuById } from "../data"
@@ -57,7 +58,8 @@ export function SkuDetailPane({ batch, row, onBack, onApprove, onSelectSku }: Sk
       </div>
 
       <div className="mt-6">
-        <SkuSections sections={row.sections} thumbnailUrl={sku.thumbnailUrl} skuId={row.skuId} onNext={onNext} />
+        {/* A drafted new SKU has no live page to compare: the review is the page as it will publish. */}
+        {batch.id === "concepts" && batch.tier === "approval" ? <LaunchPagePreview skuId={row.skuId} /> : <SkuSections sections={row.sections} thumbnailUrl={sku.thumbnailUrl} skuId={row.skuId} onNext={onNext} />}
       </div>
 
       <AllyFeedback key={row.skuId} id={`mike:${batch.id}:${row.skuId}`} sku={sku.title} author="Mike Chen" className="mt-6" />

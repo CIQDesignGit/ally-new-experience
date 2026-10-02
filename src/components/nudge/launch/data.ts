@@ -110,7 +110,25 @@ export const LAUNCH_PAGES = [
     story: "Gift",
     removed: undefined,
   },
+  {
+    skuId: "sku-new-3",
+    photo: "/images/aurelle/soy-candle-trio-gift-set.jpg",
+    focus: "30% 58%",
+    main: { zoom: 1.9, mask: "24% 40% at 50% 56%" },
+    title: "Aurelle Cedar Ember Pillar Candle, 3 × 6 in · Cedar, Ember and Amber · Gather round the glow",
+    bullets: ["Hand-poured soy pillar in a stone vessel, 80-hour burn", "Notes of cedarwood, smoked ember and amber", "Made to anchor a mantel or a holiday table"],
+    notes: ["Cedarwood", "Ember", "Amber"],
+    story: "Notes",
+    removed: undefined,
+  },
 ]
+
+/** What the page shows beyond its images: price, size, burn, and the A+ story from the concept. */
+export const PAGE_FACTS: Record<string, { price: string; size: string; burn: string; scent: string }> = {
+  "sku-new-1": { price: "$34.00", size: "16 oz", burn: "60 hours", scent: "Cedar, clove, vanilla" },
+  "sku-new-2": { price: "$29.00", size: "3 × 4 oz", burn: "20 hours each", scent: "Black fig, pine, snow musk" },
+  "sku-new-3": { price: "$38.00", size: "3 × 6 in", burn: "80 hours", scent: "Cedarwood, ember, amber" },
+}
 
 /** What Ally keeps from the brief: one fact, recalled later when it matters. */
 export const LAUNCH_MEMORY = {

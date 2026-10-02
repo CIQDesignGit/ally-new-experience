@@ -8,6 +8,7 @@ import { useChat } from "../chat/inline-chat"
 import { UploadDialog } from "../chat/upload-dialog"
 import { LAUNCH_CHIP } from "../launch/answers"
 import { LAUNCH_FILES } from "../launch/data"
+import { LaunchPagePreview } from "../launch/page-preview"
 import { skuById } from "../data"
 import { useNudge } from "../nudge-context"
 import { PRIMARY, SECONDARY } from "./buttons"
@@ -197,7 +198,7 @@ export function BatchDetail({ batch, onApprove, onReviewAll, onSelect }: BatchDe
               <div className="mt-0.5 text-lg font-semibold tracking-tight text-slate-950">{sku.title}</div>
             </div>
           </div>
-          <SkuSections sections={row.sections} thumbnailUrl={sku.thumbnailUrl} />
+          {batch.id === "concepts" && batch.tier === "approval" ? <LaunchPagePreview skuId={row.skuId} /> : <SkuSections sections={row.sections} thumbnailUrl={sku.thumbnailUrl} />}
           {/* One-by-one parts have no bulk approve under the sample: each SKU gets its own look. */}
           {!done && batch.mode === "each" && (
             <div className="mt-6 flex flex-col gap-3 rounded-xl border border-brand-200 bg-brand-25 px-6 py-5">

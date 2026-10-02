@@ -34,18 +34,18 @@ function Lockup({ small }: { small?: boolean }) {
 }
 
 /** The concept as the agency sent it. */
-export function ConceptImage({ className }: { className?: string }) {
+export function ConceptImage({ className, compact }: { className?: string; compact?: boolean }) {
   return (
     <div className={cn("relative overflow-hidden rounded-xl bg-slate-900", className)} style={{ aspectRatio: "16 / 9" }}>
       <img src={LAUNCH.concept.src} alt="Agency concept: an amber jar candle lit on a wooden table before a stone hearth fire, frost at the window" className="absolute inset-0 size-full object-cover" style={{ filter: GRADE }} />
       <Frost />
-      <Lockup />
+      <Lockup small={compact} />
     </div>
   )
 }
 
 /** One adapted image for one SKU. */
-export function AdaptedImage({ kind, photo, focus, notes, story, main }: { kind: "main" | "lifestyle" | "story"; photo: string; focus: string; notes: string[]; story: string; main: { zoom: number; mask: string } }) {
+export function AdaptedImage({ kind, photo, focus, notes, story, main, bare }: { kind: "main" | "lifestyle" | "story"; photo: string; focus: string; notes: string[]; story: string; main: { zoom: number; mask: string }; /** No labels: as the shopper sees it. */ bare?: boolean }) {
   if (kind === "main")
     return (
       <figure className="relative aspect-square overflow-hidden rounded-lg bg-white ring-1 ring-slate-200">
@@ -56,7 +56,7 @@ export function AdaptedImage({ kind, photo, focus, notes, story, main }: { kind:
           className="absolute inset-0 size-full object-cover"
           style={{ objectPosition: focus, transform: `scale(${main.zoom})`, transformOrigin: focus, filter: "brightness(1.08) contrast(1.04)", WebkitMaskImage: `radial-gradient(${main.mask}, #000 78%, transparent 100%)`, maskImage: `radial-gradient(${main.mask}, #000 78%, transparent 100%)` }}
         />
-        <Caption>Main · white</Caption>
+        {!bare && <Caption>Main · white</Caption>}
       </figure>
     )
   if (kind === "lifestyle")
@@ -65,7 +65,7 @@ export function AdaptedImage({ kind, photo, focus, notes, story, main }: { kind:
         <img src={photo} alt="Lifestyle image in the Winter Hearth concept" className="absolute inset-0 size-full object-cover" style={{ objectPosition: focus, filter: GRADE }} />
         <Frost />
         <Lockup small />
-        <Caption light>Lifestyle</Caption>
+        {!bare && <Caption light>Lifestyle</Caption>}
       </figure>
     )
   return (
@@ -81,7 +81,7 @@ export function AdaptedImage({ kind, photo, focus, notes, story, main }: { kind:
           </div>
         ))}
       </div>
-      <Caption>{story === "Gift" ? "Gift" : "Scent notes"}</Caption>
+      {!bare && <Caption>{story === "Gift" ? "Gift" : "Scent notes"}</Caption>}
     </figure>
   )
 }
