@@ -145,6 +145,12 @@ const NudgeContext = createContext<NudgeContextValue | null>(null)
 
 function readStoredState(): StoredState {
   try {
+    // A refresh starts the demo over; moving between pages keeps what was done.
+    const nav = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined
+    if (nav?.type === "reload") {
+      window.localStorage.removeItem(STORAGE_KEY)
+      return EMPTY_STATE
+    }
     const raw = window.localStorage.getItem(STORAGE_KEY)
     return raw ? JSON.parse(raw) : EMPTY_STATE
   } catch {
