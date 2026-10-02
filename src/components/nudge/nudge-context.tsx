@@ -29,6 +29,16 @@ interface StoredState {
   retro?: RetroState
   /** Alerts Michelle wrote in chat. */
   alerts?: CustomAlert[]
+  /** Dashboards saved from chat answers; each widget is an answer, still live. */
+  dashboards?: SavedDashboard[]
+}
+
+export interface SavedDashboard {
+  id: string
+  name: string
+  widgets: string[]
+  created: string
+  seen?: boolean
 }
 
 export interface RetroState {
@@ -106,6 +116,10 @@ interface NudgeContextValue extends StoredState {
   /** Adds or replaces an alert by id. */
   addAlert: (a: CustomAlert) => void
   markAlertsSeen: () => void
+  dashboards: SavedDashboard[]
+  /** Adds or replaces a dashboard by id. */
+  saveDashboard: (d: SavedDashboard) => void
+  markDashboardSeen: (id: string) => void
   retro: RetroState
   setRetro: (patch: Partial<RetroState>) => void
 }
@@ -227,6 +241,9 @@ export function NudgeProvider({ children }: { children: React.ReactNode }) {
         alerts: state.alerts ?? [],
         addAlert: (a) => update((prev) => ({ ...prev, alerts: [...(prev.alerts ?? []).filter((x) => x.id !== a.id), a] })),
         markAlertsSeen: () => update((prev) => ({ ...prev, alerts: (prev.alerts ?? []).map((x) => ({ ...x, seen: true })) })),
+        dashboards: state.dashboards ?? [],
+        saveDashboard: (d) => update((prev) => ({ ...prev, dashboards: [...(prev.dashboards ?? []).filter((x) => x.id !== d.id), d] })),
+        markDashboardSeen: (id) => update((prev) => ({ ...prev, dashboards: (prev.dashboards ?? []).map((x) => (x.id === id ? { ...x, seen: true } : x)) })),
         retro: state.retro ?? {},
         setRetro: (patch) => update((prev) => ({ ...prev, retro: { ...(prev.retro ?? {}), ...patch } })),
         sendNote: (complete) =>

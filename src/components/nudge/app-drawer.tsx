@@ -20,7 +20,7 @@ export function AppDrawer({ home = "/michelle", defaultOpen }: { home?: string; 
   const path = usePathname()
   const kind = path === home ? "brief" : "conversation"
   const [open, setOpen] = useState(defaultOpen ?? kind === "conversation")
-  const { retro, knowledge, alerts } = useNudge()
+  const { retro, knowledge, alerts, dashboards } = useNudge()
   // Being on the conversation counts as started, even before its state has loaded.
   const started = Object.keys(retro).length > 0 || path === "/michelle/retro"
 
@@ -52,7 +52,16 @@ export function AppDrawer({ home = "/michelle", defaultOpen }: { home?: string; 
   const sections: { title: string; icon: typeof Home; items: { label: string; sub?: string; href: string; on?: boolean; fresh?: boolean }[]; empty: string; fresh?: boolean }[] = [
     { title: "Conversations", icon: MessageSquare, items: started ? [{ label: RETRO.name, sub: retro.sentToClaire ? "Sent to Claire" : retro.deck ? "Deck built" : retro.stage === "storyline" ? "Storyline" : "Storyboard", href: "/michelle/retro", on: path === "/michelle/retro" }] : [], empty: "Ask Ally a new task to start one" },
     { title: "Reports and decks", icon: Presentation, items: retro.deck ? [{ label: RETRO.name, sub: retro.theme === "aurelle" ? "Aurelle Brand 2026" : "CommerceIQ default", href: "/michelle/retro?view=deck" }] : [], empty: "Decks you build show here" },
-    { title: "Dashboards", icon: LayoutDashboard, fresh, items: retro.dashboard ? [{ label: RETRO.name, sub: "Live · refreshes daily", href: "/michelle/dashboards/prime-day", on: path === "/michelle/dashboards/prime-day", fresh }] : [], empty: "Publish a deck or answers as a dashboard" },
+    {
+      title: "Dashboards",
+      icon: LayoutDashboard,
+      fresh: fresh || dashboards.some((d) => !d.seen),
+      items: [
+        ...(retro.dashboard ? [{ label: RETRO.name, sub: "Live · refreshes daily", href: "/michelle/dashboards/prime-day", on: path === "/michelle/dashboards/prime-day", fresh }] : []),
+        ...dashboards.map((d) => ({ label: d.name, sub: `${d.widgets.length} widgets · saved from chat`, href: `/michelle/dashboards/${d.id}`, on: path === `/michelle/dashboards/${d.id}`, fresh: !d.seen })),
+      ],
+      empty: "Publish a deck or answers as a dashboard",
+    },
     { title: "Alerts", icon: Bell, fresh: alerts.some((a) => !a.seen), items: alerts.map((a) => ({ label: a.name, sub: a.firing ? "Fired today" : "Watching", href: "/michelle/alerts", on: path === "/michelle/alerts", fresh: !a.seen })), empty: "No custom alerts yet" },
   ]
 

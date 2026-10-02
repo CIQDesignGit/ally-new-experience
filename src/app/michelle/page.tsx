@@ -18,6 +18,10 @@ import { OpsBatchList } from "@/components/nudge/ops/ops-batch-list"
 import { OpsBatchDetail } from "@/components/nudge/ops/ops-batch-detail"
 import { OpsDelivered } from "@/components/nudge/ops/ops-delivered"
 import { MICHELLE_QUESTIONS, michelleAnswer } from "@/components/nudge/ask-ally-personas"
+import { PromoAnswer, SAVE_ASK, SaveDashboardAnswer } from "@/components/nudge/promo/answers"
+import { PROMO_QUESTIONS, PROMO_WIDGETS } from "@/components/nudge/promo/data"
+import type { PromoWidget } from "@/components/nudge/promo/data"
+import type { Chip } from "@/components/nudge/chat/inline-chat"
 import { GiftSetsAnswer } from "@/components/nudge/alerts/answers"
 import { GIFT_QUESTION } from "@/components/nudge/alerts/data"
 import { RETRO_TASK, StorylineAnswer } from "@/components/nudge/retro/storyline-answer"
@@ -32,10 +36,32 @@ import type { OpsBatch } from "@/components/nudge/data"
  * then what ops delivered this quarter.
  */
 /** The inbox's questions for the Ask Ally bar (gap-to-plan registers its own per node). */
+// Use case 3: three promo answers, each offering the others and "save these as a dashboard".
+const SAVE_CHIP: Chip = { q: SAVE_ASK, match: /dashboard/i, render: () => <SaveDashboardAnswer /> }
+const PROMO_CHIPS = Object.fromEntries(PROMO_WIDGETS.map((w) => [w, { q: PROMO_QUESTIONS[w], render: () => <PromoAnswer id={w} /> } as Chip])) as Record<PromoWidget, Chip>
+PROMO_CHIPS["promo-month"].match = /promo(tion)?s?.*(doing|perform|month)/i
+PROMO_CHIPS["promo-badge"].match = /badge/i
+PROMO_CHIPS["promo-vs-brightwick"].match = /(compare|vs|versus).*brightwick|brightwick.*promo/i
+PROMO_CHIPS["promo-month"].followUps = [PROMO_CHIPS["promo-badge"], PROMO_CHIPS["promo-vs-brightwick"], SAVE_CHIP]
+PROMO_CHIPS["promo-badge"].followUps = [PROMO_CHIPS["promo-vs-brightwick"], PROMO_CHIPS["promo-month"], SAVE_CHIP]
+PROMO_CHIPS["promo-vs-brightwick"].followUps = [PROMO_CHIPS["promo-badge"], PROMO_CHIPS["promo-month"], SAVE_CHIP]
+
 function InboxChat() {
+  const { ask } = useChat()
+  // A dashboard widget's "Ask about this" lands here with its question asked again.
+  useEffect(() => {
+    const id = new URLSearchParams(window.location.search).get("ask") as PromoWidget | null
+    if (!id || !PROMO_CHIPS[id]) return
+    window.history.replaceState(null, "", "/michelle")
+    // Not cancelled on cleanup: the dev double-run's second pass finds no ?ask and does nothing.
+    window.setTimeout(() => ask(PROMO_CHIPS[id]), 300)
+    // Once, on arrival.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
   useChatSource(
     {
       chips: [
+        PROMO_CHIPS["promo-month"],
         { q: GIFT_QUESTION, match: /gift.?sets?/i, render: () => <GiftSetsAnswer /> },
         ...MICHELLE_QUESTIONS.map((q) => ({ q, render: () => <div className="max-w-[860px] rounded-2xl bg-white px-5 py-4 text-[15px] leading-relaxed text-slate-700 ring-1 ring-slate-200">{michelleAnswer(q)}</div> })),
         // A task, not a question about the brief: it opens its own conversation.
