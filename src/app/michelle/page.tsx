@@ -1,9 +1,11 @@
 "use client"
 
 import { AppDrawer } from "@/components/nudge/app-drawer"
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { toast } from "sonner"
 import { AskBar, ChatProvider, ChatThread, useChat, useChatSource } from "@/components/nudge/chat/inline-chat"
+import { OPEN_ITEM_EVENT } from "@/components/nudge/chat/open-item"
+import type { OpenItemDetail } from "@/components/nudge/chat/open-item"
 import { OpsSkuPane } from "@/components/nudge/ops/ops-sku-pane"
 import { NoteBar } from "@/components/nudge/ops/note-bar"
 import { BusinessHero, BusinessPane, BusinessRail } from "@/components/nudge/ops/business-view"
@@ -95,6 +97,20 @@ function Michelle() {
     setExpandedId(batch.id)
     scrollToQueue()
   }
+
+  // An Ask Ally answer's next step ("Review the 4 hero SKUs") opens that issue here.
+  useEffect(() => {
+    const onOpen = (e: Event) => {
+      const { batch, review } = (e as CustomEvent<OpenItemDetail>).detail
+      const b = OPS_BATCHES.find((x) => x.id === batch) ?? OPS_BATCHES.find((x) => x.id.startsWith(batch))
+      if (!b) return
+      setView("ops")
+      if (review) reviewAll(b)
+      else openOps(b.id)
+    }
+    window.addEventListener(OPEN_ITEM_EVENT, onOpen)
+    return () => window.removeEventListener(OPEN_ITEM_EVENT, onOpen)
+  })
 
   /** A drafted fix opens in the Ops view, on the SKU when it's one of the issue's. */
   function openOps(batchId: string, asin?: string) {

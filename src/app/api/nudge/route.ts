@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
     (recipient === "michelle" ? process.env.SLACK_PRIYA_USER_ID : undefined)
 
   const blocks = buildSlackBlocks(body, openInAllyHref, userId)
-  const text = `Claire nudged you on ${body.batchName}${body.deadlineDays ? ` — window closes in ${body.deadlineDays} days.` : "."}`
+  const text = `Claire nudged you on ${body.batchName}${body.deadlineDays ? `. Window closes in ${body.deadlineDays} days.` : "."}`
 
   if (!token || !userId) {
     console.log(
@@ -90,7 +90,7 @@ function buildSlackBlocks(body: NudgeRequestBody, openInAllyHref: string, userId
       type: "section",
       text: {
         type: "mrkdwn",
-        text: `*Claire* nudged you on *${body.batchName}*${body.deadlineDays ? ` — window closes in ${body.deadlineDays} days.` : "."} ${mention}`,
+        text: `*Claire* nudged you on *${body.batchName}*${body.deadlineDays ? `. Window closes in ${body.deadlineDays} days.` : "."} ${mention}`,
       },
     },
   ]

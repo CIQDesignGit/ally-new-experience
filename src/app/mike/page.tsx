@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react"
 import { PageShell } from "@/components/layout/page-shell"
 import { ResetDemoButton } from "@/components/nudge/reset-demo-button"
 import { AskBar, ChatProvider, ChatThread, useChatSource } from "@/components/nudge/chat/inline-chat"
+import { OPEN_ITEM_EVENT } from "@/components/nudge/chat/open-item"
+import type { OpenItemDetail } from "@/components/nudge/chat/open-item"
 import { MIKE_QUESTIONS, mikeAnswer } from "@/components/nudge/ask-ally-personas"
 import { MikeHeader } from "@/components/nudge/mike/mike-header"
 import { MikeDelivered } from "@/components/nudge/mike/mike-delivered"
@@ -50,6 +52,22 @@ export default function MikePage() {
     // Once, on arrival.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // An Ask Ally answer's next step ("Review the 12 hero SKUs") opens that item here.
+  useEffect(() => {
+    const onOpen = (e: Event) => {
+      const { batch, review } = (e as CustomEvent<OpenItemDetail>).detail
+      const pick = batches.find((b) => b.id === batch) ?? (review ? batches.find((b) => b.id.startsWith(batch) && b.mode === "each") : undefined) ?? batches.find((b) => b.id.startsWith(batch))
+      if (!pick) return
+      if (review) handleReviewAll(pick)
+      else {
+        handleSelectBatch(pick.id)
+        queueRef.current?.scrollIntoView({ block: "start" })
+      }
+    }
+    window.addEventListener(OPEN_ITEM_EVENT, onOpen)
+    return () => window.removeEventListener(OPEN_ITEM_EVENT, onOpen)
+  })
 
   // A policy change can remove the selected part (e.g. its SKUs moved to autopilot): fall back to the first item.
   const selected = batches.find((b) => b.id === selectedId) ?? batches[0]

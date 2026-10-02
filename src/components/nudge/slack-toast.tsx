@@ -32,7 +32,7 @@ function SlackToastCard({ preview, onOpen }: { preview: SlackNudgePreview; onOpe
       <div className="mt-2 text-sm leading-snug text-slate-800">
         <span className="font-semibold">Claire</span> nudged you on{" "}
         <span className="font-semibold">{preview.batchName}</span>
-        {preview.deadlineDays ? ` — window closes in ${preview.deadlineDays} days.` : "."}
+        {preview.deadlineDays ? `. Window closes in ${preview.deadlineDays} days.` : "."}
       </div>
       <div className="mt-2.5 rounded-md border border-slate-200 border-l-[3px] border-l-brand-500 p-3">
         {preview.deadlineDays && (

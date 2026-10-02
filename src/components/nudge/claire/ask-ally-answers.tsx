@@ -3,7 +3,9 @@
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import { ArrowRight, Check } from "lucide-react"
-import { downloadExecSummary } from "../exec-pdf"
+import { toast } from "sonner"
+import { downloadExecSummary, execSummaryForEmail } from "../exec-pdf"
+import { emailMe } from "../email-me"
 import { APPROVAL_TIER, BATCHES, BUSINESS, COMPARE, fmtBiz, fmtValue } from "../data"
 import { useLive } from "../live-model"
 import { shortDate } from "../model"
@@ -28,6 +30,8 @@ export const QUESTIONS_Q2 = [QUESTIONS[0], QUESTIONS[1], "Why did content miss b
 export type Question = (typeof QUESTIONS)[number] | (typeof QUESTIONS_Q2)[number]
 
 const cell = "px-3 py-2.5"
+/** Every answer ends in a next step: the same button box everywhere. */
+const ACTION = "inline-flex h-9 w-fit items-center gap-1.5 rounded-md px-3.5 text-sm font-semibold transition-colors"
 /** This quarter's seasonal batch, for the invest answer. */
 const HALLOWEEN = BATCHES.find((b) => b.deadline)!
 
@@ -54,6 +58,14 @@ function InvestAnswer() {
         Total <span className="font-mono font-semibold text-slate-950">≈ $3.1M</span> in sales. Hold off on the ops SKUs losing the buy box: spend there
         goes to other sellers until Michelle&apos;s fix lands.
       </p>
+      <div className="flex flex-wrap gap-2">
+        <button type="button" onClick={() => toast.success("Sent to James · $600K sponsored ads on 67 SKUs, $400K Halloween deals · he'll draft the plan", { position: "top-right" })} className={`${ACTION} bg-brand-500 text-white hover:bg-brand-600`}>
+          Send this plan to James
+        </button>
+        <Link href="/content-results?period=qtd" className={`${ACTION} border border-slate-200 bg-white text-slate-950 hover:border-brand-300 hover:text-brand-700`}>
+          See the 67 SKUs that won
+        </Link>
+      </div>
     </div>
   )
 }
@@ -152,6 +164,12 @@ function AutopilotNextAnswer({ withCompare }: { withCompare: boolean }) {
         <span className="font-medium text-slate-950">Foundational content.</span> 51 of 60 changes won their A/B tests last quarter, and the 18 SKUs stuck in
         approval cost <span className="font-mono font-semibold text-slate-950">$75K</span>. On autopilot, those ship the day they&apos;re ready.
       </p>
+      {!withCompare && (
+        <Link href="/settings" className={`${ACTION} mt-1 bg-brand-500 text-white hover:bg-brand-600`}>
+          Put foundational content on autopilot
+          <ArrowRight className="size-3.5" />
+        </Link>
+      )}
       {withCompare && (
         <button
           type="button"
@@ -166,29 +184,65 @@ function AutopilotNextAnswer({ withCompare }: { withCompare: boolean }) {
   )
 }
 
-/** Builds the one-page PDF the Monday email carries, for an extra send. */
+/** Emails the summary (the PDF and the summary in the body) to whoever is signed in; download stays one click away. */
 function EmailAnswer() {
   const { approved, nudged, policy } = useNudge()
-  const [done, setDone] = useState(false)
+  const [state, setState] = useState<"sending" | "sent" | "failed">("sending")
   useEffect(() => {
-    downloadExecSummary("quarter", { approved, nudged, policy }).then(() => setDone(true))
-    // Built once, from the state when asked.
+    execSummaryForEmail("quarter", { approved, nudged, policy })
+      .then((payload) => emailMe({ kind: "summary", ...payload }, { quiet: true }))
+      .then((ok) => setState(ok ? "sent" : "failed"))
+    // Sent once, from the state when asked.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-  return <p>{done ? "Summary PDF downloaded. Attach it to your email, or forward Monday's." : "Building the summary PDF…"}</p>
+  return (
+    <div className="flex flex-col gap-2">
+      <p>{state === "sending" ? "Emailing the summary…" : state === "sent" ? "Emailed you the summary, with the PDF attached. Forward it to your team." : "Couldn't email it. Download the PDF instead."}</p>
+      {state !== "sending" && (
+        <button type="button" onClick={() => downloadExecSummary("quarter", { approved, nudged, policy })} className={`${ACTION} border border-slate-200 bg-white text-slate-950 hover:border-brand-300 hover:text-brand-700`}>
+          Download the PDF
+        </button>
+      )}
+    </div>
+  )
 }
 
 function PlanAnswer() {
   const live = useLive()
+  const { nudged } = useNudge()
+  const { fire } = useFireNudge()
   const { plan } = BUSINESS.quarter
   const pace = live.pace("quarter")
+  // The fastest dollar: the top row one approval away (deadline first, then value).
+  const top = live.approval.rows.find((r) => r.nudgeKey)
+  const done = !!(top?.nudgeKey && nudged[top.nudgeKey])
   return (
-    <p>
-      Not yet. You&apos;re tracking to <span className="font-mono font-semibold text-slate-950">{fmtBiz(pace)}</span> against a{" "}
-      <span className="font-mono font-semibold text-slate-950">{fmtBiz(plan)}</span> plan, <span className="font-mono font-semibold text-slate-950">{fmtBiz(plan - pace)}</span> short. The fastest way to close the
-      gap is the <span className="font-mono font-semibold text-slate-950">{live.approval.value}</span> that&apos;s one approval away: {live.approval.effort} of your
-      team&apos;s time.
-    </p>
+    <div className="flex flex-col gap-3">
+      <p>
+        Not yet. You&apos;re tracking to <span className="font-mono font-semibold text-slate-950">{fmtBiz(pace)}</span> against a{" "}
+        <span className="font-mono font-semibold text-slate-950">{fmtBiz(plan)}</span> plan, <span className="font-mono font-semibold text-slate-950">{fmtBiz(plan - pace)}</span> short. The fastest way to close the
+        gap is the <span className="font-mono font-semibold text-slate-950">{live.approval.value}</span> that&apos;s one approval away: {live.approval.effort} of your
+        team&apos;s time.
+      </p>
+      <div className="flex flex-wrap gap-2">
+        {top && (
+          <button type="button" disabled={done} onClick={() => fire(top)} className={`${ACTION} bg-brand-500 text-white hover:bg-brand-600 disabled:bg-success-50 disabled:text-success-700`}>
+            {done ? (
+              <>
+                <Check className="size-4" /> Nudged {top.analystName}
+              </>
+            ) : (
+              <>
+                Nudge {top.analystName} · {top.value}
+              </>
+            )}
+          </button>
+        )}
+        <button type="button" onClick={() => document.getElementById("stage-detail")?.scrollIntoView({ behavior: "smooth", block: "start" })} className={`${ACTION} border border-slate-200 bg-white text-slate-950 hover:border-brand-300 hover:text-brand-700`}>
+          See what&apos;s one approval away
+        </button>
+      </div>
+    </div>
   )
 }
 

@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { ArrowRight } from "lucide-react"
+import { OpenItem } from "./chat/open-item"
 import { OPS_BATCHES, fmtValue } from "./data"
 
 /** The urgent ops item, for the "losing sales right now" answer. */
@@ -26,15 +27,25 @@ export const MIKE_QUESTIONS = ["What should I approve first?", "What does Ally n
 export function mikeAnswer(q: string) {
   if (q === MIKE_QUESTIONS[0])
     return (
-      <p>
-        Your hero SKUs first, one by one: <N>$240K</N> on <N>12</N> Halloween jar candles and <N>$115K</N> on <N>8</N> gift sets. Then the core in one approval each: <N>$305K</N> on <N>394</N> SKUs. All of it expires in 18 days.
-      </p>
+      <div>
+        <p>
+          Your hero SKUs first, one by one: <N>$240K</N> on <N>12</N> Halloween jar candles and <N>$115K</N> on <N>8</N> gift sets. Then the core in one approval each: <N>$305K</N> on <N>394</N> SKUs. All of it expires in 18 days.
+        </p>
+        <OpenItem batch="halloween" review primary>
+          Review the 12 hero SKUs
+        </OpenItem>
+      </div>
     )
   if (q === MIKE_QUESTIONS[1])
     return (
-      <p>
-        Your Halloween concepts for <N>245</N> SKUs (<N>$420K</N>), and <N>58</N> attributes on <N>21</N> SKUs that are blocked from syndication (<N>$140K</N>).
-      </p>
+      <div>
+        <p>
+          Your Halloween concepts for <N>245</N> SKUs (<N>$420K</N>), and <N>58</N> attributes on <N>21</N> SKUs that are blocked from syndication (<N>$140K</N>).
+        </p>
+        <OpenItem batch="concepts" primary>
+          Add Halloween concepts
+        </OpenItem>
+      </div>
     )
   if (q === MIKE_QUESTIONS[2])
     return (
@@ -47,9 +58,12 @@ export function mikeAnswer(q: string) {
       </div>
     )
   return (
-    <p>
-      PIM → PDP fixes, <N>$200K</N> this quarter. When a listing has a blank image, description, bullet or attribute, Ally fills it from your PIM.
-    </p>
+    <div>
+      <p>
+        <N>$280K</N> this quarter: PIM → PDP fixes (<N>$200K</N>), where Ally fills a blank image, description, bullet or attribute from your PIM, and Halloween updates on tail SKUs (<N>$80K</N>), going live Oct 15.
+      </p>
+      <OpenItem batch="pim">See what&apos;s on autopilot</OpenItem>
+    </div>
   )
 }
 
@@ -58,26 +72,42 @@ export const MICHELLE_QUESTIONS = ["What's losing sales right now?", "What does 
 export function michelleAnswer(q: string) {
   if (q === MICHELLE_QUESTIONS[0])
     return (
-      <p>
-        Lost buy box on <N>{BUYBOX.skus}</N> SKUs: you&apos;re losing <N>{fmtValue(BUYBOX.perDay ?? 0)}</N> a day, <N>{BUYBOX.value}</N> if Ally fixes it 12 days sooner. Two sellers are pricing below your MAP floor; the escalation to your vendor manager is drafted.
-      </p>
+      <div>
+        <p>
+          Lost buy box on <N>{BUYBOX.skus}</N> SKUs: you&apos;re losing <N>{fmtValue(BUYBOX.perDay ?? 0)}</N> a day, <N>{BUYBOX.value}</N> if Ally fixes it 12 days sooner. Two sellers are pricing below your MAP floor; the escalation to your vendor manager is drafted.
+        </p>
+        <OpenItem batch="buybox-review" review primary>
+          Review the buy box SKUs
+        </OpenItem>
+      </div>
     )
   if (q === MICHELLE_QUESTIONS[1])
     return (
-      <p>
-        Proof on <N>9</N> chargeback disputes (<N>$350K</N>) and shipped quantities on <N>6</N> shorted POs (<N>$250K</N>). Ally has drafted every claim.
-      </p>
+      <div>
+        <p>
+          Proof on <N>9</N> chargeback disputes (<N>$350K</N>) and shipped quantities on <N>6</N> shorted POs (<N>$250K</N>). Ally has drafted every claim.
+        </p>
+        <OpenItem batch="chargebacks" primary>
+          Open the chargeback disputes
+        </OpenItem>
+      </div>
     )
   if (q === MICHELLE_QUESTIONS[2])
     return (
-      <p>
-        <N>{fmtValue(DELIVERED.quarter.ops.delivered)}</N> of leakage prevented of <N>{fmtValue(DELIVERED.quarter.ops.promised)}</N> projected. {DELIVERED.quarter.ops.summary[1]}
-      </p>
+      <div>
+        <p>
+          <N>{fmtValue(DELIVERED.quarter.ops.delivered)}</N> of leakage prevented of <N>{fmtValue(DELIVERED.quarter.ops.promised)}</N> projected. {DELIVERED.quarter.ops.summary[1]}
+        </p>
+        <OpenItem batch="promo-badge">Review the promo badges</OpenItem>
+      </div>
     )
   return (
-    <p>
-      Promotions that fail to go live, <N>$200K</N> this quarter. Ally fixes the setup and resubmits them: <N>51</N> so far.
-    </p>
+    <div>
+      <p>
+        Promotions that fail to go live, <N>$200K</N> this quarter. Ally fixes the setup and resubmits them: <N>51</N> so far.
+      </p>
+      <OpenItem batch="promotions">See the promotions on autopilot</OpenItem>
+    </div>
   )
 }
 
