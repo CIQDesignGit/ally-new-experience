@@ -13,8 +13,11 @@ export const LAUNCH = {
   due: "Nov 6",
   value: "$420K",
   tagline: "Gather round the glow",
-  concept: { name: "Gather round the glow · agency concept.jpg", size: "4.2 MB", src: "/images/aurelle/soy-candle-golden-hour.jpg" },
+  concept: { name: "Gather round the glow · agency concept.jpg", size: "4.2 MB", src: "/images/aurelle/soy-candle-golden-hour.jpg", kind: "image" as const },
 }
+
+/** What Mike uploads: the brand team's email and the agency's concept. */
+export const LAUNCH_FILES = [{ name: "Re: Winter Hearth launch.eml", size: "38 KB", src: "", kind: "email" as const }, LAUNCH.concept]
 
 export const LAUNCH_EMAIL = `From Priya (brand team): We're the official candle of the Hudson Valley Winter Market, Nov 13–15. We're launching 3 new SKUs on Nov 9: Winter Hearth Jar, Cedar Ember Pillar and Frost Fig Travel Tin Trio. The agency's concept is attached; the tagline is "Gather round the glow." Legal: no "non-toxic" claims on anything.`
 

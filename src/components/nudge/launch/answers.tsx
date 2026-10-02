@@ -5,6 +5,7 @@ import { Check, ShieldCheck } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useNudge } from "../nudge-context"
 import { useChat } from "../chat/inline-chat"
+import type { Chip } from "../chat/inline-chat"
 import { OpenItem } from "../chat/open-item"
 import { PRIMARY } from "../mike/buttons"
 import { AS_OF } from "../data"
@@ -148,3 +149,14 @@ function SentLine() {
 
 export const ADAPT_ASK = "Adapt the concept for the 3 new SKUs"
 export const SEND_ASK = "Send the 3 SKUs for approval"
+
+const ADAPT_CHIP: Chip = { q: ADAPT_ASK, match: /adapt|draft|images?/i, render: () => <LaunchAdaptAnswer /> }
+/** The brief arrives as files (from the queue item or the 📎); it isn't offered as a starter. */
+export const LAUNCH_CHIP: Chip = {
+  q: "Here's the Winter Hearth launch brief",
+  match: /launch|winter hearth|brand team|brief/i,
+  hidden: true,
+  takesFiles: true,
+  render: () => <LaunchBriefAnswer />,
+  followUps: [ADAPT_CHIP],
+}

@@ -1,8 +1,7 @@
 "use client"
 
-import { LaunchAdaptAnswer, LaunchBriefAnswer, ADAPT_ASK } from "@/components/nudge/launch/answers"
-import { LAUNCH, LAUNCH_EMAIL } from "@/components/nudge/launch/data"
-import type { Chip } from "@/components/nudge/chat/inline-chat"
+import { LAUNCH_CHIP } from "@/components/nudge/launch/answers"
+import { LAUNCH_FILES } from "@/components/nudge/launch/data"
 import { useEffect, useRef, useState } from "react"
 import { PageShell } from "@/components/layout/page-shell"
 import { ResetDemoButton } from "@/components/nudge/reset-demo-button"
@@ -28,21 +27,11 @@ import type { Batch } from "@/components/nudge/types"
  * comparison on the right.
  */
 /** Mike's questions for the Ask Ally bar; answers appear at the end of the page. */
-// Use case 7: the brand team's email and the agency concept, brought to Ally.
-const ADAPT_CHIP: Chip = { q: ADAPT_ASK, match: /adapt|draft|images?/i, render: () => <LaunchAdaptAnswer /> }
-const LAUNCH_CHIP: Chip = {
-  q: "Paste the brand team's launch email",
-  match: /launch|winter hearth|brand team|priya/i,
-  prefill: { text: LAUNCH_EMAIL, attach: LAUNCH.concept },
-  render: () => <LaunchBriefAnswer />,
-  followUps: [ADAPT_CHIP],
-}
-
 function MikeChat() {
   useChatSource(
     {
       chips: [LAUNCH_CHIP, ...MIKE_QUESTIONS.map((q) => ({ q, render: () => <div className="max-w-[860px] rounded-2xl bg-white px-5 py-4 text-[15px] leading-relaxed text-slate-700 ring-1 ring-slate-200">{mikeAnswer(q)}</div> }))],
-      files: [LAUNCH.concept],
+      files: LAUNCH_FILES,
     },
     "mike",
   )

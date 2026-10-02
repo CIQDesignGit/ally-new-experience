@@ -2,7 +2,8 @@
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react"
 import { motion } from "framer-motion"
-import { CornerDownRight, Paperclip, Plus, Send, Sparkles, X } from "lucide-react"
+import { UploadDialog } from "./upload-dialog"
+import { CornerDownRight, Mail, Paperclip, Plus, Send, Sparkles, X } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { FadeAbove, MoreBelow } from "./more-below"
@@ -25,12 +26,17 @@ export interface Chip {
   followUps?: Chip[]
   /** A starter that fills the bar instead of asking: pasted text, and a file attached, ready to send. */
   prefill?: { text: string; attach?: Attachment }
+  /** Not offered as a starter; reached by typing, or by sending files (with `takesFiles`). */
+  hidden?: boolean
+  /** Sending attachments with no other match lands here. */
+  takesFiles?: boolean
 }
 
 export interface Attachment {
   name: string
   size: string
   src: string
+  kind?: "image" | "email"
 }
 
 export interface ChatSource {
@@ -50,7 +56,7 @@ interface Turn {
   /** The chip it landed on (same as q when the chip was tapped). */
   chip: string
   followUps?: Chip[]
-  attach?: Attachment
+  attach?: Attachment[]
   about?: string
   anchor?: string
   render: () => React.ReactNode
@@ -61,7 +67,7 @@ interface ChatValue {
   setSource: (s: ChatSource) => void
   turns: Turn[]
   /** Ask; the answer goes under `anchor` (defaults to what's on screen). */
-  ask: (chip: Chip, anchor?: string, said?: string, attach?: Attachment) => void
+  ask: (chip: Chip, anchor?: string, said?: string, attach?: Attachment[]) => void
   clear: () => void
 }
 
@@ -75,7 +81,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   const [turns, setTurns] = useState<Turn[]>([])
   const next = useRef(1)
   const ask = useCallback(
-    (chip: Chip, anchor?: string, said?: string, attach?: Attachment) =>
+    (chip: Chip, anchor?: string, said?: string, attach?: Attachment[]) =>
       setTurns((t) => [...t, { id: next.current++, q: said ?? chip.q, chip: chip.q, followUps: chip.followUps, attach, about: source.about, anchor: anchor ?? source.anchor, render: chip.render }]),
     [source.about, source.anchor],
   )
@@ -161,7 +167,13 @@ export function ChatThread({ className, anchor }: { className?: string; anchor?:
           style={i === turns.length - 1 && !anchor ? { minHeight: "calc(100vh - var(--askbar-h, 0px) - 56px)" } : undefined}
         >
           <div className="flex flex-col items-end gap-2">
-            {t.attach && <AttachmentCard file={t.attach} />}
+            {!!t.attach?.length && (
+              <div className="flex flex-wrap justify-end gap-2">
+                {t.attach.map((f) => (
+                  <AttachmentCard key={f.name} file={f} />
+                ))}
+              </div>
+            )}
             <div className="flex items-center justify-end gap-3">
               {t.about && <span className="text-xs text-slate-500">about {t.about}</span>}
               <div className="max-w-[640px] rounded-2xl rounded-br-md bg-brand-500 px-4 py-2.5 text-[15px] whitespace-pre-line text-white">{t.q}</div>
@@ -215,18 +227,19 @@ export function AskBar({ placeholder = "What can I take off your plate?" }: { pl
   const { source, turns, ask, clear } = useChat()
   const router = useRouter()
   // Questions about this screen answer here; tasks (make a deck, plan an event) open their own conversation.
-  const [attach, setAttach] = useState<Attachment | null>(null)
+  const [attach, setAttach] = useState<Attachment[]>([])
+  const [uploading, setUploading] = useState(false)
   const run = (c: Chip, said?: string) => {
     if (c.task) return router.push(c.task)
-    ask(c, undefined, said, attach ?? undefined)
-    setAttach(null)
+    ask(c, undefined, said, attach.length ? attach : undefined)
+    setAttach([])
   }
   const [text, setText] = useState("")
   const [open, setOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
   const dockRef = useRef<HTMLDivElement>(null)
   const askedHere = new Set(turns.filter((t) => t.about === source.about && t.anchor === source.anchor).map((t) => t.chip))
-  const chips = source.chips.filter((c) => !askedHere.has(c.q))
+  const chips = source.chips.filter((c) => !askedHere.has(c.q) && !c.hidden)
 
   // The page reserves the bar's height under its last answer, so the bar and its
   // suggestions never sit on top of what Ally just said.
@@ -261,8 +274,20 @@ export function AskBar({ placeholder = "What can I take off your plate?" }: { pl
 
   const tray = open && (showChips || turns.length > 0)
   return (
-    // The dock, like Claude's: content fades out above it, the box is solid, and nothing shows beside or below it.
-    // It spans the page card's width, so on grey-backed pages it reads as the card's own bottom.
+    <>
+    {uploading && source.files && (
+      <UploadDialog
+        files={source.files}
+        onClose={() => setUploading(false)}
+        onAttach={(files) => {
+          setAttach(files)
+          setUploading(false)
+          setOpen(true)
+        }}
+      />
+    )}
+    {/* The dock, like Claude's: content fades out above it, the box is solid, and nothing shows beside or below it.
+        It spans the page card's width, so on grey-backed pages it reads as the card's own bottom. */}
     <div ref={dockRef} className="pointer-events-none fixed inset-x-0 bottom-0 z-40 xl:left-[var(--sidebar-w,0px)]">
       <div className="relative mx-auto max-w-[1280px]">
         <FadeAbove />
@@ -290,7 +315,7 @@ export function AskBar({ placeholder = "What can I take off your plate?" }: { pl
                     // A paste-and-attach starter fills the bar for you to send; the rest ask now.
                     if (c.prefill) {
                       setText(c.prefill.text)
-                      if (c.prefill.attach) setAttach(c.prefill.attach)
+                      if (c.prefill.attach) setAttach([c.prefill.attach])
                       return
                     }
                     run(c)
@@ -328,18 +353,22 @@ export function AskBar({ placeholder = "What can I take off your plate?" }: { pl
             }
             // The latest answer's follow-ups first, then the starters.
             const pool = [...(turns[turns.length - 1]?.followUps ?? []), ...source.chips]
-            const chip = pool.find((c) => c.match?.test(text)) ?? closest(pool, text)
+            // Files sent on their own (or with any words) go to whatever takes files.
+            const filesChip = attach.length ? pool.find((c) => c.takesFiles) : undefined
+            const chip = filesChip ?? pool.find((c) => c.match?.test(text)) ?? closest(pool, text)
             if (chip) {
-              run(chip, text.trim())
+              run(chip, text.trim() || (attach.length ? `Here ${attach.length === 1 ? "is a file" : `are ${attach.length} files`}.` : chip.q))
               setOpen(false)
             } else setOpen(true)
             setText("")
           }}
           className="flex flex-wrap items-center gap-2 py-1.5 pr-1.5 pl-4"
         >
-          {attach && (
-            <span className="flex w-full items-center gap-2 pt-1.5 pb-1">
-              <AttachmentCard file={attach} onRemove={() => setAttach(null)} />
+          {!!attach.length && (
+            <span className="flex w-full flex-wrap items-center gap-2 pt-1.5 pb-1">
+              {attach.map((f) => (
+                <AttachmentCard key={f.name} file={f} onRemove={() => setAttach((a) => a.filter((x) => x.name !== f.name))} />
+              ))}
             </span>
           )}
           <Sparkles className="size-4 shrink-0 text-brand-600" />
@@ -352,7 +381,7 @@ export function AskBar({ placeholder = "What can I take off your plate?" }: { pl
             className="flex-1 bg-transparent text-sm text-slate-950 outline-none placeholder:text-slate-400"
           />
           {!!source.files?.length && (
-            <button type="button" onClick={() => setAttach(source.files![0])} aria-label="Attach a file" title="Attach a file" className="flex size-8 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 hover:text-slate-900">
+            <button type="button" onClick={() => setUploading(true)} aria-label="Attach files" title="Attach files" className="flex size-8 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 hover:text-slate-900">
               <Paperclip className="size-4" />
             </button>
           )}
@@ -364,6 +393,7 @@ export function AskBar({ placeholder = "What can I take off your plate?" }: { pl
       <p className="mt-2 text-center text-xs text-slate-400">Ally is AI and can make mistakes. Please double-check responses.</p>
       </div>
     </div>
+    </>
   )
 }
 
@@ -382,8 +412,14 @@ export function AnswerCard({ children }: { children: React.ReactNode }) {
 function AttachmentCard({ file, onRemove }: { file: Attachment; onRemove?: () => void }) {
   return (
     <span className="inline-flex items-center gap-2.5 rounded-xl border border-slate-200 bg-white py-1.5 pr-2 pl-1.5 text-[13px]">
-      {/* eslint-disable-next-line @next/next/no-img-element -- a local demo asset */}
-      <img src={file.src} alt="" className="size-9 rounded-md object-cover" />
+      {file.kind === "email" ? (
+        <span className="flex size-9 items-center justify-center rounded-md bg-slate-100 text-slate-500">
+          <Mail className="size-4" />
+        </span>
+      ) : (
+        // eslint-disable-next-line @next/next/no-img-element -- a local demo asset
+        <img src={file.src} alt="" className="size-9 rounded-md object-cover" />
+      )}
       <span className="text-left">
         <b className="block font-semibold text-slate-950">{file.name}</b>
         <span className="text-slate-500">{file.size}</span>

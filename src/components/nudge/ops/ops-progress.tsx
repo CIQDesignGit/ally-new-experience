@@ -52,7 +52,7 @@ export function OpsProgress({ celebrate }: { celebrate: Celebrate | null }) {
                 <>
                   {" "}
                   <span className="text-warning-600">
-                    You&apos;re losing <span className="font-mono">{fmt(perDay)}</span> a day right now.
+                    You&apos;re losing <span className="font-mono">{fmt(perDay)}</span> a day.
                   </span>
                 </>
               )}

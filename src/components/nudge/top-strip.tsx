@@ -2,7 +2,8 @@
 
 import { Fragment, useEffect, useLayoutEffect, useRef, useState } from "react"
 import Link from "next/link"
-import { ChevronRight, LogOut } from "lucide-react"
+import { Check, ChevronRight, LogOut } from "lucide-react"
+import { useRouter } from "next/navigation"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
 import { PeriodSwitch } from "./period-switch"
@@ -65,8 +66,12 @@ export function Avatar({ person, className }: { person: Person; className?: stri
  * The avatar is the account menu: who's signed in (the presenter, whose inbox gets
  * Ally's emails) and Sign out, which returns to the sign-in page.
  */
+/** The demo's people, as the account menu switches between them. */
+const ROLES: Record<Person, string> = { claire: "VP Ecommerce", michelle: "Sales analyst", mike: "Content lead" }
+
 function AccountMenu({ person }: { person: Person }) {
   const [email, setEmail] = useState<string | null>(null)
+  const router = useRouter()
   return (
     <DropdownMenu
       onOpenChange={(open) => {
@@ -86,6 +91,18 @@ function AccountMenu({ person }: { person: Person }) {
           <div className="text-sm font-semibold text-slate-950">{PEOPLE[person].name}</div>
           <div className="mt-0.5 truncate text-xs text-slate-500">{email ? `Signed in as ${email}` : "\u00a0"}</div>
         </div>
+        <DropdownMenuSeparator />
+        <div className="px-2.5 pt-1.5 pb-1 text-xs font-medium text-slate-500">View as</div>
+        {(["claire", "michelle", "mike"] as const).map((p) => (
+          <DropdownMenuItem key={p} onClick={() => router.push(HOMES[p])} className="gap-2.5 px-2.5 py-2 text-sm">
+            <Avatar person={p} className="size-7" />
+            <span className="flex-1">
+              <span className="block font-medium text-slate-950">{PEOPLE[p].name}</span>
+              <span className="block text-xs text-slate-500">{ROLES[p]}</span>
+            </span>
+            {p === person && <Check className="size-4 text-brand-600" />}
+          </DropdownMenuItem>
+        ))}
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={async () => {

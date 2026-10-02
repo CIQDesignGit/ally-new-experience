@@ -3,6 +3,11 @@
 import { useEffect, useRef, useState } from "react"
 import { ArrowRight, Check, ChevronDown, PauseCircle, RefreshCw, ShieldCheck, Sparkles } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { Upload } from "lucide-react"
+import { useChat } from "../chat/inline-chat"
+import { UploadDialog } from "../chat/upload-dialog"
+import { LAUNCH_CHIP } from "../launch/answers"
+import { LAUNCH_FILES } from "../launch/data"
 import { skuById } from "../data"
 import { useNudge } from "../nudge-context"
 import { PRIMARY, SECONDARY } from "./buttons"
@@ -161,6 +166,8 @@ export function BatchDetail({ batch, onApprove, onReviewAll, onSelect }: BatchDe
             </button>
             {sampleButton}
           </div>
+        ) : batch.id === "concepts" && batch.tier === "input" ? (
+          <LaunchBriefNeed />
         ) : batch.tier === "input" && batch.need ? (
           <div className="flex flex-col gap-4 rounded-xl border border-warning-200 bg-warning-50 px-5 py-4">
             <div className="text-sm text-slate-700">{batch.need.text}</div>
@@ -215,6 +222,34 @@ export function BatchDetail({ batch, onApprove, onReviewAll, onSelect }: BatchDe
             </div>
           )}
         </div>
+      )}
+    </div>
+  )
+}
+
+/** The launch is blocked on the brief: upload it here, and the conversation picks it up. */
+function LaunchBriefNeed() {
+  const { ask } = useChat()
+  const [open, setOpen] = useState(false)
+  return (
+    <div className="flex flex-col gap-3 rounded-xl border border-warning-200 bg-warning-50 px-5 py-4">
+      <div className="text-sm text-slate-700">
+        <b className="font-semibold text-slate-950">Ally needs the launch brief.</b>
+        {" Upload the brand team's email and the agency's concept, and Ally drafts the 3 pages."}
+      </div>
+      <button type="button" onClick={() => setOpen(true)} className={cn(PRIMARY, "w-fit")}>
+        <Upload className="size-4" /> Upload the brief
+      </button>
+      {open && (
+        <UploadDialog
+          title="Upload the launch brief"
+          files={LAUNCH_FILES}
+          onClose={() => setOpen(false)}
+          onAttach={(files) => {
+            setOpen(false)
+            ask(LAUNCH_CHIP, undefined, "Here's the Winter Hearth launch brief.", files)
+          }}
+        />
       )}
     </div>
   )
