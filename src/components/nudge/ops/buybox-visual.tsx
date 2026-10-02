@@ -1,4 +1,4 @@
-import type { OpsBatch, SellerSku } from "../data"
+import type { SellerSku } from "../data"
 
 /**
  * The buy box problem as a picture, for the lead SKU: where every seller's price
@@ -13,12 +13,11 @@ const LOSS = "#dc2626" // error-600
 
 const usd = (v: number) => `$${v.toFixed(2)}`
 
-export function BuyBoxVisual({ batch, sku }: { batch: OpsBatch; sku: SellerSku }) {
+export function BuyBoxVisual({ sku }: { sku: SellerSku }) {
   const lowest = Math.min(...sku.sellers.map((s) => s.price))
   const below = sku.sellers.filter((s) => s.price < sku.map)
   const yourWins = 12 - sku.sellers.reduce((n, s) => n + s.wins, 0)
   const facts = [
-    { figure: String(batch.skus), label: batch.partLabel ? `${batch.partLabel.toLowerCase()} SKUs` : "SKUs" },
     { figure: `${yourWins} of 12`, label: "crawls you won", loss: yourWins === 0 },
     { figure: `−${usd(sku.price - lowest)}`, label: "under your price", loss: true },
     { figure: String(below.length), label: below.length === 1 ? "seller below MAP" : "sellers below MAP" },
@@ -27,9 +26,9 @@ export function BuyBoxVisual({ batch, sku }: { batch: OpsBatch; sku: SellerSku }
   return (
     <div className="flex flex-col">
       {/* Facts: one row, the same left edge as everything under it. */}
-      <div className="grid grid-cols-4 border-b border-slate-100">
+      <div className="grid grid-cols-3 border-b border-slate-100">
         {facts.map((f, i) => (
-          <div key={f.label} className={i > 0 ? "border-l border-slate-100 px-5 py-3.5" : "px-5 py-3.5"}>
+          <div key={f.label} className={i > 0 ? "border-l border-slate-100 px-5 py-3" : "px-5 py-3"}>
             <div className="font-mono text-[17px] font-semibold tabular-nums" style={{ color: f.loss ? LOSS : "#0f172a" }}>
               {f.figure}
             </div>
@@ -38,20 +37,13 @@ export function BuyBoxVisual({ batch, sku }: { batch: OpsBatch; sku: SellerSku }
         ))}
       </div>
 
-      <div className="px-5 pt-5 pb-5">
-        <div className="text-xs font-medium text-slate-500">
-          Lead example · <span className="font-mono">{sku.asin}</span> {sku.name}
+      <div className="px-5 pt-3.5 pb-4">
+        <div className="text-sm font-semibold text-slate-950">
+          Offers vs MAP <span className="font-normal text-slate-500">· {sku.name}</span>
         </div>
-
-        <div className="mt-4 text-sm font-semibold text-slate-950">Every offer against your MAP floor</div>
         <PriceLadder sku={sku} />
 
-        <div className="mt-6 flex items-baseline justify-between">
-          <span className="text-sm font-semibold text-slate-950">Who held the buy box, last 12 crawls</span>
-          <span className="font-mono text-sm font-semibold" style={{ color: yourWins === 0 ? LOSS : "#0f172a" }}>
-            You won {yourWins}
-          </span>
-        </div>
+        <div className="mt-3 text-sm font-semibold text-slate-950">Buy box, last 12 crawls</div>
         <CrawlStrip sku={sku} />
       </div>
     </div>
@@ -74,7 +66,7 @@ function PriceLadder({ sku }: { sku: SellerSku }) {
     }, {}),
   )
   return (
-    <svg viewBox={`0 0 ${W} 112`} className="mt-2 w-full" role="img" aria-label={`MAP ${usd(sku.map)}; you ${usd(sku.price)}; ${sku.sellers.map((s) => `${s.name} ${usd(s.price)}`).join(", ")}`}>
+    <svg viewBox={`0 0 ${W} 112`} className="mt-1 w-full" role="img" aria-label={`MAP ${usd(sku.map)}; you ${usd(sku.price)}; ${sku.sellers.map((s) => `${s.name} ${usd(s.price)}`).join(", ")}`}>
       <rect x={x(lo)} y={axis - 14} width={x(sku.map) - x(lo)} height={28} rx={4} fill="#fef2f2" />
       <text x={x(lo) + 8} y={axis - 20} fontSize={12} fill={LOSS} fontWeight={500}>
         Below your MAP floor

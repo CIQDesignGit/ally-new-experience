@@ -80,13 +80,15 @@ export function OpsBatchDetail({ batch, onAction, onReviewAll }: OpsBatchDetailP
             {batch.partLabel && ` · ${batch.partLabel}`}
           </div>
           <div className="mt-0.5 text-2xl font-semibold tracking-tight text-slate-950">{batch.name}</div>
-          {batch.skills && (
-            <div className="mt-2">
-              <SkillsTrace skills={batch.skills} />
-            </div>
-          )}
-          <div className="mt-1.5 text-sm text-slate-500">
+          {/* Team, count and how it was found on one line. */}
+          <div className="mt-1.5 flex flex-wrap items-center gap-x-2 text-sm text-slate-500">
             {batch.team} · {batch.skus} {batch.tier === "input" ? batch.inputNoun : "SKUs"}
+            {batch.skills && (
+              <>
+                <span className="text-slate-300">·</span>
+                <SkillsTrace skills={batch.skills} />
+              </>
+            )}
           </div>
         </div>
         <div className="shrink-0 text-right">
@@ -98,11 +100,14 @@ export function OpsBatchDetail({ batch, onAction, onReviewAll }: OpsBatchDetailP
         </div>
       </div>
 
-      <div className="mt-8 overflow-hidden rounded-xl border border-slate-200">
+      <div className="mt-5 overflow-hidden rounded-xl border border-slate-200">
+        {/* A label only where it adds something: autopilot. A caught issue speaks for itself. */}
+        {batch.tier === "autopilot" && (
         <div className="flex items-center gap-2 border-b border-slate-100 bg-slate-50 px-5 py-3 text-sm font-semibold text-slate-950">
           {batch.tier === "autopilot" ? <RefreshCw className="size-4 text-info-600" /> : <Search className="size-4 text-brand-600" />}
           {batch.tier === "autopilot" ? "What Ally fixes automatically" : "What Ally caught"}
         </div>
+        )}
         {batch.fixes ? (
           batch.fixes.map((f, i) => (
             <div key={f.text} className={i > 0 ? "flex items-start gap-3 border-t border-slate-100 px-5 py-3.5" : "flex items-start gap-3 px-5 py-3.5"}>
@@ -113,10 +118,7 @@ export function OpsBatchDetail({ batch, onAction, onReviewAll }: OpsBatchDetailP
             </div>
           ))
         ) : lead ? (
-          <>
-            <p className="border-b border-slate-100 px-5 py-4 text-sm leading-relaxed text-slate-950">{batch.detected}</p>
-            <BuyBoxVisual batch={batch} sku={lead} />
-          </>
+          <BuyBoxVisual sku={lead} />
         ) : (
           <div className="px-5 py-4">
             <p className="text-sm leading-relaxed text-slate-950">{batch.detected}</p>
@@ -141,7 +143,7 @@ export function OpsBatchDetail({ batch, onAction, onReviewAll }: OpsBatchDetailP
         )}
       </div>
 
-      <div className="mt-8">
+      <div className="mt-5">
         {batch.tier === "autopilot" ? (
           <div className="flex items-start gap-3 rounded-xl border border-info-100 bg-info-50 px-5 py-4 text-sm text-slate-700">
             <RefreshCw className="mt-0.5 size-4 shrink-0 text-info-600" />
