@@ -1,14 +1,16 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
-import { Bell, Check, ChevronDown, Sparkles } from "lucide-react"
+import { Bell, Check, Sparkles } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useNudge } from "../nudge-context"
 import { useChat } from "../chat/inline-chat"
 import { PRIMARY, SECONDARY } from "../mike/buttons"
-import { ALERT_RULES, BID_CAPS, BRAND_TERM_SOV, BRAND_TERMS, GIFT_PRICES, GIFT_TERM_SOV, CHANNELS, FREQUENCIES, GIFT_DRILL, GIFT_TERMS, IROAS, MICHELLE_LIMIT, MODE_LABEL, THRESHOLDS } from "./data"
-import type { AlertMode, CustomAlert } from "./data"
+import { ALERT_RULES, BID_CAPS, BRAND_TERM_SOV, BRAND_TERMS, GIFT_DRILL, GIFT_PRICES, GIFT_TERM_SOV, GIFT_TERMS, IROAS, MICHELLE_LIMIT } from "./data"
+import type { CustomAlert } from "./data"
+import { AlertCard, draftOf, editFromText, isCrossed, modeLabel } from "./alert-card"
+import type { Draft } from "./alert-card"
 import { TYPED_EVENT } from "../chat/inline-chat"
 
 /**
@@ -279,28 +281,19 @@ function MediaTaskAnswer({ cap, viaJames }: { cap: number; viaJames?: boolean })
 
       <p className="pt-1">Want me to watch this going forward? I&apos;d set two alerts, on the same two lines the task is working to.</p>
       <div className="flex flex-col gap-2">
-        {(Object.keys(ALERT_RULES) as CustomAlert["id"][]).map((id) => {
-          const d = drafts[id]
-          const off = !!decided || !pick[id]
-          return (
-            <div key={id} className={cn("flex items-start gap-3 rounded-xl border bg-white px-4 py-3.5 transition-shadow", pick[id] ? "border-brand-300" : "border-slate-200 opacity-60", flash.includes(id) && "ring-4 ring-brand-100")}>
-              <input type="checkbox" aria-label={ALERT_RULES[id].name} checked={pick[id]} disabled={!!decided} onChange={(e) => setPick((p) => ({ ...p, [id]: e.target.checked }))} className="mt-1.5 size-4 shrink-0 accent-brand-500" />
-              <p className="text-[15px] leading-[2.1] text-slate-700">
-                {id === "brand-terms" ? (
-                  <>
-                    When any competitor gets more than <Pick value={`${d.threshold}%`} options={THRESHOLDS.map((t) => `${t}%`)} onPick={(v) => set(id, { threshold: parseInt(v) })} disabled={off} /> share of voice on our <Terms list={BRAND_TERMS} label={`${BRAND_TERMS.length} brand terms`} />
-                  </>
-                ) : (
-                  <>
-                    When our share of voice on <Terms list={GIFT_TERMS} label={`${GIFT_TERMS.length} gift terms`} /> drops below <Pick value={`${d.threshold}%`} options={THRESHOLDS.map((t) => `${t}%`)} onPick={(v) => set(id, { threshold: parseInt(v) })} disabled={off} />
-                  </>
-                )}
-                , the media agent raises our bids: <Pick value={modeLabel(d.mode, cap)} options={MODES.map((m) => modeLabel(m, cap))} onPick={(v) => set(id, { mode: MODES[MODES.map((m) => modeLabel(m, cap)).indexOf(v)] })} disabled={off} />. Check{" "}
-                <Pick value={d.frequency} options={[...FREQUENCIES]} onPick={(v) => set(id, { frequency: v as Draft["frequency"] })} disabled={off} /> and send it to <Pick value={d.channel} options={[...CHANNELS]} onPick={(v) => set(id, { channel: v as Draft["channel"] })} disabled={off} />.
-              </p>
-            </div>
-          )
-        })}
+        {(Object.keys(ALERT_RULES) as CustomAlert["id"][]).map((id) => (
+          <AlertCard
+            key={id}
+            id={id}
+            draft={drafts[id]}
+            onChange={(patch) => set(id, patch)}
+            cap={cap}
+            include={pick[id]}
+            onInclude={(on) => setPick((p) => ({ ...p, [id]: on }))}
+            locked={!!decided}
+            flash={flash.includes(id)}
+          />
+        ))}
       </div>
       {!decided && (
         <div className="flex items-center gap-3">
@@ -338,9 +331,9 @@ function AlertsCreatedAnswer({ ids, drafts, cap }: { ids: CustomAlert["id"][]; d
     <div className="flex max-w-[640px] flex-col gap-3 text-[15px] leading-relaxed text-slate-700">
       <div className="flex flex-col gap-1.5">
         {ids.map((id) => (
-          <div key={id} className="flex items-center gap-2 text-[14px]">
-            <Bell className="size-4 text-brand-600" />
-            <span className="font-semibold text-slate-950">{ALERT_RULES[id].name}</span>
+          <div key={id} className="flex items-start gap-2 text-[14px]">
+            <Bell className="mt-0.5 size-4 shrink-0 text-brand-600" />
+            <span className="shrink-0 font-semibold whitespace-nowrap text-slate-950">{ALERT_RULES[id].name}</span>
             <span className="text-slate-500">
               · {modeLabel(drafts[id].mode, cap)} · {drafts[id].frequency} · {drafts[id].channel}
             </span>
@@ -348,7 +341,7 @@ function AlertsCreatedAnswer({ ids, drafts, cap }: { ids: CustomAlert["id"][]; d
         ))}
       </div>
       <p>
-        {ids.length === 1 ? "It's" : "Both are"} already true today, and the media agent is on {ids.length === 1 ? "it" : "them"}. I&apos;ll alert you if {ids.length === 1 ? "it's" : "they're"} still true on Oct 15, or sooner if {ids.length === 1 ? "it gets" : "either gets"} worse.{" "}
+        {confirmLine(ids, drafts)}{" "}
         <Link href="/michelle/alerts" className="font-medium text-brand-700 hover:underline">
           See your alerts
         </Link>
@@ -357,77 +350,11 @@ function AlertsCreatedAnswer({ ids, drafts, cap }: { ids: CustomAlert["id"][]; d
   )
 }
 
-type Draft = Pick<CustomAlert, "threshold" | "mode" | "frequency" | "channel">
-const MODES: AlertMode[] = ["input", "approval", "autopilot"]
-const draftOf = (id: CustomAlert["id"]): Draft => ({ threshold: ALERT_RULES[id].threshold, mode: ALERT_RULES[id].mode, frequency: ALERT_RULES[id].frequency, channel: ALERT_RULES[id].channel })
-export const modeLabel = (m: AlertMode, cap = 4) => (m === "autopilot" ? `On autopilot, up to ${k$(cap)} a week` : MODE_LABEL[m])
 
-/** Reads a typed change: which alert ("brand", "gift", else both), and what to set. */
-function editFromText(text: string): { ids: CustomAlert["id"][]; patch: Partial<Draft> } | null {
-  const t = text.toLowerCase()
-  const patch: Partial<Draft> = {}
-  const pct = t.match(/(\d{1,2})\s*(%|percent)/)
-  if (pct) patch.threshold = Math.min(50, Math.max(5, parseInt(pct[1])))
-  if (/autopilot/.test(t)) patch.mode = "autopilot"
-  else if (/approv/.test(t)) patch.mode = "approval"
-  else if (/\binput\b|alert me|just (tell|alert)/.test(t)) patch.mode = "input"
-  if (/twice/.test(t)) patch.frequency = "twice a day"
-  else if (/week/.test(t) && !/a week/.test(t)) patch.frequency = "weekly"
-  else if (/morning|daily|every day/.test(t)) patch.frequency = "every morning"
-  if (/slack/.test(t) && /email/.test(t)) patch.channel = "your email and Slack"
-  else if (/slack/.test(t)) patch.channel = "Slack"
-  else if (/inbox/.test(t)) patch.channel = "your Ally inbox"
-  else if (/e-?mail/.test(t)) patch.channel = "your email"
-  if (!Object.keys(patch).length) return null
-  const ids: CustomAlert["id"][] = /brand/.test(t) && !/gift/.test(t) ? ["brand-terms"] : /gift/.test(t) && !/brand/.test(t) ? ["gift-terms"] : ["brand-terms", "gift-terms"]
-  return { ids, patch }
-}
-
-/** A value inside a sentence you can tap to change, like Ally's own words. */
-function Pick({ value, options, onPick, disabled }: { value: string; options: string[]; onPick: (v: string) => void; disabled?: boolean }) {
-  const [open, setOpen] = useState(false)
-  const ref = useRef<HTMLSpanElement>(null)
-  useEffect(() => {
-    if (!open) return
-    const onDown = (e: MouseEvent) => ref.current && !ref.current.contains(e.target as Node) && setOpen(false)
-    document.addEventListener("mousedown", onDown)
-    return () => document.removeEventListener("mousedown", onDown)
-  }, [open])
-  return (
-    <span ref={ref} className="relative inline-block">
-      <button type="button" disabled={disabled} onClick={() => setOpen(!open)} aria-expanded={open} className={cn("inline-flex items-center gap-0.5 rounded-md px-1.5 py-0.5 font-medium", disabled ? "text-slate-700" : "bg-brand-50 text-brand-700 hover:bg-brand-100")}>
-        {value}
-        {!disabled && <ChevronDown className="size-3.5" />}
-      </button>
-      {open && (
-        <span role="listbox" className="absolute top-full left-0 z-30 mt-1 flex w-max min-w-full flex-col rounded-xl border border-slate-200 bg-white p-1 leading-normal shadow-[0_12px_32px_-12px_rgba(15,23,42,0.3)]">
-          {options.map((o) => (
-            <button
-              key={o}
-              type="button"
-              role="option"
-              aria-selected={o === value}
-              onClick={() => {
-                onPick(o)
-                setOpen(false)
-              }}
-              className="flex items-center justify-between gap-4 rounded-lg px-3 py-1.5 text-left text-[14px] text-slate-800 hover:bg-slate-50"
-            >
-              {o}
-              {o === value && <Check className="size-3.5 text-brand-600" />}
-            </button>
-          ))}
-        </span>
-      )}
-    </span>
-  )
-}
-
-/** The terms, listed on hover: chosen in settings, not in a sentence. */
-function Terms({ list, label }: { list: string[]; label: string }) {
-  return (
-    <span title={list.join(", ")} className="cursor-help underline decoration-slate-300 decoration-dotted underline-offset-4">
-      {label}
-    </span>
-  )
+/** What happens next, from whether each rule is already true at today's numbers. */
+function confirmLine(ids: CustomAlert["id"][], drafts: Record<CustomAlert["id"], Draft>) {
+  const hot = ids.filter((id) => isCrossed(id, drafts[id].threshold))
+  if (!hot.length) return "Neither is true today. I'll alert you the first time one is."
+  if (hot.length === ids.length) return `${ids.length === 1 ? "It's" : "Both are"} already true today, and the media agent is on ${ids.length === 1 ? "it" : "them"}. I'll alert you if ${ids.length === 1 ? "it's" : "they're"} still true on Oct 15, or sooner if ${ids.length === 1 ? "it gets" : "either gets"} worse.`
+  return `${ALERT_RULES[hot[0]].name} is already true, and the media agent is on it; I'll alert you if it's still true on Oct 15. The other alerts you the first time it's true.`
 }

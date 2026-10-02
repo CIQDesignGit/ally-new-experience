@@ -10,6 +10,7 @@ import { AppDrawer } from "@/components/nudge/app-drawer"
 import { useNudge } from "@/components/nudge/nudge-context"
 import { SECONDARY } from "@/components/nudge/mike/buttons"
 import { ChartView } from "@/components/nudge/retro/slide"
+import { AnswerCard, AskBar, ChatProvider, ChatThread, StarterChips } from "@/components/nudge/chat/inline-chat"
 import { CATEGORY_SPLIT, DEAL_SPLIT, RETRO, SLIDES, retroSlides } from "@/components/nudge/retro/prime-day"
 
 /**
@@ -34,6 +35,14 @@ const RANGES = [
 ]
 
 export default function PrimeDayDashboard() {
+  return (
+    <ChatProvider>
+      <Dashboard />
+    </ChatProvider>
+  )
+}
+
+function Dashboard() {
   const { retro, setRetro } = useNudge()
   const [category, setCategory] = useState<string>()
   const [agent, setAgent] = useState<(typeof AGENTS)[number]>()
@@ -63,6 +72,7 @@ export default function PrimeDayDashboard() {
 
   return (
     <PageShell className="bg-slate-50 xl:bg-white">
+      <StarterChips id="dashboard-prime-day" chips={STARTERS} />
       <div className="mx-auto max-w-[1280px] overflow-clip bg-white shadow-pane-lg sm:my-6 sm:rounded-2xl sm:ring-1 sm:ring-slate-900/6 xl:my-0 xl:rounded-none xl:shadow-none xl:ring-0">
         <TopStrip person="michelle" crumbs={[{ label: "Daily brief", href: "/michelle" }, { label: "Dashboards" }, { label: RETRO.name }]} />
 
@@ -133,8 +143,10 @@ export default function PrimeDayDashboard() {
           </div>
           <div className="text-[13px] text-slate-500">{RETRO.sources}</div>
         </div>
+        <ChatThread />
       </div>
       <AppDrawer />
+      <AskBar />
     </PageShell>
   )
 }
@@ -249,3 +261,29 @@ function DateRange() {
     </div>
   )
 }
+
+const STARTERS = [
+  {
+    q: "Which deal should we repeat for Black Friday?",
+    render: () => (
+      <AnswerCard>
+        <p className="font-semibold text-slate-950">Lightning deals on hero SKUs: +52% lift and +$310K, on 12 jar candles.</p>
+        <ul className="mt-2 flex flex-col gap-1 text-[14px]">
+          <li>· The 20% gift-set coupon lifted 6%, undercut by Brightwick&apos;s 30% off.</li>
+          <li>· Kept as a lesson: run lightning deals on hero SKUs, not blanket coupons.</li>
+        </ul>
+      </AnswerCard>
+    ),
+  },
+  {
+    q: "Why did travel tins drop?",
+    render: () => (
+      <AnswerCard>
+        <p className="font-semibold text-slate-950">Travel tins sold out on day 2 and finished down 4%, at $100K.</p>
+        <ul className="mt-2 flex flex-col gap-1 text-[14px]">
+          <li>· Kept as a lesson: build 3 weeks of cover before any event.</li>
+        </ul>
+      </AnswerCard>
+    ),
+  },
+]

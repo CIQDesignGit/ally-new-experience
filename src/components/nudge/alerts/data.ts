@@ -62,13 +62,14 @@ export function alertTrigger(a: Pick<CustomAlert, "id" | "threshold">) {
 }
 
 /** The signals Ally watches for every customer that Michelle's demo shows (the library has about 30). */
-export const BUILT_IN_ALERTS = [
-  { name: "Lost buy box", when: "A third-party seller drops below MAP and wins the buy box" },
-  { name: "Promo badge missing", when: "A planned promotion is live without its badge" },
-  { name: "Shows out of stock, but isn't", when: "A listing shows unavailable while we have stock" },
-  { name: "Deal page visibility", when: "A deal isn't showing on the deals page" },
-  { name: "Shipping speed slipped", when: "Delivery promise slows in key regions" },
-  { name: "Chargeback disputes", when: "A chargeback is worth disputing" },
+export const BUILT_IN_ALERTS: { name: string; when: string; now: string; trend: number[]; mode: AlertMode }[] = [
+  { name: "Lost buy box", when: "A third-party seller drops below MAP and wins the buy box", now: "6 SKUs", trend: [2, 3, 3, 4, 5, 5, 6, 6], mode: "approval" },
+  { name: "Promo badge missing", when: "A planned promotion is live without its badge", now: "5 SKUs", trend: [1, 1, 2, 2, 3, 4, 5, 5], mode: "approval" },
+  { name: "Shows out of stock, but isn't", when: "A listing shows unavailable while we have stock", now: "5 SKUs", trend: [4, 5, 4, 5, 6, 5, 5, 5], mode: "approval" },
+  { name: "Deal page visibility", when: "A deal isn't showing on the deals page", now: "8 SKUs", trend: [3, 4, 4, 5, 6, 7, 8, 8], mode: "approval" },
+  { name: "Shipping speed slipped", when: "Delivery promise slows in key regions", now: "4 SKUs", trend: [1, 2, 2, 3, 3, 4, 4, 4], mode: "approval" },
+  { name: "Chargeback disputes", when: "A chargeback is worth disputing", now: "9 claims", trend: [4, 5, 6, 6, 7, 8, 9, 9], mode: "input" },
+  { name: "Promotion not live", when: "A promotion fails to go live; Ally fixes the setup and resubmits it", now: "51 fixed", trend: [3, 9, 15, 22, 30, 37, 44, 51], mode: "autopilot" },
 ]
 
 export const GIFT_QUESTION = "Why are gift sets lagging?"

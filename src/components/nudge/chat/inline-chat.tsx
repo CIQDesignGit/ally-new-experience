@@ -331,3 +331,14 @@ export function AskBar({ placeholder = "What can I take off your plate?" }: { pl
     </div>
   )
 }
+
+/** A page's starter chips, registered from inside its ChatProvider. */
+export function StarterChips({ chips, id }: { chips: Chip[]; id: string }) {
+  useChatSource({ chips }, id)
+  return null
+}
+
+/** The look of a short scripted answer: bullets in a card. */
+export function AnswerCard({ children }: { children: React.ReactNode }) {
+  return <div className="max-w-[860px] rounded-2xl bg-white px-5 py-4 text-[15px] leading-relaxed text-slate-700 ring-1 ring-slate-200">{children}</div>
+}
