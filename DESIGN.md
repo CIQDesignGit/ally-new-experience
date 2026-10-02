@@ -1,6 +1,8 @@
 # Ally demo: design rules
 
-The base is the CommerceIQ design system (`@ciq-dev/ciq-design-system`, shadcn with CIQ tokens). These rules decide how the demo uses it. Every screen follows them; when a screen needs something these rules don't cover, add the rule here first.
+The starting point is the CommerceIQ design system (`@ciq-dev/ciq-design-system`, shadcn with CIQ tokens). It's a base, not the final word: the demo is also where the design system evolves. When something here works better than CIQ does, we use it and record it under "Proposed changes to the CIQ design system" below, so it can go back into the system.
+
+Every screen follows these rules. When a screen needs something they don't cover, add the rule here first.
 
 ## Shared pieces (use these, don't hand-build)
 
@@ -61,3 +63,13 @@ No tinted boxes to signal a state; state is a word or a dot.
 ## Before showing a screen
 
 Check at 1440px, and **measure, don't eyeball**: for every set of peers (buttons, rows, cards), compare their left edge, width, and vertical center in the browser; they must match. Then: one purple button; one numeric font per line; red only for real loss or a falling change; nothing wraps or truncates by accident; every number ties; every state (empty, in progress, done) looks right.
+
+## Proposed changes to the CIQ design system
+
+What the demo does differently, and why. Each is a candidate to take back into CIQ.
+
+| Area | CIQ today | Demo | Why |
+| --- | --- | --- | --- |
+| Action rows | No pattern for a list of actions | `ActionCard` / `ActionRow`: name and detail left, equal-width button right, setup under the detail | Recommendations appear on every screen; without one pattern each screen improvised |
+| Primary button | Any number of `default` (purple) buttons per view | One purple per view; none when the actions are equal choices | Purple should point at the one next step |
+| Agent work | `ChainOfThought` | `AgentRun`: file reading, paced steps, "Did you know" beside the work, folds to one line | Long runs need to show real work and use the wait |
