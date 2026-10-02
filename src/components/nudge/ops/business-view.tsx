@@ -19,7 +19,6 @@ import type { AgentId, Period } from "../types"
 import { findIn, skusUnder } from "./gap-data"
 import type { Fix, GapNode } from "./gap-data"
 import { GapAnalysis } from "./gap-view"
-import { VENDOR_MANAGER } from "./note-bar"
 import { AllyFeedback } from "../ally-feedback"
 
 /** $M → "$5.8K" / "$240K" / "$2.1M"; signed when asked. */
