@@ -97,7 +97,9 @@ export function DeckWorkspace({ spec }: { spec: DeckSpec }) {
     if (!add || !add.match.test(text)) return false
     if (!order.includes(add.slide.id)) setRetro({ order: [...order, add.slide.id] })
     // Her wording is kept; Ally's answer is the scripted slide.
-    if (text.replace(/[?\s]+$/, "").toLowerCase() !== add.slide.question.replace(/\?$/, "").toLowerCase()) setRetro({ questions: { ...(retro.questions ?? {}), [add.slide.id]: text } })
+    // Typed fast, shown as a question: first letter up, a question mark at the end.
+    const asked = `${text.charAt(0).toUpperCase()}${text.slice(1).replace(/[?\s]+$/, "")}?`
+    if (asked.toLowerCase() !== add.slide.question.toLowerCase()) setRetro({ questions: { ...(retro.questions ?? {}), [add.slide.id]: asked } })
     return true
   }
   function openStoryboard() {

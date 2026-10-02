@@ -50,7 +50,7 @@ export const PRIME_DAY_DECK: DeckSpec = {
   file: "Prime-Day-retro",
   slides: SLIDES,
   all: ALL_SLIDES,
-  addable: { match: /\b(ad|ads|advertising|media|sponsored|roas|iroas|spend)\b/i, slide: ADS_SLIDE },
+  addable: { match: /\b(ad|ads|advertising|media|sponsored|roas|iroas|roi|spend|invest(ed|ment)?)\b/i, slide: ADS_SLIDE },
   summary: EXEC_SLIDE.id,
   table: { id: "deals", chart: DEALS_TABLE },
   reorder: { id: "deals", after: "market", label: "Put deals right after the market slide" },

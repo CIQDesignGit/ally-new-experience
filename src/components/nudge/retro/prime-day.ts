@@ -253,22 +253,23 @@ export const EXEC_SLIDE: RetroSlide = {
 }
 
 /** Every slide the storyboard can hold, the summary included. */
-/** The question Michelle can add to the storyline (scripted: Ally has the ads data). Ties to the media agent's $190K, its $3.40 IROAS and the 3 of 12 slots. */
+/** The question Michelle adds to the storyline (scripted: Ally has the media data). Ties to the media agent's $190K, its $3.40 IROAS ($56K spend) and the 3 of 12 slots. */
 export const ADS_SLIDE: RetroSlide = {
   id: "ads",
-  question: "How did our ads perform?",
-  eyebrow: "Prime Day 2026 · Ads",
-  title: "Ads returned $3.40 for every $1, above our $3.01 average",
+  question: "What did we invest in media, and what did it return?",
+  eyebrow: "Prime Day 2026 · Media",
+  // $190K added at $3.40 IROAS means about $56K of spend.
+  title: "We put $56K into Prime Day media and it returned $190K: $3.40 for every $1",
   chart: {
     kind: "columns",
     bars: [
-      { label: "Average", value: 3.01, display: "$3.01", tone: "muted" },
-      { label: "Prime Day", value: 3.4, display: "$3.40", tone: "media" },
+      { label: "Media spend", value: 56, display: "$56K", tone: "muted" },
+      { label: "Sales added", value: 190, display: "$190K", tone: "media" },
     ],
   },
   insights: [
-    { figure: "$190K", text: "added by the media agent" },
-    { figure: "$3.40", text: "IROAS, vs $3.01 average" },
+    { figure: "$56K", text: "spent on sponsored ads over the event" },
+    { figure: "$3.40", text: "IROAS, vs our $3.01 average" },
     { figure: "3 of 12", text: "top sponsored slots we held on day 1" },
   ],
 }
