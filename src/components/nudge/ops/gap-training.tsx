@@ -68,9 +68,9 @@ export function lessonText(r: GapRecipe) {
 const SCOPE_LABEL: Record<GapRecipe["scope"], string> = { me: "Only you", team: "Your team", account: "The Aurelle account" }
 
 const MISSES = [
-  { id: "logic", label: "Wrong logic", ask: "What did I miss in the logic?", hint: "Measure plan in units, and you didn't check fill rate", suggest: ["Measure plan in units", "Check fill rate on last week's POs"] },
-  { id: "presentation", label: "Poor presentation", ask: "What did I miss in the presentation?", hint: "Add units and fill rate columns", suggest: ["Add units and fill rate columns"] },
-  { id: "data", label: "Wrong data", ask: "Which data was wrong?", hint: "Bright Citrus shipped 240 units on PO 4480112, not 180", suggest: [] as string[] },
+  { id: "logic", label: "Wrong logic", ask: "Let's work on the logic. What needs to change?" },
+  { id: "presentation", label: "Poor presentation", ask: "What needs to change in the presentation?" },
+  { id: "data", label: "Wrong data", ask: "Which data was wrong?" },
 ] as const
 type Miss = (typeof MISSES)[number]["id"]
 
@@ -194,14 +194,15 @@ export function RecipeFeedback({ node, render }: { node: GapNode; render: (recip
   const [answers, setAnswers] = useState<{ id: Miss; said: string; heard: string[] }[]>([])
   const [draft, setDraft] = useState<GapRecipe>(base)
   const [text, setText] = useState("")
-  const [stage, setStage] = useState<"ask" | "review" | "scope" | "approved" | "running" | "rerun">("ask")
+  const [stage, setStage] = useState<"ask" | "updating" | "review" | "scope" | "approved" | "running" | "rerun">("ask")
   const [scope, setScope] = useState<GapRecipe["scope"]>("account")
   const current = queue?.find((q) => !answers.some((a) => a.id === q))
   const miss = MISSES.find((x) => x.id === current)
 
+  // Updating the skill file and rerunning take a visible beat: Ally is doing work, not flipping a switch.
   useEffect(() => {
-    if (stage !== "running") return
-    const t = window.setTimeout(() => setStage("rerun"), 2600)
+    if (stage !== "running" && stage !== "updating") return
+    const t = window.setTimeout(() => setStage(stage === "updating" ? "review" : "rerun"), stage === "updating" ? 5000 : 2600)
     return () => window.clearTimeout(t)
   }, [stage])
 
@@ -211,7 +212,7 @@ export function RecipeFeedback({ node, render }: { node: GapNode; render: (recip
     setDraft(read.recipe)
     setAnswers((a) => [...a, { id: current, said: said.trim(), heard: read.heard.length ? read.heard : ["Nothing to change from that; say it another way?"] }])
     setText("")
-    if (!queue!.some((q) => q !== current && !answers.some((a) => a.id === q))) setStage("review")
+    if (!queue!.some((q) => q !== current && !answers.some((a) => a.id === q))) setStage("updating")
   }
 
   function approve() {
@@ -292,15 +293,6 @@ export function RecipeFeedback({ node, render }: { node: GapNode; render: (recip
           {stage === "ask" && miss && (
             <div key={miss.id} className="flex flex-col gap-2">
               <AllySays delay={answers.length ? 0.9 : 0.2}>{miss.ask}</AllySays>
-              {miss.suggest.length > 0 && (
-                <div className="flex flex-wrap gap-1.5">
-                  {miss.suggest.map((sg) => (
-                    <button key={sg} type="button" onClick={() => setText((t) => (t ? `${t}, ${sg.toLowerCase()}` : sg))} className="rounded-full border border-slate-200 px-3 py-1 text-[13px] text-slate-600 hover:border-brand-300 hover:text-brand-700">
-                      {sg}
-                    </button>
-                  ))}
-                </div>
-              )}
               <form
                 onSubmit={(e) => {
                   e.preventDefault()
@@ -308,7 +300,7 @@ export function RecipeFeedback({ node, render }: { node: GapNode; render: (recip
                 }}
                 className="flex gap-2"
               >
-                <input autoFocus value={text} onChange={(e) => setText(e.target.value)} placeholder={miss.hint} className="min-w-0 flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none placeholder:text-slate-400 focus:border-brand-300 focus:ring-2 focus:ring-brand-100" />
+                <input autoFocus value={text} onChange={(e) => setText(e.target.value)} placeholder="Type what to change" className="min-w-0 flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none placeholder:text-slate-400 focus:border-brand-300 focus:ring-2 focus:ring-brand-100" />
                 <button type="submit" disabled={!text.trim()} className={cn(PRIMARY, "disabled:opacity-50")}>
                   Send
                 </button>
@@ -316,9 +308,16 @@ export function RecipeFeedback({ node, render }: { node: GapNode; render: (recip
             </div>
           )}
 
-          {stage !== "ask" && (
-            <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: stage === "review" ? 0.9 : 0 }} className="flex flex-col gap-3">
-              <AllySays delay={0}>{stage === "review" ? (changed ? "Here's the skill file with your changes." : "Nothing in the skill file changes from that.") : "Skill file updated."}</AllySays>
+          {stage === "updating" && (
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }} className="flex items-center gap-2 text-[15px] text-slate-500">
+              <Loader2 className="size-4 animate-spin text-brand-600" />
+              Updating the skill file…
+            </motion.p>
+          )}
+
+          {stage !== "ask" && stage !== "updating" && (
+            <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col gap-3">
+              <AllySays delay={0}>{stage === "review" ? (changed ? "Here's the new skill file." : "Nothing in the skill file changes from that.") : "Skill file updated."}</AllySays>
               {/* Before approval: the change against the current version. After: the new version and its log. */}
               {stage === "review" || stage === "scope" ? <SkillFile base={base} draft={draft} version={version} /> : <SkillFile base={draft} draft={draft} version={version + 1} log={draft.log} />}
               {stage === "review" && changed && (
@@ -349,9 +348,9 @@ export function RecipeFeedback({ node, render }: { node: GapNode; render: (recip
               {stage === "approved" && (
                 <>
                   <MemorySaved text={`Learned: ${lessonText(draft)}. Applies to ${SCOPE_LABEL[scope].toLowerCase().replace("the aurelle account", "the Aurelle account")}.`} />
-                  <AllySays delay={0.8}>Rerun the analysis with the new skill file?</AllySays>
+                  <AllySays delay={0.8}>Do you want me to run the analysis again?</AllySays>
                   <motion.button initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1 }} type="button" onClick={() => setStage("running")} className={cn(PRIMARY, "w-fit")}>
-                    Rerun
+                    Run it again
                   </motion.button>
                 </>
               )}
@@ -367,12 +366,29 @@ export function RecipeFeedback({ node, render }: { node: GapNode; render: (recip
                     Revised answer · skill file v{version + 1} · {node.id === "overall" ? "overall business" : node.name}
                   </div>
                   {render(draft)}
+                  <AfterRerun />
                 </motion.div>
               )}
             </motion.div>
           )}
         </div>
       )}
+    </div>
+  )
+}
+
+/** The thumbs again, under the revised answer: the loop closes on a thumbs up. */
+function AfterRerun() {
+  const [vote, setVote] = useState<"up" | "down" | null>(null)
+  return (
+    <div className="flex flex-wrap items-center gap-2 pt-1">
+      <span className="mr-1 text-sm text-slate-500">Did Ally get this right?</span>
+      {(["up", "down"] as const).map((v) => (
+        <button key={v} type="button" aria-label={v === "up" ? "Ally got this right" : "Ally missed something"} aria-pressed={vote === v} onClick={() => setVote(v)} className={cn("flex size-9 items-center justify-center rounded-lg border transition-colors", vote === v ? (v === "up" ? "border-success-300 bg-success-50 text-success-600" : "border-slate-300 bg-slate-100 text-slate-700") : "border-slate-200 bg-white text-slate-400 hover:text-slate-600")}>
+          {v === "up" ? <ThumbsUp className="size-4" /> : <ThumbsDown className="size-4" />}
+        </button>
+      ))}
+      {vote === "up" && <span className="text-sm text-success-700">Thanks. Ally runs gap to plan this way from now on.</span>}
     </div>
   )
 }
