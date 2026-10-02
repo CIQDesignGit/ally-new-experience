@@ -14,7 +14,7 @@ import type { Chip } from "../chat/inline-chat"
 import type { Period } from "../types"
 import { GAP_WEEK, findIn, skusUnder } from "./gap-data"
 import type { GapNode } from "./gap-data"
-import { GapAnalysis } from "./gap-view"
+import { ForwardAnalysis, GapAnalysis } from "./gap-view"
 import { AllyFeedback } from "../ally-feedback"
 
 /** $M → "$5.8K" / "$240K" / "$2.1M"; signed when asked. */
@@ -146,9 +146,13 @@ export function BusinessPane({ root, nodeId, onSelect, onOpenOps }: { root: GapN
   const n = found.node
   const g = gapOf(n)
   const eow = n.eow.projected - n.eow.plan
+  // The plan for the days gone so far this week: what "so far" should be at this point.
+  const toDate = n.eow.plan * GAP_WEEK.elapsed
   const label = n.id === root.id ? "the overall business" : n.name
-  const analysis: Chip = { q: `Run detailed gap-to-plan analysis for ${label}`, render: () => <GapAnalysis node={n} onInbox={(id) => onOpenOps(id, n.asin)} /> }
-  useChatSource({ about: n.id === root.id ? undefined : n.name, anchor: n.id, chips: [analysis] }, `business-${n.id}`)
+  // Two analyses, one direction each: forward closes this week's gap (with actions); backward explains last week (no actions) and hands off.
+  const forward: Chip = { q: `Close this week's gap for ${label}`, render: () => <ForwardAnalysis node={n} onInbox={(id) => onOpenOps(id, n.asin)} /> }
+  const backward: Chip = { q: `Why did ${label === "the overall business" ? "we" : label} miss plan last week?`, render: () => <GapAnalysis node={n} onForward={() => ask(forward, n.id)} /> }
+  useChatSource({ about: n.id === root.id ? undefined : n.name, anchor: n.id, chips: [forward, backward] }, `business-${n.id}`)
 
   return (
     <div className="flex min-w-0 flex-col px-10 py-7">
@@ -172,42 +176,46 @@ export function BusinessPane({ root, nodeId, onSelect, onOpenOps }: { root: GapN
         </div>
       </div>
 
-      {/* What the product knows without running anything: where it lands, so far, last week, and the simple reason.
-          The detailed analysis (causes and this week's actions) runs only when asked. */}
-      <div className="mt-5 overflow-hidden rounded-xl border border-slate-200">
-        <div className="px-5 pt-4 pb-3">
-          <div className="text-xs font-medium text-slate-500">This week, projected</div>
+      {/* Two directions, two cards: where this week lands (and what closes it), and what happened last week (and why).
+          Each card has its own numbers, its own reason and its own button, in the same place. Nothing runs until asked. */}
+      <div className="mt-5 grid gap-4 md:grid-cols-2">
+        <div className="flex flex-col rounded-xl border border-slate-200 px-5 py-4">
+          <div className="text-[13px] font-semibold text-slate-950">This week</div>
+          <div className="mt-2 text-xs text-slate-500">Projected vs plan</div>
           <div className="mt-0.5 flex items-baseline gap-2 tabular-nums">
             <span className={cn("text-[26px] font-semibold tracking-tight", eow < 0 ? "text-error-600" : "text-success-700")}>{m(eow, true)}</span>
             <span className="text-sm text-slate-500">
-              {m(n.eow.projected)} of {m(n.eow.plan)} plan · {pct(n.eow.projected, n.eow.plan)}
+              {m(n.eow.projected)} of {m(n.eow.plan)} · {pct(n.eow.projected, n.eow.plan)}
             </span>
           </div>
-        </div>
-        <div className="grid grid-cols-2 divide-x divide-slate-100 border-t border-slate-100 text-sm tabular-nums">
-          <div className="px-5 py-3">
-            <div className="text-xs text-slate-500">So far this week</div>
-            <div className="mt-0.5 text-slate-950">
-              <span className="font-semibold">{m(n.wtd)}</span> <span className="text-slate-500">· {Math.round(GAP_WEEK.elapsed * 100)}% of the week gone</span>
-            </div>
+          <div className="mt-2 text-sm text-slate-600 tabular-nums">
+            {/* Pacing: so far against the plan for the days gone. */}
+            So far <span className="font-semibold text-slate-950">{m(n.wtd)}</span> · <span className={cn("font-semibold", n.wtd < toDate ? "text-error-600" : "text-success-700")}>{m(n.wtd - toDate, true)}</span> vs plan to date ({pct(n.wtd, toDate)})
           </div>
-          <div className="px-5 py-3">
-            <div className="text-xs text-slate-500">Last week vs plan</div>
-            <div className="mt-0.5 text-slate-950">
-              <span className={cn("font-semibold", g < 0 ? "text-error-600" : "text-success-700")}>{m(g, true)}</span> <span className="text-slate-500">· {m(n.lastWeek.sales)} of {m(n.lastWeek.plan)} · {pct(n.lastWeek.sales, n.lastWeek.plan)}</span>
-            </div>
+          <div className="mt-auto pt-4">
+            <button type="button" onClick={() => ask(forward, n.id)} className={cn(PRIMARY, "w-[200px]")}>
+              Close this week&apos;s gap
+            </button>
           </div>
         </div>
-        {/* The simple reason: sales split into traffic, conversion and price. */}
-        <div className="border-t border-slate-100 px-5 py-3 text-sm text-slate-600 tabular-nums">
-          <span className="text-slate-500">Why</span> · Sales <Pct v={n.equation.sales} /> vs the week before: traffic <Pct v={n.equation.traffic} />, conversion <Pct v={n.equation.conversion} />, price <Pct v={n.equation.price} />
+        <div className="flex flex-col rounded-xl border border-slate-200 px-5 py-4">
+          <div className="text-[13px] font-semibold text-slate-950">Last week</div>
+          <div className="mt-2 text-xs text-slate-500">Actual vs plan</div>
+          <div className="mt-0.5 flex items-baseline gap-2 tabular-nums">
+            <span className={cn("text-[26px] font-semibold tracking-tight", g < 0 ? "text-error-600" : "text-success-700")}>{m(g, true)}</span>
+            <span className="text-sm text-slate-500">
+              {m(n.lastWeek.sales)} of {m(n.lastWeek.plan)} · {pct(n.lastWeek.sales, n.lastWeek.plan)}
+            </span>
+          </div>
+          <div className="mt-2 text-sm text-slate-600 tabular-nums">
+            Sales <Pct v={n.equation.sales} /> vs the week before: traffic <Pct v={n.equation.traffic} />, conversion <Pct v={n.equation.conversion} />, price <Pct v={n.equation.price} />
+          </div>
+          <div className="mt-auto pt-4">
+            <button type="button" onClick={() => ask(backward, n.id)} className={cn(PRIMARY, "w-[200px]")}>
+              Why did we miss?
+            </button>
+          </div>
         </div>
-      </div>
-
-      <div className="mt-5">
-        <button type="button" onClick={() => ask(analysis, n.id)} className={PRIMARY}>
-          Run detailed gap-to-plan analysis
-        </button>
       </div>
 
       {n.level === "SKU" && (

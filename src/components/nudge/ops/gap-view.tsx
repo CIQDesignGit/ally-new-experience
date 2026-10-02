@@ -16,9 +16,10 @@ import type { Driver, GapAction, GapNode, Recommendation } from "./gap-data"
 import type { GapRecipe } from "../policy"
 import { MemoryRecall } from "../chat/memory"
 import { useNudge } from "../nudge-context"
+import { useFireNudge } from "../use-fire-nudge"
 import { ActionCard, ActionRow } from "../ui/action"
 import { PRIMARY } from "../mike/buttons"
-import { DidYouKnow } from "../chat/agent-run"
+import { AgentRun, DidYouKnow } from "../chat/agent-run"
 import { BY, DEFAULT_RECIPE, FILL, FILL_STEP, RecipeFeedback, inMeasure, lbsOf, lessonText, unitsOf, useGapLesson } from "./gap-training"
 
 /** $M → "$5.8K", "$1.32M"; signed when asked. */
@@ -161,14 +162,16 @@ function Steps({ extra = [], measure = "sales", onDone }: { extra?: string[]; me
 }
 
 /** What the button did, said in the past tense: "Send to Dana" → "Sent to Dana". */
-const pastTense = (label: string) => label.replace(/^Send to /, "Sent to ").replace(/^File .*/, "Filed").replace(/^Reinstate .*/, "Reinstated").replace(/^Approve .*/, "Approved")
+const pastTense = (label: string) => label.replace(/^Ask (\w+) to approve$/, "Asked $1").replace(/^Send to /, "Sent to ").replace(/^File .*/, "Filed").replace(/^Reinstate .*/, "Reinstated").replace(/^Approve .*/, "Approved")
 
 /** A recommendation's button does the thing, in place (DESIGN.md: actions act; done replaces the button). */
 export function ActionButton({ action }: { action: GapAction; onInbox?: (batchId: string) => void }) {
   const { launch, isLaunched } = useLaunch()
   const { approved, approve } = useNudge()
   const play = action.kind === "play" ? playById(action.playId) : undefined
-  const done = (play && isLaunched(play)) || (action.kind === "inbox" && approved[action.batchId])
+  const { nudged } = useNudge()
+  const { fire } = useFireNudge()
+  const done = (play && isLaunched(play)) || (action.kind === "inbox" && approved[action.batchId]) || (action.kind === "ask" && nudged[action.nudgeKey])
   if (done)
     return (
       <span className="inline-flex items-center gap-1.5 text-[14px] font-medium text-success-700">
@@ -182,7 +185,8 @@ export function ActionButton({ action }: { action: GapAction; onInbox?: (batchId
         if (action.kind === "inbox") {
           approve(action.batchId)
           toast.success(`${pastTense(action.label)} · evidence attached`, { position: "top-right" })
-        } else if (play) launch([play])
+        } else if (action.kind === "ask") fire({ agent: "content", analystName: "Mike", description: "Halloween jar candles and gift sets", value: "$660K", nudgeKey: action.nudgeKey })
+        else if (play) launch([play])
         else toast.success(`${action.label}: Ally will tell you the moment it moves.`, { position: "top-right" })
       }}
       className={PRIMARY}
@@ -198,7 +202,8 @@ const SEC = "text-sm font-semibold text-slate-950"
 const ROW = "border-t border-slate-100"
 
 /** Gap-to-plan analysis for a node: the finding, plan vs actual, what moved sales, why (by dollars), and what to do. */
-export function GapAnalysis({ node, onInbox, recipe: given, nested }: { node: GapNode; onInbox: (batchId: string) => void; /** A recipe being tried, before it's saved. */ recipe?: GapRecipe; /** Inside the before/after: no feedback row of its own. */ nested?: boolean }) {
+/** Backward: why last week missed. Causes and their size only; it ends by handing what's still live to this week's plan. */
+export function GapAnalysis({ node, recipe: given, nested, onForward }: { node: GapNode; onInbox?: (batchId: string) => void; /** A recipe being tried, before it's saved. */ recipe?: GapRecipe; /** Inside the before/after: no feedback row of its own. */ nested?: boolean; /** Opens the forward analysis: close this week's gap. */ onForward?: () => void }) {
   // What Ally knew when this was asked: a lesson saved later doesn't rewrite an earlier answer.
   const live = useGapLesson()
   const [lesson] = useState(live)
@@ -212,9 +217,7 @@ export function GapAnalysis({ node, onInbox, recipe: given, nested }: { node: Ga
   const drivers = [...node.drivers]
     .sort((a, b) => a.value - b.value)
     .map((d) => (fill && /out of stock/i.test(d.title) ? { ...d, points: [`Cause: fill rate ${FILL.rate}% on ${FILL.pos} POs (target ${FILL.target}%)`, ...d.points] } : d))
-  const recs: Recommendation[] = fill
-    ? [...node.recommendations, { title: `Claim the ${FILL.pos} short-shipped POs`, points: [`Fill rate ${FILL.rate}% vs ${FILL.target}% target`, "The same POs as Shorted POs in your queue"], action: { kind: "inbox", label: `File the ${FILL.pos} claims`, batchId: "shorted-pos" } }]
-    : node.recommendations
+  const stillLive = node.drivers.filter((d) => d.tag !== "Resolved").length
   const extra = (["units", "weight", "fill"] as const).filter((c) => recipe.columns.includes(c) && !(c === "units" && recipe.measure === "units") && !(c === "weight" && recipe.measure === "weight"))
   const cols = `minmax(0,1fr) repeat(${3 + extra.length}, 88px)`
   const top = drivers[0]
@@ -322,15 +325,103 @@ export function GapAnalysis({ node, onInbox, recipe: given, nested }: { node: Ga
         </div>
       </div>
 
-      {/* Actions only look forward: what happened is explained above; this is what to do now. */}
-      <ActionCard title="What to do this week">
-        {recs.map((r) => (
-          <ActionRow key={r.title} title={r.title} detail={r.points.length > 0 ? r.points.join(" · ") : undefined} action={<ActionButton action={r.action} onInbox={onInbox} />} />
-        ))}
-      </ActionCard>
-      {!nested && <RecipeFeedback node={node} render={(r) => <GapAnalysis node={node} onInbox={onInbox} recipe={r} nested />} />}
+      {/* Backward only: no actions here. What's still live hands off to this week's plan. */}
+      {stillLive > 0 && onForward && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-5 py-3.5">
+          <span className="text-sm text-slate-700">
+            <span className="font-semibold text-slate-950">{stillLive} of these are still live this week.</span>
+          </span>
+          <button type="button" onClick={onForward} className={PRIMARY}>
+            Close this week&apos;s gap
+          </button>
+        </div>
+      )}
+      {!nested && <RecipeFeedback node={node} render={(r) => <GapAnalysis node={node} recipe={r} nested />} />}
       </div>
       </motion.div>
+      )}
+    </div>
+  )
+}
+
+/**
+ * Forward: close this week's gap. Starts from this week's projection, sizes
+ * what's still pulling it down (last week's live causes, and what's not yet
+ * explained, so it ties), then this week's actions. Nothing about last week.
+ */
+export function ForwardAnalysis({ node, onInbox }: { node: GapNode; onInbox?: (batchId: string) => void }) {
+  const [ready, setReady] = useState(false)
+  const lesson = useGapLesson()
+  const fill = !!lesson?.recipe.steps.includes(FILL_STEP)
+  const gap = node.eow.projected - node.eow.plan
+  const lw = node.lastWeek.sales - node.lastWeek.plan
+  // Pacing: so far against the plan for the days gone.
+  const toDate = node.eow.plan * GAP_WEEK.elapsed
+  const live = [...node.drivers].filter((d) => d.tag !== "Resolved").sort((a, b) => a.value - b.value)
+  const rest = +(gap - live.reduce((s, d) => s + d.value, 0)).toFixed(4)
+  const recs: Recommendation[] = fill
+    ? [...node.recommendations, { title: `Claim the ${FILL.pos} short-shipped POs`, points: [`Fill rate ${FILL.rate}% vs ${FILL.target}% target`], action: { kind: "inbox", label: `File the ${FILL.pos} claims`, batchId: "shorted-pos" } }]
+    : node.recommendations
+  return (
+    <div className="flex max-w-[900px] flex-col gap-5 rounded-2xl bg-white px-5 py-4 ring-1 ring-slate-200">
+      <AgentRun
+        title="Working out how to close this week's gap"
+        steps={["Read this week's sales so far", "Projected the rest of the week from the run rate", "Checked which causes are still live", "Sized each one on this week's projection", "Matched each to an action and an owner"]}
+        slow={3}
+        facts
+        onDone={() => setReady(true)}
+      />
+      {ready && (
+        <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className="ally-reveal flex flex-col gap-5">
+          <div className="flex flex-col gap-5">
+            <p className="text-[17px] leading-snug font-semibold text-slate-950 tabular-nums">
+              This week is projected at {m(node.eow.projected)}, <span className={gap < 0 ? "text-error-600" : "text-success-700"}>{m(gap, true)}</span> against plan.
+            </p>
+            {/* Context, numbers only: last week, this week so far, where it lands. The causes of last week live in the backward analysis. */}
+            <div className="grid grid-cols-3 divide-x divide-slate-100 rounded-xl border border-slate-200 text-sm tabular-nums">
+              {[
+                { k: "Last week", v: m(lw, true), sub: `${pct(node.lastWeek.sales, node.lastWeek.plan)} of plan`, bad: lw < 0 },
+                { k: "So far this week", v: m(node.wtd), sub: `${m(node.wtd - toDate, true)} vs plan to date (${pct(node.wtd, toDate)})` },
+                { k: "Projected", v: m(gap, true), sub: `${pct(node.eow.projected, node.eow.plan)} of plan`, bad: gap < 0 },
+              ].map((c) => (
+                <div key={c.k} className="px-4 py-3">
+                  <div className="text-xs text-slate-500">{c.k}</div>
+                  <div className={cn("mt-0.5 text-[17px] font-semibold", c.bad ? "text-error-600" : "text-slate-950")}>{c.v}</div>
+                  <div className="text-xs text-slate-500">{c.sub}</div>
+                </div>
+              ))}
+            </div>
+            <div>
+              <div className={SEC}>What&apos;s pulling this week down</div>
+              <div className="mt-2">
+                {live.map((d) => (
+                  <div key={d.title} className={cn("grid grid-cols-[minmax(0,1fr)_72px] items-baseline gap-x-3 py-2.5 text-sm", ROW)}>
+                    <span className="min-w-0">
+                      <span className="block text-slate-950">{d.title}</span>
+                      <span className="mt-0.5 block text-xs text-slate-500">{d.tag === "Worth watching" ? "Worth watching" : "Still live"}</span>
+                    </span>
+                    <span className="text-right font-semibold text-slate-950 tabular-nums">{m(d.value, true)}</span>
+                  </div>
+                ))}
+                {Math.abs(rest) >= 0.001 && (
+                  <div className={cn("grid grid-cols-[minmax(0,1fr)_72px] items-baseline gap-x-3 py-2.5 text-sm", ROW)}>
+                    <span className="text-slate-500">{rest < 0 ? "Not yet explained" : "Offset by gains elsewhere"}</span>
+                    <span className="text-right font-semibold text-slate-500 tabular-nums">{m(rest, true)}</span>
+                  </div>
+                )}
+                <div className={cn("grid grid-cols-[minmax(0,1fr)_72px] items-baseline gap-x-3 py-2.5 text-sm font-semibold", "border-t border-slate-200")}>
+                  <span className="text-slate-950">This week vs plan</span>
+                  <span className="text-right text-slate-950 tabular-nums">{m(gap, true)}</span>
+                </div>
+              </div>
+            </div>
+            <ActionCard title="What to do this week">
+              {recs.map((r) => (
+                <ActionRow key={r.title} title={r.title} detail={r.points.length > 0 ? r.points.join(" · ") : undefined} action={<ActionButton action={r.action} onInbox={onInbox} />} />
+              ))}
+            </ActionCard>
+          </div>
+        </motion.div>
       )}
     </div>
   )

@@ -25,6 +25,8 @@ export type GapAction =
   | { kind: "inbox"; label: string; batchId: string }
   | { kind: "play"; label: string; playId: string }
   | { kind: "watch"; label: string }
+  /** Ask the owner to approve (a real Slack DM and email). */
+  | { kind: "ask"; label: string; nudgeKey: import("../types").NudgeKey }
 
 export interface Recommendation {
   title: string
@@ -225,7 +227,8 @@ const aurelle: GapNode = {
     { fix: { kind: "ops", id: "shipping" }, title: "Travel tins shipping slower than Prime", value: -0.01, tag: "Worth watching", points: ["2.5 days slower in 8 ZIPs"] },
   ],
   recommendations: [
-    { title: "Enforce MAP on 4 hero jar candles", points: ["Biggest single cause"], action: { kind: "inbox", label: "Send to Amazon VM", batchId: "buybox-review" } },
+    { title: "Enforce MAP on 4 hero jar candles", points: ["Biggest drag this week"], action: { kind: "inbox", label: "Send to Amazon VM", batchId: "buybox-review" } },
+    { title: "Get the Halloween content live", points: ["$660K one approval away in Mike's queue"], action: { kind: "ask", label: "Ask Mike to approve", nudgeKey: "approval-content" } },
     { title: "Answer Brightwick in gift sets", points: ["Win back sponsored slots"], action: { kind: "play", label: "Approve the bids", playId: "bw-media" } },
   ],
   children: [jar, gift, tins],
@@ -301,8 +304,9 @@ export const GAP_TREE: GapNode = {
     { fix: { kind: "ops", id: "shipping" }, title: "Travel tins shipping slower than Prime", value: -0.01, tag: "Worth watching", points: ["2.5 days slower in 8 ZIPs"] },
   ],
   recommendations: [
-    { title: "Enforce MAP on 4 hero SKUs", points: ["Biggest cause: about $100K of last week's gap"], action: { kind: "inbox", label: "Send to Amazon VM", batchId: "buybox-review" } },
-    { title: "Answer Brightwick in gift sets", points: ["Ally for Media"], action: { kind: "play", label: "Approve the bids", playId: "bw-media" } },
+    { title: "Enforce MAP on 4 hero SKUs", points: ["Biggest drag this week: about $100K"], action: { kind: "inbox", label: "Send to Amazon VM", batchId: "buybox-review" } },
+    { title: "Get the Halloween content live", points: ["$660K one approval away in Mike's queue"], action: { kind: "ask", label: "Ask Mike to approve", nudgeKey: "approval-content" } },
+    { title: "Answer Brightwick in gift sets", points: ["Win back 4 sponsored slots · Ally for Media"], action: { kind: "play", label: "Approve the bids", playId: "bw-media" } },
   ],
   children: [aurelle, hearthwood, bright],
 }

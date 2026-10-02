@@ -18,7 +18,7 @@ import { Answer, QUESTIONS } from "@/components/nudge/claire/ask-ally-answers"
 import { AskBar, ChatProvider, ChatThread, useChat, useChatSource } from "@/components/nudge/chat/inline-chat"
 import type { Chip } from "@/components/nudge/chat/inline-chat"
 import { useRouter } from "next/navigation"
-import { GapAnalysis } from "@/components/nudge/ops/gap-view"
+import { ForwardAnalysis } from "@/components/nudge/ops/gap-view"
 import { GAP_TREE } from "@/components/nudge/ops/gap-data"
 import { useLive } from "@/components/nudge/live-model"
 import { useNudge } from "@/components/nudge/nudge-context"
@@ -36,8 +36,8 @@ let resetThisLoad = false
 function HomeChat() {
   // Four starters; "why is content behind" and "email this summary" still answer when typed.
   const router = useRouter()
-  // "How am I doing compared to plan?" runs the gap-to-plan analysis itself; a fix opens in Michelle's queue.
-  const planChip: Chip = { q: "How am I doing compared to plan?", match: /\b(make|making|against|compared to|vs\.?|versus|behind|short of|gap to) plan\b/i, render: () => <GapAnalysis node={GAP_TREE} onInbox={(id) => router.push(`/michelle?open=${id}`)} /> }
+  // "How am I doing compared to plan?" is forward-looking: where the week lands and what closes it.
+  const planChip: Chip = { q: "How am I doing compared to plan?", match: /\b(make|making|against|compared to|vs\.?|versus|behind|short of|gap to) plan\b/i, render: () => <ForwardAnalysis node={GAP_TREE} onInbox={(id) => router.push(`/michelle?open=${id}`)} /> }
   useChatSource({ chips: QUESTIONS.map((q, i) => (i === 4 ? planChip : { q, hidden: i === 2 || i === 5, render: () => <div className="max-w-[860px] rounded-2xl bg-white px-5 py-4 text-[15px] leading-relaxed text-slate-700 ring-1 ring-slate-200"><Answer q={q} /></div> })) }, "home")
   return null
 }
