@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Bell, CircleCheck, Clock, GraduationCap, Home, LayoutDashboard, MessageSquare, PanelLeft, Pin, PinOff, Presentation, Sparkles, TrendingDown, Wand2 } from "lucide-react"
+import { Bell, Clock, GraduationCap, Home, LayoutDashboard, MessageSquare, PanelLeft, Pin, PinOff, Presentation, Sparkles, TrendingDown, Wand2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useNudge } from "./nudge-context"
 import { AUTOPILOT_GO_LIVE, BUSINESS, contentBatches, fmtBiz, fmtValue, launchedIds, opsBatches } from "./data"
@@ -39,15 +39,16 @@ export function AppDrawer({ home = "/michelle", defaultOpen }: { home?: string; 
   }, [])
   const timer = useRef<number | undefined>(undefined)
   const hovering = useRef(false)
-  const scheduleClose = () => {
+  /** Closes after the pointer leaves (quickly) or a while after opening without a hover (slower). */
+  const scheduleClose = (ms = 800) => {
     window.clearTimeout(timer.current)
     if (pinned) return
     timer.current = window.setTimeout(() => {
       if (!hovering.current) setOpen(false)
-    }, 3000)
+    }, ms)
   }
   useEffect(() => {
-    if (open && !pinned) scheduleClose()
+    if (open && !pinned) scheduleClose(3000)
     return () => window.clearTimeout(timer.current)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, pinned])
@@ -135,7 +136,6 @@ export function AppDrawer({ home = "/michelle", defaultOpen }: { home?: string; 
       : home === "/michelle"
         ? opsBatches(policy).filter((b) => b.tier === "approval" && !approved[b.id]).length
         : live.approval.rows.filter((r) => (r.valueM ?? 0) > 0).length
-  const approvalsHref = home === "/claire-waterfall" ? `${home}#stage-detail` : home
 
   // Lists open in place; only Ask Ally shows its recent items without a click.
   const [openList, setOpenList] = useState<string | null>(null)
@@ -146,7 +146,8 @@ export function AppDrawer({ home = "/michelle", defaultOpen }: { home?: string; 
   const scheduled = lists.find((x) => x.title === "Alerts")!
   const groups = [[lists[0], lists[1]]]
   const newChat = () => document.querySelector<HTMLInputElement>('input[placeholder="What can I take off your plate?"]')?.focus()
-  const divider = <div className="mx-3 my-2 border-t border-white/10" />
+  // Groups are separated by space, not lines.
+  const divider = <div className="h-4" aria-hidden />
 
   const listBlock = (sec: (typeof sections)[number], label = sec.title) => {
     const Icon = LIST_ICON[label] ?? sec.icon
@@ -160,17 +161,13 @@ export function AppDrawer({ home = "/michelle", defaultOpen }: { home?: string; 
           {sec.items.length > 0 && <span className="font-mono text-xs text-brand-300">{sec.items.length}</span>}
         </button>
         {isOpen && (
-          <div className="mb-1 ml-6 border-l border-white/10 pl-2">
-            {sec.items.length ? (
-              sec.items.map((it) => (
-                <Link key={it.label} href={it.href} className={cn("block rounded-lg px-2.5 py-1.5", it.on ? "bg-brand-400" : "hover:bg-white/10")}>
-                  <span className="block truncate text-[13px] text-white">{it.label}</span>
-                  {it.sub && <span className="block truncate text-xs text-brand-200">{it.sub}</span>}
-                </Link>
-              ))
-            ) : (
-              <div className="px-2.5 py-1.5 text-[13px] text-brand-300">{sec.empty}</div>
-            )}
+          <div className="mb-1 pl-7">
+            {sec.items.map((it) => (
+              <Link key={it.label} href={it.href} className={cn("block rounded-lg px-2.5 py-1.5", it.on ? "bg-brand-400" : "hover:bg-white/10")}>
+                <span className="block truncate text-[13px] text-white">{it.label}</span>
+                {it.sub && <span className="block truncate text-xs text-brand-200">{it.sub}</span>}
+              </Link>
+            ))}
           </div>
         )}
       </div>
@@ -184,10 +181,13 @@ export function AppDrawer({ home = "/michelle", defaultOpen }: { home?: string; 
       onMouseEnter={() => {
         hovering.current = true
         window.clearTimeout(timer.current)
+        // Opens on hover after a short pause, so a pointer passing across doesn't flicker it.
+        if (!open) timer.current = window.setTimeout(() => hovering.current && setOpen(true), 200)
       }}
       onMouseLeave={() => {
         hovering.current = false
         if (open) scheduleClose()
+        else window.clearTimeout(timer.current)
       }}
       className="fixed inset-y-0 left-0 z-40 hidden flex-col overflow-hidden bg-brand-950 transition-[width] duration-200 xl:flex"
     >
@@ -227,14 +227,12 @@ export function AppDrawer({ home = "/michelle", defaultOpen }: { home?: string; 
           {/* The work: what needs you today. */}
           <Link href={home} className={row(path === home)}>
             <Home className="size-4" /> <span className="flex-1">Today</span>
+            {/* What's waiting on one approval: owners' rows for Claire, items in the queue for Mike and Michelle. */}
+            {waiting > 0 && <span className="rounded-full bg-ally-500 px-1.5 text-[11px] font-semibold text-white">{waiting}</span>}
           </Link>
           <Link href="/michelle/gap" className={row(path === "/michelle/gap")}>
             <TrendingDown className="size-4" /> <span className="flex-1">Gap to plan</span>
             {gap > 0 && <span className="rounded bg-error-600/25 px-1.5 font-mono text-[11px] text-error-200">−{fmtBiz(gap)}</span>}
-          </Link>
-          <Link href={approvalsHref} className={row()}>
-            <CircleCheck className="size-4" /> <span className="flex-1">Approvals</span>
-            {waiting > 0 && <span className="rounded-full bg-ally-500 px-1.5 text-[11px] font-semibold text-white">{waiting}</span>}
           </Link>
           {listBlock(scheduled, "Scheduled")}
           {divider}
@@ -251,9 +249,8 @@ export function AppDrawer({ home = "/michelle", defaultOpen }: { home?: string; 
               + New
             </button>
           </div>
-          <div className="ml-6 border-l border-white/10 pl-2">
-            {chats.items.length ? (
-              <>
+          {chats.items.length > 0 && (
+            <div className="pl-7">
                 {(allChats ? chats.items : chats.items.slice(0, 3)).map((it) => (
                   <Link key={it.href + it.label} href={it.href} className={cn("block truncate rounded-lg px-2.5 py-1.5 text-[13px]", it.on ? "bg-brand-400 text-white" : "text-brand-100 hover:bg-white/10 hover:text-white")}>
                     {it.label}
@@ -264,32 +261,26 @@ export function AppDrawer({ home = "/michelle", defaultOpen }: { home?: string; 
                     {allChats ? "Show fewer" : "See all"}
                   </button>
                 )}
-              </>
-            ) : (
-              <div className="px-2.5 py-1.5 text-[13px] text-brand-300">Your questions show here</div>
-            )}
-          </div>
+            </div>
+          )}
           <div className="mt-auto pt-4">
             <AllyWorking />
           </div>
         </div>
       ) : (
         <nav className="flex flex-1 flex-col items-center gap-1 pb-3">
-          <Link href={home} aria-label="Today" title="Today" className={iconBtn(path === home)}>
+          <Link href={home} aria-label={`Today · ${waiting} waiting`} title={`Today · ${waiting} waiting`} className={iconBtn(path === home)}>
             <Home className="size-4" />
+            {waiting > 0 && <span aria-hidden className="absolute top-2 right-2 size-2 rounded-full bg-ally-500 ring-2 ring-brand-950" />}
           </Link>
           <Link href="/michelle/gap" aria-label="Gap to plan" title={gap > 0 ? `Gap to plan · −${fmtBiz(gap)}` : "Gap to plan"} className={iconBtn(path === "/michelle/gap")}>
             <TrendingDown className="size-4" />
             {gap > 0 && <span aria-hidden className="absolute top-2 right-2 size-2 rounded-full bg-error-500 ring-2 ring-brand-950" />}
           </Link>
-          <Link href={approvalsHref} aria-label={`Approvals · ${waiting} waiting`} title={`Approvals · ${waiting} waiting`} className={iconBtn()}>
-            <CircleCheck className="size-4" />
-            {waiting > 0 && <span aria-hidden className="absolute top-2 right-2 size-2 rounded-full bg-ally-500 ring-2 ring-brand-950" />}
-          </Link>
           <button type="button" onClick={() => toggle(true)} aria-label="Scheduled" title="Scheduled" className={iconBtn(path === "/michelle/alerts")}>
             <Clock className="size-4" />
           </button>
-          <span className="my-1 w-6 border-t border-white/15" />
+          <span className="h-3" aria-hidden />
           {groups[0].map((x) => {
             const Icon = LIST_ICON[x.title] ?? x.icon
             return (
@@ -299,7 +290,7 @@ export function AppDrawer({ home = "/michelle", defaultOpen }: { home?: string; 
               </button>
             )
           })}
-          <span className="my-1 w-6 border-t border-white/15" />
+          <span className="h-3" aria-hidden />
           <Link href="/settings" aria-label="Teach Ally" title="Teach Ally" className={iconBtn(path === "/settings")}>
             <GraduationCap className="size-4" />
           </Link>

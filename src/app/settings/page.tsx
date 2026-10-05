@@ -26,7 +26,11 @@ const TABS = [
 function Settings() {
   const router = useRouter()
   const params = useSearchParams()
-  const [tab, setTab] = useState<(typeof TABS)[number]["id"]>(TABS.find((t) => t.id === params.get("tab"))?.id ?? "skills")
+  const { skills, knowledge } = useNudge()
+  // Skills shows once Ally has one; nothing leads nowhere.
+  const hasSkills = skills.length > 0 || knowledge.some((k) => k.recipe)
+  const [picked, setTab] = useState<(typeof TABS)[number]["id"]>(TABS.find((t) => t.id === params.get("tab"))?.id ?? "skills")
+  const tab = picked === "skills" && !hasSkills ? "knowledge" : picked
 
   function back() {
     if (window.history.length > 1) router.back()
@@ -41,7 +45,7 @@ function Settings() {
         <h1 className="text-[28px] font-semibold tracking-tight text-slate-950">{tab === "business" ? "Settings" : "Teach Ally"}</h1>
         <div className="flex rounded-lg border border-slate-200 bg-slate-25 p-1">
           {/* Teach Ally's three tabs; the gear's Business view stands on its own as Settings. */}
-          {TABS.filter((t) => (tab === "business") === (t.id === "business")).map((t) => (
+          {TABS.filter((t) => (tab === "business") === (t.id === "business") && (t.id !== "skills" || hasSkills)).map((t) => (
             <button
               key={t.id}
               type="button"
@@ -88,7 +92,6 @@ function SkillsList() {
     ...knowledge.filter((k) => k.recipe).map((k) => ({ id: k.id, name: "Gap to plan analysis", detail: `Version ${(k.recipe!.log?.length ?? 0) + 1} · ${k.recipe!.steps.length} steps added`, shared: SHARED[k.recipe!.scope] })),
     ...skills.map((k) => ({ id: k.id, name: k.name, detail: k.version ? `Version ${k.version}` : "Saved from your work", shared: SHARED[k.shared] })),
   ]
-  if (!rows.length) return <div className="rounded-xl border border-slate-200 px-6 py-5 text-sm text-slate-500">Skills you teach Ally show here: save one from your work, or correct an analysis in chat.</div>
   return (
     <div className="rounded-xl border border-slate-200">
       {rows.map((r) => (
