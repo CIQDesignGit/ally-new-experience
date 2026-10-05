@@ -104,20 +104,21 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
       title: "Conversations",
       icon: MessageSquare,
       items: [
-        ...(started ? [{ label: RETRO.name, sub: retro.sentToClaire ? "Sent to Claire" : retro.deck ? "Deck built" : retro.stage === "storyline" ? "Storyline" : "Storyboard", href: "/michelle/retro", on: path === "/michelle/retro" }] : []),
+        ...(started && home === "/michelle" ? [{ label: RETRO.name, sub: retro.sentToClaire ? "Sent to Claire" : retro.deck ? "Deck built" : retro.stage === "storyline" ? "Storyline" : "Storyboard", href: "/michelle/retro", on: path === "/michelle/retro" }] : []),
         // Every conversation in this person's history, newest first: where it was asked and when.
-        ...conversations.filter((c) => c.home === home).map((c) => ({ label: c.title, sub: `${c.where} · ${c.at}`, href: c.href, on: path === c.href.split("?")[0] })),
-        ...(qbr || path === "/michelle/decks/qbr" ? [{ label: "Q4 business review", sub: qbr?.sentToClaire ? "Sent to Claire" : qbr?.deck ? "Deck built" : qbr?.stage === "storyboard" ? "Storyboard" : "Storyline", href: "/michelle/decks/qbr", on: path === "/michelle/decks/qbr" }] : []),
+        // Selected only when you're in that conversation (a question reopened on a home page isn't "here").
+        ...conversations.filter((c) => c.home === home).map((c) => ({ label: c.title, sub: `${c.where} · ${c.at}`, href: c.href, on: c.href.startsWith("/c/") && path === c.href })),
+        ...(home === "/michelle" && (qbr || path === "/michelle/decks/qbr") ? [{ label: "Q4 business review", sub: qbr?.sentToClaire ? "Sent to Claire" : qbr?.deck ? "Deck built" : qbr?.stage === "storyboard" ? "Storyboard" : "Storyline", href: "/michelle/decks/qbr", on: path === "/michelle/decks/qbr" }] : []),
       ],
       empty: "Ask Ally a new task to start one",
     },
     {
       title: "Reports and decks",
       icon: Presentation,
-      // Claire reads what her team sends her; Michelle sees what she built.
+      // Claire sees what Michelle has sent her, the moment she sends it; Michelle sees what she built.
       items: home === "/claire-waterfall" ? [
-        { label: RETRO.name, sub: "From Michelle · Sep 30", href: "/michelle/retro?view=deck" },
-        { label: "Q4 business review", sub: "From Michelle · every Monday", href: "/michelle/decks/qbr?view=deck" },
+        ...(retro.sentToClaire ? [{ label: RETRO.name, sub: "From Michelle", href: "/michelle/retro?view=deck" }] : []),
+        ...(qbr?.sentToClaire ? [{ label: "Q4 business review", sub: qbr.repeat ? "From Michelle · every Monday" : "From Michelle", href: "/michelle/decks/qbr?view=deck" }] : []),
       ] : [
         ...(retro.deck ? [{ label: RETRO.name, sub: retro.theme === "aurelle" ? "Aurelle Brand 2026" : "CommerceIQ default", href: "/michelle/retro?view=deck" }] : []),
         ...(qbr?.deck ? [{ label: "Q4 business review", sub: qbr.repeat ? "Every Monday · On autopilot" : qbr.theme === "aurelle" ? "Aurelle Brand 2026" : "CommerceIQ default", href: "/michelle/decks/qbr?view=deck" }] : []),
@@ -129,7 +130,7 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
       icon: LayoutDashboard,
       fresh: fresh || dashboards.some((d) => !d.seen),
       items: [
-        ...(retro.dashboard || home === "/claire-waterfall" ? [{ label: RETRO.name, sub: "Live · refreshes daily", href: "/michelle/dashboards/prime-day", on: path === "/michelle/dashboards/prime-day", fresh }] : []),
+        ...(retro.dashboard ? [{ label: RETRO.name, sub: "Live · refreshes daily", href: "/michelle/dashboards/prime-day", on: path === "/michelle/dashboards/prime-day", fresh }] : []),
         ...dashboards.map((d) => ({ label: d.name, sub: `${d.widgets.length} widgets · saved from chat`, href: `/michelle/dashboards/${d.id}`, on: path === `/michelle/dashboards/${d.id}`, fresh: !d.seen })),
       ],
       empty: "Publish a deck or answers as a dashboard",
@@ -152,7 +153,7 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
         : live.approval.rows.filter((r) => (r.valueM ?? 0) > 0).length
 
   // Lists open in place; only Ask Ally shows its recent items without a click.
-  const [openList, setOpenList] = useState<string | null>(null)
+  const [openList, setOpenList] = useState<string | null>(path.startsWith("/c/") ? "Ask Ally" : null)
   const [allChats, setAllChats] = useState(false)
   const lists = sections.filter((x) => x.title !== "Conversations")
   const chats = sections.find((x) => x.title === "Conversations")!
@@ -259,24 +260,28 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
           <Link href="/settings" className={row(path === "/settings")}>
             <GraduationCap className="size-4" /> <span className="flex-1">Teach Ally</span>
           </Link>
-          <div className="flex items-center gap-2.5 px-2.5 py-2 text-sm text-brand-100">
-            <MessageSquare className="size-4" /> <span className="flex-1">Ask Ally</span>
-            <button type="button" onClick={newChat} className="rounded-md px-1.5 py-0.5 text-xs font-medium text-white hover:bg-white/10">
+          {/* Ask Ally: folded like the other lists; "+ New" starts a question without opening it. */}
+          <div className="flex items-center rounded-lg text-sm text-brand-100 hover:bg-white/10">
+            <button type="button" onClick={() => setOpenList(openList === "Ask Ally" ? null : "Ask Ally")} aria-expanded={openList === "Ask Ally"} className="flex flex-1 items-center gap-2.5 px-2.5 py-2 text-left hover:text-white">
+              <MessageSquare className="size-4" /> <span className="flex-1">Ask Ally</span>
+              {chats.items.length > 0 && <span className="font-mono text-xs text-brand-300">{chats.items.length}</span>}
+            </button>
+            <button type="button" onClick={newChat} className="mr-1.5 rounded-md px-1.5 py-0.5 text-xs font-medium text-white hover:bg-white/10">
               + New
             </button>
           </div>
-          {chats.items.length > 0 && (
+          {openList === "Ask Ally" && chats.items.length > 0 && (
             <div className="pl-7">
-                {(allChats ? chats.items : chats.items.slice(0, 3)).map((it) => (
-                  <Link key={it.href + it.label} href={it.href} className={cn("block truncate rounded-lg px-2.5 py-1.5 text-[13px]", it.on ? "bg-brand-400 text-white" : "text-brand-100 hover:bg-white/10 hover:text-white")}>
-                    {it.label}
-                  </Link>
-                ))}
-                {chats.items.length > 3 && (
-                  <button type="button" onClick={() => setAllChats((v) => !v)} className="px-2.5 py-1 text-xs text-brand-300 hover:text-white">
-                    {allChats ? "Show fewer" : "See all"}
-                  </button>
-                )}
+              {(allChats ? chats.items : chats.items.slice(0, 3)).map((it) => (
+                <Link key={it.href + it.label} href={it.href} className={cn("block truncate rounded-lg px-2.5 py-1.5 text-[13px]", it.on ? "bg-brand-400 text-white" : "text-brand-100 hover:bg-white/10 hover:text-white")}>
+                  {it.label}
+                </Link>
+              ))}
+              {chats.items.length > 3 && (
+                <button type="button" onClick={() => setAllChats((v) => !v)} className="px-2.5 py-1 text-xs text-brand-300 hover:text-white">
+                  {allChats ? "Show fewer" : "See all"}
+                </button>
+              )}
             </div>
           )}
           <div className="mt-auto pt-4">
