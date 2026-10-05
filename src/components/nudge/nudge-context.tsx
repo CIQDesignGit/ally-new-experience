@@ -227,6 +227,18 @@ export function NudgeProvider({ children }: { children: React.ReactNode }) {
     setState(readStoredState())
   }, [])
 
+  // Another tab changed the demo (a YES clicked in Claire's email opens one): follow it here too.
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key !== STORAGE_KEY || !e.newValue) return
+      try {
+        setState(JSON.parse(e.newValue))
+      } catch {}
+    }
+    window.addEventListener("storage", onStorage)
+    return () => window.removeEventListener("storage", onStorage)
+  }, [])
+
   // Functional updates so several nudges fired in one tick accumulate instead
   // of clobbering each other; localStorage is written from the same next state.
   const update = useCallback((updater: (prev: StoredState) => StoredState) => {

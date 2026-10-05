@@ -90,6 +90,8 @@ export interface Digest {
   sections: { title: string; total?: { note: string; value: string }; /** One sentence under the title: what replying does. */ lead?: string; rows: { label: string; note?: string; /** A deadline at the end of the note, in amber. */ flag?: string; value?: string; tone?: "warn" | "done"; href?: string }[] }[]
   /** How to act by replying, shown right after the actions. */
   reply?: string
+  /** One button per reply ("YES", "YES 1"…), each a link into Ally that does it. */
+  replyLinks?: { label: string; href: string }[]
 }
 
 /** The summary email: the page's headline, then short sections with the money in a right-hand column. */
@@ -146,7 +148,11 @@ ${
     : ""
 }
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${d.sections.map(section).join("")}</table>
-${d.reply ? `<div style="margin-top:18px;background:#EEF0FE;border:1px solid #C0C4F7;border-radius:10px;padding:14px 16px;font-size:14px;line-height:1.5;color:#0E1052;font-weight:600">${esc(d.reply)}</div>` : ""}
+${d.reply ? `<div style="margin-top:18px;background:#EEF0FE;border:1px solid #C0C4F7;border-radius:10px;padding:14px 16px;font-size:14px;line-height:1.5;color:#0E1052;font-weight:600">${esc(d.reply)}${
+    d.replyLinks?.length
+      ? `<div style="margin-top:10px">${d.replyLinks.map((l, i) => `<a href="${esc(link(l.href))}" style="display:inline-block;margin:0 8px 6px 0;padding:8px 16px;border-radius:8px;text-decoration:none;font-size:14px;font-weight:600;${i === 0 ? "background:#1F22B2;color:#ffffff" : "background:#ffffff;color:#1F22B2;border:1px solid #C0C4F7"}">${esc(l.label)}</a>`).join("")}</div>`
+      : ""
+  }</div>` : ""}
 <a href="${esc(`${origin}/claire-waterfall`)}" style="display:inline-block;margin-top:28px;background:#1F22B2;color:#ffffff;text-decoration:none;font-weight:600;font-size:15px;padding:12px 22px;border-radius:8px">Open in Ally</a>
 <div style="margin-top:14px;font-size:13px;color:#6B7280">The full summary is attached as a PDF.</div>
 </td></tr>
@@ -158,5 +164,5 @@ export function summaryText(d: Digest, origin: string, footer: string) {
   const body = d.sections
     .map((s) => [`${s.title.toUpperCase()}${s.total ? `: ${s.total.value} ${s.total.note}` : ""}`, ...(s.lead ? [s.lead] : []), ...s.rows.map((r) => `- ${r.label}${r.value ? `: ${r.value}` : ""}${r.note || r.flag ? ` (${[r.note, r.flag].filter(Boolean).join(" · ")})` : ""}${r.href ? ` ${origin}${r.href}` : ""}`)].join("\n"))
     .join("\n\n")
-  return `${d.hero.join(" ")}\n\n${body}${d.reply ? `\n\n${d.reply}` : ""}\n\nOpen in Ally: ${origin}/claire-waterfall\nThe full summary is attached as a PDF.\n\n${footer}`
+  return `${d.hero.join(" ")}\n\n${body}${d.reply ? `\n\n${d.reply}${d.replyLinks?.length ? `\n${d.replyLinks.map((l) => `${l.label}: ${origin}${l.href}`).join("\n")}` : ""}` : ""}\n\nOpen in Ally: ${origin}/claire-waterfall\nThe full summary is attached as a PDF.\n\n${footer}`
 }

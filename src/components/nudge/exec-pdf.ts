@@ -344,6 +344,8 @@ export interface ExecDigest {
   sections: { title: string; total?: { note: string; value: string }; lead?: string; rows: DigestRow[] }[]
   /** How to act by replying: "Reply YES to do all of these, or YES 1…". */
   reply?: string
+  /** The same replies as buttons: each opens Ally and does it, no login. */
+  replyLinks?: { label: string; href: string }[]
 }
 
 /**
@@ -444,6 +446,7 @@ export function execDigest(period: Period, { approved, policy = DEFAULT_POLICY, 
         }),
       },
     ],
+    replyLinks: replies.length ? [{ label: "YES", href: "/reply?n=all" }, ...(replies.length > 1 ? replies.map((r) => ({ label: `YES ${r.n}`, href: `/reply?n=${r.n}` })) : [])] : undefined,
     reply: monday ? `Reply YES to assign ${replies.length === 3 ? "all three" : "all of them"}, or ${replies.map((r) => `YES ${r.n}`).join(", ").replace(/, (YES \d)$/, " or $1")} for one. No need to log in.` : actions.length ? REPLY_LINE : undefined,
   }
 }
