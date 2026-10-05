@@ -70,7 +70,7 @@ export function OpsSkuPane({ batch, asin, checked, onBack, onCheck, onSend }: Op
             {each ? (
               <>
                 <div className="text-sm font-semibold text-slate-950">
-                  {all ? `All ${skus.length} hero SKUs are in your note to ${VENDOR_MANAGER.name}.` : `Hero SKU ${i + 1} of ${skus.length}. Check it, then add it to your note.`}
+                  {all ? `All ${skus.length} hero SKUs are in your note to the ${VENDOR_MANAGER.label}.` : `Hero SKU ${i + 1} of ${skus.length}. Check it, then add it to your note.`}
                 </div>
                 <div className="mt-0.5 text-sm text-slate-500">
                   {nChecked} of {skus.length} in your note · it goes out as one email when you send

@@ -59,7 +59,7 @@ export function OpsBatchDetail({ batch, onAction, onReviewAll }: OpsBatchDetailP
   const addAll = () => {
     addToNote(batch.id, skus.map((x) => x.asin), true)
     // The first add is confirmed by the note bar as it appears (with how the note works).
-    if (inNoteNow > 0) toast.success(`Added ${batch.skus} SKUs to your note to ${VENDOR_MANAGER.name}`, { position: "top-right" })
+    if (inNoteNow > 0) toast.success(`Added ${batch.skus} SKUs to your note to the ${VENDOR_MANAGER.label}`, { position: "top-right" })
   }
   // Buy box issues get the picture: the lead SKU's offers and crawls.
   const lead = batch.sellerSkus?.find((x) => x.asin === batch.exampleSku) ?? batch.sellerSkus?.[0]
@@ -150,7 +150,7 @@ export function OpsBatchDetail({ batch, onAction, onReviewAll }: OpsBatchDetailP
             {noted === batch.skus ? (
               <div className="flex items-center gap-2 text-sm text-slate-700">
                 <Mail className="size-4 text-brand-600" />
-                {sentAll ? `Sent to ${VENDOR_MANAGER.name}` : `All ${batch.skus} SKUs are in your note to ${VENDOR_MANAGER.name}. They go out when you send it.`}
+                {sentAll ? `Sent to the ${VENDOR_MANAGER.label}` : `All ${batch.skus} SKUs are in your note to the ${VENDOR_MANAGER.label}. They go out when you send it.`}
               </div>
             ) : (
               <div className="flex flex-col gap-2">
@@ -166,7 +166,7 @@ export function OpsBatchDetail({ batch, onAction, onReviewAll }: OpsBatchDetailP
                   )}
                 </div>
                 {(noted > 0 || batch.reassure) && (
-                  <div className="text-sm text-slate-500">{noted > 0 ? `${noted} of ${batch.skus} in your note to ${VENDOR_MANAGER.name}` : batch.reassure}</div>
+                  <div className="text-sm text-slate-500">{noted > 0 ? `${noted} of ${batch.skus} in your note to the ${VENDOR_MANAGER.label}` : batch.reassure}</div>
                 )}
               </div>
             )}

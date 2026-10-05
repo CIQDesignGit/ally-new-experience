@@ -77,14 +77,14 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
     setOpen(next)
   }
 
-  // The page makes room only for a pinned sidebar. Opened by hover or a click, it slides over the page,
-  // so nothing under the pointer jumps (xl and up, where it shows).
+  // The page always makes room, so nothing is covered; it slides in step with the rail (same 200ms), so nothing jumps (xl and up, where it shows).
   useEffect(() => {
     const root = document.documentElement
     const wide = window.matchMedia("(min-width: 1280px)")
     const apply = () => {
-      const w = wide.matches ? (open && pinned ? OPEN_W : SHUT_W) : "0px"
+      const w = wide.matches ? (open ? OPEN_W : SHUT_W) : "0px"
       root.style.setProperty("--sidebar-w", w)
+      document.body.style.transition = "padding-left 200ms ease"
       document.body.style.paddingLeft = w
     }
     apply()
@@ -93,8 +93,9 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
       wide.removeEventListener("change", apply)
       root.style.removeProperty("--sidebar-w")
       document.body.style.paddingLeft = ""
+      document.body.style.transition = ""
     }
-  }, [open, pinned])
+  }, [open])
 
   // Something just made (a published dashboard) is flagged until it's opened, even with the sidebar collapsed.
   const fresh = !!retro.dashboard && !retro.dashboardSeen
@@ -203,7 +204,7 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
         if (open) scheduleClose()
         else window.clearTimeout(timer.current)
       }}
-      className={cn("fixed inset-y-0 left-0 z-50 hidden flex-col overflow-hidden bg-brand-950 transition-[width] duration-200 xl:flex", open && !pinned && "shadow-2xl")}
+      className={cn("fixed inset-y-0 left-0 z-50 hidden flex-col overflow-hidden bg-brand-950 transition-[width] duration-200 xl:flex")}
     >
       <div className={cn("flex h-16 shrink-0 items-center", open ? "justify-between pr-2 pl-4" : "justify-center")}>
         {open && (

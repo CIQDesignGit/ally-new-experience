@@ -67,7 +67,7 @@ export function OpsListItem({ batch, active, selectedSku, expanded, checked, onT
                 In your note · {noted} of {batch.skus}
               </span>
             ),
-            done && <span key="d" className="font-medium text-success-700">{batch.tier === "input" ? "Sent to Ally" : `Sent to ${VENDOR_MANAGER.name}`}</span>,
+            done && <span key="d" className="font-medium text-success-700">{batch.tier === "input" ? "Sent to Ally" : `Sent to the ${VENDOR_MANAGER.label}`}</span>,
             !done && batch.tier === "autopilot" && <span key="a" className="font-medium text-info-700">Running</span>,
             !done && batch.tier !== "autopilot" && batch.chip && <span key="c" className="font-medium text-warning-700">{batch.chip}</span>,
           ]}

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import { motion } from "framer-motion"
-import { Check, Mail, Paperclip } from "lucide-react"
+import { Mail, Paperclip } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { OPS_DAYS_SAVED, fmtValue, opsBatches, opsSkus } from "../data"
@@ -12,7 +12,8 @@ import { PRIMARY, SECONDARY } from "../mike/buttons"
 import { emailMe } from "../email-me"
 
 /** One vendor manager for the demo. */
-export const VENDOR_MANAGER = { name: "Dana", full: "Dana Ruiz", role: "your vendor manager" }
+/** Labels and buttons say "Amazon VM"; the letter itself is to a person, so it greets her by name. */
+export const VENDOR_MANAGER = { label: "Amazon VM", name: "Dana", full: "Dana Ruiz", role: "your Amazon VM" }
 /** When what's waiting in the note costs this much a day ($M), the bar asks to send. */
 const SEND_NUDGE_PER_DAY = 0.012
 
@@ -95,10 +96,10 @@ export function NoteBar({ onSent }: { onSent?: (sent: { value: number; label: st
       .map((g) => g.batch.id)
     sendNote(complete)
     // Dollars only for issues that went whole, the same amount the progress bar moves by.
-    onSent?.({ value: groups.filter((g) => complete.includes(g.batch.id)).reduce((n, g) => n + g.batch.approveValue, 0), label: `${skus} SKUs sent to ${VENDOR_MANAGER.name}` })
+    onSent?.({ value: groups.filter((g) => complete.includes(g.batch.id)).reduce((n, g) => n + g.batch.approveValue, 0), label: `${skus} SKUs sent to the ${VENDOR_MANAGER.label}` })
     // The signed-in person gets the email, playing Dana.
     void emailMe({ kind: "note", subject: `${groups.length} ${groups.length === 1 ? "issue" : "issues"} on our Amazon listings · ${skus} SKUs`, body: text, skus, issues: groups.length }, { quiet: true })
-    toast.success(`Sent to ${VENDOR_MANAGER.full}, ${VENDOR_MANAGER.role} · ${skus} SKUs across ${groups.length} ${groups.length === 1 ? "issue" : "issues"}, evidence attached`, { position: "top-right" })
+    toast.success(`Sent to ${VENDOR_MANAGER.full}, ${VENDOR_MANAGER.label} · ${skus} SKUs across ${groups.length} ${groups.length === 1 ? "issue" : "issues"}, evidence attached`, { position: "top-right" })
     setOpen(false)
     setBody(null)
   }
@@ -106,19 +107,19 @@ export function NoteBar({ onSent }: { onSent?: (sent: { value: number; label: st
   // The first add explains the note once, at the moment it starts; later adds just confirm.
   const hadNote = useRef(skus > 0)
   useEffect(() => {
-    if (skus > 0 && !hadNote.current) toast.success(`Added ${skus} ${skus === 1 ? "SKU" : "SKUs"} to your note to ${VENDOR_MANAGER.name}`, { description: "Everything you add goes out as one email when you send.", position: "top-right" })
+    if (skus > 0 && !hadNote.current) toast.success(`Added ${skus} ${skus === 1 ? "SKU" : "SKUs"} to your note to the ${VENDOR_MANAGER.label}`, { description: "Everything you add goes out as one email when you send.", position: "top-right" })
     hadNote.current = skus > 0
   }, [skus])
 
   // Nothing in the note, nothing to show: the bar appears with the first add.
   if (!skus && !open) return null
   return (
-    <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} data-sticky-top className="sticky top-0 z-30 border-y border-slate-200 bg-white/95 backdrop-blur">
+    <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} data-sticky-top={open ? undefined : true} className={cn("z-30 border-y border-slate-200 bg-white/95 backdrop-blur", !open && "sticky top-0")}>
       <div className={cn("flex flex-wrap items-center gap-x-4 gap-y-2 px-10 py-3", nudge && !open && "bg-warning-50")}>
         <Mail className={cn("size-4 shrink-0", skus ? "text-brand-600" : "text-slate-400")} />
         {skus ? (
           <div className="min-w-0 flex-1 text-sm">
-            <span className="font-semibold text-slate-950">Note to {VENDOR_MANAGER.name}, {VENDOR_MANAGER.role}</span>
+            <span className="font-semibold text-slate-950">Note to the {VENDOR_MANAGER.label}</span>
             <span className="text-slate-500">
               {" "}
               · {skus} {skus === 1 ? "SKU" : "SKUs"} across {groups.length} {groups.length === 1 ? "issue" : "issues"}
@@ -126,11 +127,13 @@ export function NoteBar({ onSent }: { onSent?: (sent: { value: number; label: st
             {nudge && !open ? (
               <span className="ml-2 font-medium text-warning-700">Losing {fmtValue(perDay)} a day while these wait.</span>
             ) : (
-              <span className="ml-2 text-slate-500">−{fmtValue(perDay)} a day while they wait</span>
+              <>
+                <span className="ml-2 font-mono text-error-600">−{fmtValue(perDay)} a day</span> <span className="text-slate-500">while they wait</span>
+              </>
             )}
           </div>
         ) : (
-          <div className="min-w-0 flex-1 text-sm text-slate-500">Your note to {VENDOR_MANAGER.name} is empty. SKUs you review are added here, and go out together when you send.</div>
+          <div className="min-w-0 flex-1 text-sm text-slate-500">Your note to the {VENDOR_MANAGER.label} is empty. SKUs you review are added here, and go out together when you send.</div>
         )}
         {skus > 0 && !open && (
           <div className="flex items-center gap-2">
@@ -140,7 +143,7 @@ export function NoteBar({ onSent }: { onSent?: (sent: { value: number; label: st
               </button>
             )}
             <button type="button" onClick={() => setOpen(true)} className={cn(PRIMARY, "h-9 px-4 text-sm")}>
-              {nudge ? "Send now" : "Send note to vendor manager"}
+              {nudge ? "Send now" : `Review and send`}
             </button>
           </div>
         )}
@@ -148,36 +151,33 @@ export function NoteBar({ onSent }: { onSent?: (sent: { value: number; label: st
 
       {open && (
         <div className="border-t border-slate-100 bg-slate-25 px-10 py-5">
+          {/* The email as it will go: who it's to, its subject, the letter (editable), what's attached. Counts live in the bar above, once. */}
           <div className="mx-auto max-w-[880px] overflow-hidden rounded-xl border border-slate-200 bg-white">
-            <div className="flex items-center justify-between gap-3 border-b border-slate-100 bg-slate-25 px-5 py-3 text-sm">
-              <span className="flex items-center gap-2 font-semibold text-slate-950">
-                <Mail className="size-4 text-brand-600" /> Drafted by Ally · one note, {groups.length} {groups.length === 1 ? "issue" : "issues"}
-              </span>
-              <span className="text-slate-500">
-                To <span className="font-medium text-slate-950">{VENDOR_MANAGER.full}</span>, {VENDOR_MANAGER.role}
-              </span>
+            <div className="flex flex-col gap-1 border-b border-slate-100 px-5 py-3 text-sm">
+              <div>
+                <span className="text-slate-500">To</span> <span className="font-medium text-slate-950">{VENDOR_MANAGER.full}</span> <span className="text-slate-500">· {VENDOR_MANAGER.label}</span>
+              </div>
+              <div>
+                <span className="text-slate-500">Subject</span> <span className="font-medium text-slate-950">{groups.length} {groups.length === 1 ? "issue" : "issues"} on our Amazon listings · {skus} SKUs</span>
+              </div>
             </div>
             <div className="px-5 py-4">
-              <div className="text-sm font-medium text-slate-950">
-                {groups.length} {groups.length === 1 ? "issue" : "issues"} on {skus} SKUs: {groups.map((g) => g.batch.name.toLowerCase()).join(", ")}
-              </div>
               <textarea
                 value={text}
                 onChange={(e) => setBody(e.target.value)}
                 rows={Math.min(22, text.split("\n").length + 1)}
-                className="mt-3 w-full resize-y rounded-md border border-slate-200 bg-white px-3 py-2 font-mono text-[13px] leading-relaxed text-slate-800 outline-none focus:border-brand-300 focus:ring-2 focus:ring-brand-100"
+                className="w-full resize-y rounded-md border border-slate-200 bg-white px-4 py-3 text-[14px] leading-relaxed text-slate-800 outline-none focus:border-brand-300 focus:ring-2 focus:ring-brand-100"
               />
               <div className="mt-3 flex flex-wrap gap-2 text-xs">
                 {groups.map((g) => (
                   <span key={g.batch.id} className="inline-flex items-center gap-1 rounded-md bg-slate-100 px-2 py-1 text-slate-600">
-                    <Paperclip className="size-3" /> {g.batch.name}: evidence
+                    <Paperclip className="size-3" /> {g.batch.name} · {countOf(g)} screenshots and the SKU list
                   </span>
                 ))}
               </div>
               <div className="mt-4 flex items-center gap-3">
                 <button type="button" onClick={send} className={PRIMARY}>
-                  <Check className="mr-1.5 inline size-4" />
-                  Send to {VENDOR_MANAGER.name} · {skus} SKUs
+                  Send to {VENDOR_MANAGER.label} · {skus} SKUs
                 </button>
                 <button
                   type="button"

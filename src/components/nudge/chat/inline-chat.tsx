@@ -374,7 +374,7 @@ export function AskBar({ placeholder = "What can I take off your plate?" }: { pl
     )}
     {/* The dock, like Claude's: content fades out above it, the box is solid, and nothing shows beside or below it.
         It spans the page card's width, so on grey-backed pages it reads as the card's own bottom. */}
-    <div ref={dockRef} className="pointer-events-none fixed inset-x-0 bottom-0 z-40 xl:left-[var(--sidebar-w,0px)]">
+    <div ref={dockRef} className="pointer-events-none fixed inset-x-0 bottom-0 z-40 transition-[left] duration-200 ease-out xl:left-[var(--sidebar-w,0px)]">
       <div className="relative mx-auto max-w-[1280px]">
         <FadeAbove />
         <div className="absolute inset-x-0 -top-8 flex justify-center">
