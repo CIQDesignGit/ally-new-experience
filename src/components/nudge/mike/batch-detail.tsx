@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from "react"
 import { ArrowRight, Check, ChevronDown, PauseCircle, RefreshCw, ShieldCheck, Sparkles } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { AS_OF } from "../data"
+import { daysUntil } from "../model"
 import { Upload } from "lucide-react"
 import { useChat } from "../chat/inline-chat"
 import { UploadDialog } from "../chat/upload-dialog"
@@ -63,7 +65,7 @@ function Actions({ batch, onApprove, onReviewAll, children }: BatchDetailProps &
  * never leaves the batch he's about to approve.
  */
 export function BatchDetail({ batch, onApprove, onReviewAll, onSelect, onSelectSku }: BatchDetailProps) {
-  const { approved, nudged, asks, autoShipped, policy, savePolicy } = useNudge()
+  const { approved, nudged, asks, autoShipped, policy, savePolicy, day } = useNudge()
   // A policy part scheduled on autopilot ("halloween-auto"): Mike can check it and hold it back, just this once.
   const scheduled = batch.tier === "autopilot" && batch.mode === "autopilot"
   const seedId = batch.id.replace(/-auto$/, "")
@@ -108,7 +110,13 @@ export function BatchDetail({ batch, onApprove, onReviewAll, onSelect, onSelectS
             {batch.partLabel && ` · ${batch.partLabel}`}
           </div>
           <div className="mt-0.5 text-2xl font-semibold tracking-tight text-slate-950">{batch.name}</div>
-          <div className="mt-1.5 text-sm text-slate-500">{source}</div>
+          {/* Who asked and by when, then the deadline that makes it urgent: the ask by weight (it's not a link), the expiry in amber. */}
+          <div className="mt-1.5 text-sm">
+            <span className={ask || shipped.length ? "font-medium text-slate-950" : "text-slate-500"}>{source}</span>
+            {batch.deadline && !done && !shipped.length && (
+              <span className="font-medium text-warning-700"> · Expires in {daysUntil(batch.deadline, AS_OF) - day} days</span>
+            )}
+          </div>
         </div>
         <div className="shrink-0 text-right">
           <div className={cn("font-mono text-[28px] font-bold tracking-tight tabular-nums", done ? "text-success-700" : "text-slate-950")}>
