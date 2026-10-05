@@ -16,7 +16,7 @@ Every screen follows these rules. When a screen needs something they don't cover
 
 ## Buttons
 
-1. **Every action is purple** (`PRIMARY`): approve, send, add, review, run, launch, export. Our focus is actionability, so anything that does something looks like it does something.
+1. **Every action is indigo** (`PRIMARY`, CommerceIQ Blue #1F22B2): approve, send, add, assign, run, launch, export. Our focus is actionability, so anything that does something looks like it does something.
 2. **Outline (`SECONDARY`) only for buttons that don't act**: the way out (Cancel, Not now, Back, Keep reviewing, Next SKU) and view tools (Expand, Lock, show or hide a sample). Small extras are text links (Start over, Show steps).
 3. **Buttons sit on the right of their row**, vertically centered on the text. Controls that set up the action (a cap, a scope) sit under the row's detail, on the left.
 4. **Done replaces the button in place**: a green check and the past tense ("Approved", "Sent to Dana").
@@ -39,15 +39,23 @@ Every screen follows these rules. When a screen needs something they don't cover
 
 ## Color meanings
 
-| Color | Means | Never for |
-| --- | --- | --- |
-| Purple (brand) | You, Ally, every action button, selection | Status |
-| Red | A loss that matters (daily loss, the main gap). Changes going down. | Thresholds, labels, decoration |
-| Green | Done, approved. Changes going up. | Emphasis |
-| Amber | A deadline ("Expires in 18 days"), "Needs your input", "true now" | Boxes or backgrounds |
-| Slate | Everything else | |
+One color per job. Tokens live in `src/app/globals.css`.
 
-No tinted boxes to signal a state; state is a word or a dot.
+| Color | Token | Means | Never for |
+| --- | --- | --- | --- |
+| Indigo #1F22B2 | `brand-*` | You can click this: buttons, links, the selected nav item and column. The headline's pipeline figure. | Other data, status |
+| Deep indigo #14165C | `brand-950` | The nav rail | |
+| Magenta #C231FF | `ally-*` | Ally did this or is doing it: its mark, its chat avatar, "Did you know", the "One approval away" bar (Ally's drafts, waiting on you) | Buttons |
+| Sky #5AAFFF | `autopilot` | Runs on its own (On autopilot) | |
+| Amber #F79009 | `team` | Needs your team (bar) | |
+| Dark amber #B54708 | `warning-*` | A deadline ("Expires in 18 days") | Boxes or backgrounds |
+| Ink #210235 | `ink` | Headlines, totals (the Total opportunity bar) | |
+| Red | `error-*` | A loss that matters (the gap, daily loss). Changes going down. | Thresholds, labels, decoration |
+| Green | `success-*` | Done, approved, over plan. Changes going up. | Emphasis |
+| Agent dots | `agent-content` violet, `agent-media` teal, `agent-ops` sky | Which agent | Anything bigger than a dot |
+| Slate | | Everything else | |
+
+No gradients, glows or tinted boxes to signal a state; state is a word or a dot. Waterfall bars are always at full color; the column highlight shows what's selected.
 
 ## Layout
 
@@ -64,7 +72,7 @@ No tinted boxes to signal a state; state is a word or a dot.
 
 ## Before showing a screen
 
-Check at 1440px, and **measure, don't eyeball**: for every set of peers (buttons, rows, cards), compare their left edge, width, and vertical center in the browser; they must match. Then: every action purple, nothing else purple; one numeric font per line; red only for real loss or a falling change; nothing wraps or truncates by accident; every number ties; every state (empty, in progress, done) looks right.
+Check at 1440px, and **measure, don't eyeball**: for every set of peers (buttons, rows, cards), compare their left edge, width, and vertical center in the browser; they must match. Then: every action indigo, magenta only for Ally; one numeric font per line; red only for real loss or a falling change; nothing wraps or truncates by accident; every number ties; every state (empty, in progress, done) looks right.
 
 ## Proposed changes to the CIQ design system
 
@@ -73,5 +81,6 @@ What the demo does differently, and why. Each is a candidate to take back into C
 | Area | CIQ today | Demo | Why |
 | --- | --- | --- | --- |
 | Action rows | No pattern for a list of actions | `ActionCard` / `ActionRow`: name and detail left, equal-width button right, setup under the detail | Recommendations appear on every screen; without one pattern each screen improvised |
-| Button roles | `default` (purple) vs `outline` left to each screen | Purple for every action; outline only for the way out and view tools | One rule anyone can apply: if it does something, it's purple |
+| Button roles | `default` (purple) vs `outline` left to each screen | Indigo for every action; outline only for the way out and view tools | One rule anyone can apply: if it does something, it's indigo |
 | Agent work | `ChainOfThought` | `AgentRun`: file reading, paced steps, "Did you know" beside the work, folds to one line | Long runs need to show real work and use the wait |
+| Color | Purple #875BF7 for actions, selection and AI | Indigo #1F22B2 (CommerceIQ Blue) for actions; magenta #C231FF (CommerceIQ accent) only for Ally's own work; one color per data job | Purple everywhere read as generic AI. Splitting "you can click" from "Ally did this" lets each color carry one meaning, and both come from the CommerceIQ brand guide |

@@ -35,9 +35,9 @@ export const FACTS = [
 function AllyMark({ spinning }: { spinning: boolean }) {
   return (
     <span className="relative flex size-9 shrink-0 items-center justify-center">
-      {spinning && <span className="absolute inset-0 animate-spin rounded-full border-2 border-brand-200 border-t-brand-600" style={{ animationDuration: "1.1s" }} aria-hidden />}
-      <span className="flex size-7 items-center justify-center rounded-full bg-brand-50">
-        <Sparkles className="size-3.5 text-brand-600" />
+      {spinning && <span className="absolute inset-0 animate-spin rounded-full border-2 border-ally-200 border-t-ally-600" style={{ animationDuration: "1.1s" }} aria-hidden />}
+      <span className="flex size-7 items-center justify-center rounded-full bg-ally-50">
+        <Sparkles className="size-3.5 text-ally-600" />
       </span>
     </span>
   )
@@ -52,8 +52,8 @@ export function DidYouKnow({ className }: { className?: string }) {
   }, [])
   const f = FACTS[i]
   return (
-    <motion.aside initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.6, duration: 0.3 }} className={cn("flex flex-col rounded-xl bg-brand-25 px-5 py-4 ring-1 ring-brand-100", className)} aria-live="polite">
-      <div className="text-xs font-medium text-brand-700">Did you know</div>
+    <motion.aside initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.6, duration: 0.3 }} className={cn("flex flex-col rounded-xl bg-ally-25 px-5 py-4 ring-1 ring-ally-100", className)} aria-live="polite">
+      <div className="text-xs font-medium text-ally-700">Did you know</div>
       <div className="relative mt-2 min-h-[92px]">
         {/* A new fact replaces the last and fades in; no waiting on an exit, so it always moves on. */}
         <motion.div key={i} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
@@ -64,7 +64,7 @@ export function DidYouKnow({ className }: { className?: string }) {
       </div>
       <div className="mt-3 flex gap-1" aria-hidden>
         {FACTS.map((_, k) => (
-          <span key={k} className={cn("h-1 rounded-full transition-all", k === i ? "w-4 bg-brand-500" : "w-1.5 bg-brand-200")} />
+          <span key={k} className={cn("h-1 rounded-full transition-all", k === i ? "w-4 bg-ally-500" : "w-1.5 bg-ally-200")} />
         ))}
       </div>
     </motion.aside>

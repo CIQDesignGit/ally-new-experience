@@ -16,9 +16,9 @@ export function MiniWaterfall({ values, highlight = "approval", onSelect, classN
   const stages = ([
 
     { k: "banked", label: "Banked", color: "#cbd5e1" },
-    { k: "autopilot", label: "Autopilot", color: "#93b4f5" },
-    { k: "approval", label: "One approval", color: "#875bf7" },
-    { k: "input", label: "Your input", color: "#f5b85c" },
+    { k: "autopilot", label: "Autopilot", color: "#5aafff" },
+    { k: "approval", label: "One approval", color: "#c231ff" },
+    { k: "input", label: "Your input", color: "#f79009" },
   ] as { k: Stage; label: string; color: string }[]).filter((s) => values[s.k] !== undefined)
   const total = stages.reduce((n, s) => n + (values[s.k] ?? 0), 0)
   const n = stages.length + 1

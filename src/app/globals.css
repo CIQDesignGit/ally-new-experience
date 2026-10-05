@@ -75,13 +75,13 @@
   --shadow-lg:       0 10px 15px -3px rgb(0 0 0 / 0.10), 0 4px 6px -4px rgb(0 0 0 / 0.06);
   --shadow-xl:       0 20px 25px -5px rgb(0 0 0 / 0.10), 0 8px 10px -6px rgb(0 0 0 / 0.04);
   --shadow-2xl:      0 25px 50px -12px rgb(0 0 0 / 0.25);
-  --shadow-brand:    0 4px 14px 0 rgb(135 91 247 / 0.35);  /* brand glow */
-  --shadow-brand-lg: 0 8px 28px 0 rgb(135 91 247 / 0.40); /* brand glow — large */
+  --shadow-brand:    0 4px 14px 0 rgb(31 34 178 / 0.35);  /* brand glow */
+  --shadow-brand-lg: 0 8px 28px 0 rgb(31 34 178 / 0.40); /* brand glow — large */
   /* Soft card lift — wide blur, barely-there brand tint */
   --shadow-brand-soft:
     0 4px 24px -4px rgb(15 23 42 / 0.04),
-    0 20px 60px -12px rgb(135 91 247 / 0.04),
-    0 40px 100px -20px rgb(135 91 247 / 0.025);
+    0 20px 60px -12px rgb(31 34 178 / 0.04),
+    0 40px 100px -20px rgb(31 34 178 / 0.025);
   /* Field cards — extra-wide blur, almost no edge */
   --shadow-field:
     0 8px 40px -12px rgb(15 23 42 / 0.035),
@@ -125,23 +125,41 @@
   --shadow-pane-brand:
     0 2px 6px -2px rgb(46 16 101 / 0.30),
     0 18px 40px -12px rgb(46 16 101 / 0.35),
-    0 40px 80px -24px rgb(135 91 247 / 0.30);
+    0 40px 80px -24px rgb(31 34 178 / 0.30);
 
-  /* ── Brand — Purple (Figma Purple/500 = #875BF7) ── */
-  /* Figma Purple/25 — lightest tint (inner accepted field, reasoning panel). */
-  --color-brand-25:  #faf5ff;
-  /* Figma Purple/50 — stronger tint (outer accepted field frame, selected SKU). */
-  --color-brand-50:  #f3e8ff;
-  --color-brand-100: #ede9fe;
-  --color-brand-200: #ddd6fe;  /* Figma Purple/200 */
-  --color-brand-300: #c4b5fd;
-  --color-brand-400: #a78bfa;
-  --color-brand-500: #875bf7;  /* Figma Purple/500 — PRIMARY */
-  --color-brand-600: #7c3aed;
-  --color-brand-700: #6d28d9;
-  --color-brand-800: #5b21b6;
-  --color-brand-900: #4c1d95;
-  --color-brand-950: #2e1065;
+  /* ── Brand — CommerceIQ indigo (#1F22B2). "You can click this": buttons, links, selection. ── */
+  /* Was CIQ Purple/500 #875BF7; see DESIGN.md, Proposed changes to the CIQ design system. */
+  --color-brand-25:  #f5f6ff;
+  --color-brand-50:  #eef0fe;
+  --color-brand-100: #dfe1fc;
+  --color-brand-200: #c0c4f7;
+  --color-brand-300: #9398ee;
+  --color-brand-400: #5c62de;
+  --color-brand-500: #1f22b2;  /* CommerceIQ Blue — PRIMARY */
+  --color-brand-600: #1a1d9a;
+  --color-brand-700: #161881;
+  --color-brand-800: #121467;
+  --color-brand-900: #0e1052;
+  --color-brand-950: #14165c;  /* nav rail */
+
+  /* ── Ally — CommerceIQ accent magenta (#C231FF). "Ally did this or is doing it": its mark, its drafts, the approval bar. Never a button. ── */
+  --color-ally-25:  #fdf6ff;
+  --color-ally-50:  #faecff;
+  --color-ally-100: #f4d6ff;
+  --color-ally-200: #e9adff;
+  --color-ally-300: #db7dff;
+  --color-ally-500: #c231ff;
+  --color-ally-600: #a51ce0;
+  --color-ally-700: #8613b8;
+  --color-ally-800: #6a1191;
+
+  /* ── Data — one color per job ── */
+  --color-autopilot: #5aafff;   /* CommerceIQ secondary sky: runs on its own */
+  --color-team:      #f79009;   /* needs your team */
+  --color-ink:       #210235;   /* CommerceIQ headlines; totals */
+  --color-agent-content: #7a5af8;
+  --color-agent-media:   #0e9384;
+  --color-agent-ops:     #2e90fa;
 
   /* ── Warning — Amber (Figma Warning/100 + Warning/600) ── */
   --color-warning-50:  #fffbeb;
@@ -231,7 +249,7 @@
   --popover-foreground: #111827;
 
   /* Brand primary — Figma Purple/500 */
-  --primary:           #875bf7;
+  --primary:           #1f22b2;
   --primary-foreground: #ffffff;
 
   /* Secondary surface */
@@ -243,8 +261,8 @@
   --muted-foreground:  #6b7280;  /* neutral-500 */
 
   /* Accent — Figma Purple/200 */
-  --accent:            #ddd6fe;
-  --accent-foreground: #4c1d95;  /* brand-900 */
+  --accent:            #dfe1fc;
+  --accent-foreground: #0e1052;  /* brand-900 */
 
   /* Destructive */
   --destructive:       #ef4444;  /* error-500 */
@@ -252,13 +270,13 @@
   /* Borders / inputs */
   --border:            #e5e7eb;  /* neutral-200 */
   --input:             #e5e7eb;
-  --ring:              #875bf7;  /* matches primary */
+  --ring:              #1f22b2;  /* matches primary */
 
   /* Border radius base (shadcn scales from this) */
   --radius: 0.5rem;
 
   /* Chart — brand-aligned palette */
-  --chart-1: #875bf7;
+  --chart-1: #1f22b2;
   --chart-2: #3b82f6;
   --chart-3: #22c55e;
   --chart-4: #dc6803;
@@ -267,12 +285,12 @@
   /* Sidebar */
   --sidebar:                    #f9fafb;   /* neutral-50 */
   --sidebar-foreground:         #111827;
-  --sidebar-primary:            #875bf7;
+  --sidebar-primary:            #1f22b2;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent:             #ddd6fe;
-  --sidebar-accent-foreground:  #4c1d95;
+  --sidebar-accent:             #dfe1fc;
+  --sidebar-accent-foreground:  #0e1052;
   --sidebar-border:             #e5e7eb;
-  --sidebar-ring:               #875bf7;
+  --sidebar-ring:               #1f22b2;
 }
 
 /* ─────────────────────────────────────────────
@@ -288,7 +306,7 @@
   --popover:           #1f2937;
   --popover-foreground: #f9fafb;
 
-  --primary:           #a78bfa;  /* brand-400 — lighter for dark bg */
+  --primary:           #9398ee;  /* brand-300 — lighter for dark bg */
   --primary-foreground: #2e1065; /* brand-950 */
 
   --secondary:         #374151;  /* neutral-700 */

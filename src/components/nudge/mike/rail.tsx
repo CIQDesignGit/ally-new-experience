@@ -9,9 +9,9 @@ import { cn } from "@/lib/utils"
  * selected item or an amber deadline.
  */
 export const GROUPS = [
-  { tier: "approval", label: "One approval away", dot: "bg-brand-500", edge: "bg-brand-500", band: "bg-brand-100", effort: "One approval each" },
-  { tier: "input", label: "Needs your input", dot: "bg-warning-500", edge: "bg-warning-500", band: "bg-warning-100", effort: "~3 days of your team's time" },
-  { tier: "autopilot", label: "On autopilot", dot: "bg-info-500", edge: "bg-info-500", band: "bg-info-100", effort: "Already scheduled, no action required" },
+  { tier: "approval", label: "One approval away", dot: "bg-ally-500", edge: "bg-ally-500", band: "bg-ally-100", effort: "One approval each" },
+  { tier: "input", label: "Needs your input", dot: "bg-team", edge: "bg-team", band: "bg-warning-100", effort: "~3 days of your team's time" },
+  { tier: "autopilot", label: "On autopilot", dot: "bg-autopilot", edge: "bg-autopilot", band: "bg-info-100", effort: "Already scheduled, no action required" },
 ] as const
 
 /** Selected item: a soft neutral card, same as the selection box elsewhere. */

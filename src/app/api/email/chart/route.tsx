@@ -11,9 +11,10 @@ type Col = { k: string; l: string; s?: string; v: string; a: number; b: number }
 type Chart = { min: number; max: number; plan: number; planLabel: string; cols: Col[] }
 
 // Same fills as the page: run rate and total in slate, each stage in its bucket color.
-const FILL: Record<string, string> = { pace: "#CBD5E1", autopilot: "#3B82F6", approval: "#875BF7", team: "#F89B04", total: "#94A3B8" }
+// The page's colors (DESIGN.md): sky runs on its own, magenta is Ally's work waiting on you, amber needs the team, ink is the total.
+const FILL: Record<string, string> = { pace: "#CBD5E1", autopilot: "#5AAFFF", approval: "#C231FF", team: "#F79009", total: "#210235" }
 // On the page the selected stage (one approval away) is full color and the others sit back.
-const FADE: Record<string, number> = { autopilot: 0.6, team: 0.6 }
+const FADE: Record<string, number> = {}
 
 const W = 1072
 const H = 540

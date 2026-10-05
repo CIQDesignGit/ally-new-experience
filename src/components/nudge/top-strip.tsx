@@ -17,17 +17,17 @@ export function AllyLogo({ className }: { className?: string }) {
     <svg viewBox="11 6 44 37" className={cn("h-8 w-auto", className)} role="img" aria-label="Ally">
       <defs>
         <linearGradient id="ally-streak" x1="21" y1="31" x2="38" y2="26" gradientUnits="userSpaceOnUse">
-          <stop offset="0" stopColor="#EDE9FE" stopOpacity="0.2" />
-          <stop offset="1" stopColor="#7C3AED" />
+          <stop offset="0" stopColor="#FAECFF" stopOpacity="0.2" />
+          <stop offset="1" stopColor="#C231FF" />
         </linearGradient>
         <linearGradient id="ally-spark" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#8B5CF6" />
-          <stop offset="1" stopColor="#6D28D9" />
+          <stop offset="0" stopColor="#C231FF" />
+          <stop offset="1" stopColor="#8613B8" />
         </linearGradient>
       </defs>
-      <path d="M19.23 22.4 A15 15 0 1 1 21 32.5" fill="none" stroke="#2E1065" strokeWidth="2.6" strokeLinecap="round" />
-      <path d="M13.5 17.2c-.3-5 3.8-8.2 8.3-7.2 1.3.3 2.4.9 3.2 1.7-3.3 1.8-5 5.2-4.9 9.3.1 1.3.3 2.4.7 3.4-4.1-.5-7.1-3.2-7.3-7.2z" fill="#2E1065" />
-      <path d="M21.2 22c.4-8.2 6.4-13.6 13.8-13.4 6.3.2 10.8 3.9 12.2 9-3.4-2.6-7.6-2.9-10.6-.9-3.9 2.6-7.3 5.9-15.4 8.4z" fill="#2E1065" />
+      <path d="M19.23 22.4 A15 15 0 1 1 21 32.5" fill="none" stroke="#210235" strokeWidth="2.6" strokeLinecap="round" />
+      <path d="M13.5 17.2c-.3-5 3.8-8.2 8.3-7.2 1.3.3 2.4.9 3.2 1.7-3.3 1.8-5 5.2-4.9 9.3.1 1.3.3 2.4.7 3.4-4.1-.5-7.1-3.2-7.3-7.2z" fill="#210235" />
+      <path d="M21.2 22c.4-8.2 6.4-13.6 13.8-13.4 6.3.2 10.8 3.9 12.2 9-3.4-2.6-7.6-2.9-10.6-.9-3.9 2.6-7.3 5.9-15.4 8.4z" fill="#210235" />
       <path d="M21 31.5L38 24.7l.4 2.6z" fill="url(#ally-streak)" />
       {/* Two sparks, the eyes. A thin white edge keeps the second one from melting into the ring at small sizes. */}
       <path d="M37.6 18.4c.8 4.4 2.3 5.9 6.7 6.7-4.4.8-5.9 2.3-6.7 6.7-.8-4.4-2.3-5.9-6.7-6.7 4.4-.8 5.9-2.3 6.7-6.7z" fill="url(#ally-spark)" stroke="white" strokeWidth="1.2" paintOrder="stroke" />

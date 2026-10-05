@@ -86,7 +86,7 @@ function BulletCard({
         {bullets?.map((b) => (
           <li key={b.text} className="group/b relative flex items-start gap-2.5 text-left text-sm font-normal text-slate-700">
             {b.tone === "learn" ? (
-              <Sparkles className="mt-0.5 size-3.5 shrink-0 text-brand-600" />
+              <Sparkles className="mt-0.5 size-3.5 shrink-0 text-ally-600" />
             ) : (
               <span className={cn("mt-1.5 size-2 shrink-0 rounded-full", DOT[b.tone])} />
             )}

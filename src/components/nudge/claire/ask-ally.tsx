@@ -145,7 +145,7 @@ export function AskAlly({ questions = QUESTIONS, renderAnswer, placeholder = "Wh
           }}
           className="flex items-center gap-2 rounded-full border border-slate-200/80 bg-white/80 py-1.5 pr-1.5 pl-4 shadow-pane backdrop-blur transition-colors focus-within:border-brand-300 focus-within:bg-white"
         >
-          <Sparkles className="size-4 shrink-0 text-brand-600" />
+          <Sparkles className="size-4 shrink-0 text-ally-600" />
           <input
             value={value}
             onChange={(e) => setValue(e.target.value)}

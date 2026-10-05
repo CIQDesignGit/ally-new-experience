@@ -39,7 +39,7 @@ export function Learnings({ items, applied }: { items: Learning[]; applied: stri
       ))}
 
       <div className="flex items-center gap-2 border-b border-brand-100 px-4 py-2.5 text-sm font-medium text-slate-900">
-        <Sparkles className="size-4 text-brand-600" />
+        <Sparkles className="size-4 text-ally-600" />
         What didn&apos;t work, and what we changed
       </div>
 

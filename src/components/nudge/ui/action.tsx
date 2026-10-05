@@ -11,7 +11,7 @@ export function ActionCard({ title = "What Ally recommends", children, className
   return (
     <div className={cn("overflow-hidden rounded-xl border border-slate-200 bg-white", className)}>
       <div className="flex items-center gap-2 border-b border-slate-100 bg-slate-25 px-5 py-2.5 text-[13px] font-semibold text-slate-950">
-        <Sparkles className="size-3.5 text-brand-600" /> {title}
+        <Sparkles className="size-3.5 text-ally-600" /> {title}
       </div>
       <div className="divide-y divide-slate-100">{children}</div>
     </div>

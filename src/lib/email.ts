@@ -63,7 +63,7 @@ export function layout(o: { preheader: string; heading: string; lines: string[];
         .join("")}</table>`
     : ""
   const cta = o.cta
-    ? `<a href="${esc(o.cta.href)}" style="display:inline-block;margin-top:24px;background:#875BF7;color:#ffffff;text-decoration:none;font-weight:600;font-size:15px;padding:12px 22px;border-radius:8px">${esc(o.cta.label)}</a>`
+    ? `<a href="${esc(o.cta.href)}" style="display:inline-block;margin-top:24px;background:#1F22B2;color:#ffffff;text-decoration:none;font-weight:600;font-size:15px;padding:12px 22px;border-radius:8px">${esc(o.cta.label)}</a>`
     : ""
   const pre = o.pre
     ? `<pre style="margin:20px 0 0;padding:16px;background:#F9FAFB;border:1px solid #E5E7EB;border-radius:8px;white-space:pre-wrap;font-family:ui-monospace,Menlo,monospace;font-size:13px;line-height:1.55;color:#1F2937">${esc(o.pre)}</pre>`
@@ -72,7 +72,7 @@ export function layout(o: { preheader: string; heading: string; lines: string[];
 <span style="display:none;max-height:0;overflow:hidden">${esc(o.preheader)}</span>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F9FAFB;padding:32px 16px"><tr><td align="center">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px">
-<tr><td style="padding:0 4px 16px;font-size:17px;font-weight:600;color:#210235">Commerce<span style="color:#7C3AED">IQ</span> <span style="color:#9CA3AF;font-weight:500">· Ally</span></td></tr>
+<tr><td style="padding:0 4px 16px;font-size:17px;font-weight:600;color:#210235">Commerce<span style="color:#1F22B2">IQ</span> <span style="color:#9CA3AF;font-weight:500">· Ally</span></td></tr>
 <tr><td style="background:#ffffff;border:1px solid #E5E7EB;border-radius:12px;padding:32px">
 <h1 style="margin:0;font-size:22px;line-height:1.3;color:#111827">${esc(o.heading)}</h1>
 ${o.lines.map((l) => `<p style="margin:12px 0 0;font-size:15px;line-height:1.55;color:#374151">${esc(l)}</p>`).join("")}
@@ -106,7 +106,7 @@ export function assetOrigin(origin: string) {
 export function chartUrl(chart: NonNullable<Digest["chart"]>, base: string) {
   const { min, max, plan, planLabel, cols } = chart
   // v changes whenever the chart design does, so no inbox shows a cached old picture.
-  return `${base}/api/email/chart?v=2&d=${Buffer.from(JSON.stringify({ min, max, plan, planLabel, cols })).toString("base64url")}`
+  return `${base}/api/email/chart?v=3&d=${Buffer.from(JSON.stringify({ min, max, plan, planLabel, cols })).toString("base64url")}`
 }
 
 export function summaryHtml(d: Digest, origin: string, footer: string, images = assetOrigin(origin)) {
@@ -116,7 +116,7 @@ export function summaryHtml(d: Digest, origin: string, footer: string, images = 
   const section = (s: Digest["sections"][number]) => `
 <tr><td style="padding:28px 0 6px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
 <td style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:#6B7280;vertical-align:bottom">${esc(s.title)}</td>
-${s.total ? `<td style="text-align:right;white-space:nowrap;vertical-align:bottom;font-size:13px;color:#6B7280"><span style="font-family:ui-monospace,Menlo,monospace;font-size:17px;font-weight:700;color:#7C3AED">${esc(s.total.value)}</span> ${esc(s.total.note)}</td>` : ""}
+${s.total ? `<td style="text-align:right;white-space:nowrap;vertical-align:bottom;font-size:13px;color:#6B7280"><span style="font-family:ui-monospace,Menlo,monospace;font-size:17px;font-weight:700;color:#210235">${esc(s.total.value)}</span> ${esc(s.total.note)}</td>` : ""}
 </tr></table></td></tr>
 ${s.lead ? `<tr><td style="padding:0 0 10px;font-size:14px;line-height:1.5;color:#374151">${esc(s.lead)}</td></tr>` : ""}
 ${s.rows
@@ -135,7 +135,7 @@ ${s.rows
 <span style="display:none;max-height:0;overflow:hidden">${esc(d.preheader)}</span>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F9FAFB;padding:32px 16px"><tr><td align="center">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px">
-<tr><td style="padding:0 4px 16px;font-size:17px;font-weight:600;color:#210235">Commerce<span style="color:#7C3AED">IQ</span> <span style="color:#9CA3AF;font-weight:500">· Ally</span></td></tr>
+<tr><td style="padding:0 4px 16px;font-size:17px;font-weight:600;color:#210235">Commerce<span style="color:#1F22B2">IQ</span> <span style="color:#9CA3AF;font-weight:500">· Ally</span></td></tr>
 <tr><td style="background:#ffffff;border:1px solid #E5E7EB;border-radius:12px;padding:32px">
 <div style="font-size:15px;color:#374151">${esc(d.hero[0] ?? "")}</div>
 <h1 style="margin:6px 0 0;font-size:24px;line-height:1.3;color:#111827">${esc(d.hero[1] ?? "")}</h1>
@@ -146,8 +146,8 @@ ${
     : ""
 }
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0">${d.sections.map(section).join("")}</table>
-${d.reply ? `<div style="margin-top:18px;background:#F5F3FF;border:1px solid #DDD6FE;border-radius:10px;padding:14px 16px;font-size:14px;line-height:1.5;color:#3B0764;font-weight:600">${esc(d.reply)}</div>` : ""}
-<a href="${esc(`${origin}/claire-waterfall`)}" style="display:inline-block;margin-top:28px;background:#875BF7;color:#ffffff;text-decoration:none;font-weight:600;font-size:15px;padding:12px 22px;border-radius:8px">Open in Ally</a>
+${d.reply ? `<div style="margin-top:18px;background:#EEF0FE;border:1px solid #C0C4F7;border-radius:10px;padding:14px 16px;font-size:14px;line-height:1.5;color:#0E1052;font-weight:600">${esc(d.reply)}</div>` : ""}
+<a href="${esc(`${origin}/claire-waterfall`)}" style="display:inline-block;margin-top:28px;background:#1F22B2;color:#ffffff;text-decoration:none;font-weight:600;font-size:15px;padding:12px 22px;border-radius:8px">Open in Ally</a>
 <div style="margin-top:14px;font-size:13px;color:#6B7280">The full summary is attached as a PDF.</div>
 </td></tr>
 <tr><td style="padding:16px 4px 0;font-size:12px;color:#9CA3AF">${esc(footer)}</td></tr>

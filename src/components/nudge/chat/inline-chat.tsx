@@ -251,9 +251,9 @@ export function ChatThread({ className, anchor }: { className?: string; anchor?:
             </div>
           </div>
           <div className="flex gap-3">
-            <span className="relative mt-1 flex size-7 shrink-0 items-center justify-center rounded-full bg-brand-50">
-              {thinking === t.id && <span className="absolute -inset-1 animate-spin rounded-full border-2 border-brand-200 border-t-brand-600" style={{ animationDuration: "1.1s" }} aria-hidden />}
-              <Sparkles className="size-3.5 text-brand-600" />
+            <span className="relative mt-1 flex size-7 shrink-0 items-center justify-center rounded-full bg-ally-50">
+              {thinking === t.id && <span className="absolute -inset-1 animate-spin rounded-full border-2 border-ally-200 border-t-ally-600" style={{ animationDuration: "1.1s" }} aria-hidden />}
+              <Sparkles className="size-3.5 text-ally-600" />
             </span>
             <div data-turn-body className="min-w-0 flex-1">
               {thinking === t.id ? (
@@ -471,7 +471,7 @@ export function AskBar({ placeholder = "What can I take off your plate?" }: { pl
               ))}
             </span>
           )}
-          <Sparkles className="size-4 shrink-0 text-brand-600" />
+          <Sparkles className="size-4 shrink-0 text-ally-600" />
           <input
             ref={inputRef}
             value={text}

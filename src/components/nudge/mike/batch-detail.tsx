@@ -120,7 +120,7 @@ export function BatchDetail({ batch, onApprove, onReviewAll, onSelect, onSelectS
 
       <div className="mt-8 overflow-hidden rounded-xl border border-slate-200">
         <div className="flex items-center gap-2 border-b border-slate-100 bg-slate-50 px-5 py-3 text-sm font-semibold text-slate-950">
-          <Sparkles className="size-4 text-brand-600" />
+          <Sparkles className="size-4 text-ally-600" />
           {batch.changesTitle ?? "What Ally changed"}
         </div>
         <div>

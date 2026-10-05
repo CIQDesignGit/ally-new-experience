@@ -332,7 +332,7 @@ export function DeckWorkspace({ spec }: { spec: DeckSpec }) {
 function AllyMark() {
   return (
     <span className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full bg-brand-50">
-      <Sparkles className="size-3.5 text-brand-600" />
+      <Sparkles className="size-3.5 text-ally-600" />
     </span>
   )
 }

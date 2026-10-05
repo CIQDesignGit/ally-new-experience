@@ -22,11 +22,12 @@ export const axisMin = (pace: number, plan: number) => {
 const fmtStep = (v: number) => (v >= 1 ? fmtM(v) : fmtValue(v))
 
 const BAR: Record<string, string> = {
+  // One color per job (DESIGN.md): magenta is Ally's drafted work, waiting on one approval.
   pace: "bg-slate-300",
-  approval: "bg-brand-500",
-  team: "bg-warning-500",
-  autopilot: "bg-info-500",
-  total: "bg-slate-400",
+  approval: "bg-ally-500",
+  team: "bg-team",
+  autopilot: "bg-autopilot",
+  total: "bg-ink",
 }
 
 export type WaterfallSelection = WaterfallStage["id"] | "total"
@@ -109,8 +110,8 @@ export function WaterfallChart({ selectedId, onSelect }: WaterfallChartProps) {
                   <div
                     className={cn(
                       "size-full rounded-t-md transition-all",
+                      // Every bar at full color: each color has one job, and the column highlight shows what's selected.
                       BAR[col.key],
-                      col.selectable && !selected && "opacity-60 group-hover:opacity-90",
                     )}
                   />
                   <div className="absolute -top-6 left-1/2 -translate-x-1/2 font-mono text-sm font-bold whitespace-nowrap text-slate-950 tabular-nums">

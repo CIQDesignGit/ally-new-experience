@@ -1,5 +1,6 @@
 "use client"
 
+import { cn } from "@/lib/utils"
 import { BUSINESS, fmtBiz } from "../data"
 import { useLive } from "../live-model"
 import { useNudge } from "../nudge-context"
@@ -49,7 +50,7 @@ export function BusinessHero({ topLineOnly = false, crumbs }: { topLineOnly?: bo
       </div>
 
       <h1 className="mt-1 text-[44px] leading-tight font-bold tracking-tight text-slate-950">
-        <span className="font-mono text-brand-600">{live.open.totalLabel}</span> in the pipeline {live.open.total >= gap ? "closes" : "goes toward"} the <span className="font-mono">{fmtBiz(gap)}</span> gap.
+        <span className="font-mono text-brand-600">{live.open.totalLabel}</span> in the pipeline {live.open.total >= gap ? "closes" : "goes toward"} the <span className={cn("font-mono", gap > 0 && "text-error-600")}>{fmtBiz(gap)}</span> gap.
       </h1>
 
       <div className="mt-2 text-base text-slate-500">

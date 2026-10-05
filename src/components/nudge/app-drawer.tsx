@@ -120,7 +120,7 @@ export function AppDrawer({ home = "/michelle", defaultOpen }: { home?: string; 
     { title: "Alerts", icon: Bell, fresh: alerts.some((a) => !a.seen), items: alerts.map((a) => ({ label: a.name, sub: a.firing ? "Fired today" : "Watching", href: "/michelle/alerts", on: path === "/michelle/alerts", fresh: !a.seen })), empty: "No custom alerts yet" },
   ]
 
-  const iconBtn = (on?: boolean) => cn("flex size-10 items-center justify-center rounded-lg", on ? "bg-slate-100 text-slate-950" : "text-slate-500 hover:bg-slate-50 hover:text-slate-900")
+  const iconBtn = (on?: boolean) => cn("flex size-10 items-center justify-center rounded-lg", on ? "bg-brand-400 text-white" : "text-brand-200 hover:bg-white/10 hover:text-white")
 
   return (
     <aside
@@ -134,10 +134,10 @@ export function AppDrawer({ home = "/michelle", defaultOpen }: { home?: string; 
         hovering.current = false
         if (open) scheduleClose()
       }}
-      className="fixed inset-y-0 left-0 z-40 hidden flex-col overflow-hidden border-r border-slate-200 bg-slate-50 transition-[width] duration-200 xl:flex"
+      className="fixed inset-y-0 left-0 z-40 hidden flex-col overflow-hidden bg-brand-950 transition-[width] duration-200 xl:flex"
     >
       <div className={cn("flex h-16 shrink-0 items-center", open ? "justify-between px-4" : "justify-center")}>
-        {open && <span className="text-[15px] font-semibold text-slate-950">Ally</span>}
+        {open && <span className="text-[15px] font-semibold text-white">Ally</span>}
         <span className="flex items-center gap-0.5">
           {open && (
             <button type="button" onClick={() => pin(!pinned)} aria-pressed={pinned} aria-label={pinned ? "Unpin sidebar" : "Pin sidebar open"} title={pinned ? "Unpin sidebar" : "Pin sidebar open"} className={iconBtn(pinned)}>
@@ -163,40 +163,40 @@ export function AppDrawer({ home = "/michelle", defaultOpen }: { home?: string; 
       {open ? (
         <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
           <div className="px-2">
-            <Link href={home} className={cn("flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm", path === home ? "bg-slate-100 font-semibold text-slate-950" : "text-slate-700 hover:bg-slate-50")}>
-              <Home className="size-4 text-slate-500" /> Daily brief
+            <Link href={home} className={cn("flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm", path === home ? "bg-brand-400 font-semibold text-white" : "text-brand-100 hover:bg-white/10")}>
+              <Home className="size-4" /> Daily brief
             </Link>
             {/* Where the business stands against plan: always there, not something made in a chat. */}
-            <Link href="/michelle/gap" className={cn("mt-0.5 flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm", path === "/michelle/gap" ? "bg-slate-100 font-semibold text-slate-950" : "text-slate-700 hover:bg-slate-50")}>
-              <TrendingDown className="size-4 text-slate-500" /> Gap to plan
+            <Link href="/michelle/gap" className={cn("mt-0.5 flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm", path === "/michelle/gap" ? "bg-brand-400 font-semibold text-white" : "text-brand-100 hover:bg-white/10")}>
+              <TrendingDown className="size-4" /> Gap to plan
             </Link>
           </div>
           {sections.map((sec) => (
             <div key={sec.title} className="mt-5 px-2">
-              <div className="flex items-center gap-2 px-2.5 pb-1.5 text-xs font-medium text-slate-500">
+              <div className="flex items-center gap-2 px-2.5 pb-1.5 text-xs font-medium text-brand-300">
                 <sec.icon className="size-3.5" />
                 {sec.title}
               </div>
               {sec.items.length ? (
                 sec.items.map((it) => (
-                  <Link key={it.label} href={it.href} className={cn("block rounded-lg px-2.5 py-2", it.on ? "bg-slate-100" : it.fresh ? "bg-brand-25 ring-1 ring-brand-200" : "hover:bg-slate-50")}>
+                  <Link key={it.label} href={it.href} className={cn("block rounded-lg px-2.5 py-2", it.on ? "bg-brand-400" : it.fresh ? "bg-ally-500/15 ring-1 ring-ally-300/40" : "hover:bg-white/10")}>
                     <span className="flex items-center gap-2">
-                      <span className="truncate text-sm font-medium text-slate-950">{it.label}</span>
-                      {it.fresh && <span className="ml-auto shrink-0 text-xs font-semibold text-brand-700">New</span>}
+                      <span className="truncate text-sm font-medium text-white">{it.label}</span>
+                      {it.fresh && <span className="ml-auto shrink-0 text-xs font-semibold text-ally-300">New</span>}
                     </span>
-                    {it.sub && <span className="block truncate text-xs text-slate-500">{it.sub}</span>}
+                    {it.sub && <span className="block truncate text-xs text-brand-200">{it.sub}</span>}
                   </Link>
                 ))
               ) : (
-                <div className="px-2.5 py-1.5 text-[13px] text-slate-400">{sec.empty}</div>
+                <div className="px-2.5 py-1.5 text-[13px] text-brand-300">{sec.empty}</div>
               )}
             </div>
           ))}
-          <div className="mt-auto border-t border-slate-100 px-2 py-3">
-            <Link href="/settings?tab=knowledge" className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm text-slate-700 hover:bg-slate-50">
-              <BookOpen className="size-4 text-slate-500" />
+          <div className="mt-auto border-t border-white/10 px-2 py-3">
+            <Link href="/settings?tab=knowledge" className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm text-brand-100 hover:bg-white/10">
+              <BookOpen className="size-4" />
               <span className="flex-1">Knowledge</span>
-              <span className="font-mono text-xs text-slate-400">{knowledge.length}</span>
+              <span className="font-mono text-xs text-brand-300">{knowledge.length}</span>
             </Link>
           </div>
         </div>
@@ -212,7 +212,7 @@ export function AppDrawer({ home = "/michelle", defaultOpen }: { home?: string; 
           {sections.map((sec) => (
             <button key={sec.title} type="button" onClick={() => toggle(true)} aria-label={sec.fresh ? `${sec.title}: 1 new` : sec.title} title={sec.title} className={cn(iconBtn((sec.title === "Conversations" && (path === "/michelle/retro" || path.startsWith("/michelle/c/") || path.startsWith("/c/"))) || (sec.title === "Dashboards" && path.startsWith("/michelle/dashboards")) || (sec.title === "Alerts" && path === "/michelle/alerts")), "relative")}>
               <sec.icon className="size-4" />
-              {sec.fresh && <span aria-hidden className="absolute top-2 right-2 size-2 rounded-full bg-brand-500 ring-2 ring-slate-50" />}
+              {sec.fresh && <span aria-hidden className="absolute top-2 right-2 size-2 rounded-full bg-ally-500 ring-2 ring-brand-950" />}
             </button>
           ))}
           <Link href="/settings?tab=knowledge" aria-label="Knowledge" title="Knowledge" className={cn(iconBtn(), "mt-auto mb-3")}>
