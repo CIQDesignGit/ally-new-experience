@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import Link from "next/link"
 import { motion } from "framer-motion"
 import { Check, ChevronDown, ChevronRight, Loader2, Sparkles } from "lucide-react"
 import { toast } from "sonner"
@@ -203,6 +204,13 @@ const ROW = "border-t border-slate-100"
 
 /** Gap-to-plan analysis for a node: the finding, plan vs actual, what moved sales, why (by dollars), and what to do. */
 /** Backward: why last week missed. Causes and their size only; it ends by handing what's still live to this week's plan. */
+/** Where a cause gets fixed: Michelle's inbox for ops, Mike's queue for content. */
+function drillTo(d: Driver) {
+  if (d.fix?.kind === "ops") return { href: `/michelle?open=${d.fix.id}`, label: "Open in your inbox" }
+  if (d.fix?.kind === "content") return { href: "/mike", label: "In Mike's queue" }
+  return undefined
+}
+
 export function GapAnalysis({ node, recipe: given, nested, onForward }: { node: GapNode; onInbox?: (batchId: string) => void; /** A recipe being tried, before it's saved. */ recipe?: GapRecipe; /** Inside the before/after: no feedback row of its own. */ nested?: boolean; /** Opens the forward analysis: close this week's gap. */ onForward?: () => void }) {
   // What Ally knew when this was asked: a lesson saved later doesn't rewrite an earlier answer.
   const live = useGapLesson()
@@ -320,6 +328,12 @@ export function GapAnalysis({ node, recipe: given, nested, onForward }: { node: 
                 </span>
               </span>
               <span className="text-right font-semibold text-slate-950 tabular-nums">{mm(d.value, true)}</span>
+              {/* The drill-down: from a cause still open to where it gets fixed. A link, not an action: the actions are this week's. */}
+              {d.tag !== "Resolved" && drillTo(d) && (
+                <Link href={drillTo(d)!.href} className="col-start-2 mt-1 w-fit text-[13px] font-medium text-brand-700 hover:underline">
+                  {drillTo(d)!.label} ›
+                </Link>
+              )}
             </div>
           ))}
         </div>
