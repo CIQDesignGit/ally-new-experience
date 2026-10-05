@@ -68,12 +68,13 @@ export function AppDrawer({ home = "/michelle", defaultOpen }: { home?: string; 
     setOpen(next)
   }
 
-  // The page makes room for the sidebar instead of sitting under it (xl and up, where it shows).
+  // The page makes room only for a pinned sidebar. Opened by hover or a click, it slides over the page,
+  // so nothing under the pointer jumps (xl and up, where it shows).
   useEffect(() => {
     const root = document.documentElement
     const wide = window.matchMedia("(min-width: 1280px)")
     const apply = () => {
-      const w = wide.matches ? (open ? OPEN_W : SHUT_W) : "0px"
+      const w = wide.matches ? (open && pinned ? OPEN_W : SHUT_W) : "0px"
       root.style.setProperty("--sidebar-w", w)
       document.body.style.paddingLeft = w
     }
@@ -84,7 +85,7 @@ export function AppDrawer({ home = "/michelle", defaultOpen }: { home?: string; 
       root.style.removeProperty("--sidebar-w")
       document.body.style.paddingLeft = ""
     }
-  }, [open])
+  }, [open, pinned])
 
   // Something just made (a published dashboard) is flagged until it's opened, even with the sidebar collapsed.
   const fresh = !!retro.dashboard && !retro.dashboardSeen
@@ -189,7 +190,7 @@ export function AppDrawer({ home = "/michelle", defaultOpen }: { home?: string; 
         if (open) scheduleClose()
         else window.clearTimeout(timer.current)
       }}
-      className="fixed inset-y-0 left-0 z-40 hidden flex-col overflow-hidden bg-brand-950 transition-[width] duration-200 xl:flex"
+      className={cn("fixed inset-y-0 left-0 z-40 hidden flex-col overflow-hidden bg-brand-950 transition-[width] duration-200 xl:flex", open && !pinned && "shadow-2xl")}
     >
       <div className={cn("flex h-16 shrink-0 items-center", open ? "justify-between pr-2 pl-4" : "justify-center")}>
         {open && (

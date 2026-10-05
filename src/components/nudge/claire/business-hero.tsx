@@ -8,9 +8,6 @@ import { TopStrip } from "../top-strip"
 import type { Crumb } from "../top-strip"
 import { EmailPdfButton } from "./email-pdf-button"
 import { TeamBell } from "./team-bell"
-import type { Period } from "../types"
-
-const PERIOD_WORDS: Record<Period, string> = { week: "this week", month: "this month", quarter: "this quarter", year: "this year" }
 
 /**
  * The top of Claire's page, in her business terms: where she's landing against
@@ -45,12 +42,14 @@ export function BusinessHero({ topLineOnly = false, crumbs }: { topLineOnly?: bo
     <section className={topLineOnly ? "" : "px-12 pt-2 pb-7"}>
       {!topLineOnly && (<>
       {/* Two lines: forecast against plan, then the pipeline against the gap. It only says "closes" when it does. */}
-      <div className="text-2xl font-semibold tracking-tight text-slate-700">
-        <span className="font-mono text-slate-950">{fmtBiz(b.pace)}</span> forecast against a <span className="font-mono text-slate-950">{fmtBiz(b.plan)}</span> plan {PERIOD_WORDS[period]}.
-      </div>
-
-      <h1 className="mt-1 text-[44px] leading-tight font-bold tracking-tight text-slate-950">
-        <span className="font-mono text-brand-600">{live.open.totalLabel}</span> in the pipeline {live.open.total >= gap ? "closes" : "goes toward"} the <span className={cn("font-mono", gap > 0 && "text-error-600")}>{fmtBiz(gap)}</span> gap.
+      <h1 className="text-[44px] leading-[1.15] font-bold tracking-tight text-ink">
+        {/* Two lines, one size: where the period lands against plan, then what's in the pipeline against the gap. */}
+        <span className="block">
+          <span className="font-mono">{fmtBiz(b.pace)}</span> forecast <span className="text-slate-500">(vs <span className="font-mono">{fmtBiz(b.plan)}</span> plan)</span>.
+        </span>
+        <span className="block">
+          <span className="font-mono text-brand-500">{live.open.totalLabel}</span> in pipeline to close the <span className={cn("font-mono", gap > 0 && "text-error-600")}>{fmtBiz(gap)}</span> gap.
+        </span>
       </h1>
 
       <div className="mt-2 text-base text-slate-500">
