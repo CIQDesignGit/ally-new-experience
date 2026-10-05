@@ -1,17 +1,17 @@
 "use client"
 
-import { Fragment, useEffect, useState } from "react"
+import { useEffect } from "react"
 import Link from "next/link"
-import { ChevronDown } from "lucide-react"
-import { cn } from "@/lib/utils"
 import { PageShell } from "@/components/layout/page-shell"
 import { TopStrip } from "@/components/nudge/top-strip"
 import { AppDrawer } from "@/components/nudge/app-drawer"
 import { useNudge } from "@/components/nudge/nudge-context"
 import { AnswerCard, AskBar, ChatProvider, ChatThread, StarterChips } from "@/components/nudge/chat/inline-chat"
-import { ALERT_RULES, ALERT_TRENDS, BUILT_IN_ALERTS, alertTrigger } from "@/components/nudge/alerts/data"
+import { ALERT_RULES, BUILT_IN_ALERTS, alertTrigger } from "@/components/nudge/alerts/data"
 import type { CustomAlert } from "@/components/nudge/alerts/data"
-import { AlertCard, isCrossed, modeLabel } from "@/components/nudge/alerts/alert-card"
+import { AlertCard, isCrossed } from "@/components/nudge/alerts/alert-card"
+import { RunList } from "@/components/nudge/runs/run-list"
+import { MONDAY_BRIEF, doesFromMode, type RunItem } from "@/components/nudge/runs/data"
 
 /**
  * Michelle's alerts in one list and one format: the ones she wrote in chat and
@@ -29,10 +29,9 @@ export default function AlertsPage() {
 const NOW: Record<CustomAlert["id"], string> = { "brand-terms": "27%", "gift-terms": "18%" }
 
 function Alerts() {
-  const { alerts: saved, addAlert, markAlertsSeen } = useNudge()
+  const { alerts: saved, addAlert, markAlertsSeen, runs } = useNudge()
   // Alerts saved by an older version of the demo get today's fields.
   const alerts = saved.map((a) => ({ ...ALERT_RULES[a.id], ...a }))
-  const [open, setOpen] = useState<string>()
 
   // Opening the page is what clears the sidebar's "new" dot (after the store has loaded).
   useEffect(() => {
@@ -40,108 +39,53 @@ function Alerts() {
     return () => window.clearTimeout(t)
   }, [markAlertsSeen])
 
+  // Everything on one clock in one shape: the briefs Ally sends, then the alerts it watches (yours first, then Ally's own).
+  const added = runs.added
+  const briefs: RunItem[] = [MONDAY_BRIEF, ...added.filter((x) => x.kind === "brief")]
+  const custom: RunItem[] = alerts.map((a) => ({
+    id: `alert-${a.id}`,
+    kind: "alert",
+    name: a.name,
+    what: alertTrigger(a),
+    runs: a.frequency.charAt(0).toUpperCase() + a.frequency.slice(1),
+    does: doesFromMode(a.mode),
+    owner: "yours",
+    last: NOW[a.id] + (isCrossed(a.id, a.threshold) ? " · fired" : ""),
+    by: `From chat · ${a.created}`,
+  }))
+  const builtIn: RunItem[] = BUILT_IN_ALERTS.map((b) => ({
+    id: `builtin-${b.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
+    kind: "alert",
+    name: b.name,
+    what: b.when,
+    runs: "Every morning",
+    does: doesFromMode(b.mode),
+    owner: "built in",
+    last: b.now,
+  }))
+  const alertItems = [...custom, ...added.filter((x) => x.kind === "alert"), ...builtIn]
+  // Michelle's own alerts keep their full card (terms, threshold, cap); the rest use the shared editor.
+  const editor = (i: RunItem) => {
+    const a = alerts.find((x) => `alert-${x.id}` === i.id)
+    return a ? <AlertCard id={a.id} draft={a} onChange={(patch) => addAlert({ ...a, ...patch })} /> : null
+  }
+
   return (
     <PageShell className="bg-slate-50 xl:bg-white">
       <StarterChips id="alerts" chips={STARTERS} />
       <div className="mx-auto max-w-[1280px] overflow-clip bg-white shadow-pane-lg sm:my-6 sm:rounded-2xl sm:ring-1 sm:ring-slate-900/6 xl:my-0 xl:rounded-none xl:shadow-none xl:ring-0">
         <TopStrip person="michelle" crumbs={[{ label: "Today", href: "/michelle" }, { label: "Scheduled" }]} />
         <div className="flex flex-col gap-6 px-10 pt-4 pb-12">
-          {/* Everything that runs on its own clock: the briefs Ally sends, then the alerts it watches. Created by asking Ally. */}
+          {/* Everything Ally runs on its own clock. Each opens in place to edit; "New" turns a sentence into a draft. */}
           <h1 className="text-[28px] leading-tight font-semibold tracking-tight text-slate-950">Scheduled</h1>
-
-          <table className="w-full text-[14px]">
-            <thead>
-              <tr className="text-left text-[12px] text-slate-500">
-                <th className="pb-2 font-medium">Brief</th>
-                <th className="w-[260px] pb-2 font-medium">When</th>
-                <th className="w-[260px] pb-2 font-medium">Next</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr className="border-t border-slate-100">
-                <td className="py-3 pr-4">
-                  <div className="font-semibold text-slate-950">Claire&apos;s Monday brief</div>
-                  <div className="text-[13px] text-slate-500">Team status, what&apos;s one approval away, reply YES to act · email</div>
-                </td>
-                <td className="py-3 text-slate-800">Every Monday, 8 AM</td>
-                <td className="py-3 text-slate-800">Mon, Oct 12</td>
-              </tr>
-            </tbody>
-          </table>
-
-          <table className="w-full text-[14px]">
-            <thead>
-              <tr className="text-left text-[12px] text-slate-500">
-                <th className="pb-2 font-medium">Alert</th>
-                <th className="w-[110px] pb-2 font-medium">Now</th>
-                <th className="w-[120px] pb-2 font-medium">8 weeks</th>
-                <th className="w-[260px] pb-2 font-medium">When it fires</th>
-                <th className="w-[28px]" />
-              </tr>
-            </thead>
-            <tbody>
-              {alerts.map((a) => (
-                <Fragment key={a.id}>
-                  <tr onClick={() => setOpen(open === a.id ? undefined : a.id)} className={cn("cursor-pointer border-t border-slate-100 hover:bg-slate-25", !a.seen && "bg-brand-25")}>
-                    <td className="py-3 pr-4">
-                      <div className="flex items-center gap-2 font-semibold text-slate-950">
-                        {a.name}
-                        {!a.seen && <span className="text-xs font-semibold text-brand-700">New</span>}
-                      </div>
-                      <div className="text-[13px] text-slate-500">{alertTrigger(a).replace(/^When (\w)/, (_, c: string) => c.toUpperCase())} · yours</div>
-                    </td>
-                    <td className={cn("py-3 font-mono font-semibold", isCrossed(a.id, a.threshold) ? "text-error-600" : "text-slate-950")}>{NOW[a.id]}</td>
-                    <td className="py-3">
-                      <Spark values={ALERT_TRENDS[a.id]} alarm />
-                    </td>
-                    <td className="py-3 text-slate-800">{modeLabel(a.mode)}</td>
-                    <td className="py-3 text-slate-400">
-                      <ChevronDown className={cn("size-4 transition-transform", open === a.id && "rotate-180")} />
-                    </td>
-                  </tr>
-                  {open === a.id && (
-                    <tr>
-                      <td colSpan={5} className="pb-4">
-                        <AlertCard id={a.id} draft={a} onChange={(patch) => addAlert({ ...a, ...patch })} />
-                      </td>
-                    </tr>
-                  )}
-                </Fragment>
-              ))}
-              {BUILT_IN_ALERTS.map((b) => (
-                <tr key={b.name} className="border-t border-slate-100">
-                  <td className="py-3 pr-4">
-                    <div className="font-semibold text-slate-950">{b.name}</div>
-                    <div className="text-[13px] text-slate-500">{b.when} · built in</div>
-                  </td>
-                  <td className="py-3 font-mono text-slate-950">{b.now}</td>
-                  <td className="py-3">
-                    <Spark values={b.trend} />
-                  </td>
-                  <td className="py-3 text-slate-800">{modeLabel(b.mode).replace(/, up to.*$/, "")}</td>
-                  <td />
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {!alerts.length && <p className="text-[14px] text-slate-500">Write your own in chat, like &quot;Alert me when our share of voice on gift terms drops below 20%.&quot;</p>}
+          <RunList title="Briefs" items={briefs} kind="scheduled" placeholder="Send me a promo recap every Friday" />
+          <RunList title="Alerts" items={alertItems} kind="scheduled" placeholder="Tell me when gift-set share of voice drops below 20%" editor={editor} />
         </div>
         <ChatThread />
       </div>
       <AppDrawer />
       <AskBar />
     </PageShell>
-  )
-}
-
-function Spark({ values, alarm }: { values: number[]; alarm?: boolean }) {
-  const max = Math.max(...values)
-  const min = Math.min(...values)
-  const y = (v: number) => 20 - ((v - min) / (max - min || 1)) * 16
-  return (
-    <svg viewBox="0 0 96 24" className="h-6 w-24" aria-hidden>
-      <polyline points={values.map((v, i) => `${(i / (values.length - 1)) * 92 + 2},${y(v)}`).join(" ")} fill="none" stroke={alarm ? "#dc2626" : "#64748b"} strokeWidth={1.5} strokeLinejoin="round" />
-    </svg>
   )
 }
 

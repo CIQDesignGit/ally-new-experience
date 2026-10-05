@@ -1,9 +1,9 @@
 "use client"
 
 import { useState } from "react"
-import { Trash2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useNudge } from "../nudge-context"
+import { BATCHES } from "../data"
 import { PRIMARY } from "../mike/buttons"
 import { BRANDS, RETAILERS, SKU_GROUPS } from "../policy"
 import { MultiPicker, ScopeChips, SinglePicker } from "./scope-picker"
@@ -17,6 +17,16 @@ export function Knowledge() {
   const { knowledge, saveKnowledge } = useNudge()
   const [text, setText] = useState("")
   const [scope, setScope] = useState({ retailer: "Amazon", brands: [] as string[], skuGroups: [] as string[] })
+  const [editing, setEditing] = useState<string | null>(null)
+  const [draft, setDraft] = useState("")
+  // Rules only: a corrected analysis is a skill (it lives on the Skills tab).
+  const rules = knowledge.filter((k) => !k.recipe)
+  const saveEdit = (id: string) => {
+    saveKnowledge(knowledge.map((x) => (x.id === id ? { ...x, text: draft.trim() } : x)))
+    setEditing(null)
+  }
+  const applied = (k: (typeof knowledge)[number]) =>
+    BATCHES.filter((b) => b.split && b.split.retailer === k.retailer && (!k.brands.length || k.brands.includes(b.split.brand)) && (!k.skuGroups.length || k.skuGroups.includes(b.split.skuGroup))).reduce((n, b) => n + b.skus, 0)
 
   function add() {
     if (!text.trim()) return
@@ -49,7 +59,7 @@ export function Knowledge() {
             rows={3}
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder="e.g. Titles must not contain trademark symbols and must not exceed 150 characters."
+            placeholder="Never call a candle organic unless it's certified."
             className="w-full resize-none rounded-lg border border-slate-200 bg-white px-3.5 py-3 text-sm text-slate-950 outline-none placeholder:text-slate-400 focus:border-brand-300 focus:ring-2 focus:ring-brand-100"
           />
         </div>
@@ -66,27 +76,52 @@ export function Knowledge() {
 
       <section className="overflow-hidden rounded-xl border border-slate-200 bg-white">
         <div className="border-b border-slate-100 bg-slate-25 px-6 py-4 text-lg font-semibold text-slate-950">
-          Knowledge <span className="ml-1 font-mono text-[15px] font-medium text-slate-500 tabular-nums">{knowledge.length}</span>
+          Knowledge <span className="ml-1 font-mono text-[15px] font-medium text-slate-500 tabular-nums">{rules.length}</span>
         </div>
         <div className="px-6 pb-2">
-          {knowledge.map((k) => (
+          {rules.map((k) => (
             <div key={k.id} className="flex items-start justify-between gap-4 border-t border-slate-100 py-3.5 first:border-t-0">
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <ScopeChips parts={[k.retailer, ...(k.brands.length ? k.brands : ["All brands"]), ...k.skuGroups]} />
-                <p className="mt-1.5 text-[15px] leading-relaxed text-slate-950">{k.text}</p>
+                {editing === k.id ? (
+                  <div className="mt-2">
+                    <textarea value={draft} onChange={(e) => setDraft(e.target.value)} rows={2} className="w-full resize-none rounded-lg border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-950 outline-none focus:border-brand-300 focus:ring-2 focus:ring-brand-100" />
+                    <div className="mt-2 flex items-center gap-3">
+                      <button type="button" onClick={() => saveEdit(k.id)} disabled={!draft.trim()} className={cn(PRIMARY, "h-9 px-4 disabled:opacity-50")}>
+                        Save
+                      </button>
+                      <button type="button" onClick={() => setEditing(null)} className="text-[13px] font-medium text-slate-500 hover:text-slate-800">
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="mt-1.5 text-[15px] leading-relaxed text-slate-950">{k.text}</p>
+                )}
                 <div className="mt-0.5 text-xs text-slate-500">
                   {k.author} · {k.date}
                   {k.source && ` · ${k.source}`}
+                  {/* It working: how many of this week's drafts it shaped, from the batches in its scope. */}
+                  {applied(k) > 0 && <span className="text-slate-700"> · Applied to {applied(k).toLocaleString()} drafts this week</span>}
                 </div>
               </div>
-              <button
-                type="button"
-                aria-label="Delete knowledge"
-                onClick={() => saveKnowledge(knowledge.filter((x) => x.id !== k.id))}
-                className="rounded-md p-1.5 text-slate-400 transition-colors hover:bg-slate-50 hover:text-error-600"
-              >
-                <Trash2 className="size-4" />
-              </button>
+              {editing !== k.id && (
+                <div className="flex shrink-0 items-center gap-4 pt-0.5 text-[13px] font-medium">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditing(k.id)
+                      setDraft(k.text)
+                    }}
+                    className="text-brand-700 hover:underline"
+                  >
+                    Edit
+                  </button>
+                  <button type="button" onClick={() => saveKnowledge(knowledge.filter((x) => x.id !== k.id))} className="text-slate-500 hover:text-error-600">
+                    Delete
+                  </button>
+                </div>
+              )}
             </div>
           ))}
         </div>

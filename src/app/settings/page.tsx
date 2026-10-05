@@ -11,6 +11,9 @@ import { Knowledge } from "@/components/nudge/settings/knowledge"
 import { BusinessSettings } from "@/components/nudge/settings/business-settings"
 import { AnswerCard, AskBar, ChatProvider, ChatThread, StarterChips } from "@/components/nudge/chat/inline-chat"
 import { useNudge } from "@/components/nudge/nudge-context"
+import { RunList } from "@/components/nudge/runs/run-list"
+import { builtInSkills, type RunItem } from "@/components/nudge/runs/data"
+import { GAP_STEPS } from "@/components/nudge/ops/gap-data"
 
 const TABS = [
   { id: "skills", label: "Skills" },
@@ -26,11 +29,7 @@ const TABS = [
 function Settings() {
   const router = useRouter()
   const params = useSearchParams()
-  const { skills, knowledge } = useNudge()
-  // Skills shows once Ally has one; nothing leads nowhere.
-  const hasSkills = skills.length > 0 || knowledge.some((k) => k.recipe)
-  const [picked, setTab] = useState<(typeof TABS)[number]["id"]>(TABS.find((t) => t.id === params.get("tab"))?.id ?? "skills")
-  const tab = picked === "skills" && !hasSkills ? "knowledge" : picked
+  const [tab, setTab] = useState<(typeof TABS)[number]["id"]>(TABS.find((t) => t.id === params.get("tab"))?.id ?? "skills")
 
   function back() {
     if (window.history.length > 1) router.back()
@@ -45,7 +44,7 @@ function Settings() {
         <h1 className="text-[28px] font-semibold tracking-tight text-slate-950">{tab === "business" ? "Settings" : "Teach Ally"}</h1>
         <div className="flex rounded-lg border border-slate-200 bg-slate-25 p-1">
           {/* Teach Ally's three tabs; the gear's Business view stands on its own as Settings. */}
-          {TABS.filter((t) => (tab === "business") === (t.id === "business") && (t.id !== "skills" || hasSkills)).map((t) => (
+          {TABS.filter((t) => (tab === "business") === (t.id === "business")).map((t) => (
             <button
               key={t.id}
               type="button"
@@ -84,27 +83,52 @@ export default function SettingsPage() {
   )
 }
 
-/** The skills Ally has learned: saved from past work, and recipes corrected in chat. */
+/**
+ * Skills: how Ally does a piece of work, live or paused, in the same list as
+ * Scheduled. The gap analysis shows the steps you taught it and its versions;
+ * skills saved from your work; Ally's own, with the alerts that use them.
+ */
 function SkillsList() {
-  const { skills, knowledge } = useNudge()
-  const SHARED = { me: "Only you", team: "Your team", account: "Everyone" } as const
-  const rows = [
-    ...knowledge.filter((k) => k.recipe).map((k) => ({ id: k.id, name: "Gap to plan analysis", detail: `Version ${(k.recipe!.log?.length ?? 0) + 1} · ${k.recipe!.steps.length} steps added`, shared: SHARED[k.recipe!.scope] })),
-    ...skills.map((k) => ({ id: k.id, name: k.name, detail: k.version ? `Version ${k.version}` : "Saved from your work", shared: SHARED[k.shared] })),
-  ]
-  return (
-    <div className="rounded-xl border border-slate-200">
-      {rows.map((r) => (
-        <div key={r.id} className="flex items-center justify-between gap-4 border-t border-slate-100 px-6 py-4 first:border-t-0">
-          <div>
-            <div className="text-[15px] font-medium text-slate-950">{r.name}</div>
-            <div className="mt-0.5 text-sm text-slate-500">{r.detail}</div>
-          </div>
-          <span className="text-sm text-slate-600">{r.shared}</span>
-        </div>
-      ))}
-    </div>
-  )
+  const { skills, knowledge, runs } = useNudge()
+  const SHARED = { me: "only you", team: "your team", account: "everyone" } as const
+  const lesson = knowledge.find((k) => k.recipe)?.recipe
+  const gap: RunItem = {
+    id: "skill-gap-analysis",
+    kind: "skill",
+    name: "Gap to plan analysis",
+    what: lesson ? `Why we missed and what closes the gap · version ${(lesson.log?.length ?? 0) + 1}, shared with ${SHARED[lesson.scope]}` : "Why we missed and what closes the gap",
+    runs: "When you ask",
+    does: "tell",
+    owner: "built in",
+    steps: [...GAP_STEPS, ...(lesson?.steps ?? [])],
+    usedBy: ["Gap to plan", "How am I doing compared to plan?"],
+    last: "Oct 2",
+  }
+  const saved: RunItem[] = skills.map((k) => ({
+    id: `skill-${k.id}`,
+    kind: "skill",
+    name: k.name,
+    what: `Saved from your work · shared with ${SHARED[k.shared]}`,
+    runs: "When you ask",
+    does: "draft",
+    owner: "yours",
+  }))
+  const items = [gap, ...saved, ...runs.added.filter((x) => x.kind === "skill"), ...builtInSkills()]
+  // The gap analysis keeps its history: who changed it, for whom, and what changed.
+  const extra = (i: RunItem) =>
+    i.id === "skill-gap-analysis" && lesson?.log?.length ? (
+      <div className="mt-4 border-t border-slate-100 pt-3 text-sm">
+        <span className="text-xs font-medium text-slate-500">Versions</span>
+        <ul className="mt-1.5 flex flex-col gap-1">
+          {lesson.log.map((l) => (
+            <li key={l.version} className="text-slate-700">
+              <span className="font-mono text-xs text-slate-400">v{l.version}</span> {l.who} · {l.when} · {l.changes.join("; ")}
+            </li>
+          ))}
+        </ul>
+      </div>
+    ) : null
+  return <RunList title="Skills" items={items} kind="skill" placeholder="Prep a promo recap: pull last week's deals, compare to plan, then draft a summary" extra={extra} />
 }
 
 /** What Ally has learned, read live from Knowledge. */

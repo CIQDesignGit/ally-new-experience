@@ -5,6 +5,7 @@ import { createContext, useCallback, useContext, useEffect, useState } from "rea
 import type { NudgeKey, Period } from "./types"
 import { DEFAULT_KNOWLEDGE, DEFAULT_POLICY } from "./policy"
 import type { KnowledgeEntry, Policy } from "./policy"
+import type { RunItem } from "./runs/data"
 
 const STORAGE_KEY = "ally-nudge-demo-state"
 
@@ -41,6 +42,14 @@ export interface Ask {
 /** The week opens Monday, Oct 5: three days before AS_OF. */
 export const WEEK_START = -3
 
+export interface RunsState {
+  paused: string[]
+  removed: string[]
+  added: RunItem[]
+  edits: Record<string, Partial<RunItem>>
+}
+const EMPTY_RUNS: RunsState = { paused: [], removed: [], added: [], edits: {} }
+
 interface StoredState {
   nudged: Partial<Record<NudgeKey, boolean>>
   approved: Record<string, boolean>
@@ -75,6 +84,8 @@ interface StoredState {
   decks?: Record<string, RetroState>
   /** Skills Michelle saved from past work, and who they're shared with. */
   skills?: { id: string; name: string; shared: "me" | "team" | "account"; version?: number }[]
+  /** Things Ally runs (briefs, alerts, skills): what's paused, removed, added, and edited. */
+  runs?: RunsState
   /** Every conversation, newest first: what was asked, where, and how to open it again. */
   conversations?: Conversation[]
 }
@@ -143,6 +154,8 @@ interface NudgeContextValue extends StoredState {
   asks: NonNullable<StoredState["asks"]>
   askBy: (key: NudgeKey, due: string, dueDay: number, by: Ask["by"], ship?: boolean) => void
   autoShipped: NonNullable<StoredState["autoShipped"]>
+  runs: RunsState
+  setRuns: (fn: (r: RunsState) => RunsState) => void
   /** Approves several batches in one update (the team's work as the demo week moves on). */
   approveMany: (ids: string[]) => void
   /** Ally ships a row's unapproved work at Claire's deadline. */
@@ -335,6 +348,8 @@ export function NudgeProvider({ children }: { children: React.ReactNode }) {
         asks: state.asks ?? {},
         askBy: (key, due, dueDay, by, ship) => update((prev) => ({ ...prev, nudged: { ...prev.nudged, [key]: true }, asks: { ...(prev.asks ?? {}), [key]: { due, dueDay, by, ...(ship ? { ship } : {}) } } })),
         autoShipped: state.autoShipped ?? {},
+        runs: state.runs ?? EMPTY_RUNS,
+        setRuns: (fn) => update((prev) => ({ ...prev, runs: fn(prev.runs ?? EMPTY_RUNS) })),
         approveMany: (ids) => update((prev) => ({ ...prev, approved: { ...prev.approved, ...Object.fromEntries(ids.map((id) => [id, true])) } })),
         autoShip: (key, ids) =>
           update((prev) => ({ ...prev, approved: { ...prev.approved, ...Object.fromEntries(ids.map((id) => [id, true])) }, autoShipped: { ...(prev.autoShipped ?? {}), [key]: ids } })),

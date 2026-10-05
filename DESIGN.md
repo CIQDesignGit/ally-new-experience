@@ -13,6 +13,7 @@ Every screen follows these rules. When a screen needs something they don't cover
 | `AgentRun`, `DidYouKnow` | `components/nudge/chat/agent-run.tsx` | Big runs only (files, skills, analyses). |
 | `MemorySaved`, `MemoryRecall` | `components/nudge/chat/memory.tsx` | Anything Ally keeps or recalls. |
 | `InboxFilters` | `components/nudge/ops/ops-batch-list.tsx` | Segmented filters (same as Business/Ops style switches). |
+| `RunList` | `components/nudge/runs/run-list.tsx` | Anything Ally runs (Scheduled briefs and alerts, Skills): one row each with when it runs, what Ally does, last run and Live / Paused; opens in place to edit; "New" turns a sentence into a draft. Built-in items can be paused or retuned, not deleted. |
 
 ## Buttons
 
