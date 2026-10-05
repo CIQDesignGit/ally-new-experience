@@ -115,7 +115,7 @@ export function NoteBar({ onSent }: { onSent?: (sent: { value: number; label: st
   if (!skus && !open) return null
   return (
     <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} data-sticky-top={open ? undefined : true} className={cn("z-30 border-y border-slate-200 bg-white/95 backdrop-blur", !open && "sticky top-0")}>
-      <div className={cn("flex flex-wrap items-center gap-x-4 gap-y-2 px-10 py-3", nudge && !open && "bg-warning-50")}>
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2 px-10 py-3">
         <Mail className={cn("size-4 shrink-0", skus ? "text-brand-600" : "text-slate-400")} />
         {skus ? (
           <div className="min-w-0 flex-1 text-sm">
@@ -125,7 +125,7 @@ export function NoteBar({ onSent }: { onSent?: (sent: { value: number; label: st
               · {skus} {skus === 1 ? "SKU" : "SKUs"} across {groups.length} {groups.length === 1 ? "issue" : "issues"}
             </span>
             {nudge && !open ? (
-              <span className="ml-2 font-medium text-warning-700">Losing {fmtValue(perDay)} a day while these wait.</span>
+              <span className="ml-2 font-medium text-error-600">Losing {fmtValue(perDay)} a day while these wait</span>
             ) : (
               <>
                 <span className="ml-2 font-mono text-error-600">−{fmtValue(perDay)} a day</span> <span className="text-slate-500">while they wait</span>
@@ -190,6 +190,8 @@ export function NoteBar({ onSent }: { onSent?: (sent: { value: number; label: st
                   Keep reviewing
                 </button>
               </div>
+              {/* What happens next, once: Ally keeps watching the listings after the email goes. */}
+              <p className="mt-3 text-[13px] text-slate-500">After you send, Ally checks these listings every day and drafts a follow-up if there&apos;s no reply in 3 days.</p>
             </div>
           </div>
         </div>
