@@ -3,10 +3,10 @@
 import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Bell, BookOpen, Home, LayoutDashboard, MessageSquare, PanelLeft, Pin, PinOff, Presentation, TrendingDown, Wand2 } from "lucide-react"
+import { Bell, CircleCheck, Clock, GraduationCap, Home, LayoutDashboard, MessageSquare, PanelLeft, Pin, PinOff, Presentation, Sparkles, TrendingDown, Wand2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useNudge } from "./nudge-context"
-import { AUTOPILOT_GO_LIVE, fmtValue } from "./data"
+import { AUTOPILOT_GO_LIVE, BUSINESS, contentBatches, fmtBiz, fmtValue, launchedIds, opsBatches } from "./data"
 import { useLive } from "./live-model"
 import { shortDate } from "./model"
 import { RETRO } from "./retro/prime-day"
@@ -58,7 +58,7 @@ export function AppDrawer({ home = "/michelle", defaultOpen }: { home?: string; 
     } catch {}
     if (next) setOpen(true)
   }
-  const { retro, knowledge, alerts, dashboards, decks, skills, conversations } = useNudge()
+  const { retro, alerts, dashboards, decks, skills, conversations, approved, policy, launchReady, period } = useNudge()
   const qbr = decks.qbr
   // Being on the conversation counts as started, even before its state has loaded.
   const started = Object.keys(retro).length > 0 || path === "/michelle/retro"
@@ -123,7 +123,59 @@ export function AppDrawer({ home = "/michelle", defaultOpen }: { home?: string; 
     { title: "Alerts", icon: Bell, fresh: alerts.some((a) => !a.seen), items: alerts.map((a) => ({ label: a.name, sub: a.firing ? "Fired today" : "Watching", href: "/michelle/alerts", on: path === "/michelle/alerts", fresh: !a.seen })), empty: "No custom alerts yet" },
   ]
 
-  const iconBtn = (on?: boolean) => cn("flex size-10 items-center justify-center rounded-lg", on ? "bg-brand-400 text-white" : "text-brand-200 hover:bg-white/10 hover:text-white")
+  const iconBtn = (on?: boolean) => cn("relative flex size-10 items-center justify-center rounded-lg", on ? "bg-brand-400 text-white" : "text-brand-200 hover:bg-white/10 hover:text-white")
+  const row = (on?: boolean) => cn("flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm", on ? "bg-brand-400 font-semibold text-white" : "text-brand-100 hover:bg-white/10 hover:text-white")
+
+  // Live badges: the gap to plan, and how much is waiting on one approval for this person.
+  const live = useLive()
+  const gap = BUSINESS[period].plan - live.pace(period)
+  const waiting =
+    home === "/mike"
+      ? contentBatches(policy, launchedIds(approved), launchReady).filter((b) => b.tier === "approval" && !approved[b.id]).length
+      : home === "/michelle"
+        ? opsBatches(policy).filter((b) => b.tier === "approval" && !approved[b.id]).length
+        : live.approval.rows.filter((r) => (r.valueM ?? 0) > 0).length
+  const approvalsHref = home === "/claire-waterfall" ? `${home}#stage-detail` : home
+
+  // Lists open in place; only Ask Ally shows its recent items without a click.
+  const [openList, setOpenList] = useState<string | null>(null)
+  const [allChats, setAllChats] = useState(false)
+  const lists = sections.filter((x) => x.title !== "Conversations")
+  const chats = sections.find((x) => x.title === "Conversations")!
+  const LIST_ICON: Record<string, typeof Home> = { "Reports and decks": Presentation, Dashboards: LayoutDashboard, Skills: Wand2, Scheduled: Clock }
+  const scheduled = lists.find((x) => x.title === "Alerts")!
+  const groups = [[lists[0], lists[1]]]
+  const newChat = () => document.querySelector<HTMLInputElement>('input[placeholder="What can I take off your plate?"]')?.focus()
+  const divider = <div className="mx-3 my-2 border-t border-white/10" />
+
+  const listBlock = (sec: (typeof sections)[number], label = sec.title) => {
+    const Icon = LIST_ICON[label] ?? sec.icon
+    const isOpen = openList === label
+    return (
+      <div key={label}>
+        <button type="button" onClick={() => setOpenList(isOpen ? null : label)} aria-expanded={isOpen} className={cn(row(), "w-full")}>
+          <Icon className="size-4" />
+          <span className="flex-1 text-left">{label}</span>
+          {sec.fresh && <span className="size-2 rounded-full bg-ally-500" aria-label="New" />}
+          {sec.items.length > 0 && <span className="font-mono text-xs text-brand-300">{sec.items.length}</span>}
+        </button>
+        {isOpen && (
+          <div className="mb-1 ml-6 border-l border-white/10 pl-2">
+            {sec.items.length ? (
+              sec.items.map((it) => (
+                <Link key={it.label} href={it.href} className={cn("block rounded-lg px-2.5 py-1.5", it.on ? "bg-brand-400" : "hover:bg-white/10")}>
+                  <span className="block truncate text-[13px] text-white">{it.label}</span>
+                  {it.sub && <span className="block truncate text-xs text-brand-200">{it.sub}</span>}
+                </Link>
+              ))
+            ) : (
+              <div className="px-2.5 py-1.5 text-[13px] text-brand-300">{sec.empty}</div>
+            )}
+          </div>
+        )}
+      </div>
+    )
+  }
 
   return (
     <aside
@@ -139,8 +191,15 @@ export function AppDrawer({ home = "/michelle", defaultOpen }: { home?: string; 
       }}
       className="fixed inset-y-0 left-0 z-40 hidden flex-col overflow-hidden bg-brand-950 transition-[width] duration-200 xl:flex"
     >
-      <div className={cn("flex h-16 shrink-0 items-center", open ? "justify-between px-4" : "justify-center")}>
-        {open && <span className="text-[15px] font-semibold text-white">Ally</span>}
+      <div className={cn("flex h-16 shrink-0 items-center", open ? "justify-between pr-2 pl-4" : "justify-center")}>
+        {open && (
+          <span className="flex items-center gap-2 text-[15px] font-semibold text-white">
+            <span className="flex size-6 items-center justify-center rounded-md bg-ally-500">
+              <Sparkles className="size-3.5 text-white" />
+            </span>
+            Ally
+          </span>
+        )}
         <span className="flex items-center gap-0.5">
           {open && (
             <button type="button" onClick={() => pin(!pinned)} aria-pressed={pinned} aria-label={pinned ? "Unpin sidebar" : "Pin sidebar open"} title={pinned ? "Unpin sidebar" : "Pin sidebar open"} className={iconBtn(pinned)}>
@@ -164,66 +223,90 @@ export function AppDrawer({ home = "/michelle", defaultOpen }: { home?: string; 
       </div>
 
       {open ? (
-        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
-          <div className="px-2">
-            <Link href={home} className={cn("flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm", path === home ? "bg-brand-400 font-semibold text-white" : "text-brand-100 hover:bg-white/10")}>
-              <Home className="size-4" /> Daily brief
-            </Link>
-            {/* Where the business stands against plan: always there, not something made in a chat. */}
-            <Link href="/michelle/gap" className={cn("mt-0.5 flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm", path === "/michelle/gap" ? "bg-brand-400 font-semibold text-white" : "text-brand-100 hover:bg-white/10")}>
-              <TrendingDown className="size-4" /> Gap to plan
-            </Link>
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-2 pb-2">
+          {/* The work: what needs you today. */}
+          <Link href={home} className={row(path === home)}>
+            <Home className="size-4" /> <span className="flex-1">Today</span>
+          </Link>
+          <Link href="/michelle/gap" className={row(path === "/michelle/gap")}>
+            <TrendingDown className="size-4" /> <span className="flex-1">Gap to plan</span>
+            {gap > 0 && <span className="rounded bg-error-600/25 px-1.5 font-mono text-[11px] text-error-200">−{fmtBiz(gap)}</span>}
+          </Link>
+          <Link href={approvalsHref} className={row()}>
+            <CircleCheck className="size-4" /> <span className="flex-1">Approvals</span>
+            {waiting > 0 && <span className="rounded-full bg-ally-500 px-1.5 text-[11px] font-semibold text-white">{waiting}</span>}
+          </Link>
+          {listBlock(scheduled, "Scheduled")}
+          {divider}
+          {/* What Ally made for you. */}
+          {groups[0].map((x) => listBlock(x))}
+          {divider}
+          {/* The two Ally verbs, together: teach it (what ships, skills, knowledge), then ask it. */}
+          <Link href="/settings" className={row(path === "/settings")}>
+            <GraduationCap className="size-4" /> <span className="flex-1">Teach Ally</span>
+          </Link>
+          <div className="flex items-center gap-2.5 px-2.5 py-2 text-sm text-brand-100">
+            <MessageSquare className="size-4" /> <span className="flex-1">Ask Ally</span>
+            <button type="button" onClick={newChat} className="rounded-md px-1.5 py-0.5 text-xs font-medium text-white hover:bg-white/10">
+              + New
+            </button>
           </div>
-          {sections.map((sec) => (
-            <div key={sec.title} className="mt-5 px-2">
-              <div className="flex items-center gap-2 px-2.5 pb-1.5 text-xs font-medium text-brand-300">
-                <sec.icon className="size-3.5" />
-                {sec.title}
-              </div>
-              {sec.items.length ? (
-                sec.items.map((it) => (
-                  <Link key={it.label} href={it.href} className={cn("block rounded-lg px-2.5 py-2", it.on ? "bg-brand-400" : it.fresh ? "bg-ally-500/15 ring-1 ring-ally-300/40" : "hover:bg-white/10")}>
-                    <span className="flex items-center gap-2">
-                      <span className="truncate text-sm font-medium text-white">{it.label}</span>
-                      {it.fresh && <span className="ml-auto shrink-0 text-xs font-semibold text-ally-300">New</span>}
-                    </span>
-                    {it.sub && <span className="block truncate text-xs text-brand-200">{it.sub}</span>}
+          <div className="ml-6 border-l border-white/10 pl-2">
+            {chats.items.length ? (
+              <>
+                {(allChats ? chats.items : chats.items.slice(0, 3)).map((it) => (
+                  <Link key={it.href + it.label} href={it.href} className={cn("block truncate rounded-lg px-2.5 py-1.5 text-[13px]", it.on ? "bg-brand-400 text-white" : "text-brand-100 hover:bg-white/10 hover:text-white")}>
+                    {it.label}
                   </Link>
-                ))
-              ) : (
-                <div className="px-2.5 py-1.5 text-[13px] text-brand-300">{sec.empty}</div>
-              )}
-            </div>
-          ))}
-          <div className="mt-auto px-3 pb-2">
-            <AllyWorking />
+                ))}
+                {chats.items.length > 3 && (
+                  <button type="button" onClick={() => setAllChats((v) => !v)} className="px-2.5 py-1 text-xs text-brand-300 hover:text-white">
+                    {allChats ? "Show fewer" : "See all"}
+                  </button>
+                )}
+              </>
+            ) : (
+              <div className="px-2.5 py-1.5 text-[13px] text-brand-300">Your questions show here</div>
+            )}
           </div>
-          <div className="border-t border-white/10 px-2 py-3">
-            <Link href="/settings?tab=knowledge" className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm text-brand-100 hover:bg-white/10">
-              <BookOpen className="size-4" />
-              <span className="flex-1">Knowledge</span>
-              <span className="font-mono text-xs text-brand-300">{knowledge.length}</span>
-            </Link>
+          <div className="mt-auto pt-4">
+            <AllyWorking />
           </div>
         </div>
       ) : (
-        <nav className="flex flex-1 flex-col items-center gap-1">
-          <Link href={home} aria-label="Daily brief" title="Daily brief" className={iconBtn(path === home)}>
+        <nav className="flex flex-1 flex-col items-center gap-1 pb-3">
+          <Link href={home} aria-label="Today" title="Today" className={iconBtn(path === home)}>
             <Home className="size-4" />
           </Link>
-          <Link href="/michelle/gap" aria-label="Gap to plan" title="Gap to plan" className={iconBtn(path === "/michelle/gap")}>
+          <Link href="/michelle/gap" aria-label="Gap to plan" title={gap > 0 ? `Gap to plan · −${fmtBiz(gap)}` : "Gap to plan"} className={iconBtn(path === "/michelle/gap")}>
             <TrendingDown className="size-4" />
+            {gap > 0 && <span aria-hidden className="absolute top-2 right-2 size-2 rounded-full bg-error-500 ring-2 ring-brand-950" />}
           </Link>
-          {/* Lists live in the open sidebar: an icon opens it. */}
-          {sections.map((sec) => (
-            <button key={sec.title} type="button" onClick={() => toggle(true)} aria-label={sec.fresh ? `${sec.title}: 1 new` : sec.title} title={sec.title} className={cn(iconBtn((sec.title === "Conversations" && (path === "/michelle/retro" || path.startsWith("/michelle/c/") || path.startsWith("/c/"))) || (sec.title === "Dashboards" && path.startsWith("/michelle/dashboards")) || (sec.title === "Alerts" && path === "/michelle/alerts")), "relative")}>
-              <sec.icon className="size-4" />
-              {sec.fresh && <span aria-hidden className="absolute top-2 right-2 size-2 rounded-full bg-ally-500 ring-2 ring-brand-950" />}
-            </button>
-          ))}
-          <Link href="/settings?tab=knowledge" aria-label="Knowledge" title="Knowledge" className={cn(iconBtn(), "mt-auto mb-3")}>
-            <BookOpen className="size-4" />
+          <Link href={approvalsHref} aria-label={`Approvals · ${waiting} waiting`} title={`Approvals · ${waiting} waiting`} className={iconBtn()}>
+            <CircleCheck className="size-4" />
+            {waiting > 0 && <span aria-hidden className="absolute top-2 right-2 size-2 rounded-full bg-ally-500 ring-2 ring-brand-950" />}
           </Link>
+          <button type="button" onClick={() => toggle(true)} aria-label="Scheduled" title="Scheduled" className={iconBtn(path === "/michelle/alerts")}>
+            <Clock className="size-4" />
+          </button>
+          <span className="my-1 w-6 border-t border-white/15" />
+          {groups[0].map((x) => {
+            const Icon = LIST_ICON[x.title] ?? x.icon
+            return (
+              <button key={x.title} type="button" onClick={() => toggle(true)} aria-label={x.title} title={x.title} className={iconBtn(x.title === "Dashboards" && path.startsWith("/michelle/dashboards"))}>
+                <Icon className="size-4" />
+                {x.fresh && <span aria-hidden className="absolute top-2 right-2 size-2 rounded-full bg-ally-500 ring-2 ring-brand-950" />}
+              </button>
+            )
+          })}
+          <span className="my-1 w-6 border-t border-white/15" />
+          <Link href="/settings" aria-label="Teach Ally" title="Teach Ally" className={iconBtn(path === "/settings")}>
+            <GraduationCap className="size-4" />
+          </Link>
+          <button type="button" onClick={() => toggle(true)} aria-label="Ask Ally" title="Ask Ally" className={iconBtn(path.startsWith("/michelle/c/") || path.startsWith("/c/") || path === "/michelle/retro")}>
+            <MessageSquare className="size-4" />
+          </button>
+          <AllyWorkingDot />
         </nav>
       )}
     </aside>
@@ -245,4 +328,13 @@ function AllyWorking() {
       </div>
     </div>
   )
+}
+
+/** The collapsed rail's version: a green dot that says the same thing on hover. */
+function AllyWorkingDot() {
+  const { stages } = useLive()
+  const auto = stages.find((x) => x.id === "autopilot")
+  if (!auto || auto.value <= 0) return null
+  const say = `Ally is working · ${fmtValue(auto.value)} on autopilot · goes live ${shortDate(AUTOPILOT_GO_LIVE)}`
+  return <span title={say} aria-label={say} className="mt-auto size-2.5 animate-pulse rounded-full bg-success-500" />
 }

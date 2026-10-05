@@ -13,16 +13,20 @@ import { AnswerCard, AskBar, ChatProvider, ChatThread, StarterChips } from "@/co
 import { useNudge } from "@/components/nudge/nudge-context"
 
 const TABS = [
-  { id: "policy", label: "Review policy" },
+  { id: "skills", label: "Skills" },
   { id: "knowledge", label: "Knowledge" },
+  { id: "policy", label: "Autopilot" },
   { id: "business", label: "Business view" },
 ] as const
 
-/** Settings, behind the gear on every page: how Ally ships changes, and what it should know. Kept out of the main path. */
+/**
+ * Teach Ally (from the nav): what runs on autopilot, the skills it has learned,
+ * and what it knows. The gear opens the same page on Business view, as Settings.
+ */
 function Settings() {
   const router = useRouter()
   const params = useSearchParams()
-  const [tab, setTab] = useState<(typeof TABS)[number]["id"]>(TABS.find((t) => t.id === params.get("tab"))?.id ?? "policy")
+  const [tab, setTab] = useState<(typeof TABS)[number]["id"]>(TABS.find((t) => t.id === params.get("tab"))?.id ?? "skills")
 
   function back() {
     if (window.history.length > 1) router.back()
@@ -31,12 +35,13 @@ function Settings() {
 
   return (
     <>
-    <TopStrip person="claire" home="/claire-waterfall" className="px-12" crumbs={[{ label: "Home", onClick: back }, { label: "Settings" }]} />
+    <TopStrip person="claire" home="/claire-waterfall" className="px-12" crumbs={[{ label: "Home", onClick: back }, { label: tab === "business" ? "Settings" : "Teach Ally" }]} />
     <div className="flex flex-col gap-6 px-12 pt-4 pb-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
-        <h1 className="text-[28px] font-semibold tracking-tight text-slate-950">Settings</h1>
+        <h1 className="text-[28px] font-semibold tracking-tight text-slate-950">{tab === "business" ? "Settings" : "Teach Ally"}</h1>
         <div className="flex rounded-lg border border-slate-200 bg-slate-25 p-1">
-          {TABS.map((t) => (
+          {/* Teach Ally's three tabs; the gear's Business view stands on its own as Settings. */}
+          {TABS.filter((t) => (tab === "business") === (t.id === "business")).map((t) => (
             <button
               key={t.id}
               type="button"
@@ -51,7 +56,7 @@ function Settings() {
           ))}
         </div>
       </div>
-      {tab === "policy" ? <ReviewPolicy /> : tab === "knowledge" ? <Knowledge /> : <BusinessSettings />}
+      {tab === "policy" ? <ReviewPolicy /> : tab === "skills" ? <SkillsList /> : tab === "knowledge" ? <Knowledge /> : <BusinessSettings />}
     </div>
     </>
   )
@@ -68,10 +73,34 @@ export default function SettingsPage() {
           </Suspense>
           <ChatThread />
         </div>
-        <AppDrawer />
+        <AppDrawer home="/claire-waterfall" />
         <AskBar />
       </PageShell>
     </ChatProvider>
+  )
+}
+
+/** The skills Ally has learned: saved from past work, and recipes corrected in chat. */
+function SkillsList() {
+  const { skills, knowledge } = useNudge()
+  const SHARED = { me: "Only you", team: "Your team", account: "Everyone" } as const
+  const rows = [
+    ...knowledge.filter((k) => k.recipe).map((k) => ({ id: k.id, name: "Gap to plan analysis", detail: `Version ${(k.recipe!.log?.length ?? 0) + 1} · ${k.recipe!.steps.length} steps added`, shared: SHARED[k.recipe!.scope] })),
+    ...skills.map((k) => ({ id: k.id, name: k.name, detail: k.version ? `Version ${k.version}` : "Saved from your work", shared: SHARED[k.shared] })),
+  ]
+  if (!rows.length) return <div className="rounded-xl border border-slate-200 px-6 py-5 text-sm text-slate-500">Skills you teach Ally show here: save one from your work, or correct an analysis in chat.</div>
+  return (
+    <div className="rounded-xl border border-slate-200">
+      {rows.map((r) => (
+        <div key={r.id} className="flex items-center justify-between gap-4 border-t border-slate-100 px-6 py-4 first:border-t-0">
+          <div>
+            <div className="text-[15px] font-medium text-slate-950">{r.name}</div>
+            <div className="mt-0.5 text-sm text-slate-500">{r.detail}</div>
+          </div>
+          <span className="text-sm text-slate-600">{r.shared}</span>
+        </div>
+      ))}
+    </div>
   )
 }
 

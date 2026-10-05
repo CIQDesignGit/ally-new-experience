@@ -165,7 +165,7 @@ function AutopilotNextAnswer({ withCompare }: { withCompare: boolean }) {
         approval cost <span className="font-mono font-semibold text-slate-950">$75K</span>. On autopilot, those ship the day they&apos;re ready.
       </p>
       {!withCompare && (
-        <Link href="/settings" className={`${ACTION} mt-1 bg-brand-500 text-white hover:bg-brand-600`}>
+        <Link href="/settings?tab=policy" className={`${ACTION} mt-1 bg-brand-500 text-white hover:bg-brand-600`}>
           Put foundational content on autopilot
           <ArrowRight className="size-3.5" />
         </Link>

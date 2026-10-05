@@ -31,6 +31,20 @@ Every screen follows these rules. When a screen needs something they don't cover
 2. Same punctuation in every row: parts joined with " · ". No colon in one row and a dot in the next.
 3. A figure that changes with a control sits next to that control (the weekly cap and "about $14K a week back" share a line).
 
+## Structure and naming
+
+How things look is the rest of this file. This section is what's there, in what order, and what it's called. It applies to every structure: navs, tables, emails, menus, page sections. Run the `structure-review` skill (`.claude/skills/structure-review/SKILL.md`) before proposing any of them.
+
+1. **Start from the person's jobs, not the existing structure.** List what they do, most urgent and most frequent first. Every container (nav item, column, section) maps to one job. Anything that maps to no job is cut.
+2. **Order:** what needs you now → what Ally made for you → how Ally behaves → history, last.
+3. **Labels are the person's words, and one word means one thing everywhere** (Assign / Assigned, Task, Ask Ally). No system words ("Conversations", "Alerts") when a plainer one fits ("Ask Ally", "Scheduled").
+4. **No heading that only names a group.** Spacing or a divider separates groups; a heading earns its place only if it tells the reader something new.
+5. **Every item goes somewhere real and shows its live state** (the gap, a count waiting). Nothing leads to nothing.
+6. **One way in per thing.** If the ask bar is on every page, there's no second "Ask Ally" button.
+7. **Show a few, reveal the rest:** the three most recent, then "See all". Lists open in place.
+8. **One job per column or section.** Status says where the work is; Action says what you can do. The title says what's in it ("Task", not "What's waiting").
+9. **Same structure for every person;** only the contents change.
+
 ## Type and numbers
 
 1. One numeric font per line. Mono only for standalone money columns and hero figures; inline numbers are sans with `tabular-nums`.
@@ -71,6 +85,8 @@ No gradients, glows or tinted boxes to signal a state; state is a word or a dot.
 3. Don't add or remove copy that wasn't asked for.
 
 ## Before showing a screen
+
+First: structure and labels pass `structure-review` (keep / change / cut for every existing item). Then the visual check.
 
 Check at 1440px, and **measure, don't eyeball**: for every set of peers (buttons, rows, cards), compare their left edge, width, and vertical center in the browser; they must match. Then: every action indigo, magenta only for Ally; one numeric font per line; red only for real loss or a falling change; nothing wraps or truncates by accident; every number ties; every state (empty, in progress, done) looks right.
 

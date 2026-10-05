@@ -5,7 +5,7 @@ import { Settings } from "lucide-react"
 export function SettingsGear() {
   return (
     <Link
-      href="/settings"
+      href="/settings?tab=business"
       aria-label="Settings"
       className="flex size-9 shrink-0 items-center justify-center rounded-md border border-slate-200 bg-white text-slate-500 transition-colors hover:border-brand-300 hover:text-brand-700"
     >
