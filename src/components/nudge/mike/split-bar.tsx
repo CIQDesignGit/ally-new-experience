@@ -10,9 +10,9 @@ const fmt = (v: number) => (v >= 1 ? `$${+v.toFixed(2)}M` : `$${Math.round(v * 1
  */
 export function SplitBar({ banked, unlocked, open, aside }: { banked: number; unlocked: number; open: number; aside?: React.ReactNode }) {
   const parts = [
-    { key: "banked", value: banked, label: "banked", dot: "bg-brand-600", bar: "bg-brand-600" },
-    { key: "unlocked", value: unlocked, label: "unlocked today", dot: "bg-brand-400", bar: "bg-brand-400" },
-    { key: "open", value: open, label: "open", dot: "border-2 border-brand-300 bg-white", bar: "bg-white ring-1 ring-inset ring-brand-300" },
+    { key: "banked", value: banked, label: "banked", dot: "bg-ally-600", bar: "bg-ally-600" },
+    { key: "unlocked", value: unlocked, label: "unlocked today", dot: "bg-ally-300", bar: "bg-ally-300" },
+    { key: "open", value: open, label: "open", dot: "border-2 border-slate-300 bg-white", bar: "bg-white ring-1 ring-inset ring-slate-300" },
   ].filter((p) => p.value > 0.0005)
 
   return (

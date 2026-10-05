@@ -6,6 +6,9 @@ import { usePathname } from "next/navigation"
 import { Bell, BookOpen, Home, LayoutDashboard, MessageSquare, PanelLeft, Pin, PinOff, Presentation, TrendingDown, Wand2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useNudge } from "./nudge-context"
+import { AUTOPILOT_GO_LIVE, fmtValue } from "./data"
+import { useLive } from "./live-model"
+import { shortDate } from "./model"
 import { RETRO } from "./retro/prime-day"
 
 const OPEN_W = "264px"
@@ -192,7 +195,10 @@ export function AppDrawer({ home = "/michelle", defaultOpen }: { home?: string; 
               )}
             </div>
           ))}
-          <div className="mt-auto border-t border-white/10 px-2 py-3">
+          <div className="mt-auto px-3 pb-2">
+            <AllyWorking />
+          </div>
+          <div className="border-t border-white/10 px-2 py-3">
             <Link href="/settings?tab=knowledge" className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm text-brand-100 hover:bg-white/10">
               <BookOpen className="size-4" />
               <span className="flex-1">Knowledge</span>
@@ -221,5 +227,22 @@ export function AppDrawer({ home = "/michelle", defaultOpen }: { home?: string; 
         </nav>
       )}
     </aside>
+  )
+}
+
+/** Ally's work in flight, at the foot of the rail: what's on autopilot and when it goes live. Real numbers, from the waterfall. */
+function AllyWorking() {
+  const { stages } = useLive()
+  const auto = stages.find((s) => s.id === "autopilot")
+  if (!auto || auto.value <= 0) return null
+  return (
+    <div className="rounded-lg bg-white/5 px-3 py-2.5 ring-1 ring-white/10">
+      <div className="flex items-center gap-2 text-[13px] font-semibold text-white">
+        <span className="size-2 animate-pulse rounded-full bg-success-500" aria-hidden /> Ally is working
+      </div>
+      <div className="mt-1 text-xs text-brand-200">
+        <span className="font-mono text-white">{fmtValue(auto.value)}</span> on autopilot · goes live {shortDate(AUTOPILOT_GO_LIVE)}
+      </div>
+    </div>
   )
 }

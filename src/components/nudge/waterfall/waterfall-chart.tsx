@@ -77,6 +77,8 @@ export function WaterfallChart({ selectedId, onSelect }: WaterfallChartProps) {
   const max = Math.max(columns[columns.length - 1].end, plan) * 1.03
   const frac = (v: number) => (v - min) / (max - min)
   const planTop = PAD_TOP + (1 - frac(plan)) * CHART_HEIGHT
+  const gap = plan - run
+  const landed = columns[columns.length - 1].end - plan
 
   return (
     <div>
@@ -106,6 +108,12 @@ export function WaterfallChart({ selectedId, onSelect }: WaterfallChartProps) {
                 {next && next.key !== "total" && (
                   <div className="absolute right-0 left-1/2 border-t border-dashed border-slate-300" style={{ top: `${topPct}%` }} />
                 )}
+                {col.key === "pace" && gap > 0 && (
+                  // The gap, drawn where it is: from the run rate up to the plan line.
+                  <div className="pointer-events-none absolute -right-2 z-20 w-2 border-y-2 border-r-2" style={{ borderColor: "var(--color-error-600)", top: `${(1 - frac(plan)) * 100}%`, height: `${(frac(plan) - frac(run)) * 100}%` }}>
+                    <span className="absolute top-1/2 right-3 -translate-y-1/2 rounded bg-white px-1 font-mono text-xs font-semibold whitespace-nowrap text-error-600">{fmtBiz(gap)} gap</span>
+                  </div>
+                )}
                 <div className="absolute inset-x-3 rounded-t-md" style={{ top: `${topPct}%`, height: `${heightPct}%`, minHeight: 6 }}>
                   <div
                     className={cn(
@@ -133,7 +141,11 @@ export function WaterfallChart({ selectedId, onSelect }: WaterfallChartProps) {
                   {col.label}
                 </span>
                 {col.sub && <span className="text-[11px] text-slate-400">{col.sub}</span>}
-                {selected && <span className="text-[11px] font-medium text-brand-600">Viewing ▾</span>}
+                {col.key === "total" && (
+                  <span className={cn("text-[11px] font-medium", landed >= 0 ? "text-success-700" : "text-error-600")}>
+                    ${Math.abs(landed).toFixed(1)}M {landed >= 0 ? "over" : "short of"} plan
+                  </span>
+                )}
                 {col.selectable && !selected && (
                   <span className="text-[11px] text-brand-500 opacity-0 transition-opacity group-hover:opacity-100">Select</span>
                 )}

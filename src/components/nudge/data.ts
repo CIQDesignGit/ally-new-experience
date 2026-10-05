@@ -197,7 +197,7 @@ export const BATCHES: Batch[] = [
 ]
 
 /** When SKUs the review policy puts on autopilot go live. */
-const AUTOPILOT_GO_LIVE = "2026-10-15"
+export const AUTOPILOT_GO_LIVE = "2026-10-15"
 const shortDate = (iso: string) => new Date(`${iso}T12:00:00`).toLocaleDateString("en-US", { month: "short", day: "numeric" })
 const fmtPart = (v: number) => (v >= 1 ? `$${+v.toFixed(2)}M` : `$${Math.round(v * 1000)}K`)
 
