@@ -65,18 +65,19 @@ export function MikeProgress({ celebrate, stage, onStage }: { celebrate: Celebra
         <h1 className="mt-1 text-[28px] leading-tight font-bold tracking-tight text-slate-950">
           {left > 0.005 ? (
             <>
-              <span className="font-mono">{fmt(left)}</span> {doneValue > 0 ? "still" : "is"} one approval from live.{" "}
-              {expiry && (
-                <span className="text-warning-600">
-                  {expiry.all ? "All of it" : <span className="font-mono">{fmt(expiry.value)}</span>}
-                  {expiry.all ? "" : " of it"} expires in {expiry.days} days.
-                </span>
-              )}
+              <span className="font-mono">{fmt(left)}</span> {doneValue > 0 ? "still" : "is"} one approval from live.
             </>
           ) : (
             "Everything one approval away is live."
           )}
         </h1>
+        {/* The urgency on its own line, as on Claire's page: a deadline, in amber. */}
+        {left > 0.005 && expiry && (
+          <div className="mt-2 text-lg font-semibold text-warning-600">
+            {expiry.all ? "All of it" : <span className="font-mono">{fmt(expiry.value)}</span>}
+            {expiry.all ? "" : " of it"} expires in {expiry.days} days
+          </div>
+        )}
         </div>
         <MiniWaterfall values={stages} highlight={stage ?? "approval"} onSelect={(s) => s !== "banked" && onStage?.(s)} />
       </div>

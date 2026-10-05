@@ -60,19 +60,17 @@ export function OpsProgress({ celebrate, stage, onStage }: { celebrate: Celebrat
           {left > 0.005 ? (
             <>
               <span className="font-mono">{fmt(left)}</span> {doneValue > 0 ? "still" : "is"} one approval from live.
-              {urgent > 0 && (
-                <>
-                  {" "}
-                  <span className="text-warning-600">
-                    You&apos;re losing <span className="font-mono">{fmt(perDay)}</span> a day.
-                  </span>
-                </>
-              )}
             </>
           ) : (
             "Everything one approval away is live."
           )}
         </h1>
+        {/* The urgency on its own line, as on Claire's page: a daily loss, in red. */}
+        {left > 0.005 && urgent > 0 && (
+          <div className="mt-2 text-lg font-semibold text-error-600">
+            Losing <span className="font-mono">{fmt(perDay)}</span> a day
+          </div>
+        )}
         </div>
         <MiniWaterfall values={stages} highlight={stage ?? "approval"} onSelect={jump} />
       </div>
