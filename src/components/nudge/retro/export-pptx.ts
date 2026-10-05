@@ -25,7 +25,7 @@ export async function exportRetroPptx(slides: RetroSlide[], theme: ThemeId, deck
   slides.forEach((s, i) => {
     const slide = pptx.addSlide()
     slide.background = { color: hex(t.bg) }
-    slide.addText(s.eyebrow.toUpperCase(), { x: 0.6, y: 0.4, w: 12, h: 0.3, fontFace: f.body, fontSize: 11, bold: true, color: hex(theme === "default" ? "#7c3aed" : t.accentInk), charSpacing: 2 })
+    slide.addText(s.eyebrow.toUpperCase(), { x: 0.6, y: 0.4, w: 12, h: 0.3, fontFace: f.body, fontSize: 11, bold: true, color: hex(theme === "default" ? "#1f22b2" : t.accentInk), charSpacing: 2 })
     slide.addText(s.title, { x: 0.6, y: 0.75, w: 12, h: 0.9, fontFace: f.display, fontSize: 28, bold: true, color: hex(t.ink) })
     addChart(pptx, slide, s, theme)
     s.insights.forEach((ins, k) => {

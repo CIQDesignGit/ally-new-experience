@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react"
 import confetti from "canvas-confetti"
 
-const COLORS = ["#a78bfa", "#875bf7", "#38bdf8", "#fcd34d", "#2dd4bf", "#c4b5fd"]
+const COLORS = ["#1f22b2", "#c231ff", "#5aafff", "#f79009", "#5c62de", "#db7dff"]
 
 /** Matches the canvas CSS box (`size-64`) so we can keep `resize: false`. */
 const SIZE = 256

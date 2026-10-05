@@ -52,7 +52,7 @@ export const AURELLE_FLAGSHIP_DETAIL: AidDetail = {
       status: "active",
       startDate: "2026-11-20",
       endDate: "2026-11-30",
-      color: "#875BF7",
+      color: "#C231FF",
       ab: {
         originalVisitors: 1850,
         originalRate: 6.87,
@@ -113,7 +113,7 @@ export const AURELLE_FLAGSHIP_DETAIL: AidDetail = {
       status: "ended",
       startDate: "2026-08-23",
       endDate: "2026-11-19",
-      color: "#A78BFA",
+      color: "#DB7DFF",
       resumed: {
         whyText:
           "When the Back-to-School window closed on 22 Aug, this ASIN reverted to the content that won the New Year 2026 cycle. No new test ran — there was nothing new to test, since the content is identical to what Amazon already measured. It resumed accruing at that test's proven +6.0% rate rather than starting over.",

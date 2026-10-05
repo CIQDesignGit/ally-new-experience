@@ -414,7 +414,7 @@ function Results({ version }: { version: 1 | 2 }) {
 }
 
 const QDOT: Record<Quadrant, string> = { win: "bg-brand-500", amazon: "bg-slate-400", brand: "bg-warning-500", loss: "bg-error-500" }
-const QFILL: Record<Quadrant, string> = { win: "#875bf7", amazon: "#94a3b8", brand: "#f89b04", loss: "#ef4444" }
+const QFILL: Record<Quadrant, string> = { win: "#c231ff", amazon: "#94a3b8", brand: "#f89b04", loss: "#ef4444" }
 
 function ShareBar({ share }: { share: (q: Quadrant) => number }) {
   const qs: Quadrant[] = ["win", "amazon", "brand", "loss"]
@@ -447,7 +447,7 @@ function Quadrants() {
   const r = (c: number) => 5 + Math.sqrt(c) * 4.2
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="mt-3 w-full" role="img" aria-label="Quadrant chart of 13 product lines by our margin and Amazon net PPM">
-      <rect x={x(TARGETS.brand)} y={y(36)} width={x(45) - x(TARGETS.brand)} height={y(TARGETS.amazon) - y(36)} fill="#875bf7" opacity={0.05} />
+      <rect x={x(TARGETS.brand)} y={y(36)} width={x(45) - x(TARGETS.brand)} height={y(TARGETS.amazon) - y(36)} fill="#c231ff" opacity={0.05} />
       <line x1={x(TARGETS.brand)} x2={x(TARGETS.brand)} y1={pad.t} y2={H - pad.b} stroke="#94a3b8" strokeDasharray="4 4" />
       <line x1={pad.l} x2={W - pad.r} y1={y(TARGETS.amazon)} y2={y(TARGETS.amazon)} stroke="#94a3b8" strokeDasharray="4 4" />
       {[

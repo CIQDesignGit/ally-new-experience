@@ -7,7 +7,7 @@ import type { SellerSku } from "../data"
  */
 
 const SELLER = "#64748b" // slate-500: the other sellers
-const YOU = "#7c3aed" // brand
+const YOU = "#1f22b2" // you, the brand (indigo)
 const INK = "#334155" // slate-700: the MAP line and its label
 
 const usd = (v: number) => `$${v.toFixed(2)}`

@@ -266,8 +266,8 @@ export function AsinChart({ cycles }: AsinChartProps) {
               })
             : (
                 <>
-                  <path d={pathArea(new Array(domain.days).fill(0), totalLine)} fill="#875BF7" fillOpacity={0.14} stroke="none" />
-                  <path d={pathLine(totalLine)} fill="none" stroke="#875BF7" strokeWidth={2.6} strokeLinejoin="round" />
+                  <path d={pathArea(new Array(domain.days).fill(0), totalLine)} fill="#C231FF" fillOpacity={0.14} stroke="none" />
+                  <path d={pathLine(totalLine)} fill="none" stroke="#C231FF" strokeWidth={2.6} strokeLinejoin="round" />
                 </>
               )}
 

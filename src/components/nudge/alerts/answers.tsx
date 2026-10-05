@@ -243,7 +243,7 @@ function TrendChart() {
       <text x={pd + 5} y={pad.t + 8} fontSize={11} fill="#64748b">
         Prime Day
       </text>
-      <path d={line(GIFT_DRILL.traffic)} fill="none" stroke="#875bf7" strokeWidth={2} strokeLinejoin="round" />
+      <path d={line(GIFT_DRILL.traffic)} fill="none" stroke="#c231ff" strokeWidth={2} strokeLinejoin="round" />
       <path d={line(GIFT_DRILL.sales)} fill="none" stroke="#334155" strokeWidth={2} strokeLinejoin="round" />
       {GIFT_DRILL.sales.map((v, i) => (
         <g key={i}>
@@ -253,7 +253,7 @@ function TrendChart() {
         </g>
       ))}
       <circle cx={x(last)} cy={y(GIFT_DRILL.sales[last])} r={4} fill="#334155" stroke="#fff" strokeWidth={2} />
-      <circle cx={x(last)} cy={y(GIFT_DRILL.traffic[last])} r={4} fill="#875bf7" stroke="#fff" strokeWidth={2} />
+      <circle cx={x(last)} cy={y(GIFT_DRILL.traffic[last])} r={4} fill="#c231ff" stroke="#fff" strokeWidth={2} />
       <text x={x(last) + 9} y={y(GIFT_DRILL.sales[last]) + 4} fontSize={12} fontWeight={600} fill="#334155" fontFamily="var(--font-mono)">
         −14%
       </text>

@@ -5,7 +5,7 @@ import { Confetti, type ConfettiRef } from "@/components/ui/confetti"
 
 // canvas-confetti paints onto a canvas, so these have to be colour values
 // rather than Tailwind classes — brand purple through the chart ramp.
-const COLORS = ["#875bf7", "#a78bfa", "#c4b5fd", "#38bdf8", "#2dd4bf", "#fcd34d"]
+const COLORS = ["#1f22b2", "#c231ff", "#5aafff", "#f79009", "#5c62de", "#db7dff"]
 const GLOBAL = { resize: true, useWorker: false } as const
 
 /** Matches the note's entrance delay so the burst lands with the pill. */

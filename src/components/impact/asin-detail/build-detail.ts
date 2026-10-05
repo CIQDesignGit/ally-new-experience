@@ -208,7 +208,7 @@ export function buildAsinDetail(row: ImpactRow): AidDetail {
     status: "active" as const,
     startDate: changedOn.toISOString().slice(0, 10),
     endDate: TODAY.toISOString().slice(0, 10),
-    color: method === "ab" ? "#875BF7" : "#1D4FD8",
+    color: method === "ab" ? "#C231FF" : "#1F22B2",
     ab,
     model,
     diff,

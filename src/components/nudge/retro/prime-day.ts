@@ -196,7 +196,7 @@ export const THEMES: Record<ThemeId, { name: string; bg: string; ink: string; mu
     bg: "#ffffff",
     ink: "#020617",
     muted: "#64748b",
-    accent: "#875bf7",
+    accent: "#1f22b2",
     accentInk: "#6927da",
     soft: "#cbd5e1",
     loss: "#f04438",

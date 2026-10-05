@@ -31,7 +31,7 @@ export function Slide({ slide, index, theme = "default", size = 16, className, s
         ...style,
       }}
     >
-      <div style={{ fontSize: "0.48em", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: theme === "default" ? "#7c3aed" : t.accentInk }}>{slide.eyebrow}</div>
+      <div style={{ fontSize: "0.48em", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: theme === "default" ? "#1f22b2" : t.accentInk }}>{slide.eyebrow}</div>
       <div style={{ marginTop: "0.3em", fontFamily: t.display, fontSize: theme === "default" ? "0.92em" : "1em", fontWeight: 700, lineHeight: 1.2, letterSpacing: theme === "default" ? "-0.01em" : 0 }}>{slide.title}</div>
       <div style={{ flex: 1, minHeight: 0, marginTop: "0.7em", display: "grid", gridTemplateColumns: "56% minmax(0, 1fr)", gap: "0.9em" }}>
         <div style={{ minHeight: 0, borderRight: `1px solid ${t.rule}`, paddingRight: "0.8em", display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
@@ -189,7 +189,7 @@ export function ChartView({ chart, theme, focus }: { chart: Chart; theme: ThemeI
     <div style={{ height: "100%", display: "flex", flexDirection: "column", justifyContent: "center", gap: "0.5em" }}>
       {chart.items.map((item, i) => (
         <div key={item} style={{ display: "grid", gridTemplateColumns: "1.3em 1fr", gap: "0.4em", alignItems: "baseline" }}>
-          <span style={{ fontFamily: MONO, fontSize: "0.5em", fontWeight: 700, color: theme === "default" ? "#7c3aed" : t.accentInk }}>{i + 1}</span>
+          <span style={{ fontFamily: MONO, fontSize: "0.5em", fontWeight: 700, color: theme === "default" ? "#1f22b2" : t.accentInk }}>{i + 1}</span>
           <span style={{ fontSize: "0.5em", lineHeight: 1.3, fontWeight: 600 }}>{item}</span>
         </div>
       ))}
