@@ -10,8 +10,6 @@ import { useNudge } from "../nudge-context"
 import { AGENT_LABEL } from "../types"
 import type { AgentId, TierRow } from "../types"
 import { ContentWaterfall } from "./content-waterfall"
-import { DELIVERED_GRID, DeliveredHeader, RowLabel, ValueCells } from "./delivered/columns"
-import { DeliveredSummaryRow } from "./delivered/delivered-summary-row"
 
 /** How each lever with a breakdown by type of work draws it. Media has none yet, so it stays a summary row. */
 const DRILLDOWN: Partial<Record<AgentId, { order?: string[]; barClass?: string; teamRow?: TierRow; resultsHref?: string }>> = {
@@ -24,25 +22,61 @@ const DRILLDOWN: Partial<Record<AgentId, { order?: string[]; barClass?: string; 
 }
 const LEVERS: AgentId[] = ["content", "media", "ops"]
 
-/** A delivered row that opens to its agent's waterfall. Content and ops work the same way. */
-function ExpandableRow({ name, data, open, onToggle, children }: { name: string; data: ContentDelivered; open: boolean; onToggle: () => void; children: React.ReactNode }) {
-  return (
-    <div className="border-t border-slate-200">
-      <div
-        role="button"
-        tabIndex={0}
-        onClick={onToggle}
-        onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onToggle()}
-        className={cn(DELIVERED_GRID, "cursor-pointer px-6 py-3.5 hover:bg-slate-50")}
-      >
-        {/* Disclosure at the leading edge, same as the area table above. */}
-        <div className="flex min-w-0 items-center gap-1">
-          <ChevronRight className={cn("size-4 shrink-0 text-slate-400 transition-transform", open && "rotate-90")} />
-          <RowLabel name={name} note={data.did} top />
-        </div>
-        <ValueCells delivered={data.delivered} promised={data.promised} strong projectedFirst />
-        <span />
+/** Name · bar · delivered of projected · the gap and why. One row per agent, on one scale. */
+const BAR_GRID = "grid grid-cols-[20px_200px_minmax(0,1fr)_128px_260px] items-center gap-4"
+
+/** The shortfall's top reason, in a few words: the first "waiting" or "lost" bullet, without its dollar prefix. */
+function topReason(data?: ContentDelivered) {
+  const b = data?.bullets?.find((x) => x.tone === "orange" || x.tone === "red")
+  if (!b) return undefined
+  // The sentence that says why, not the one that restates what went live.
+  const sentences = b.text.replace(/^−\$[\d.]+[KM] vs projected: /, "").replace(/ \(−\$[\d.]+[KM]\)/g, "").split(/\. (?=[A-Z0-9])/)
+  const t = sentences[sentences.length - 1].replace(/\.$/, "")
+  return t.charAt(0).toUpperCase() + t.slice(1)
+}
+
+/**
+ * One agent as a bullet bar: delivered (magenta, Ally's work) against the projected
+ * tick, the shortfall shaded red or the overshoot green, all on the section's scale.
+ */
+function BarRow({ name, did, delivered, promised, scale, data, open, onToggle, children }: { name: string; did: string; delivered: number; promised: number; scale: number; data?: ContentDelivered; open?: boolean; onToggle?: () => void; children?: React.ReactNode }) {
+  const pct = (v: number) => `${(v / scale) * 100}%`
+  const short = delivered < promised
+  const delta = delivered - promised
+  const why = short ? topReason(data) : "Ahead of projection"
+  const row = (
+    <>
+      <span>{onToggle && <ChevronRight className={cn("size-4 text-slate-400 transition-transform", open && "rotate-90")} />}</span>
+      <div className="min-w-0">
+        <div className="text-[15px] font-semibold text-slate-950">{name}</div>
+        <div className="truncate text-[13px] text-slate-500">{did}</div>
       </div>
+      <div className="relative h-3 rounded-sm bg-slate-100" aria-hidden>
+        <div className="absolute inset-y-0 left-0 rounded-l-sm bg-ally-500" style={{ width: pct(Math.min(delivered, promised)) }} />
+        <div className={cn("absolute inset-y-0", short ? "bg-error-100" : "bg-success-200")} style={{ left: pct(Math.min(delivered, promised)), width: pct(Math.abs(delta)) }} />
+        <div className="absolute -inset-y-1 w-0.5 bg-ink" style={{ left: pct(promised) }} />
+      </div>
+      <div className="text-right font-mono text-sm tabular-nums">
+        <span className="font-semibold text-slate-950">{fmtValue(delivered)}</span> <span className="text-slate-500">of {fmtValue(promised)}</span>
+      </div>
+      <div className="line-clamp-2 min-w-0 text-[13px] leading-snug">
+        <span className={cn("font-mono font-semibold tabular-nums", short ? "text-error-600" : "text-success-700")}>
+          {short ? "−" : "+"}
+          {fmtValue(Math.abs(delta))}
+        </span>
+        {why && <span className="text-slate-600"> · {why}</span>}
+      </div>
+    </>
+  )
+  return (
+    <div className="border-t border-slate-100 first:border-t-0">
+      {onToggle ? (
+        <div role="button" tabIndex={0} onClick={onToggle} onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onToggle()} className={cn(BAR_GRID, "cursor-pointer px-6 py-4 hover:bg-slate-50")}>
+          {row}
+        </div>
+      ) : (
+        <div className={cn(BAR_GRID, "px-6 py-4")}>{row}</div>
+      )}
       {open && <div className="border-t border-slate-100 bg-slate-25 px-6 py-5">{children}</div>}
     </div>
   )
@@ -63,6 +97,8 @@ export function ThisQuarterSection() {
   const projected = ORDER.reduce((s, a) => s + leverDelivered(d, a).promised, 0)
   const delivered = ORDER.reduce((s, a) => s + leverDelivered(d, a).delivered, 0)
   const delta = delivered - projected
+  // One scale for every row, so a longer bar is more money.
+  const scale = Math.max(...ORDER.map((a) => Math.max(leverDelivered(d, a).delivered, leverDelivered(d, a).promised))) * 1.15
 
   return (
     <section className="px-12 pt-10 pb-4">
@@ -80,20 +116,27 @@ export function ThisQuarterSection() {
         </span>
       </div>
 
-      <div className="mt-5 overflow-hidden rounded-xl border border-slate-200 bg-white">
-        <DeliveredHeader projectedFirst />
+      {/* The key, once: what the fill, the tick and the shading mean. */}
+      <div className="mt-4 flex flex-wrap gap-4 text-xs text-slate-500">
+        <span className="flex items-center gap-1.5"><span className="h-2 w-3 rounded-sm bg-ally-500" /> Delivered</span>
+        <span className="flex items-center gap-1.5"><span className="h-3 w-0.5 bg-ink" /> Projected</span>
+        <span className="flex items-center gap-1.5"><span className="h-2 w-3 rounded-sm bg-error-100" /> Short</span>
+        <span className="flex items-center gap-1.5"><span className="h-2 w-3 rounded-sm bg-success-200" /> Ahead</span>
+      </div>
+      <div className="mt-3 overflow-hidden rounded-xl border border-slate-200 bg-white">
         {ORDER.map((agent) => {
           const style = DRILLDOWN[agent]
-          // Any lever with a breakdown opens to its waterfall; the rest are a summary row.
+          const l = leverDelivered(d, agent)
+          // Any lever with a breakdown opens to its waterfall; media is a row on its own.
           if (style && agent !== "media") {
             const data = d[agent]
             return (
-              <ExpandableRow key={agent} name={AGENT_LABEL[agent]} data={data} open={open === agent} onToggle={() => toggle(agent)}>
+              <BarRow key={agent} name={AGENT_LABEL[agent]} did={data.did} delivered={data.delivered} promised={data.promised} scale={scale} data={data} open={open === agent} onToggle={() => toggle(agent)}>
                 <ContentWaterfall data={data} order={style.order} totalLabel={AGENT_LABEL[agent]} barClass={style.barClass} teamRow={style.teamRow} resultsHref={style.resultsHref} />
-              </ExpandableRow>
+              </BarRow>
             )
           }
-          return <DeliveredSummaryRow key={agent} bucket={{ agent, ...leverDelivered(d, agent) }} projectedFirst indent />
+          return <BarRow key={agent} name={AGENT_LABEL[agent]} did={l.reason} delivered={l.delivered} promised={l.promised} scale={scale} />
         })}
       </div>
     </section>
