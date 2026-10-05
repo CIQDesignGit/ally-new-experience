@@ -39,7 +39,20 @@ function HomeChat() {
   const router = useRouter()
   // "How am I doing compared to plan?" is forward-looking: where the week lands and what closes it.
   const planChip: Chip = { q: "How am I doing compared to plan?", match: /\b(make|making|against|compared to|vs\.?|versus|behind|short of|gap to) plan\b/i, render: () => <ForwardAnalysis node={GAP_TREE} onInbox={(id) => router.push(`/michelle?open=${id}`)} /> }
-  useChatSource({ chips: QUESTIONS.map((q, i) => (i === 4 ? planChip : { q, hidden: i === 2 || i === 5, render: () => <div className="max-w-[860px] rounded-2xl bg-white px-5 py-4 text-[15px] leading-relaxed text-slate-700 ring-1 ring-slate-200"><Answer q={q} /></div> })) }, "home")
+  const chips: Chip[] = QUESTIONS.map((q, i) => (i === 4 ? planChip : { q, hidden: i === 2 || i === 5, render: () => <div className="max-w-[860px] rounded-2xl bg-white px-5 py-4 text-[15px] leading-relaxed text-slate-700 ring-1 ring-slate-200"><Answer q={q} /></div> }))
+  useChatSource({ chips }, "home")
+  // A question reopened from Ask Ally's history ("?ask=…") is asked again, once.
+  const { ask } = useChat()
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search).get("ask")
+    const chip = q && chips.find((c) => c.q === q)
+    if (!chip) return
+    window.history.replaceState(null, "", window.location.pathname)
+    const t = window.setTimeout(() => ask(chip), 400)
+    return () => window.clearTimeout(t)
+    // Once, on arrival.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
   return null
 }
 

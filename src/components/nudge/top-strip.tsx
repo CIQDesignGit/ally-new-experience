@@ -122,6 +122,25 @@ function AccountMenu({ person }: { person: Person }) {
 }
 
 const HOMES: Record<Person, string> = { claire: "/claire-waterfall", mike: "/mike", michelle: "/michelle" }
+const VIEWER_KEY = "ally-viewer-home"
+
+/**
+ * Whose view you're in: the last home page you were on. Shared pages (Scheduled,
+ * decks, dashboards, Teach Ally) use it, so Claire stays Claire when she opens one.
+ */
+export function rememberHome(path: string) {
+  if (!Object.values(HOMES).includes(path)) return
+  try {
+    window.sessionStorage.setItem(VIEWER_KEY, path)
+  } catch {}
+}
+export function rememberedHome(): string | null {
+  try {
+    return window.sessionStorage.getItem(VIEWER_KEY)
+  } catch {
+    return null
+  }
+}
 
 /**
  * Who's looking at a page. A link from someone else's page carries ?from=claire,
@@ -130,8 +149,13 @@ const HOMES: Record<Person, string> = { claire: "/claire-waterfall", mike: "/mik
 export function useViewer(owner: Person): { viewer: Person; visiting: boolean; home: string } {
   const [from, setFrom] = useState<Person | null>(null)
   useEffect(() => {
-    const f = new URLSearchParams(window.location.search).get("from") as Person | null
-    if (f && f in HOMES && f !== owner) setFrom(f)
+    // A link's ?from wins; else, on a shared page, whoever's home you came from.
+    const q = new URLSearchParams(window.location.search).get("from") as Person | null
+    const onHome = Object.values(HOMES).includes(window.location.pathname)
+    const saved = onHome ? null : (Object.entries(HOMES).find(([, h]) => h === rememberedHome())?.[0] as Person | undefined)
+    const f = q ?? saved ?? null
+    const t = window.setTimeout(() => f && f in HOMES && f !== owner && setFrom(f), 0)
+    return () => window.clearTimeout(t)
   }, [owner])
   const viewer = from ?? owner
   return { viewer, visiting: !!from, home: HOMES[viewer] }

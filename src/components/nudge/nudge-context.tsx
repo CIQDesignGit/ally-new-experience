@@ -21,6 +21,13 @@ export interface Conversation {
   at: string
 }
 
+/** Claire's account isn't new: two questions she asked last week. Each reopens by asking it again on her page. */
+const ask = (q: string) => `/claire-waterfall?ask=${encodeURIComponent(q)}`
+const SEED_CONVERSATIONS: Conversation[] = [
+  { id: "seed-plan", title: "How am I doing compared to plan?", where: "Today", home: "/claire-waterfall", href: ask("How am I doing compared to plan?"), at: "Oct 2, 4:12 PM" },
+  { id: "seed-invest", title: "Where should I invest an additional $1M?", where: "Today", home: "/claire-waterfall", href: ask("Where should I invest an additional $1M?"), at: "Sep 30, 9:20 AM" },
+]
+
 /** The two nudges that page Mike for real — the rest just flip local UI state. */
 const MIKE_NUDGE_KEYS: NudgeKey[] = ["approval-content", "team-content"]
 
@@ -312,7 +319,7 @@ export function NudgeProvider({ children }: { children: React.ReactNode }) {
         launchReady: !!state.launchReady,
         decks: state.decks ?? {},
         skills: state.skills ?? [],
-        conversations: state.conversations ?? [],
+        conversations: state.conversations ?? SEED_CONVERSATIONS,
         asks: state.asks ?? {},
         askBy: (key, due, dueDay, by, ship) => update((prev) => ({ ...prev, nudged: { ...prev.nudged, [key]: true }, asks: { ...(prev.asks ?? {}), [key]: { due, dueDay, by, ...(ship ? { ship } : {}) } } })),
         autoShipped: state.autoShipped ?? {},
@@ -324,7 +331,8 @@ export function NudgeProvider({ children }: { children: React.ReactNode }) {
           update((prev) => ({ ...prev, approved: { ...prev.approved, ...Object.fromEntries(batchIds.map((id) => [id, true])) }, approvedBy: { ...(prev.approvedBy ?? {}), [key]: by } })),
         day: state.day ?? WEEK_START,
         nextMorning: (to) => update((prev) => ({ ...prev, day: to ?? (prev.day ?? WEEK_START) + 1 })),
-        recordConversation: (c) => update((prev) => ({ ...prev, conversations: [c, ...(prev.conversations ?? []).filter((x) => x.id !== c.id)] })),
+        // The same question asked again replaces the older entry (a seed included).
+        recordConversation: (c) => update((prev) => ({ ...prev, conversations: [c, ...(prev.conversations ?? SEED_CONVERSATIONS).filter((x) => x.id !== c.id && !(x.title === c.title && x.home === c.home))] })),
         saveSkill: (k) => update((prev) => ({ ...prev, skills: [...(prev.skills ?? []).filter((x) => x.id !== k.id), k] })),
         setDeck: (id, patch) => update((prev) => ({ ...prev, decks: { ...(prev.decks ?? {}), [id]: { ...(prev.decks?.[id] ?? {}), ...patch } } })),
         setLaunchReady: (v) => update((prev) => ({ ...prev, launchReady: v })),

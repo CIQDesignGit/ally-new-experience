@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation"
 import { Bell, Clock, GraduationCap, Home, LayoutDashboard, MessageSquare, PanelLeft, Pin, PinOff, Presentation, Sparkles, TrendingDown, Wand2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useNudge } from "./nudge-context"
+import { rememberHome, rememberedHome } from "./top-strip"
 import { AUTOPILOT_GO_LIVE, BUSINESS, contentBatches, fmtBiz, fmtValue, launchedIds, opsBatches } from "./data"
 import { useLive } from "./live-model"
 import { shortDate } from "./model"
@@ -19,8 +20,16 @@ const SHUT_W = "64px"
  * Collapsed to icons on the daily brief (the page is the work); open on a
  * conversation, where what you made is what you move between. Lists only what exists, so nothing leads nowhere.
  */
-export function AppDrawer({ home = "/michelle", defaultOpen }: { home?: string; /** Overrides the page-kind default, e.g. collapsed while a deck is open. */ defaultOpen?: boolean }) {
+export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** Overrides the page-kind default, e.g. collapsed while a deck is open. */ defaultOpen?: boolean }) {
   const path = usePathname()
+  // On a home page, that person's nav (and remember it); on a shared page, the page's own owner if it names one, else whoever you came from.
+  const [saved, setSaved] = useState<string | null>(null)
+  useEffect(() => {
+    rememberHome(path)
+    const t = window.setTimeout(() => setSaved(rememberedHome()), 0)
+    return () => window.clearTimeout(t)
+  }, [path])
+  const home = ["/claire-waterfall", "/mike", "/michelle"].includes(path) ? path : (homeProp ?? saved ?? "/michelle")
   const kind = path === home ? "brief" : "conversation"
   // Pinned stays open everywhere; unpinned closes on its own a few seconds after the pointer leaves it.
   const [pinned, setPinned] = useState(false)
@@ -105,7 +114,11 @@ export function AppDrawer({ home = "/michelle", defaultOpen }: { home?: string; 
     {
       title: "Reports and decks",
       icon: Presentation,
-      items: [
+      // Claire reads what her team sends her; Michelle sees what she built.
+      items: home === "/claire-waterfall" ? [
+        { label: RETRO.name, sub: "From Michelle · Sep 30", href: "/michelle/retro?view=deck" },
+        { label: "Q4 business review", sub: "From Michelle · every Monday", href: "/michelle/decks/qbr?view=deck" },
+      ] : [
         ...(retro.deck ? [{ label: RETRO.name, sub: retro.theme === "aurelle" ? "Aurelle Brand 2026" : "CommerceIQ default", href: "/michelle/retro?view=deck" }] : []),
         ...(qbr?.deck ? [{ label: "Q4 business review", sub: qbr.repeat ? "Every Monday · On autopilot" : qbr.theme === "aurelle" ? "Aurelle Brand 2026" : "CommerceIQ default", href: "/michelle/decks/qbr?view=deck" }] : []),
       ],
@@ -116,7 +129,7 @@ export function AppDrawer({ home = "/michelle", defaultOpen }: { home?: string; 
       icon: LayoutDashboard,
       fresh: fresh || dashboards.some((d) => !d.seen),
       items: [
-        ...(retro.dashboard ? [{ label: RETRO.name, sub: "Live · refreshes daily", href: "/michelle/dashboards/prime-day", on: path === "/michelle/dashboards/prime-day", fresh }] : []),
+        ...(retro.dashboard || home === "/claire-waterfall" ? [{ label: RETRO.name, sub: "Live · refreshes daily", href: "/michelle/dashboards/prime-day", on: path === "/michelle/dashboards/prime-day", fresh }] : []),
         ...dashboards.map((d) => ({ label: d.name, sub: `${d.widgets.length} widgets · saved from chat`, href: `/michelle/dashboards/${d.id}`, on: path === `/michelle/dashboards/${d.id}`, fresh: !d.seen })),
       ],
       empty: "Publish a deck or answers as a dashboard",
@@ -144,7 +157,6 @@ export function AppDrawer({ home = "/michelle", defaultOpen }: { home?: string; 
   const lists = sections.filter((x) => x.title !== "Conversations")
   const chats = sections.find((x) => x.title === "Conversations")!
   const LIST_ICON: Record<string, typeof Home> = { "Reports and decks": Presentation, Dashboards: LayoutDashboard, Skills: Wand2, Scheduled: Clock }
-  const scheduled = lists.find((x) => x.title === "Alerts")!
   const groups = [[lists[0], lists[1]]]
   const newChat = () => document.querySelector<HTMLInputElement>('input[placeholder="What can I take off your plate?"]')?.focus()
   // Groups are separated by space, not lines.
@@ -190,7 +202,7 @@ export function AppDrawer({ home = "/michelle", defaultOpen }: { home?: string; 
         if (open) scheduleClose()
         else window.clearTimeout(timer.current)
       }}
-      className={cn("fixed inset-y-0 left-0 z-40 hidden flex-col overflow-hidden bg-brand-950 transition-[width] duration-200 xl:flex", open && !pinned && "shadow-2xl")}
+      className={cn("fixed inset-y-0 left-0 z-50 hidden flex-col overflow-hidden bg-brand-950 transition-[width] duration-200 xl:flex", open && !pinned && "shadow-2xl")}
     >
       <div className={cn("flex h-16 shrink-0 items-center", open ? "justify-between pr-2 pl-4" : "justify-center")}>
         {open && (
@@ -235,7 +247,10 @@ export function AppDrawer({ home = "/michelle", defaultOpen }: { home?: string; 
             <TrendingDown className="size-4" /> <span className="flex-1">Gap to plan</span>
             {gap > 0 && <span className="rounded bg-error-600/25 px-1.5 font-mono text-[11px] text-error-200">−{fmtBiz(gap)}</span>}
           </Link>
-          {listBlock(scheduled, "Scheduled")}
+          {/* Everything that runs on its own clock: the Monday brief and the alerts, on one page. */}
+          <Link href="/michelle/alerts" className={row(path === "/michelle/alerts")}>
+            <Clock className="size-4" /> <span className="flex-1">Scheduled</span>
+          </Link>
           {divider}
           {/* What Ally made for you. */}
           {groups[0].map((x) => listBlock(x))}
@@ -278,9 +293,9 @@ export function AppDrawer({ home = "/michelle", defaultOpen }: { home?: string; 
             <TrendingDown className="size-4" />
             {gap > 0 && <span aria-hidden className="absolute top-2 right-2 size-2 rounded-full bg-error-500 ring-2 ring-brand-950" />}
           </Link>
-          <button type="button" onClick={() => toggle(true)} aria-label="Scheduled" title="Scheduled" className={iconBtn(path === "/michelle/alerts")}>
+          <Link href="/michelle/alerts" aria-label="Scheduled" title="Scheduled" className={iconBtn(path === "/michelle/alerts")}>
             <Clock className="size-4" />
-          </button>
+          </Link>
           <span className="h-3" aria-hidden />
           {groups[0].map((x) => {
             const Icon = LIST_ICON[x.title] ?? x.icon

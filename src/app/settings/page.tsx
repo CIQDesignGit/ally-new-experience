@@ -77,7 +77,7 @@ export default function SettingsPage() {
           </Suspense>
           <ChatThread />
         </div>
-        <AppDrawer home="/claire-waterfall" />
+        <AppDrawer />
         <AskBar />
       </PageShell>
     </ChatProvider>

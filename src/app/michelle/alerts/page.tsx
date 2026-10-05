@@ -44,9 +44,30 @@ function Alerts() {
     <PageShell className="bg-slate-50 xl:bg-white">
       <StarterChips id="alerts" chips={STARTERS} />
       <div className="mx-auto max-w-[1280px] overflow-clip bg-white shadow-pane-lg sm:my-6 sm:rounded-2xl sm:ring-1 sm:ring-slate-900/6 xl:my-0 xl:rounded-none xl:shadow-none xl:ring-0">
-        <TopStrip person="michelle" crumbs={[{ label: "Daily brief", href: "/michelle" }, { label: "Alerts" }]} />
+        <TopStrip person="michelle" crumbs={[{ label: "Today", href: "/michelle" }, { label: "Scheduled" }]} />
         <div className="flex flex-col gap-6 px-10 pt-4 pb-12">
-          <h1 className="text-[28px] leading-tight font-semibold tracking-tight text-slate-950">Alerts</h1>
+          {/* Everything that runs on its own clock: the briefs Ally sends, then the alerts it watches. Created by asking Ally. */}
+          <h1 className="text-[28px] leading-tight font-semibold tracking-tight text-slate-950">Scheduled</h1>
+
+          <table className="w-full text-[14px]">
+            <thead>
+              <tr className="text-left text-[12px] text-slate-500">
+                <th className="pb-2 font-medium">Brief</th>
+                <th className="w-[260px] pb-2 font-medium">When</th>
+                <th className="w-[260px] pb-2 font-medium">Next</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-t border-slate-100">
+                <td className="py-3 pr-4">
+                  <div className="font-semibold text-slate-950">Claire&apos;s Monday brief</div>
+                  <div className="text-[13px] text-slate-500">Team status, what&apos;s one approval away, reply YES to act · email</div>
+                </td>
+                <td className="py-3 text-slate-800">Every Monday, 8 AM</td>
+                <td className="py-3 text-slate-800">Mon, Oct 12</td>
+              </tr>
+            </tbody>
+          </table>
 
           <table className="w-full text-[14px]">
             <thead>
