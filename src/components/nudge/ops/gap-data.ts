@@ -37,8 +37,8 @@ export interface Recommendation {
 export interface GapNode {
   id: string
   name: string
-  /** "Brand", "Category", "SKU" (Overall has none). */
-  level?: "Brand" | "Category" | "SKU"
+  /** "Retailer" (all retailers), "Brand", "Category", "SKU" (Overall has none). */
+  level?: "Retailer" | "Brand" | "Category" | "SKU"
   asin?: string
   lastWeek: { sales: number; plan: number }
   wtd: number

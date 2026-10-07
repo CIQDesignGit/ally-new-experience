@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils"
 import { PRIMARY } from "../mike/buttons"
 import { candleThumbnail } from "@/lib/candle-thumbnails"
 import { BUSINESS, fmtBiz } from "../data"
+import { RETAILERS } from "../retailer"
 import { ITEM_ACTIVE, ITEM_IDLE } from "../mike/rail"
 import { useLive } from "../live-model"
 import { useNudge } from "../nudge-context"
@@ -32,21 +33,33 @@ const PERIOD_WORDS: Record<Period, string> = { week: "this week", month: "this m
 
 export function BusinessHero() {
   const l = useLive()
+  const { retailer } = useNudge()
   const { plan } = BUSINESS[l.period]
   const pace = l.pace(l.period)
+  const who = RETAILERS.find((r) => r.id === retailer)?.label ?? "Amazon"
   return (
     <div className="px-10 pt-2 pb-7">
       <div className="text-2xl font-semibold tracking-tight text-slate-700">
-        Amazon is projected to land at <span className="font-mono text-slate-950">{fmtBiz(pace)}</span> {PERIOD_WORDS[l.period]}.
+        {retailer === "all" ? "Your business" : who} is projected to land at <span className="font-mono text-slate-950">{fmtBiz(pace)}</span> {PERIOD_WORDS[l.period]}.
       </div>
-      {/* One line, the same size as Mike's and Michelle's headlines. */}
+      {/* One line, the same size as Mike's and Michelle's headlines. Ahead of plan, the work grows the lead. */}
       <h1 className="mt-1 text-[28px] leading-tight font-bold tracking-tight text-slate-950">
-        That&apos;s <span className="font-mono">{fmtBiz(plan - pace)}</span> short of your <span className="font-mono">{fmtBiz(plan)}</span> plan.{" "}
-        <span className="font-mono text-brand-600">{l.open.totalLabel}</span> of work is in flight to close it.
+        {plan > pace ? (
+          <>
+            That&apos;s <span className="font-mono">{fmtBiz(plan - pace)}</span> short of your <span className="font-mono">{fmtBiz(plan)}</span> plan.{" "}
+            <span className="font-mono text-brand-600">{l.open.totalLabel}</span> of work is in flight to close it.
+          </>
+        ) : (
+          <>
+            That&apos;s <span className="font-mono text-success-700">{fmtBiz(pace - plan)}</span> ahead of your <span className="font-mono">{fmtBiz(plan)}</span> plan.{" "}
+            <span className="font-mono text-brand-600">{l.open.totalLabel}</span> more is in flight.
+          </>
+        )}
       </h1>
     </div>
   )
 }
+
 
 /* ------------------------------------------------------------------------- */
 /* Rail: the hierarchy, ranked at every level                                  */
@@ -106,9 +119,11 @@ export function BusinessRail({ root, selected, onSelect }: { root: GapNode; sele
       .join(" › ")
   return (
     <div className="px-2 py-3">
+      {/* Walmart's and Target's trees stop at category (no SKU list); all retailers start at the retailer. */}
+      {skus.length > 0 && (
       <div className="mb-2 flex h-9 rounded-lg border border-slate-200 bg-slate-25 p-0.5">
         {[
-          [false, businessGroup === "Brand" ? "Brand › Category › SKU" : "Category › Brand › SKU"],
+          [false, root.children?.[0]?.level === "Retailer" ? "Retailer › Brand › SKU" : businessGroup === "Brand" ? "Brand › Category › SKU" : "Category › Brand › SKU"],
           [true, "All SKUs"],
         ].map(([v, label]) => (
           <button
@@ -121,7 +136,8 @@ export function BusinessRail({ root, selected, onSelect }: { root: GapNode; sele
           </button>
         ))}
       </div>
-      {flat ? (
+      )}
+      {flat && skus.length > 0 ? (
         skus.map((n) => <RailRow key={n.id} node={n} depth={0} selected={selected} trail={[]} onSelect={onSelect} sort={businessSort} path={pathOf(n.id)} />)
       ) : (
         <RailRow node={root} depth={0} selected={selected} trail={trail} onSelect={onSelect} sort={businessSort} />

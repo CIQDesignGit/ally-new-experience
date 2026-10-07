@@ -3,10 +3,11 @@
 import { Fragment, useEffect, useLayoutEffect, useRef, useState } from "react"
 import Link from "next/link"
 import { Check, ChevronRight, LogOut } from "lucide-react"
-import { useRouter } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
+import { RETAILER_PAGES } from "./retailer"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
-import { PeriodSwitch } from "./period-switch"
+import { PeriodSwitch, RetailerSwitch } from "./period-switch"
 import { dayLabel } from "./claire/claire-actions"
 import { useNudge } from "./nudge-context"
 import { SettingsGear } from "./settings-gear"
@@ -263,6 +264,7 @@ export function TopStrip({ person, greeting, crumbs, period, facts, controls, ic
         )}
         {period && (
           <>
+            <RetailerPart />
             <Sep />
             <PeriodSwitch />
             <Sep />
@@ -285,4 +287,16 @@ export function TopStrip({ person, greeting, crumbs, period, facts, controls, ic
 function Today() {
   const { day } = useNudge()
   return <span className="shrink-0 text-slate-500 tabular-nums">{dayLabel(day)}</span>
+}
+
+/** The retailer switch and its separator, only where the numbers follow it. */
+function RetailerPart() {
+  const path = usePathname()
+  if (!RETAILER_PAGES.includes(path)) return null
+  return (
+    <>
+      <Sep />
+      <RetailerSwitch />
+    </>
+  )
 }

@@ -1,5 +1,6 @@
 "use client"
 
+import { useNudge } from "../nudge-context"
 import { cn } from "@/lib/utils"
 import { fmtBiz, fmtValue } from "../data"
 import { NEXT_EVENT, TOP_COMPETITOR, TOP_SEGMENT, segmentValue } from "../market"
@@ -24,9 +25,12 @@ export function GrowCards({ onOpen }: { onOpen: (v: GrowView) => void }) {
   const seg = TOP_SEGMENT
   const comp = TOP_COMPETITOR
   const ev = NEXT_EVENT
+  // Market, competition and events are read from Amazon's search and share data: shown for Amazon, and named as Amazon in the total.
+  const { retailer } = useNudge()
+  if (retailer === "walmart" || retailer === "target") return null
   return (
     <section className="px-12 pt-10 pb-4">
-      <div className="font-mono text-xs tracking-wide text-slate-500 uppercase">Grow beyond plan</div>
+      <div className="font-mono text-xs tracking-wide text-slate-500 uppercase">Grow beyond plan{retailer === "all" ? " · Amazon" : ""}</div>
       <div className="mt-4 grid gap-4 lg:grid-cols-3">
         <button type="button" onClick={() => onOpen("market")} className={CARD}>
           <div className="text-xs font-medium text-slate-500">Market</div>

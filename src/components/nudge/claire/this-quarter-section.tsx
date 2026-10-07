@@ -90,7 +90,7 @@ function BarRow({ name, did, delivered, promised, scale, data, open, onToggle, c
 export function ThisQuarterSection() {
   const [open, setOpen] = useState<AgentId | null>(null)
   const toggle = (id: AgentId) => setOpen((o) => (o === id ? null : id))
-  const { period } = useNudge()
+  const { period, retailer } = useNudge()
   const d = DELIVERED[period]
   // Most delivered first: the list ranks by dollars, never a fixed lever order.
   const ORDER = [...LEVERS].sort((a, b) => leverDelivered(d, b).delivered - leverDelivered(d, a).delivered)
@@ -128,7 +128,8 @@ export function ThisQuarterSection() {
           const style = DRILLDOWN[agent]
           const l = leverDelivered(d, agent)
           // Any lever with a breakdown opens to its waterfall; media is a row on its own.
-          if (style && agent !== "media") {
+          // The drill-down by type of work is Amazon's detail.
+          if (style && agent !== "media" && retailer === "amazon") {
             const data = d[agent]
             return (
               <BarRow key={agent} name={AGENT_LABEL[agent]} did={data.did} delivered={data.delivered} promised={data.promised} scale={scale} data={data} open={open === agent} onToggle={() => toggle(agent)}>

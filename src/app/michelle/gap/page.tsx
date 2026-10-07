@@ -8,7 +8,7 @@ import { LESSON_CHIP } from "@/components/nudge/ops/gap-training"
 import { PageShell } from "@/components/layout/page-shell"
 import { MichelleHeader } from "@/components/nudge/ops/michelle-header"
 import { BusinessHero, BusinessPane, BusinessRail } from "@/components/nudge/ops/business-view"
-import { treeFor } from "@/components/nudge/ops/gap-data"
+import { retailerTree } from "@/components/nudge/ops/gap-retailers"
 import { useNudge } from "@/components/nudge/nudge-context"
 
 /** Page-level Ask Ally: teaching in plain language works here too. */
@@ -25,8 +25,8 @@ function GapChat() {
  */
 export default function GapToPlanPage() {
   const router = useRouter()
-  const { businessGroup } = useNudge()
-  const tree = treeFor(businessGroup)
+  const { businessGroup, retailer } = useNudge()
+  const tree = retailerTree(businessGroup, retailer)
   const [nodeId, setNodeId] = useState("overall")
   return (
     <ChatProvider thread={{ where: "Gap to plan", home: "/michelle" }}>

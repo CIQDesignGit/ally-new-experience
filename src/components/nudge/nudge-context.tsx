@@ -3,6 +3,9 @@ import type { CustomAlert } from "./alerts/data"
 
 import { createContext, useCallback, useContext, useEffect, useState } from "react"
 import type { NudgeKey, Period } from "./types"
+import { usePathname } from "next/navigation"
+import { RETAILER_PAGES, setCurrentRetailer } from "./retailer"
+import type { Retailer } from "./retailer"
 import { DEFAULT_KNOWLEDGE, DEFAULT_POLICY } from "./policy"
 import type { KnowledgeEntry, Policy } from "./policy"
 import type { RunItem } from "./runs/data"
@@ -176,6 +179,9 @@ interface NudgeContextValue extends StoredState {
   /** The period every page shows (Claire's, Mike's and Michelle's switches share it). Not stored: a reload starts on the quarter. */
   period: Period
   setPeriod: (p: Period) => void
+  /** The retailer Claire's page and Gap to plan show (the queues are Amazon's). Not stored: a reload starts on Amazon. */
+  retailer: Retailer
+  setRetailer: (r: Retailer) => void
   businessSort: BusinessSort
   setBusinessSort: (s: BusinessSort) => void
   businessGroup: BusinessGroup
@@ -234,6 +240,11 @@ export function NudgeProvider({ children }: { children: React.ReactNode }) {
   const [state, setState] = useState<StoredState>(EMPTY_STATE)
   const [notifCleared, setNotifCleared] = useState(false)
   const [period, setPeriod] = useState<Period>("quarter")
+  const [retailerPick, setRetailer] = useState<Retailer>("amazon")
+  const path = usePathname()
+  // Only the pages that follow the switch get another retailer's numbers; set before any child reads one.
+  const retailer = RETAILER_PAGES.includes(path) ? retailerPick : "amazon"
+  setCurrentRetailer(retailer)
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time sync from localStorage (an external system) right after mount, not a response to a state change.
@@ -325,6 +336,8 @@ export function NudgeProvider({ children }: { children: React.ReactNode }) {
         resetDemo,
         period,
         setPeriod,
+        retailer,
+        setRetailer,
         businessSort: state.businessSort ?? "gap",
         setBusinessSort: (businessSort) => update((prev) => ({ ...prev, businessSort })),
         businessGroup: state.businessGroup ?? "Brand",

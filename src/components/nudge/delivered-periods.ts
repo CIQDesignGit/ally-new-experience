@@ -8,6 +8,7 @@
 import type { ContentDelivered } from "./delivered-content-data"
 import type { AgentId, Period } from "./types"
 import { LOOP_DELIVERED } from "./media/data"
+import { currentRetailer, factors } from "./retailer"
 
 export interface PeriodDelivered {
   /** "Q4 FY26 so far": the section title. */
@@ -237,12 +238,30 @@ const YEAR: PeriodDelivered = {
   media: { promised: 1.28, delivered: 1.37, reason: "IROAS $3.02 vs $2.80 plan" },
 }
 
-export const DELIVERED: Record<Period, PeriodDelivered> = {
+const AMAZON_DELIVERED: Record<Period, PeriodDelivered> = {
   week: WEEK,
   month: { label: "October so far", content: QTD_CONTENT, ops: QTD_OPS, media: QTD_MEDIA },
   quarter: { label: "Q4 FY26 so far", content: QTD_CONTENT, ops: QTD_OPS, media: QTD_MEDIA },
   year: YEAR,
 }
+
+/** What was delivered for the retailer in view: Amazon's, or sized by that retailer's factor. The per-bucket detail stays Amazon's (see retailer.ts). */
+export const DELIVERED = new Proxy(AMAZON_DELIVERED, {
+  get(target, p: string) {
+    const d = target[p as Period]
+    const f = factors().delivered
+    if (!d || f === 1) return d
+    // The counts, reasons and per-bucket detail are Amazon's, so another retailer's rows carry only the money and where it was.
+    const where = currentRetailer() === "all" ? "Across Amazon, Walmart and Target" : `On ${currentRetailer() === "walmart" ? "Walmart" : "Target"}`
+    const scale = <T extends { promised: number; delivered: number }>(x: T): T => ({ ...x, promised: x.promised * f, delivered: x.delivered * f })
+    return {
+      ...d,
+      content: { ...scale(d.content), did: where, bullets: [] },
+      ops: { ...scale(d.ops), did: where, bullets: [] },
+      media: { ...scale(d.media), reason: d.media.reason.replace(/ · \$\d+K on keywords content added/, "") },
+    }
+  },
+})
 
 /** One lever's delivered numbers for a period, in the shape the summary rows use. */
 export function leverDelivered(p: PeriodDelivered, agent: AgentId) {

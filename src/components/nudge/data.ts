@@ -9,6 +9,7 @@ import { playById } from "./market"
 import type { Play } from "./market"
 import { LAUNCH, NEW_SKUS } from "./launch/data"
 import { MEDIA_ITEMS } from "./media/data"
+import { currentRetailer, factors } from "./retailer"
 
 /**
  * Real numbers from the Ally_Home reference artifact — keep exactly as given.
@@ -792,13 +793,22 @@ export interface NudgeTarget {
  * run rate lands, and the plan she uploaded. Gap = plan − pace; the open
  * opportunity (OPEN_TOTAL) is what closes it.
  */
-export const BUSINESS: Record<Period, { soFar: number; pace: number; plan: number }> = {
+const AMAZON_BUSINESS: Record<Period, { soFar: number; pace: number; plan: number }> = {
   // As of Oct 8, Q4 FY26 (Oct–Dec, holiday-sized). Week = Oct 5–11.
   week: { soFar: 1.9, pace: 3.5, plan: 3.7 },
   month: { soFar: 4.6, pace: 15.2, plan: 16.4 },
   quarter: { soFar: 4.6, pace: 48, plan: 52 },
   year: { soFar: 129.6, pace: 176, plan: 181 },
 }
+/** The business for the retailer in view: Amazon's, or another retailer's sized by its factors (read at render). */
+export const BUSINESS = new Proxy(AMAZON_BUSINESS, {
+  get(target, p: string) {
+    const b = target[p as Period]
+    const f = factors()
+    if (!b || (f.sales === 1 && f.plan === 1)) return b
+    return { soFar: b.soFar * f.sales, pace: b.pace * f.sales, plan: b.plan * f.plan }
+  },
+})
 
 /** $M for business numbers: whole millions when whole, else one decimal, so parts always add up on screen ($40.5M + $4.5M = $45M). */
 export function fmtBiz(v: number): string {
@@ -886,7 +896,8 @@ export const AUTOPILOT_BEST_IN_CLASS: Record<AgentId, number> = { content: 35, m
 
 
 export function fmtM(v: number): string {
-  return `$${v.toFixed(1)}M`
+  // Under $1M reads in K, like the bars it labels ($230K, not $0.2M).
+  return Math.abs(v) < 0.95 ? `$${Math.round(v * 1000)}K` : `$${v.toFixed(1)}M`
 }
 
 /** K under a million, two-decimal M above — e.g. 0.478 → "$478K", 1.26 → "$1.26M". */
@@ -996,6 +1007,17 @@ export function ownerPage(lever: AgentId): string | undefined {
  * with a period, each item counts only the value that lands in it.
  */
 export function getSnapshot(policy?: Policy, period: Period = "quarter", launched: string[] = []): Snapshot {
+  const base = amazonSnapshot(policy, period, launched)
+  // Another retailer: the same work, sized to that business (see retailer.ts).
+  const f = factors().open
+  if (f === 1) return base
+  const key = `${currentRetailer()}|${period}|${launched.join(",")}|${JSON.stringify(policy ?? null)}`
+  if (!byRetailer.has(key)) byRetailer.set(key, { ...base, items: base.items.map((i) => ({ ...i, value: i.value * f })) })
+  return byRetailer.get(key)!
+}
+const byRetailer = new Map<string, Snapshot>()
+
+function amazonSnapshot(policy?: Policy, period: Period = "quarter", launched: string[] = []): Snapshot {
   if (!policy && period === "quarter" && !launched.length) return SNAPSHOT
   const key = `${period}|${launched.join(",")}|${JSON.stringify(policy ?? null)}`
   if (!byPolicy.has(key)) {

@@ -48,7 +48,16 @@ export function BusinessHero({ topLineOnly = false, crumbs }: { topLineOnly?: bo
           <span className="font-mono">{fmtBiz(b.pace)}</span> forecast <span className="text-slate-500">(vs <span className="font-mono">{fmtBiz(b.plan)}</span> plan)</span>.
         </span>
         <span className="block">
-          <span className="font-mono text-brand-500">{live.open.totalLabel}</span> in pipeline to close the <span className={cn("font-mono", gap > 0 && "text-error-600")}>{fmtBiz(gap)}</span> gap.
+          {gap > 0 ? (
+            <>
+              <span className="font-mono text-brand-500">{live.open.totalLabel}</span> in pipeline to close the <span className="font-mono text-error-600">{fmtBiz(gap)}</span> gap.
+            </>
+          ) : (
+            // Ahead of plan: the pipeline grows the lead instead of closing a gap.
+            <>
+              <span className="font-mono text-success-700">{fmtBiz(-gap)}</span> ahead, <span className="font-mono text-brand-500">{live.open.totalLabel}</span> more in pipeline.
+            </>
+          )}
         </span>
       </h1>
 
