@@ -2,6 +2,61 @@
 
 Every screenshot or note Himanshu sends becomes a line here. Status: **open** → **built** (shown, waiting for his OK) → **locked** (committed and deployed). Newest first in each section.
 
+## Overnight, Oct 7 → 8: built, waiting for your OK (localhost only)
+
+Nothing is on Vercel; it's all on localhost:3000 and committed on `claire-exec-demo`. Rollback point: commit `3a0a920`.
+
+**What's built**
+1. **James's page** (`/james`), laid out like Michelle's:
+   - his plays by bucket
+   - October pacing by category
+   - "Keywords, content and media together" (the shared ledger)
+   - what media delivered
+   - Ask Ally with three starters: the $500K budget, harvesting, pacing
+2. **All six flywheel use cases:**
+   - fund the keywords content added
+   - harvest where organic rank is strong
+   - send ad search terms to content
+   - launch campaign from the new copy
+   - no ads on pages that can't sell
+   - one number for the loop
+3. **Mike's drafts** show the media side under "What Ally changed": what media funds once the pages are live, and the ad search term each draft adds. It follows James's approval.
+4. **$500K budget chat** on James's page. Claire's "$1M" question became the same "$500K" plan, with Send to James.
+5. **Settings › Data sources:**
+   - Vendor Central and Amazon Ads through Amazon's sign-in
+   - Walmart Luminate and Target Partners Online by username and password
+   - PIM, and a data lake by share
+6. **Retailer switch** (All retailers · Amazon · Walmart · Target) on Claire's page and Gap to plan.
+7. **Use-case doc** restructured: ability first, then examples, then capabilities, plus the PRD-only section and the harness.
+
+**Assumptions I made (say if any is wrong)**
+1. **No new media value.** James's plays split Claire's existing media rows, so no total in the week story changes:
+   - $560K = fund keywords $210K + Winter Hearth launch $190K + rebalance $160K
+   - $1.04M = the $500K plan
+   - $500K autopilot = pacing $250K + harvesting $160K + no ads on broken pages $90K
+2. **$500K replaced "$1M newly unlocked".** Claire's input row is now "Plan for $500K of new budget", still worth $1.04M. The next dollar returns $2.08, below the $3.01 average, because the best keywords are already funded. Claire's old "$1M" answer stays only on the frozen `/claire` page.
+3. **Harvest counts once.** Its value is the sales from the money it moves, not the savings. The loop's $38K sits inside media's delivered, not added on top.
+4. **Keywords match Mike's drafts.** The funded keywords are the ones his drafts add: spooky party décor, boo basket, fall centerpiece.
+5. **Retailer numbers are Amazon's, sized by factors:**
+   - Walmart: sales 0.2, plan 0.18, so it's ahead of plan
+   - Target: sales 0.1, plan sized to $390K a week, so it's behind
+   - All retailers adds the three
+   - Gap to plan has real Walmart and Target brand trees (no SKU level) that tie to those numbers
+6. **Amazon-only detail is held back for other retailers.** Grow beyond plan is hidden for Walmart and Target, and labeled "Amazon" under All. The delivered drill-down by type of work is off for them. Their delivered rows say where ("On Walmart"), not Amazon's SKU counts.
+7. **Queues stay Amazon.** Mike's, Michelle's and James's pages ignore the switch, and it doesn't show there. A reload starts on Amazon.
+8. **Data sources seed state:**
+   - Amazon, Walmart and PIM connected
+   - Target "Needs attention" (password changed Oct 6), so the demo has a reconnect moment
+   - data lake not connected
+   - Passwords are never saved anywhere, not even in the browser
+   - "Walmart Luminate (Scintilla)", since Walmart rebranded Scintilla
+9. **Nav placement.** Data sources sits under the Settings gear next to Business view, not in the nav or Teach Ally. James is a fourth person in the account menu ("Media lead") with his own Today count.
+10. **Small fix along the way.** Waterfall stage headers under $1M now read in K ($980K, not $1.0M).
+
+**Not done**
+- Mike's page doesn't list the "Add to the page" ad search terms as their own queue item. They live inside his Halloween and gift set drafts.
+- James has no real Slack.
+
 ## Overnight, Oct 5 → 6: decisions I made while you slept
 
 You asked me to finish everything and push to live. Rollback point if any of this is wrong: commit `cfb9b6a`, Vercel deployment `content-agent-demo-6x9kzlzh2` (the last version you approved before tonight).
@@ -22,10 +77,7 @@ You asked me to finish everything and push to live. Rollback point if any of thi
 
 ## Still open (for you to decide)
 
-- **Data sources page** (Settings): Amazon Vendor Central, Walmart Scintilla, Target Partners Online, customer data lake; connect per source. Plan proposed Oct 7, waiting for your OK.
-- **Retailer switch** in the header so the product works for any retailer. Plan proposed Oct 7, waiting on how deep Walmart and Target go.
-- **Content ↔ media flywheel** use cases (keyword ledger shared by both agents). Plan proposed Oct 7, waiting for your OK.
-- **Use-case doc restructure** (abilities, then examples; PRD-only section). Waiting for your OK.
+- **Built Oct 7 → 8** (see top): James's page and the flywheel, Data sources, retailer switch, use-case doc. Waiting for your OK before Vercel.
 
 - Pausing an alert doesn't yet stop it showing up in Michelle's inbox; it's a status on the Scheduled page for now.
 - The Scheduled page's sparkline trend column was dropped in the new list ("Last run" shows the number). Say if you want the trend back.
