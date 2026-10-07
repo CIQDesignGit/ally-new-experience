@@ -36,12 +36,12 @@ export function DemoControls() {
     setBusy(true)
     try {
       if (step === "wed") {
-        // By Wednesday, James has approved his campaigns; Michelle has approved a few of her fixes; Mike hasn't started.
+        // By Wednesday, James has approved his plays; Michelle has approved a few of her fixes; Mike hasn't started.
         const few = itemsFor("approval-ops", s).slice(0, 2)
-        const ids = ["media-dsp", ...few.map((i) => i.id)]
+        const ids = [...itemsFor("approval-media", s).map((i) => i.id), ...few.map((i) => i.id)]
         approveMany(ids)
         nextMorning(BEATS[1].day)
-        toast(`${dayLabel(BEATS[1].day)} · James approved his campaigns · Michelle approved ${few.length} fixes`, { position: "top-right" })
+        toast(`${dayLabel(BEATS[1].day)} · James approved his plays · Michelle approved ${few.length} fixes`, { position: "top-right" })
         await emailClaire({ approved: { ...approved, ...Object.fromEntries(ids.map((id) => [id, true])) }, autoShipped, day: BEATS[1].day })
         return
       }

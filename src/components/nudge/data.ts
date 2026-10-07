@@ -8,6 +8,7 @@ import type { Policy, ReviewMode, SkuTier } from "./policy"
 import { playById } from "./market"
 import type { Play } from "./market"
 import { LAUNCH, NEW_SKUS } from "./launch/data"
+import { MEDIA_ITEMS } from "./media/data"
 
 /**
  * Real numbers from the Ally_Home reference artifact — keep exactly as given.
@@ -898,12 +899,6 @@ export function fmtValue(v: number): string {
  * getSnapshot() is the one place a database plugs in (see model.ts).
  * ------------------------------------------------------------------------- */
 
-/** James's media work. He has no page yet, but his items feed Claire's rows. */
-const MEDIA_ITEMS: WorkItem[] = [
-  { id: "media-dsp", lever: "media", tier: "approval", value: 0.56, skus: 5 },
-  { id: "media-plan", lever: "media", tier: "input", value: 1.04, skus: 1 },
-  { id: "media-bids", lever: "media", tier: "autopilot", value: 0.5, skus: 0 },
-]
 
 /** $M from a display string: "$500K" → 0.5, "$2.4M" → 2.4. Seed values are still typed as strings on the batches. */
 const toM = (v: string) => parseFloat(v.replace(/[$KM,]/g, "")) / (v.endsWith("K") ? 1000 : 1)
@@ -924,7 +919,7 @@ const SNAPSHOT: Snapshot = {
     claire: { name: "Claire" },
     mike: { name: "Mike", lever: "content", page: "/mike" },
     michelle: { name: "Michelle", lever: "ops", page: "/michelle" },
-    james: { name: "James", lever: "media" },
+    james: { name: "James", lever: "media", page: "/james" },
   },
   items: [
     ...BATCHES.map((b) => contentItem(b)),
@@ -934,7 +929,7 @@ const SNAPSHOT: Snapshot = {
   /** Seeded from this week's activity (the Monday email): who had started before this session. */
   activity: {
     "approval:ops": { state: "in-progress", progress: "Reviewing the fixes" },
-    "approval:media": { state: "in-progress", progress: "2 of 5 campaigns live" },
+    "approval:media": { state: "in-progress", progress: "Reviewing the plays" },
     "input:media": { state: "in-progress", progress: "Plan drafted" },
   },
   tiers: {
@@ -944,7 +939,7 @@ const SNAPSHOT: Snapshot = {
       describe: {
         content: "Halloween seasonal updates and gift sets.",
         ops: "Buy box, promo badge, listing and shipping fixes.",
-        media: "5 new DSP campaigns for new-to-brand shoppers.",
+        media: "Fund content's new keywords, launch Winter Hearth, move budget to gift sets.",
       },
     },
     input: {
@@ -953,7 +948,7 @@ const SNAPSHOT: Snapshot = {
       describe: {
         content: "Winter Hearth launch creative and attributes blocking syndication.",
         ops: "Chargebacks, fees, and shorted POs waiting on finance.",
-        media: "Media plan for the $1M in newly unlocked budget.",
+        media: "Plan for $500K of new budget.",
       },
     },
     autopilot: {
@@ -961,7 +956,7 @@ const SNAPSHOT: Snapshot = {
       canNudgeTeam: false,
       describe: {
         content: "Always-on PIM to PDP fixes.",
-        media: "Incremental bid adjustments and budget pacing.",
+        media: "Bids and pacing, keyword harvesting, no ads on pages that can't sell.",
         ops: "Promotions not live.",
       },
     },

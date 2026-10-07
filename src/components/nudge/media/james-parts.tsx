@@ -1,0 +1,415 @@
+"use client"
+
+import Link from "next/link"
+import { ArrowRight, Check } from "lucide-react"
+import { toast } from "sonner"
+import { cn } from "@/lib/utils"
+import { PublishConfetti } from "@/components/home/publish-confetti"
+import { TopStrip, useViewer } from "../top-strip"
+import { BUSINESS, fmtBiz } from "../data"
+import { DELIVERED } from "../delivered-periods"
+import { useLive } from "../live-model"
+import { money } from "../model"
+import { useNudge } from "../nudge-context"
+import { MiniWaterfall } from "../mini-waterfall"
+import type { Stage } from "../mini-waterfall"
+import { SplitBar } from "../mike/split-bar"
+import { GROUPS } from "../mike/rail"
+import { PRIMARY } from "../mike/buttons"
+import { InboxFilters } from "../ops/ops-batch-list"
+import type { InboxFilter } from "../ops/ops-batch-list"
+import { useChat } from "../chat/inline-chat"
+import { LEDGER, LOOP_DELIVERED, MEDIA_BATCHES, MONTH_GONE, PACING, PLAY_RULES, paceOf } from "./data"
+import type { MediaBatch } from "./data"
+import { budgetChip } from "./answers"
+import { contentApproved } from "./content-link"
+
+const DOT = Object.fromEntries(GROUPS.map((g) => [g.tier, g.dot])) as Record<MediaBatch["tier"], string>
+const HEAD = "text-xs font-medium text-slate-500"
+
+/** James's top line: the same forecast, plan and gap as everyone's. */
+export function JamesHeader() {
+  const { viewer, visiting, home } = useViewer("james")
+  const l = useLive()
+  const { plan } = BUSINESS[l.period]
+  const gap = l.pace(l.period) - plan
+  return (
+    <TopStrip
+      person={viewer}
+      home={home}
+      greeting={visiting ? undefined : "Hi James"}
+      crumbs={visiting ? [{ label: "Home", href: home }, { label: "James's queue" }] : undefined}
+      period
+      facts={
+        <Link href="/michelle/gap" className="rounded hover:text-slate-900 hover:underline hover:decoration-slate-300 hover:underline-offset-4">
+          Forecast <span className="font-semibold text-slate-950 tabular-nums">{fmtBiz(l.pace(l.period))}</span>
+          <span className="text-slate-300"> · </span>
+          Plan <span className="font-semibold text-slate-950 tabular-nums">{fmtBiz(plan)}</span>
+          <span className="text-slate-300"> · </span>
+          Gap{" "}
+          <span className={gap < 0 ? "font-semibold text-error-600 tabular-nums" : "font-semibold text-success-700 tabular-nums"}>
+            {gap < 0 ? "−" : "+"}
+            {fmtBiz(Math.abs(gap))}
+          </span>
+        </Link>
+      }
+    />
+  )
+}
+
+/** Media's headline in Claire's words, for his slice, beside the quarter's waterfall. */
+export function MediaProgress({ celebrate, stage, onStage }: { celebrate: { value: number; label: string } | null; stage?: Stage; onStage?: (s: Exclude<Stage, "banked">) => void }) {
+  const { approved } = useNudge()
+  const open = (tier: MediaBatch["tier"]) => MEDIA_BATCHES.filter((b) => b.tier === tier && !approved[b.id]).reduce((s, b) => s + b.value, 0)
+  const acted = MEDIA_BATCHES.filter((b) => b.tier !== "autopilot" && approved[b.id]).reduce((s, b) => s + b.value, 0)
+  const total = MEDIA_BATCHES.reduce((s, b) => s + b.value, 0) - acted
+  const left = open("approval")
+  const anyDone = MEDIA_BATCHES.some((b) => b.tier === "approval" && approved[b.id])
+  const jump = (s: Stage) => {
+    if (s === "banked") return document.getElementById("media-delivered")?.scrollIntoView({ behavior: "smooth", block: "start" })
+    onStage?.(s)
+  }
+  return (
+    <>
+      <div className="grid grid-cols-[minmax(0,1fr)_340px] items-end gap-8 px-10 pt-2 pb-6">
+        <div className="min-w-0">
+          <div className="text-2xl font-semibold tracking-tight text-slate-700">
+            <span className="font-mono text-slate-950">{money(total)}</span> of media opportunity is {acted > 0 ? "still " : ""}open this quarter.
+          </div>
+          <h1 className="mt-1 text-[28px] leading-tight font-bold tracking-tight text-slate-950">
+            {left > 0.005 ? (
+              <>
+                <span className="font-mono">{money(left)}</span> {anyDone ? "still" : "is"} one approval from live.
+              </>
+            ) : (
+              "Everything one approval away is approved."
+            )}
+          </h1>
+          {/* What makes media different this week: the content it's waiting to fund. */}
+          {!approved["media-build"] && <div className="mt-2 text-lg font-semibold text-warning-700">14 keywords from content are waiting for budget</div>}
+        </div>
+        <MiniWaterfall values={{ autopilot: open("autopilot"), approval: left, input: open("input") }} highlight={stage ?? "approval"} onSelect={jump} />
+      </div>
+      <div className="relative border-y border-slate-200 bg-brand-25 px-10 py-4">
+        <SplitBar
+          banked={DELIVERED.quarter.media.delivered}
+          unlocked={acted}
+          open={total}
+          aside={
+            celebrate && (
+              <div className="relative text-sm font-semibold text-success-700">
+                +{money(celebrate.value)} · {celebrate.label}
+                <div className="absolute -top-1 left-0 size-16">
+                  <PublishConfetti />
+                </div>
+              </div>
+            )
+          }
+        />
+      </div>
+    </>
+  )
+}
+
+/** The order of the inbox: open work first (approval, then input), done next, autopilot last; then dollars. */
+export function mediaRows(approved: Record<string, boolean>, filter: InboxFilter) {
+  const rank = (b: MediaBatch) => (b.tier === "autopilot" ? 3 : approved[b.id] ? 2 : b.tier === "approval" ? 0 : 1)
+  return MEDIA_BATCHES.filter((b) => filter === "all" || b.tier === filter).sort((x, y) => rank(x) - rank(y) || y.value - x.value)
+}
+
+/** Whether a play waits on content, and the line that says so. */
+function waits(b: MediaBatch, approved: Record<string, boolean>) {
+  if (!b.waitsOn) return undefined
+  const ready = contentApproved(approved, b.waitsOn.batch)
+  return { ready, text: ready ? b.waitsOn.ready : b.waitsOn.waiting }
+}
+
+export function MediaList({ selectedId, filter, onFilter, onSelect }: { selectedId: string; filter: InboxFilter; onFilter: (f: InboxFilter) => void; onSelect: (id: string) => void }) {
+  const { approved } = useNudge()
+  return (
+    <div className="bg-white">
+      <InboxFilters filter={filter} onFilter={onFilter} />
+      <div className="flex flex-col">
+        {mediaRows(approved, filter).map((b) => {
+          const done = !!approved[b.id]
+          const w = waits(b, approved)
+          const status =
+            b.tier === "autopilot" ? (
+              <span className="text-slate-500">Running</span>
+            ) : done ? (
+              <span className="inline-flex items-center gap-1 text-success-700">
+                <Check className="size-3" />
+                {b.doneLabel}
+              </span>
+            ) : w?.ready ? (
+              <span className="text-brand-700">Ready</span>
+            ) : null
+          return (
+            <button
+              key={b.id}
+              type="button"
+              onClick={() => onSelect(b.id)}
+              className={cn(
+                "grid w-full grid-cols-[8px_minmax(0,1fr)_auto] items-baseline gap-x-2.5 border-b border-slate-100 px-3.5 py-2.5 text-left outline-none hover:bg-slate-50 focus-visible:bg-slate-50",
+                selectedId === b.id && "bg-slate-50 shadow-[inset_2px_0_0_var(--color-brand-500)]",
+              )}
+            >
+              <span className={cn("size-2 -translate-y-px rounded-full", DOT[b.tier])} />
+              <span className="min-w-0">
+                <span className={cn("block text-[14px] leading-snug", b.tier === "autopilot" ? "text-slate-500" : "font-medium text-slate-950")}>{b.name}</span>
+                <span className="mt-0.5 flex items-center gap-1.5 text-xs whitespace-nowrap text-slate-500">
+                  <span>
+                    {b.count.toLocaleString("en-US")} {b.noun}
+                  </span>
+                  <span className="text-slate-300">·</span>
+                  <span className="min-w-0 truncate">{b.play}</span>
+                </span>
+              </span>
+              <span className="text-right">
+                <span className={cn("block font-mono text-[14px] font-semibold tabular-nums", done ? "text-success-700" : b.tier === "autopilot" ? "text-slate-500" : "text-slate-950")}>{money(b.value)}</span>
+                {status && <span className="mt-0.5 block text-xs font-medium whitespace-nowrap">{status}</span>}
+              </span>
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+/** One play: what Ally found, what it does, the changes, then one action. */
+export function MediaDetail({ batch, onAction }: { batch: MediaBatch; onAction: (b: MediaBatch) => void }) {
+  const { approved } = useNudge()
+  const { ask } = useChat()
+  const done = !!approved[batch.id]
+  const w = waits(batch, approved)
+  return (
+    <div className="flex min-w-0 flex-col gap-6 px-10 py-8">
+      <div className="flex items-start justify-between gap-8">
+        <div className="min-w-0">
+          <div className="text-sm font-medium text-slate-500">{batch.play}</div>
+          <div className="mt-0.5 text-2xl font-semibold tracking-tight text-slate-950">{batch.name}</div>
+          {w && <div className={cn("mt-1 text-sm font-medium", w.ready ? "text-brand-700" : "text-slate-500")}>{w.text}</div>}
+        </div>
+        <div className="shrink-0 text-right">
+          <div className={cn("font-mono text-[28px] font-bold tracking-tight tabular-nums", done ? "text-success-700" : "text-slate-950")}>+{money(batch.value)}</div>
+          <div className="mt-0.5 text-sm text-slate-500">{batch.spend ? `${batch.spend} · ` : ""}incremental sales</div>
+        </div>
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-2">
+        <div>
+          <div className={HEAD}>What Ally found</div>
+          <ul className="mt-2 flex flex-col gap-1.5 text-[15px] text-slate-700">
+            {batch.found.map((f) => (
+              <li key={f} className="flex gap-2">
+                <span className="mt-2 size-1 shrink-0 rounded-full bg-slate-400" />
+                {f}
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div>
+          <div className={HEAD}>{batch.tier === "autopilot" ? "What Ally does, on its own" : "What Ally will do"}</div>
+          <ul className="mt-2 flex flex-col gap-1.5 text-[15px] text-slate-700">
+            {batch.does.map((f) => (
+              <li key={f} className="flex gap-2">
+                <span className="mt-2 size-1 shrink-0 rounded-full bg-slate-400" />
+                {f}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      {batch.changes && (
+        <div className="overflow-hidden rounded-xl border border-slate-200">
+          <div className="grid grid-cols-[minmax(0,1fr)_90px_110px_minmax(0,220px)] gap-4 border-b border-slate-100 bg-slate-25 px-5 py-2.5">
+            <span className={HEAD}>{batch.play === "Rebalance" ? "Category" : "Keyword"}</span>
+            <span className={`${HEAD} text-right`}>Now</span>
+            <span className={`${HEAD} text-right`}>{batch.tier === "autopilot" ? "Ally set" : "Ally sets"}</span>
+            <span className={HEAD}>Why</span>
+          </div>
+          {batch.changes.map((c) => (
+            <div key={c.what} className="grid grid-cols-[minmax(0,1fr)_90px_110px_minmax(0,220px)] items-baseline gap-4 border-b border-slate-100 px-5 py-2.5 text-sm last:border-b-0">
+              <span className="min-w-0 truncate font-medium text-slate-950">{c.what}</span>
+              <span className="text-right font-mono whitespace-nowrap text-slate-500 tabular-nums">{c.from}</span>
+              <span className="text-right font-mono whitespace-nowrap text-slate-950 tabular-nums">{c.to}</span>
+              <span className="min-w-0 text-slate-500">{c.why}</span>
+            </div>
+          ))}
+          {batch.count > batch.changes.length && batch.play !== "Rebalance" && batch.play !== "Launch" && (
+            <div className="px-5 py-2 text-xs text-slate-500">
+              Showing {batch.changes.length} of {batch.count} {batch.noun}
+            </div>
+          )}
+        </div>
+      )}
+
+      <div className="flex flex-wrap items-center gap-3">
+        {batch.tier === "autopilot" ? (
+          <span className="text-sm text-slate-500">
+            On autopilot · <Link href="/settings?tab=policy" className="font-medium text-brand-700 hover:underline">Change in Teach Ally</Link>
+          </span>
+        ) : done ? (
+          <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-success-700">
+            <Check className="size-4" /> {batch.doneLabel}
+            {w && !w.ready ? " · starts when the pages go live" : " · Ally starts within the hour"}
+          </span>
+        ) : batch.tier === "input" ? (
+          <button type="button" onClick={() => ask(budgetChip("james"))} className={PRIMARY}>
+            {batch.cta}
+          </button>
+        ) : (
+          <button type="button" onClick={() => onAction(batch)} className={PRIMARY}>
+            {batch.cta}
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
+
+/** October budget by category: a track per category, the tick at how much of the month has gone. */
+export function PacingSection() {
+  return (
+    <section className="border-t border-slate-200 px-10 pt-9 pb-8">
+      <div className="flex items-baseline justify-between gap-4">
+        <h2 className="text-xl font-semibold tracking-tight text-slate-950">October pacing by category</h2>
+        <span className="text-sm text-slate-500">
+          <span className="font-mono">{MONTH_GONE}%</span> of the month gone
+        </span>
+      </div>
+      <div className="mt-4 grid grid-cols-[140px_minmax(0,1fr)_100px_110px_minmax(0,260px)] gap-x-5 border-b border-slate-100 pb-2">
+        <span className={HEAD}>Category</span>
+        <span className={HEAD}>Spent</span>
+        <span className={`${HEAD} text-right`}>Budget</span>
+        <span className={HEAD}>Pace</span>
+        <span className={HEAD}>What Ally does</span>
+      </div>
+      {PACING.map((p) => {
+        const { pct, state } = paceOf(p.budget, p.spent)
+        return (
+          <div key={p.category} className="grid grid-cols-[140px_minmax(0,1fr)_100px_110px_minmax(0,260px)] items-center gap-x-5 border-b border-slate-100 py-3 text-sm">
+            <span className="font-medium text-slate-950">{p.category}</span>
+            <span className="flex items-center gap-3">
+              <span className="relative h-2 flex-1 rounded-full bg-slate-100">
+                <span className={cn("absolute inset-y-0 left-0 rounded-full", state === "On pace" ? "bg-slate-400" : "bg-warning-500")} style={{ width: `${Math.min(pct, 100)}%` }} />
+                <span className="absolute -top-1 h-4 w-0.5 bg-slate-950" style={{ left: `${MONTH_GONE}%` }} aria-hidden />
+              </span>
+              <span className="w-16 text-right font-mono text-slate-950 tabular-nums">${p.spent}K</span>
+            </span>
+            <span className="text-right font-mono text-slate-500 tabular-nums">${p.budget}K</span>
+            <span className={cn("font-medium", state === "On pace" ? "text-slate-500" : "text-warning-700")}>{state}</span>
+            <span className="text-slate-700">{p.does}</span>
+          </div>
+        )
+      })}
+    </section>
+  )
+}
+
+/** The ledger both agents read and write: each keyword, where it stands organically and on paid, and the play. */
+export function LedgerSection() {
+  const { approved } = useNudge()
+  return (
+    <section className="border-t border-slate-200 px-10 pt-9 pb-8">
+      <div className="flex items-baseline justify-between gap-4">
+        <h2 className="text-xl font-semibold tracking-tight text-slate-950">Keywords, content and media together</h2>
+        <span className="text-sm text-slate-500">{LEDGER.length} of 1,400 keywords</span>
+      </div>
+      {/* The rule behind each play, once, above the table. */}
+      <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-[13px] text-slate-500">
+        {PLAY_RULES.map((r) => (
+          <span key={r.play}>
+            <span className="font-semibold text-slate-950">{r.play}</span> · {r.when}
+          </span>
+        ))}
+      </div>
+      <div className="mt-5 overflow-x-auto">
+        <table className="w-full min-w-[900px] text-sm">
+          <thead>
+            <tr className="border-b border-slate-100 text-left">
+              <th className={`${HEAD} pb-2`}>Keyword</th>
+              <th className={`${HEAD} pb-2`}>On the page</th>
+              <th className={`${HEAD} pb-2 text-right`}>Organic rank</th>
+              <th className={`${HEAD} pb-2 text-right`}>Share of voice</th>
+              <th className={`${HEAD} pb-2 text-right`}>Paid return</th>
+              <th className={`${HEAD} pb-2 pl-6`}>Play</th>
+              <th className={`${HEAD} pb-2`}>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {LEDGER.map((r) => {
+              // Build waits for Mike's pages; once he approves them, the bids are ready.
+              const status = r.play === "Build" ? (approved["media-build"] ? "Funded · bids up when live" : contentApproved(approved, "halloween") || contentApproved(approved, "gifts") ? "Pages approved · ready to fund" : r.status) : r.status
+              return (
+                <tr key={r.keyword} className="border-b border-slate-100">
+                  <td className="py-2.5 pr-4">
+                    <span className="block font-medium text-slate-950">{r.keyword}</span>
+                    <span className="block text-xs text-slate-500">{r.category}</span>
+                  </td>
+                  <td className={cn("py-2.5 pr-4", r.onPage === "Missing" ? "text-slate-500" : "text-slate-700")}>{r.onPage}</td>
+                  <td className="py-2.5 text-right font-mono text-slate-950 tabular-nums">#{r.organic}</td>
+                  <td className="py-2.5 text-right font-mono text-slate-950 tabular-nums">{r.sov}%</td>
+                  <td className="py-2.5 text-right font-mono text-slate-950 tabular-nums">${r.iroas.toFixed(2)}</td>
+                  <td className="py-2.5 pl-6 font-medium text-slate-950">{r.play}</td>
+                  <td className="py-2.5 text-slate-500">
+                    {r.play === "Add to the page" ? (
+                      <Link href="/mike?from=james" className="inline-flex items-center gap-1 font-medium text-brand-700 hover:underline">
+                        {r.status} <ArrowRight className="size-3.5" />
+                      </Link>
+                    ) : (
+                      status
+                    )}
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  )
+}
+
+/** What media delivered this quarter so far, with the part the content loop drove. */
+export function MediaDelivered() {
+  const { period } = useNudge()
+  const d = DELIVERED[period]
+  const m = d.media
+  const delta = m.delivered - m.promised
+  // The loop's share is only known for this quarter's keywords.
+  const loop = period === "quarter" || period === "month" ? LOOP_DELIVERED : undefined
+  return (
+    <section id="media-delivered" className="border-t border-slate-200 px-10 pt-9 pb-10">
+      <div className="font-mono text-xs tracking-wide text-slate-500 uppercase">{d.label}</div>
+      <div className="mt-2 flex flex-wrap items-baseline gap-x-6 gap-y-1">
+        <span className="text-2xl font-semibold tracking-tight text-slate-500">
+          Projected <span className="font-mono">{money(m.promised)}</span>
+        </span>
+        <span className="text-2xl font-semibold tracking-tight text-slate-950">
+          Delivered <span className="font-mono text-brand-600">{money(m.delivered)}</span>
+        </span>
+        <span className={cn("font-mono text-sm font-semibold tabular-nums", delta >= 0 ? "text-success-700" : "text-error-600")}>
+          {delta >= 0 ? "+" : "−"}
+          {money(Math.abs(delta))}
+        </span>
+      </div>
+      <ul className="mt-4 flex flex-col gap-1.5 text-[15px] text-slate-700">
+        <li>{m.reason}</li>
+        {loop !== undefined && (
+          <li>
+            <span className="font-mono text-success-700">{money(loop)}</span> of it on keywords content added
+          </li>
+        )}
+        {loop !== undefined && <li>38 keywords harvested · $21K a week moved to them</li>}
+      </ul>
+    </section>
+  )
+}
+
+/** After approving a play: the toast, and what it hands to whom. */
+export function approvedToast(b: MediaBatch) {
+  toast.success(`${b.name} · approved · +${money(b.value)}`, { position: "top-right" })
+}

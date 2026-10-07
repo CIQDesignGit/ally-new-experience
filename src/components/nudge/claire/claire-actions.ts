@@ -1,5 +1,6 @@
 "use client"
 
+import { MEDIA_BATCHES } from "../media/data"
 import { toast } from "sonner"
 import { BATCHES, contentBatches, getSnapshot, launchedIds, opsBatches } from "../data"
 import { money } from "../model"
@@ -60,7 +61,7 @@ export function itemsFor(key: NudgeKey | undefined, s: Pick<WeekState, "approved
       .filter((b) => b.tier === "approval" && b.deadline)
       .map((b) => ({ id: b.id, skus: b.approveSkus ?? b.skus, value: b.approveValue, hero: b.mode === "each" }))
   if (key === "approval-ops") return opsBatches(s.policy).filter((b) => b.tier === "approval").map((b) => ({ id: b.id, skus: b.skus, value: value(b.id), hero: false }))
-  if (key === "approval-media") return [{ id: "media-dsp", skus: 5, value: value("media-dsp"), hero: false }]
+  if (key === "approval-media") return MEDIA_BATCHES.filter((b) => b.tier === "approval").map((b) => ({ id: b.id, skus: b.noun === "SKUs" ? b.count : 0, value: value(b.id), hero: false }))
   return []
 }
 

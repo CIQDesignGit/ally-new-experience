@@ -9,6 +9,7 @@ import { Upload } from "lucide-react"
 import { useChat } from "../chat/inline-chat"
 import { UploadDialog } from "../chat/upload-dialog"
 import { LAUNCH_CHIP } from "../launch/answers"
+import { MediaLink } from "../media/content-link"
 import { LAUNCH_FILES, LAUNCH_PAGES, NEW_SKUS, PAGE_FACTS } from "../launch/data"
 import { AdaptedImage } from "../launch/images"
 import { LaunchPagePreview } from "../launch/page-preview"
@@ -147,6 +148,8 @@ export function BatchDetail({ batch, onApprove, onReviewAll, onSelect, onSelectS
           ))}
         </div>
       </div>
+
+      <MediaLink batchId={batch.id} />
 
       <div className="mt-8">
         {batch.tier === "autopilot" ? (

@@ -36,13 +36,14 @@ export function AllyLogo({ className }: { className?: string }) {
   )
 }
 
-export type Person = "claire" | "mike" | "michelle"
+export type Person = "claire" | "mike" | "michelle" | "james"
 
 /** Illustrated people in the logo's style: no real faces. Each is a skin tone, a hair shape and a backdrop. */
 const PEOPLE: Record<Person, { name: string; bg: string; skin: string; hair: string; style: "bob" | "short" | "long" }> = {
   claire: { name: "Claire Bennett", bg: "#EDE9FE", skin: "#F1C7A5", hair: "#5B3A29", style: "bob" },
   mike: { name: "Mike Chen", bg: "#DBEAFE", skin: "#E8B98F", hair: "#1F2937", style: "short" },
   michelle: { name: "Michelle Ortiz", bg: "#FCE7F3", skin: "#C98E68", hair: "#2B1B14", style: "long" },
+  james: { name: "James Okafor", bg: "#DCFCE7", skin: "#8D5A3B", hair: "#1A1110", style: "short" },
 }
 
 export function Avatar({ person, className }: { person: Person; className?: string }) {
@@ -53,7 +54,7 @@ export function Avatar({ person, className }: { person: Person; className?: stri
       <circle cx="18" cy="18" r="18" fill={p.bg} />
       {p.style === "long" && <path d="M8.5 17c0-6.8 4.2-10.8 9.5-10.8s9.5 4 9.5 10.8v10.5h-19z" fill={p.hair} />}
       {/* Shoulders */}
-      <path d="M5 36c.8-6.6 6.2-10.4 13-10.4S30.2 29.4 31 36z" fill={person === "mike" ? "#1E3A8A" : person === "claire" ? "#6D28D9" : "#9D174D"} />
+      <path d="M5 36c.8-6.6 6.2-10.4 13-10.4S30.2 29.4 31 36z" fill={person === "mike" ? "#1E3A8A" : person === "claire" ? "#6D28D9" : person === "james" ? "#166534" : "#9D174D"} />
       {/* Neck and head */}
       <rect x="15.2" y="20" width="5.6" height="6.4" rx="2.4" fill={p.skin} />
       <ellipse cx="18" cy="15.6" rx="6.3" ry="7" fill={p.skin} />
@@ -69,7 +70,7 @@ export function Avatar({ person, className }: { person: Person; className?: stri
  * Ally's emails) and Sign out, which returns to the sign-in page.
  */
 /** The demo's people, as the account menu switches between them. */
-const ROLES: Record<Person, string> = { claire: "VP Ecommerce", michelle: "Sales analyst", mike: "Content lead" }
+const ROLES: Record<Person, string> = { claire: "VP Ecommerce", michelle: "Sales analyst", mike: "Content lead", james: "Media lead" }
 
 function AccountMenu({ person }: { person: Person }) {
   const [email, setEmail] = useState<string | null>(null)
@@ -121,7 +122,7 @@ function AccountMenu({ person }: { person: Person }) {
   )
 }
 
-const HOMES: Record<Person, string> = { claire: "/claire-waterfall", mike: "/mike", michelle: "/michelle" }
+const HOMES: Record<Person, string> = { claire: "/claire-waterfall", mike: "/mike", michelle: "/michelle", james: "/james" }
 const VIEWER_KEY = "ally-viewer-home"
 
 /**

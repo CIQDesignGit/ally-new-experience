@@ -11,6 +11,7 @@ import { AUTOPILOT_GO_LIVE, BUSINESS, contentBatches, fmtBiz, fmtValue, launched
 import { useLive } from "./live-model"
 import { shortDate } from "./model"
 import { RETRO } from "./retro/prime-day"
+import { MEDIA_BATCHES } from "./media/data"
 
 const OPEN_W = "264px"
 const SHUT_W = "64px"
@@ -29,7 +30,7 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
     const t = window.setTimeout(() => setSaved(rememberedHome()), 0)
     return () => window.clearTimeout(t)
   }, [path])
-  const home = ["/claire-waterfall", "/mike", "/michelle"].includes(path) ? path : (homeProp ?? saved ?? "/michelle")
+  const home = ["/claire-waterfall", "/mike", "/michelle", "/james"].includes(path) ? path : (homeProp ?? saved ?? "/michelle")
   const kind = path === home ? "brief" : "conversation"
   // Pinned stays open everywhere; unpinned closes on its own a few seconds after the pointer leaves it.
   const [pinned, setPinned] = useState(false)
@@ -151,7 +152,9 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
       ? contentBatches(policy, launchedIds(approved), launchReady).filter((b) => b.tier === "approval" && !approved[b.id]).length
       : home === "/michelle"
         ? opsBatches(policy).filter((b) => b.tier === "approval" && !approved[b.id]).length
-        : live.approval.rows.filter((r) => (r.valueM ?? 0) > 0).length
+        : home === "/james"
+          ? MEDIA_BATCHES.filter((b) => b.tier === "approval" && !approved[b.id]).length
+          : live.approval.rows.filter((r) => (r.valueM ?? 0) > 0).length
 
   // Lists open in place; only Ask Ally shows its recent items without a click.
   const [openList, setOpenList] = useState<string | null>(path.startsWith("/c/") ? "Ask Ally" : null)
