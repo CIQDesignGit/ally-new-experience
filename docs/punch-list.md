@@ -20,11 +20,11 @@ Nothing is on Vercel; it's all on localhost:3000 and committed on `claire-exec-d
    - launch campaign from the new copy
    - no ads on pages that can't sell
    - one number for the loop
-3. **Mike's drafts** show the media side under "What Ally changed": what media funds once the pages are live, and the ad search term each draft adds. It follows James's approval.
+3. **Mike's drafts** show the media side under "What Ally changed": what media funds once the pages are live, and the ad search term queued for each page's next update. It follows James's approval.
 4. **$500K budget chat** on James's page. Claire's "$1M" question became the same "$500K" plan, with Send to James.
 5. **Settings › Data sources:**
    - Vendor Central and Amazon Ads through Amazon's sign-in
-   - Walmart Luminate and Target Partners Online by username and password
+   - Walmart Scintilla and Target Partners Online by username and password
    - PIM, and a data lake by share
 6. **Retailer switch** (All retailers · Amazon · Walmart · Target) on Claire's page and Gap to plan.
 7. **Use-case doc** restructured: ability first, then examples, then capabilities, plus the PRD-only section and the harness.
@@ -49,9 +49,9 @@ Nothing is on Vercel; it's all on localhost:3000 and committed on `claire-exec-d
    - Target "Needs attention" (password changed Oct 6), so the demo has a reconnect moment
    - data lake not connected
    - Passwords are never saved anywhere, not even in the browser
-   - "Walmart Luminate (Scintilla)", since Walmart rebranded Scintilla
 9. **Nav placement.** Data sources sits under the Settings gear next to Business view, not in the nav or Teach Ally. James is a fourth person in the account menu ("Media lead") with his own Today count.
-10. **Small fix along the way.** Waterfall stage headers under $1M now read in K ($980K, not $1.0M).
+10. **Small fix along the way.** Waterfall stage headers under $1M now read in K, matching the bars ($980K, not $1.0M).
+11. **Other retailers are view-only.** In Walmart, Target or All, Claire's rows say "Act in the Amazon view" instead of Assign. No Slack nudge goes out, and the demo row is hidden. A summary email is labeled with the retailer and offers no YES replies, because replies act on Amazon's queues.
 
 **Not done**
 - Mike's page doesn't list the "Add to the page" ad search terms as their own queue item. They live inside his Halloween and gift set drafts.

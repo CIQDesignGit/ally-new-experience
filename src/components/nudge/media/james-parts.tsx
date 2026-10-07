@@ -280,6 +280,9 @@ export function PacingSection() {
           <span className="font-mono">{MONTH_GONE}%</span> of the month gone
         </span>
       </div>
+      {/* Scrolls on its own below ~900px, so the tracks never collapse. */}
+      <div className="overflow-x-auto">
+      <div className="min-w-[820px]">
       <div className="mt-4 grid grid-cols-[140px_minmax(0,1fr)_100px_110px_minmax(0,260px)] gap-x-5 border-b border-slate-100 pb-2">
         <span className={HEAD}>Category</span>
         <span className={HEAD}>Spent</span>
@@ -305,6 +308,8 @@ export function PacingSection() {
           </div>
         )
       })}
+      </div>
+      </div>
     </section>
   )
 }

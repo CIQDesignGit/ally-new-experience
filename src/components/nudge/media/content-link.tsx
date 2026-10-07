@@ -10,8 +10,8 @@ export const contentApproved = (approved: Record<string, boolean>, batch: string
 
 /** Which content batches feed media, and with what: the keywords media funds, and the ad search terms content added. */
 const LINKS: Record<string, { play: string; funds: string; done: string; fromAds?: string }> = {
-  halloween: { play: "media-build", funds: "14 keywords these pages add", done: "James funded the 14 keywords · bids rise when these pages go live", fromAds: LEDGER.find((r) => r.status.includes("Halloween"))?.keyword },
-  gifts: { play: "media-build", funds: "14 keywords these pages add", done: "James funded the 14 keywords · bids rise when these pages go live", fromAds: LEDGER.find((r) => r.status.includes("gift set"))?.keyword },
+  halloween: { play: "media-build", funds: "the 14 keywords added across the Halloween pages and gift sets", done: "James funded the 14 keywords added across the Halloween pages and gift sets · bids rise when they go live", fromAds: LEDGER.find((r) => r.status.includes("Halloween pages"))?.keyword },
+  gifts: { play: "media-build", funds: "the 14 keywords added across the Halloween pages and gift sets", done: "James funded the 14 keywords added across the Halloween pages and gift sets · bids rise when they go live", fromAds: LEDGER.find((r) => r.status.includes("gift sets"))?.keyword },
   concepts: { play: "media-launch", funds: "a launch campaign on 42 keywords from these pages", done: "James approved the launch campaign · it starts when these pages go live" },
 }
 
@@ -37,7 +37,7 @@ export function MediaLink({ batchId }: { batchId: string }) {
       </div>
       {l.fromAds && (
         <div>
-          <span className="font-semibold text-slate-950">From ads · </span>&ldquo;{l.fromAds}&rdquo; converts in ads but wasn&apos;t on the page; these drafts add it
+          <span className="font-semibold text-slate-950">From ads · </span>&ldquo;{l.fromAds}&rdquo; converts in ads but isn&apos;t on these pages yet · queued for their next update
         </div>
       )}
     </div>

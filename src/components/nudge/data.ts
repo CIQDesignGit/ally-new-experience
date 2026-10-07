@@ -897,7 +897,7 @@ export const AUTOPILOT_BEST_IN_CLASS: Record<AgentId, number> = { content: 35, m
 
 export function fmtM(v: number): string {
   // Under $1M reads in K, like the bars it labels ($230K, not $0.2M).
-  return Math.abs(v) < 0.95 ? `$${Math.round(v * 1000)}K` : `$${v.toFixed(1)}M`
+  return Math.abs(v) < 1 ? `$${Math.round(v * 1000)}K` : `$${v.toFixed(1)}M`
 }
 
 /** K under a million, two-decimal M above — e.g. 0.478 → "$478K", 1.26 → "$1.26M". */

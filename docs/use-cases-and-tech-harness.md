@@ -54,7 +54,7 @@ One use case can use several abilities. "Launch the Winter Hearth collection" is
 | 22 | **Build a deck from data and a storyline** | Storyline → storyboard → branded export → send | QBR · negotiation deck · Prime Day retro · email the page as PDF | Michelle, Claire | A7 · D4 |
 | 23 | **Save answers as a live dashboard** | Each answer becomes a widget that stays live | Prime Day dashboard | Michelle | A8 · D4 |
 | 24 | **Log, verify and undo every change** | Record before and after, who or which rule → confirm live within 48 hours → undo where the retailer allows | Actions log · "Shipped by Ally" · audit of what agents did | Mike, CSM | O5 · V1 |
-| 25 | **Connect a data source** | Retailer sign-in (Amazon) or username and password kept in a vault (portals with no API) or a database share (data lake) → first sync → status and freshness | Settings › Data sources: Vendor Central, Amazon Ads, Walmart Luminate, Target Partners Online (reconnect after a password change), PIM, data lake | Admin, CSM | D1 · P1 · P4 |
+| 25 | **Connect a data source** | Retailer sign-in (Amazon) or username and password kept in a vault (portals with no API) or a database share (data lake) → first sync → status and freshness | Settings › Data sources: Vendor Central, Amazon Ads, Walmart Scintilla, Target Partners Online (reconnect after a password change), PIM, data lake | Admin, CSM | D1 · P1 · P4 |
 | 26 | **Hold a conversation that keeps context** | Thread per task → carry the page's context → keep history | Ask Ally on every page · conversation history | Everyone | C1 |
 
 ## Part 2: PRD use cases not built yet
@@ -76,7 +76,7 @@ One use case can use several abilities. "Launch the Winter Hearth collection" is
 
 | Layer | Capabilities | Used by abilities | In the demo today |
 |---|---|---|---|
-| **Data** | D1 retailer and ads connectors (Vendor Central, Ads API, SP-API, Luminate, Partners Online) · D2 digital shelf crawl, multi-ZIP · D3 plan, promo and launch calendar · D4 one semantic metric layer · D5 catalog: brand › category › SKU, hero/core/tail, PIM | 1–7, 10, 13–17, 20, 22–23, 25 | Static data; retailer numbers sized by factors |
+| **Data** | D1 retailer and ads connectors (Vendor Central, Ads API, SP-API, Scintilla, Partners Online) · D2 digital shelf crawl, multi-ZIP · D3 plan, promo and launch calendar · D4 one semantic metric layer · D5 catalog: brand › category › SKU, hero/core/tail, PIM | 1–7, 10, 13–17, 20, 22–23, 25 | Static data; retailer numbers sized by factors |
 | **Brain (analysis)** | B1 signal detection and sizing · B2 root cause and gap bridge · B3 forecast as a range · B4 ranking, marginal return and autonomy bucketing · B5 market model · B6 AI assistant tracking | 2–7, 10, 13–15 | Scripted answers |
 | **Worker agents** | A1 content generation · A2 image adaptation with retailer checks · A3 page preview · A4 publishing · A5 media executor (bids, budgets, campaigns) · A6 escalation drafting · A7 decks and PDF · A8 dashboards | 1, 2, 9, 10, 12–17, 20, 22, 23 | Pre-drafted content; PDF real |
 | **Orchestration** | O1 durable long-running tasks with timers · O2 scheduler and triggers · O3 one review policy engine · O4 assign, approve, nudge · O5 audit and undo | 2, 8–12, 14–16, 19–21, 24 | Demo clock, browser storage |

@@ -7,6 +7,7 @@ import { AGENT_DOT } from "../agent-style"
 import { AGENT_LABEL, type TierRow } from "../types"
 import { PRIMARY } from "../mike/buttons"
 import { countdown, dueFor, rowAction, useClaireActions } from "./claire-actions"
+import { useNudge } from "../nudge-context"
 
 /**
  * One row of "One approval away" on Claire's page: who, what, where it stands
@@ -27,6 +28,7 @@ const LINK = "text-[13px] font-medium text-brand-700 hover:underline"
 
 export function ClaireRow({ row, grid, showAction }: { row: TierRow; grid: string; /** The table has a button column (some row has a move). */ showAction: boolean }) {
   const { statusOf, assignFor, askFor, approveMyself, autopilotSeasonal, day, s } = useClaireActions()
+  const { retailer } = useNudge()
   const st = statusOf(row)
   const move = rowAction(row, s)
   const content = row.nudgeKey === "approval-content"
@@ -41,8 +43,10 @@ export function ClaireRow({ row, grid, showAction }: { row: TierRow; grid: strin
     </span>
   )
 
-  const action =
-    move === "autopilot-done" ? (
+  // The queues behind these rows are Amazon's: another retailer's view shows the work, and acting happens on Amazon's.
+  const action = retailer !== "amazon" ? (
+      <span className="inline-flex h-10 w-[180px] items-center justify-center text-[13px] text-slate-500">Act in the Amazon view</span>
+    ) : move === "autopilot-done" ? (
       did("Seasonal on autopilot")
     ) : move === "autopilot" ? (
       <span className="flex w-[180px] flex-col items-center gap-1.5">

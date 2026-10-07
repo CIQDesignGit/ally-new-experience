@@ -83,7 +83,7 @@ Working decisions from the exec-review follow-up (Sep 2026). Scope: content agen
 - Auto-send on by default: Ally emails each owner their actions every Monday 8:00 AM. Setting in the banner: "Send every Monday automatically" / "Let me review first" (review mode shows "Review and send").
 - Banner under the header: "Monday 8:00 AM: we emailed this week's actions to your team." + who's in progress + who hasn't started, with "Nudge [name]" (fires the real Slack DM).
 - Row statuses: "Emailed Mon · not started" or "In progress · X of Y". Row action becomes "Nudge again"; after a nudge, "Nudged today".
-- Demo state: Mike not started (keeps the live Slack moment), Michelle 12 of 30 POs sent, James 2 of 5 campaigns live. Tier values show what's left, so no totals change.
+- Demo state: Mike not started (keeps the live Slack moment), Michelle 12 of 30 POs sent, James reviewing his plays. Tier values show what's left, so no totals change.
 - Not doing: a Thursday auto-reminder (adds a concept).
 - Hero order: total → split by area → effort and expiry.
 

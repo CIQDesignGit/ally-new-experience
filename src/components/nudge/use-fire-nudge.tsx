@@ -6,6 +6,7 @@ import { useNudge } from "./nudge-context"
 import { nudgeTargets } from "./data"
 import { useSlackNudgeToast } from "./slack-toast"
 import { emailMe } from "./email-me"
+import { currentRetailer } from "./retailer"
 import type { TierRow } from "./types"
 
 /**
@@ -21,6 +22,8 @@ export function useFireNudge() {
   const sendSlack = useCallback(
     (row: TierRow, say?: { headline: string; chip: string }) => {
       if (!row.nudgeKey) return
+      // The owners' queues are Amazon's: a nudge from another retailer's view would quote numbers their queue doesn't show.
+      if (currentRetailer() !== "amazon") return
       const t = nudgeTargets(policy)[row.nudgeKey]
       if (!t) return
       const extra = say ? { headline: say.headline, chip: say.chip, deadlineDays: undefined } : {}

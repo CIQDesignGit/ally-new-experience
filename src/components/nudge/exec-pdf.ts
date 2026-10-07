@@ -1,6 +1,7 @@
 import { ASSIGN_DUE, REPLY_LINE, replyActions, rowStatus, shortDay, type WeekState } from "./claire/claire-actions"
 import { WEEK_START, type Ask } from "./nudge-context"
 import { DEFAULT_POLICY } from "./policy"
+import { currentRetailer, RETAILERS } from "./retailer"
 import { AS_OF, BUSINESS, INFLIGHT, deadlineView, fmtBiz, fmtM, fmtValue, getSnapshot, launchedIds, nudgeTargets, openView, tierView, waterfallStages } from "./data"
 import { rankLevers } from "./model"
 import { axisMin, buildColumns } from "./waterfall/waterfall-chart"
@@ -392,7 +393,8 @@ export function execDigest(period: Period, { approved, policy = DEFAULT_POLICY, 
   })
   const finished = owners.filter((r) => rowStatus(r, week).kind === "shipped").length
   const allyShipped = owners.map((r) => rowStatus(r, week)).find((st) => st.kind === "held")
-  const replies = replyActions(approval.rows, week)
+  // Replies act on Amazon's queues, so another retailer's summary offers none.
+  const replies = currentRetailer() === "amazon" ? replyActions(approval.rows, week) : []
   const actions: DigestRow[] = replies.map((r) => ({ label: `${r.n} · ${r.label}`, note: r.note, value: r.row?.value, tone: r.kind === "approve" ? "warn" : undefined }))
   // Monday: the week's lists, each person's worth and deadline, for Claire to send by replying.
   const monday = replies.some((r) => r.kind === "assign")
@@ -413,11 +415,12 @@ export function execDigest(period: Period, { approved, policy = DEFAULT_POLICY, 
 
   return {
     // Monday: this week's work, for Claire to hand out by replying.
-    subject: monday
+    // Another retailer's view says so up front: its numbers aren't Amazon's.
+    subject: (currentRetailer() === "amazon" ? "" : `${RETAILERS.find((r) => r.id === currentRetailer())!.label} · `) + (monday
       ? `${shortDay(day)}: this week's work for your team · ${approval.value} one approval away`
       : team.length
       ? `${shortDay(day)}: ${finished} of ${team.length} done${allyShipped ? ` · Ally shipped ${allyShipped.byAlly} on your deadline` : actions.length ? ` · ${actions.length} for you to decide` : ""}`
-      : `${quarter}: ${gap > 0 ? `${fmtBiz(gap)} short of plan, ${open.totalLabel} in the pipeline to close it` : `${fmtBiz(-gap)} ahead of plan`}`,
+      : `${quarter}: ${gap > 0 ? `${fmtBiz(gap)} short of plan, ${open.totalLabel} in the pipeline to close it` : `${fmtBiz(-gap)} ahead of plan`}`),
     preheader: deadline ? `${deadline.expiring} expires in ${deadline.days} days` : `${approval.effort} of your team's time unlocks ${approval.value}`,
     chart,
     hero: [`You're tracking to ${fmtBiz(pace)} in sales ${PERIOD_WORDS[period]}.`, `That's ${standing}.`],

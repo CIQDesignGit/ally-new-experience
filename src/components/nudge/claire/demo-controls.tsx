@@ -72,6 +72,8 @@ export function DemoControls() {
     }
   }
 
+  // The week is played on Amazon's queues; another retailer's view hides the presenter row.
+  if (n.retailer !== "amazon") return null
   const LINK = "text-xs font-medium text-slate-600 hover:text-brand-700 disabled:pointer-events-none disabled:text-slate-300"
   return (
     <div className="flex items-center gap-4">

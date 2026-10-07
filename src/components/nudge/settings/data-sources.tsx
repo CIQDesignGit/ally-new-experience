@@ -31,7 +31,7 @@ interface Source {
 const SEED: Source[] = [
   { id: "vc", name: "Amazon Vendor Central", group: "Retailers", feeds: "Sales, traffic, inventory, POs", method: "amazon", status: "connected", note: "Synced today, 6:00 AM", logo: "/logos/retailer-amazon.png", mark: "a" },
   { id: "ads", name: "Amazon Ads", group: "Retailers", feeds: "Media agent: bids, budgets, search terms", method: "amazon", status: "connected", note: "Synced today, 7:00 AM", logo: "/logos/retailer-amazon.png", mark: "a" },
-  { id: "walmart", name: "Walmart Luminate (Scintilla)", group: "Retailers", feeds: "Sales, inventory, search", method: "password", status: "connected", note: "Synced today, 5:30 AM", mark: "W" },
+  { id: "walmart", name: "Walmart Scintilla", group: "Retailers", feeds: "Sales, inventory, search", method: "password", status: "connected", note: "Synced today, 5:30 AM", mark: "W" },
   { id: "target", name: "Target Partners Online", group: "Retailers", feeds: "Sales, inventory", method: "password", status: "attention", note: "Password changed Oct 6 · synced Oct 5", mark: "T" },
   { id: "pim", name: "Salsify PIM", group: "Your data", feeds: "Content agent: product source of truth", method: "password", status: "connected", note: "Synced today, 4:00 AM", logo: "/logos/salsify.png", mark: "S" },
   { id: "lake", name: "Your data lake", group: "Your data", feeds: "Plan, margin, first-party sales", method: "warehouse", status: "off", note: "Snowflake, BigQuery, Databricks or S3", mark: "D" },
@@ -68,10 +68,10 @@ export function DataSources() {
       {(["Retailers", "Your data"] as const).map((group) => (
         <section key={group} className="overflow-hidden rounded-xl border border-slate-200 bg-white">
           <div className="border-b border-slate-100 px-6 py-3.5 text-[15px] font-semibold text-slate-950">{group}</div>
-          <div className="grid grid-cols-[36px_minmax(0,1fr)_minmax(0,1fr)_200px_112px] items-center gap-4 px-6 pt-3 pb-1 text-xs font-medium text-slate-500">
+          <div className="grid grid-cols-[36px_minmax(0,1fr)_150px_112px] lg:grid-cols-[36px_minmax(0,1fr)_minmax(0,1fr)_200px_112px] items-center gap-4 px-6 pt-3 pb-1 text-xs font-medium text-slate-500">
             <span />
             <span>Source</span>
-            <span>Feeds</span>
+            <span className="hidden lg:block">Feeds</span>
             <span>Status</span>
             <span />
           </div>
@@ -83,7 +83,7 @@ export function DataSources() {
                 const isOpen = open === s.id
                 return (
                   <div key={s.id} className="border-t border-slate-100 first:border-t-0">
-                    <div className="grid grid-cols-[36px_minmax(0,1fr)_minmax(0,1fr)_200px_112px] items-center gap-4 py-3 text-sm">
+                    <div className="grid grid-cols-[36px_minmax(0,1fr)_150px_112px] lg:grid-cols-[36px_minmax(0,1fr)_minmax(0,1fr)_200px_112px] items-center gap-4 py-3 text-sm">
                       {s.logo ? (
                         // eslint-disable-next-line @next/next/no-img-element -- a local demo asset
                         <img src={s.logo} alt="" className="size-9 rounded-lg object-contain ring-1 ring-slate-200" />
@@ -94,7 +94,7 @@ export function DataSources() {
                         <span className="block font-medium text-slate-950">{s.name}</span>
                         <span className="block truncate text-[13px] text-slate-500">{s.note}</span>
                       </span>
-                      <span className="text-slate-700">{s.feeds}</span>
+                      <span className="hidden text-slate-700 lg:block">{s.feeds}</span>
                       <span className={cn("flex items-center gap-1.5 text-[13px] font-medium", st.text)}>
                         <span className={cn("size-1.5 rounded-full", st.dot)} />
                         {st.label}
