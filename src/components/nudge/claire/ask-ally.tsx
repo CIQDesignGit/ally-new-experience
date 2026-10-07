@@ -9,7 +9,7 @@ import { Answer, QUESTIONS } from "./ask-ally-answers"
 /** Claire's keyword match so a typed question lands on the same answers as the chips. */
 function claireMatch(text: string): string | null {
   const t = text.toLowerCase()
-  if (t.includes("invest") || t.includes("$1m")) return QUESTIONS[0]
+  if (t.includes("invest") || t.includes("budget") || t.includes("$500k")) return QUESTIONS[0]
   if (t.includes("adoption") || t.includes("hasn't acted") || t.includes("by team")) return QUESTIONS[1]
   if (t.includes("behind") || t.includes("miss") || t.includes("60")) return QUESTIONS[2]
   if (t.includes("autopilot")) return QUESTIONS[3]

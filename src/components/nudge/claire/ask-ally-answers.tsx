@@ -17,7 +17,7 @@ import { AGENT_LABEL } from "../types"
 
 /** Waterfall (business-first) version: the proof section is this quarter so far. */
 export const QUESTIONS = [
-  "Where should I invest an additional $1M?",
+  "Where should I invest an additional $500K?",
   "Show me autopilot adoption by team",
   // Named from this quarter's numbers (Q4 FY26 so far), so the chip never disagrees with the page.
   `Why is content ${fmtValue(DELIVERED.quarter.content.promised - DELIVERED.quarter.content.delivered)} behind projection?`,
@@ -26,7 +26,7 @@ export const QUESTIONS = [
   "Email this summary to my team",
 ] as const
 /** Tier version (/claire): the proof section is last quarter, and "How you compare" is on the page. */
-export const QUESTIONS_Q2 = [QUESTIONS[0], QUESTIONS[1], "Why did content miss by $190K?", QUESTIONS[3], QUESTIONS[4]] as const
+export const QUESTIONS_Q2 = ["Where should I invest an additional $1M?", QUESTIONS[1], "Why did content miss by $190K?", QUESTIONS[3], QUESTIONS[4]] as const
 export type Question = (typeof QUESTIONS)[number] | (typeof QUESTIONS_Q2)[number]
 
 const cell = "px-3 py-2.5"
@@ -248,7 +248,7 @@ function PlanAnswer() {
 
 /** lastQuarter: the tier version, whose proof section is Q2 and still has "How you compare". */
 export function Answer({ q, lastQuarter = false }: { q: Question; lastQuarter?: boolean }) {
-  if (q === QUESTIONS[0]) return <InvestAnswer />
+  if (q === QUESTIONS_Q2[0]) return <InvestAnswer />
   if (q === QUESTIONS[1]) return <AdoptionAnswer />
   if (q === QUESTIONS[2] || q === QUESTIONS_Q2[2]) return <ContentMissAnswer lastQuarter={lastQuarter} />
   if (q === QUESTIONS[3]) return <AutopilotNextAnswer withCompare={lastQuarter} />

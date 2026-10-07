@@ -7,6 +7,7 @@
  */
 import type { ContentDelivered } from "./delivered-content-data"
 import type { AgentId, Period } from "./types"
+import { LOOP_DELIVERED } from "./media/data"
 
 export interface PeriodDelivered {
   /** "Q4 FY26 so far": the section title. */
@@ -154,7 +155,8 @@ const QTD_OPS: ContentDelivered = {
   ],
 }
 
-const QTD_MEDIA = { promised: 0.09, delivered: 0.1, reason: "IROAS $3.08 vs $2.80 plan" }
+// The content loop's share: keywords content added that media then funded.
+const QTD_MEDIA = { promised: 0.09, delivered: 0.1, reason: `IROAS $3.08 vs $2.80 plan · $${Math.round(LOOP_DELIVERED * 1000)}K on keywords content added` }
 
 /* Jan 1 – Oct 8 ------------------------------------------------------------- */
 const YEAR: PeriodDelivered = {

@@ -9,6 +9,7 @@ import { PageShell } from "@/components/layout/page-shell"
 import { ReviewPolicy } from "@/components/nudge/settings/review-policy"
 import { Knowledge } from "@/components/nudge/settings/knowledge"
 import { BusinessSettings } from "@/components/nudge/settings/business-settings"
+import { DataSources } from "@/components/nudge/settings/data-sources"
 import { AnswerCard, AskBar, ChatProvider, ChatThread, StarterChips } from "@/components/nudge/chat/inline-chat"
 import { useNudge } from "@/components/nudge/nudge-context"
 import { RunList } from "@/components/nudge/runs/run-list"
@@ -20,7 +21,10 @@ const TABS = [
   { id: "knowledge", label: "Knowledge" },
   { id: "policy", label: "Autopilot" },
   { id: "business", label: "Business view" },
+  { id: "sources", label: "Data sources" },
 ] as const
+/** The gear's tabs (Settings); the rest are Teach Ally's. */
+const SETTINGS_TABS: string[] = ["business", "sources"]
 
 /**
  * Teach Ally (from the nav): what runs on autopilot, the skills it has learned,
@@ -38,13 +42,13 @@ function Settings() {
 
   return (
     <>
-    <TopStrip person="claire" home="/claire-waterfall" className="px-12" crumbs={[{ label: "Home", onClick: back }, { label: tab === "business" ? "Settings" : "Teach Ally" }]} />
+    <TopStrip person="claire" home="/claire-waterfall" className="px-12" crumbs={[{ label: "Home", onClick: back }, { label: SETTINGS_TABS.includes(tab) ? "Settings" : "Teach Ally" }]} />
     <div className="flex flex-col gap-6 px-12 pt-4 pb-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
-        <h1 className="text-[28px] font-semibold tracking-tight text-slate-950">{tab === "business" ? "Settings" : "Teach Ally"}</h1>
+        <h1 className="text-[28px] font-semibold tracking-tight text-slate-950">{SETTINGS_TABS.includes(tab) ? "Settings" : "Teach Ally"}</h1>
         <div className="flex rounded-lg border border-slate-200 bg-slate-25 p-1">
           {/* Teach Ally's three tabs; the gear's Business view stands on its own as Settings. */}
-          {TABS.filter((t) => (tab === "business") === (t.id === "business")).map((t) => (
+          {TABS.filter((t) => SETTINGS_TABS.includes(tab) === SETTINGS_TABS.includes(t.id)).map((t) => (
             <button
               key={t.id}
               type="button"
@@ -59,7 +63,7 @@ function Settings() {
           ))}
         </div>
       </div>
-      {tab === "policy" ? <ReviewPolicy /> : tab === "skills" ? <SkillsList /> : tab === "knowledge" ? <Knowledge /> : <BusinessSettings />}
+      {tab === "policy" ? <ReviewPolicy /> : tab === "skills" ? <SkillsList /> : tab === "knowledge" ? <Knowledge /> : tab === "sources" ? <DataSources /> : <BusinessSettings />}
     </div>
     </>
   )

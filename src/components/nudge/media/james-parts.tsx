@@ -398,11 +398,6 @@ export function MediaDelivered() {
       </div>
       <ul className="mt-4 flex flex-col gap-1.5 text-[15px] text-slate-700">
         <li>{m.reason}</li>
-        {loop !== undefined && (
-          <li>
-            <span className="font-mono text-success-700">{money(loop)}</span> of it on keywords content added
-          </li>
-        )}
         {loop !== undefined && <li>38 keywords harvested · $21K a week moved to them</li>}
       </ul>
     </section>
