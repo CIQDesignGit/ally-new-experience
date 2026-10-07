@@ -6,7 +6,7 @@ import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { PublishConfetti } from "@/components/home/publish-confetti"
 import { TopStrip, useViewer } from "../top-strip"
-import { BUSINESS, fmtBiz } from "../data"
+import { BUSINESS, fmtBiz, fmtValue } from "../data"
 import { DELIVERED } from "../delivered-periods"
 import { useLive } from "../live-model"
 import { money } from "../model"
@@ -166,7 +166,7 @@ export function MediaList({ selectedId, filter, onFilter, onSelect }: { selected
                 </span>
               </span>
               <span className="text-right">
-                <span className={cn("block font-mono text-[14px] font-semibold tabular-nums", done ? "text-success-700" : b.tier === "autopilot" ? "text-slate-500" : "text-slate-950")}>{money(b.value)}</span>
+                <span className={cn("block font-mono text-[14px] font-semibold tabular-nums", done ? "text-success-700" : b.tier === "autopilot" ? "text-slate-500" : "text-slate-950")}>{fmtValue(b.value)}</span>
                 {status && <span className="mt-0.5 block text-xs font-medium whitespace-nowrap">{status}</span>}
               </span>
             </button>
@@ -189,10 +189,10 @@ export function MediaDetail({ batch, onAction }: { batch: MediaBatch; onAction: 
         <div className="min-w-0">
           <div className="text-sm font-medium text-slate-500">{batch.play}</div>
           <div className="mt-0.5 text-2xl font-semibold tracking-tight text-slate-950">{batch.name}</div>
-          {w && <div className={cn("mt-1 text-sm font-medium", w.ready ? "text-brand-700" : "text-slate-500")}>{w.text}</div>}
+          {w && !done && <div className={cn("mt-1 text-sm font-medium", w.ready ? "text-brand-700" : "text-slate-500")}>{w.text}</div>}
         </div>
         <div className="shrink-0 text-right">
-          <div className={cn("font-mono text-[28px] font-bold tracking-tight tabular-nums", done ? "text-success-700" : "text-slate-950")}>+{money(batch.value)}</div>
+          <div className={cn("font-mono text-[28px] font-bold tracking-tight tabular-nums", done ? "text-success-700" : "text-slate-950")}>+{fmtValue(batch.value)}</div>
           <div className="mt-0.5 text-sm text-slate-500">{batch.spend ? `${batch.spend} · ` : ""}incremental sales</div>
         </div>
       </div>
