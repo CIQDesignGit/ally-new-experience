@@ -22,6 +22,11 @@ You asked me to finish everything and push to live. Rollback point if any of thi
 
 ## Still open (for you to decide)
 
+- **Data sources page** (Settings): Amazon Vendor Central, Walmart Scintilla, Target Partners Online, customer data lake; connect per source. Plan proposed Oct 7, waiting for your OK.
+- **Retailer switch** in the header so the product works for any retailer. Plan proposed Oct 7, waiting on how deep Walmart and Target go.
+- **Content ↔ media flywheel** use cases (keyword ledger shared by both agents). Plan proposed Oct 7, waiting for your OK.
+- **Use-case doc restructure** (abilities, then examples; PRD-only section). Waiting for your OK.
+
 - Pausing an alert doesn't yet stop it showing up in Michelle's inbox; it's a status on the Scheduled page for now.
 - The Scheduled page's sparkline trend column was dropped in the new list ("Last run" shows the number). Say if you want the trend back.
 

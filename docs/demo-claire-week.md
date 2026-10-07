@@ -56,8 +56,11 @@
 - Optional, between Wednesday and Friday: approves the gift sets (180 SKUs) to show "Mike did half".
 - Friday: sees what Ally shipped and the 20 hero SKUs waiting for him.
 
-**James**
-- Nothing on stage. He finishes his campaigns by Wednesday. He has no page or real Slack in the demo.
+**James** (media; his page is `/james`)
+- Nothing required on stage. His three plays are approved for him by Wednesday: fund the 14 keywords content added, the Winter Hearth launch campaign, and moving $24K from large jars to gift sets ($560K).
+- Optional cut-away: his page shows the content-and-media loop. Pacing by category, keyword harvesting, and the keyword table both agents share. Mike's Halloween drafts show what media funds once they're live.
+- Optional: ask "I have $500K more budget. How do I spend it?" on his page (or Claire asks "Where should I invest an additional $500K?" and sends it to him). Approving the plan clears his Needs your input row ($1.04M).
+- No real Slack for James in the demo.
 
 **Michelle**
 - Nothing on stage. Her work is played for her: 6 of 28 SKUs approved by Wednesday, the rest by Friday.
