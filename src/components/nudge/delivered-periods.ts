@@ -27,10 +27,10 @@ const WEEK: PeriodDelivered = {
     did: "31 SKUs improved this week",
     summary: [
       "We put 24 SKUs live early for Halloween, improved everyday content on 6 and unblocked 1 for syndication: $60K of $70K projected this week.",
-      "$5K is waiting on 5 Halloween SKUs still in approval and $5K on 1 SKU that needs your team.",
+      "$5K was missed while 5 Halloween SKUs waited on approval, and $5K while 1 SKU waited on your team.",
     ],
     bullets: [
-      { tone: "orange", text: "31 of 37 SKUs went live. 5 are waiting on approval (−$5K) and 1 needs your team's input (−$5K).", action: "autopilot" },
+      { tone: "orange", text: "31 of 37 SKUs went live. 5 waited on approval (−$5K) and 1 waited on your team's input (−$5K).", action: "autopilot" },
       { tone: "green", text: "Sales increased $60K (2.4%) compared to control, adjusted for ad spend, pricing and unavailability." },
     ],
     workTypes: [
@@ -38,7 +38,7 @@ const WEEK: PeriodDelivered = {
         id: "seasonal", name: "Seasonal", method: "vs category", did: "24 SKUs live early for Halloween", promised: 0.035, delivered: 0.03,
         bullets: [
           { tone: "green", text: "24 SKUs went live early for Halloween and are running $30K (2.2%) ahead of the category average." },
-          { tone: "orange", text: "−$5K vs projected: 5 SKUs are still waiting on approval.", action: "autopilot" },
+          { tone: "orange", text: "−$5K vs projected: 5 SKUs waited on approval.", action: "autopilot" },
         ],
       },
       {
@@ -49,7 +49,7 @@ const WEEK: PeriodDelivered = {
         id: "retail-readiness", name: "Retail readiness", method: "A/B tested", did: "1 SKU unblocked", promised: 0.01, delivered: 0.005,
         bullets: [
           { tone: "green", text: "1 SKU unblocked for syndication by filling 4 backend attributes." },
-          { tone: "orange", text: "1 SKU needs your team's input (−$5K).", action: "nudge-team" },
+          { tone: "orange", text: "1 SKU waited on your team's input (−$5K).", action: "nudge-team" },
         ],
       },
     ],
@@ -60,18 +60,18 @@ const WEEK: PeriodDelivered = {
     did: "9 SKUs fixed in 48 hours",
     summary: [
       "We fixed 9 SKUs losing the buy box, a promo badge or shipping speed within 48 hours: $45K of leakage prevented of $50K projected.",
-      "$5K is waiting on 1 restock.",
+      "$5K was missed waiting on 1 restock.",
     ],
     bullets: [
       { tone: "green", text: "Caught and fixed 9 SKUs in 48 hours instead of 2 weeks." },
-      { tone: "orange", text: "−$5K vs projected: 1 buy-box fix is waiting on a restock.", action: "nudge-team" },
+      { tone: "orange", text: "−$5K vs projected: 1 buy-box fix waited on a restock.", action: "nudge-team" },
     ],
     workTypes: [
       {
         id: "buy-box", name: "Buy box", method: "Leakage prevented", did: "5 SKUs won back", promised: 0.03, delivered: 0.025,
         bullets: [
           { tone: "green", text: "Won back the buy box on 4 of 5 SKUs within 48 hours." },
-          { tone: "orange", text: "1 fix is waiting on a restock (−$5K).", action: "nudge-team" },
+          { tone: "orange", text: "1 fix waited on a restock (−$5K).", action: "nudge-team" },
         ],
       },
       {
@@ -94,10 +94,10 @@ const QTD_CONTENT: ContentDelivered = {
   did: "52 SKUs improved so far",
   summary: [
     "We put 40 SKUs live early for Halloween, improved everyday content on 10 and unblocked 2 for syndication: $100K banked of $120K projected so far.",
-    "$10K is waiting on 8 Halloween SKUs still in approval and $10K on 2 SKUs that need your team.",
+    "$10K was missed while 8 Halloween SKUs waited on approval, and $10K while 2 SKUs waited on your team.",
   ],
   bullets: [
-    { tone: "orange", text: "52 of 62 SKUs went live. 8 are waiting on approval (−$10K) and 2 need your team's input (−$10K).", action: "autopilot" },
+    { tone: "orange", text: "52 of 62 SKUs went live. 8 waited on approval (−$10K) and 2 waited on your team's input (−$10K).", action: "autopilot" },
     { tone: "green", text: "Sales increased $100K (2.3%) compared to control (category average, or a 50/50 traffic split where possible), adjusted for ad spend, pricing and unavailability." },
   ],
   workTypes: [
@@ -105,7 +105,7 @@ const QTD_CONTENT: ContentDelivered = {
       id: "seasonal", name: "Seasonal", method: "vs category", did: "40 SKUs live early for Halloween", promised: 0.06, delivered: 0.05,
       bullets: [
         { tone: "green", text: "40 of 48 early Halloween SKUs went live and are running $50K (2.1%) ahead of the category average, adjusted for pricing, ad spend and availability." },
-        { tone: "orange", text: "−$10K vs projected: 8 SKUs are still waiting on approval.", action: "autopilot" },
+        { tone: "orange", text: "−$10K vs projected: 8 SKUs waited on approval.", action: "autopilot" },
       ],
     },
     {
@@ -116,7 +116,7 @@ const QTD_CONTENT: ContentDelivered = {
       id: "retail-readiness", name: "Retail readiness", method: "A/B tested", did: "2 SKUs unblocked", promised: 0.02, delivered: 0.01,
       bullets: [
         { tone: "green", text: "2 SKUs unblocked for syndication by filling 9 backend attributes." },
-        { tone: "orange", text: "2 SKUs need your team's input (−$10K).", action: "nudge-team" },
+        { tone: "orange", text: "2 SKUs waited on your team's input (−$10K).", action: "nudge-team" },
       ],
     },
   ],
@@ -128,18 +128,18 @@ const QTD_OPS: ContentDelivered = {
   did: "18 SKUs fixed in 48 hours",
   summary: [
     "We fixed 18 SKUs losing the buy box, a promo badge or shipping speed within 48 hours: $80K of leakage prevented of $90K projected.",
-    "$5K is waiting on 1 restock and the retailer rejected 1 promo badge ($5K).",
+    "$5K was missed waiting on 1 restock and the retailer rejected 1 promo badge ($5K).",
   ],
   bullets: [
     { tone: "green", text: "Caught 18 SKUs losing the buy box, missing a promo badge, or dropping below the shipping speed bar, and fixed them in 48 hours instead of 2 weeks." },
-    { tone: "orange", text: "−$10K vs projected: 1 buy-box fix is waiting on a restock (−$5K) and the retailer rejected 1 promo badge (−$5K).", action: "nudge-team" },
+    { tone: "orange", text: "−$10K vs projected: 1 buy-box fix waited on a restock (−$5K) and the retailer rejected 1 promo badge (−$5K).", action: "nudge-team" },
   ],
   workTypes: [
     {
       id: "buy-box", name: "Buy box", method: "Leakage prevented", did: "9 SKUs won back", promised: 0.05, delivered: 0.045,
       bullets: [
         { tone: "green", text: "Won back the buy box on 8 of 9 SKUs within 48 hours, 12 days sooner than a manual fix." },
-        { tone: "orange", text: "1 fix is waiting on a restock (−$5K).", action: "nudge-team" },
+        { tone: "orange", text: "1 fix waited on a restock (−$5K).", action: "nudge-team" },
       ],
     },
     {
@@ -168,10 +168,10 @@ const YEAR: PeriodDelivered = {
     did: "620 SKUs improved this year",
     summary: [
       "Across Valentine's Day, Mother's Day, back to school and early Halloween, plus everyday content and syndication fixes: $1.78M banked of $2.09M projected.",
-      "$120K was lost to SKUs not approved in time, $60K to stockouts, $70K to content that lost its A/B test, and $60K is waiting on your team.",
+      "$120K expired waiting on approval, $60K was lost to stockouts, $70K to content that lost its A/B test, and $60K was missed waiting on your team.",
     ],
     bullets: [
-      { tone: "orange", text: "−$310K vs projected: $120K waited on approval past the event, $60K ran out of stock, $70K lost its A/B test and $60K needs your team's input.", action: "autopilot" },
+      { tone: "orange", text: "−$310K vs projected: $120K expired waiting on approval, $60K ran out of stock, $70K lost its A/B test and $60K waited on your team's input.", action: "autopilot" },
       { tone: "green", text: "Sales increased $1.78M (3.4%) compared to control, adjusted for ad spend, pricing and unavailability." },
     ],
     workTypes: [
@@ -194,7 +194,7 @@ const YEAR: PeriodDelivered = {
         id: "retail-readiness", name: "Retail readiness", method: "A/B tested", did: "42 SKUs unblocked", promised: 0.32, delivered: 0.26,
         bullets: [
           { tone: "green", text: "42 SKUs unblocked for syndication by auto-filling 180 backend attributes." },
-          { tone: "orange", text: "−$60K vs projected: 11 SKUs still need your team's input.", action: "nudge-team" },
+          { tone: "orange", text: "−$60K vs projected: 11 SKUs waited on your team's input.", action: "nudge-team" },
         ],
       },
     ],

@@ -1,6 +1,5 @@
 "use client"
 
-import Link from "next/link"
 import { useState } from "react"
 import { cn } from "@/lib/utils"
 import { TEAM_TIER, fmtValue } from "../data"
@@ -8,9 +7,8 @@ import { DELIVERED, leverDelivered } from "../delivered-periods"
 import { useNudge } from "../nudge-context"
 import { AGENT_LABEL } from "../types"
 import type { AgentId, TierRow } from "../types"
-import { ContentWaterfall } from "./content-waterfall"
-import { BarKey, BarRow } from "./delivered/bar-row"
-import { BRAND_TOTAL, GROWTH } from "../cs/context-data"
+import { BarKey, BarRow, WorkTypeBars } from "./delivered/bar-row"
+import { LearningLine } from "./learning-line"
 
 /** How each lever with a breakdown by type of work draws it. Media has none yet, so it stays a summary row. */
 const DRILLDOWN: Partial<Record<AgentId, { order?: string[]; barClass?: string; teamRow?: TierRow; resultsHref?: string }>> = {
@@ -57,14 +55,8 @@ export function ThisQuarterSection() {
         </span>
       </div>
 
-      {/* Why the delivered number keeps rising: what Ally has learned about the brand. */}
-      <div className="mt-2 text-sm text-slate-500">
-        Ally knows <span className="font-mono font-semibold text-slate-950">{BRAND_TOTAL}</span> things about Aurelle · <span className="font-mono font-semibold text-slate-950">{GROWTH[GROWTH.length - 1].firstPass}%</span> of drafts approved first time, was{" "}
-        <span className="font-mono">{GROWTH[0].firstPass}%</span> ·{" "}
-        <Link href="/settings?tab=context&from=claire" className="font-medium text-brand-700 hover:underline">
-          See what Ally knows
-        </Link>
-      </div>
+      {/* Why the delivered number keeps rising: Ally learns from the team every day. */}
+      <LearningLine href="/settings?tab=context&from=claire" />
       <BarKey />
       <div className="mt-3 overflow-hidden rounded-xl border border-slate-200 bg-white">
         {ORDER.map((agent) => {
@@ -76,7 +68,7 @@ export function ThisQuarterSection() {
             const data = d[agent]
             return (
               <BarRow key={agent} name={AGENT_LABEL[agent]} did={data.did} delivered={data.delivered} promised={data.promised} scale={scale} data={data} open={open === agent} onToggle={() => toggle(agent)}>
-                <ContentWaterfall data={data} order={style.order} totalLabel={AGENT_LABEL[agent]} barClass={style.barClass} teamRow={style.teamRow} resultsHref={style.resultsHref} />
+                <WorkTypeBars data={data} scale={scale} resultsHref={style.resultsHref} />
               </BarRow>
             )
           }

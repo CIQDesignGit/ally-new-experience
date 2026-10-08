@@ -189,7 +189,7 @@ const FOUNDATIONAL_TEST: AbTestCard = {
   delivered: 0.27,
   story: [
     "New content went live on 60 of 78 SKUs and beat the old content on 51 of them in A/B tests.",
-    "We fell $50K short because 18 SKUs are still waiting for approval. Where it went live, it did better than expected.",
+    "We fell $50K short because 18 SKUs waited on approval until the window closed. Where it went live, it did better than expected.",
   ],
   tested: 60,
   won: 51,
@@ -205,7 +205,7 @@ const FOUNDATIONAL_TEST: AbTestCard = {
   nextGain: 1.5,
   funnel: [
     { label: "Promised on 78 SKUs", value: 0.32, tone: "base" },
-    { label: "18 SKUs still waiting for approval", value: -0.075, tone: "minus", action: "autopilot" },
+    { label: "18 SKUs expired waiting on approval", value: -0.075, tone: "minus", action: "autopilot" },
     { label: "Expected on the 60 SKUs that went live", value: 0.245, tone: "sub" },
     { label: "Delivered on the 60 SKUs", value: 0.27, tone: "total" },
   ],
@@ -247,7 +247,7 @@ export const CONTENT_BANKED_Q3: ContentDelivered = {
   ],
   summary: [
     "We updated 150 SKUs for back to school, improved everyday content on 45 and unblocked 10 for syndication: $520K banked of $580K projected so far.",
-    "$35K is waiting on 28 SKUs still in approval, $10K on 3 SKUs that need your team, and $15K was lost to one stockout during back to school.",
+    "$35K expired on 28 SKUs waiting on approval, $10K on 3 SKUs waiting on your team, and $15K was lost to one stockout during back to school.",
   ],
   workTypes: [
     {
@@ -268,7 +268,7 @@ export const CONTENT_BANKED_Q3: ContentDelivered = {
       id: "retail-readiness", name: "Retail readiness", method: "A/B tested", did: "10 SKUs unblocked", promised: 0.09, delivered: 0.08,
       bullets: [
         { tone: "green", text: "10 SKUs unblocked for syndication (content last updated 2 quarters ago) by auto-updating 28 backend attributes." },
-        { tone: "orange", text: "3 SKUs need your team's input (−$10K).", action: "nudge-team" },
+        { tone: "orange", text: "3 SKUs expired waiting on your team's input (−$10K).", action: "nudge-team" },
       ],
     },
   ],
@@ -285,19 +285,19 @@ export const OPS_BANKED_Q3: ContentDelivered = {
   did: "78 SKUs fixed in 48 hours",
   summary: [
     "We caught 78 SKUs losing the buy box, missing a promo badge, or dropping below the shipping speed bar, and fixed them in 48 hours instead of 2 weeks: $310K of leakage prevented of $360K projected.",
-    "$30K is waiting on 2 restocks, the retailer rejected 4 promo badges ($10K), and 2 SKUs still ship too slowly from one warehouse ($10K).",
+    "$30K expired waiting on 2 restocks, the retailer rejected 4 promo badges ($10K), and 2 SKUs shipped too slowly from one warehouse ($10K).",
   ],
   bullets: [
     { tone: "green", text: "Caught 78 SKUs losing the buy box, missing a promo badge, or dropping below the shipping speed bar, and fixed them in 48 hours instead of 2 weeks." },
     { tone: "green", text: "$310K of revenue leakage prevented: each SKU's normal daily sales × the 12 days sooner it was fixed, adjusted for price and seasonality." },
-    { tone: "orange", text: "−$50K vs projected: 2 buy-box fixes are waiting on restocks (−$30K), the retailer rejected 4 promo badges (−$10K), and 2 SKUs still ship too slowly (−$10K).", action: "nudge-team" },
+    { tone: "orange", text: "−$50K vs projected: 2 buy-box fixes expired waiting on restocks (−$30K), the retailer rejected 4 promo badges (−$10K), and 2 SKUs shipped too slowly (−$10K).", action: "nudge-team" },
   ],
   workTypes: [
     {
       id: "buy-box", name: "Buy box", method: "Leakage prevented", did: "38 SKUs won back", promised: 0.18, delivered: 0.15,
       bullets: [
         { tone: "green", text: "Won back the buy box on 36 of 38 SKUs within 48 hours, 12 days sooner than a manual fix." },
-        { tone: "orange", text: "2 fixes are waiting on restocks (−$30K).", action: "nudge-team" },
+        { tone: "orange", text: "2 fixes expired waiting on restocks (−$30K).", action: "nudge-team" },
         { tone: "learn", text: "Ally now checks stock before chasing the buy box, so fixes don't stall on restocks." },
       ],
     },

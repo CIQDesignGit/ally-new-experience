@@ -1,9 +1,10 @@
 "use client"
 
-import { ChevronRight } from "lucide-react"
+import Link from "next/link"
+import { ArrowRight, ChevronRight } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { fmtValue } from "../../data"
-import type { Bullet } from "../../delivered-content-data"
+import type { Bullet, ContentDelivered } from "../../delivered-content-data"
 
 /** Name · bar · delivered of projected · the gap and why. One row per agent, on one scale. */
 const BAR_GRID = "grid grid-cols-[20px_200px_minmax(0,1fr)_128px_260px] items-center gap-4"
@@ -117,5 +118,41 @@ export function QueueDelivered({ label, rows, footer }: { label: string; rows: {
       </div>
       {footer && <div className="mt-4">{footer}</div>}
     </section>
+  )
+}
+
+const TONE_DOT: Record<string, string> = { orange: "bg-warning-500", red: "bg-error-500", green: "bg-success-500", learn: "bg-ally-500" }
+
+/**
+ * A lever opened on Claire's page: one bar per kind of work (what Mike or Michelle
+ * sees on their page), then what worked and how it was measured.
+ */
+export function WorkTypeBars({ data, scale, resultsHref }: { data: ContentDelivered; /** The section's scale, so a sub-row's bar is comparable to its parent's. */ scale: number; resultsHref?: string }) {
+  // The rows already say what waited; only what worked and how it was measured is new here.
+  const notes = (data.bullets ?? []).filter((b) => b.tone === "green" || b.tone === "learn")
+  const rows = [...data.workTypes].sort((a, b) => b.delivered - a.delivered)
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+        {rows.map((w) => (
+          <BarRow key={w.id} name={w.name} did={w.did} delivered={w.delivered} promised={w.promised} scale={scale} data={w} />
+        ))}
+      </div>
+      {notes.length > 0 && (
+        <ul className="flex flex-col gap-1.5 text-sm text-slate-700">
+          {notes.map((b) => (
+            <li key={b.text} className="flex gap-2.5">
+              <span className={cn("mt-1.5 size-2 shrink-0 rounded-full", TONE_DOT[b.tone] ?? "bg-slate-400")} />
+              <span className="min-w-0">{b.text}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+      {resultsHref && (
+        <Link href={resultsHref} className="inline-flex w-fit items-center gap-1 text-sm font-medium text-brand-700 hover:underline">
+          See SKU-level results and method <ArrowRight className="size-3.5" />
+        </Link>
+      )}
+    </div>
   )
 }
