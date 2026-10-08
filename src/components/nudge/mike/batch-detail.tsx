@@ -166,7 +166,7 @@ export function BatchDetail({ batch, onApprove, onReviewAll, onSelect, onSelectS
         </div>
       </div>
 
-      <MediaLink batchId={batch.id} />
+      <MediaLink key={batch.id} batchId={batch.id} />
 
       <div className="mt-8">
         {batch.tier === "autopilot" ? (
