@@ -4,38 +4,33 @@ Every screenshot or note Himanshu sends becomes a line here. Status: **open** �
 
 ## Oct 8: Sarah's CS view, built and waiting for your OK (localhost only)
 
-**What's built**
-1. **Sarah's page (`/sarah`).** She's Sarah Kim, retail expert at CommerceIQ, and the fifth person in the account menu. Her page shows:
-   - her next session from the calendar
-   - her four accounts in one line (only Aurelle is built deep)
-   - the Oct 1 call's six items
-   - the joint plan with Aurelle
-2. **Joint plan.** Thirteen deliverables from the Fully managed tier, grouped Weekly, Monthly, Quarterly, and Events and annual. It's built on the same list as Scheduled: open a row to edit it, pause it, or open its latest version. "Added from calls" holds what calls added.
-3. **Call items (Gong sample).** Each item shows the quote, who said it and when, then what Ally will do, with one button:
-   - **Supply gap:** Send to Ally
-   - **New SKU:** Send to Ally
-   - **Walmart pacing:** Add to plan
-   - **WBR to Tuesday with Target:** Change the plan
-   - **Brightwick promo alert:** Add the alert (it appears on Scheduled)
-   - **Q4 margin floor:** Save to Knowledge
-4. **Meeting prep (`/sarah/prep`), from the calendar event:**
-   - where they stand
-   - what we owe this week
-   - what they asked for last time, with each item's status
-   - what changed
-   - decisions to get
-   - the agenda, ranked deadline first
+**Reworked after your note:** Ally does the work; Sarah reviews it and delivers it to the customer. She never assigns work.
 
-   Send agenda shows the email first; Open as slides opens the weekly session deck on the existing deck builder.
-5. **Claire's plan (`/plan`).** Read-only, with "What changed · from our Oct 1 call · you asked". It's in her Reports and decks.
-6. **Data sources** has a Meetings group: Google Calendar and Gong, both connected.
+**What's built**
+1. **Sarah's page (`/sarah`):** "Ally did the work from the plan and the Oct 1 call. 5 ready for your review · 2 due to Claire today."
+2. **Ready for your review.** Each row is finished work, with where it came from (the plan, or the call with its quote and minute) and when the customer expects it:
+   - WBR deck with Target
+   - Cedar & Smoke supply gap: ads paused, VM note drafted, page update held
+   - Agenda for Thursday's session
+   - Pumpkin Chai mini launch kit
+   - Walmart pacing, first report
+
+   Opening a row shows what Ally did, a link to the work, and the drafted note to the customer (editable). Send delivers it; Hold keeps it back.
+3. **Ally changed from the Oct 1 call (with undo):**
+   - Walmart pacing added to the plan
+   - WBR moved to Tuesday with Target
+   - Brightwick alert set up (it shows on Scheduled)
+   - 32% margin floor saved to Knowledge
+4. **Sent on autopilot this week:** media pacing, the media actions update, AI visibility. In the plan, routine deliverables say "Does it, you can undo"; anything that speaks for CommerceIQ says "Drafts it for your OK".
+5. **Meeting prep** shows each ask's status: done by Ally, waiting for Sarah's review, delivered, or undone. Sending the agenda delivers the agenda item.
+6. **Claire's plan (`/plan`):** "Delivered this week" (autopilot items plus what Sarah sent), and "What changed · you asked" once Sarah has sent something.
 
 **Assumptions**
-1. **Sample call and calendar event.** They're in the shape the Gong and Calendar connectors return; nothing reads them for real yet.
-2. **Work items stay on Sarah's page.** "Send to Ally" (supply gap, new SKU) marks them done and says where the work went. It doesn't add rows to James's or Mike's queues, so their numbers don't move.
-3. **The agenda doesn't send a real email.** Send shows the email first, then confirms with a message on screen.
-4. **The plan's dates are set for Monday, Oct 5** (WBR due today, the session Thursday). They don't move with the demo clock yet.
-5. **The other accounts aren't clickable.** Lumen Pet, Northwind Home and Brightway Foods only show where they stand.
+1. **Sample call and event.** They're shaped like what the Gong and Calendar connectors return.
+2. **The queues don't move.** The work Ally did for the supply gap and the launch is described, not added as rows to Mike's or James's queues.
+3. **Send doesn't send a real email.** The note is editable, and Send confirms on screen.
+4. **Plan changes reach Claire with the first thing Sarah sends.**
+5. **Dates are fixed to Monday, Oct 5.**
 
 ## Overnight, Oct 7 → 8: locked (deployed Oct 8)
 

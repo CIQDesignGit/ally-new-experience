@@ -73,12 +73,8 @@
 
 ## Sarah (CommerceIQ retail expert) · optional cut-away
 
-- Open `/sarah`: her next session with Aurelle is Thursday at 2:00 PM, and six items from the Oct 1 call are waiting.
-- Click through the items:
-  - Send the supply gap to Ally
-  - Add Walmart pacing
-  - Change the WBR to Tuesday
-  - Add the Brightwick alert
-  - Save the margin floor to Knowledge
-- **Open meeting prep.** It shows what each ask became. **Send agenda to attendees** shows the email first. **Open as slides** builds the weekly session deck.
-- Switch to Claire: Reports and decks › **Your plan with CommerceIQ** shows the same plan, with what changed from the call.
+- Open `/sarah`: "Ally did the work from the plan and the Oct 1 call. 5 ready for your review."
+- **Review and send** the WBR: show what Ally did, the quote from the call, and the drafted note to Claire, then Send.
+- Below it: what Ally changed on its own from the call (with Undo), and what went out on autopilot.
+- **Meeting prep** shows every ask from the call and where it stands.
+- Switch to Claire: Reports and decks › **Your plan with CommerceIQ** shows what Sarah delivered and what changed, "you asked".
