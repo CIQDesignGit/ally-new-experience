@@ -58,7 +58,7 @@ export function DeckWorkspace({ spec }: { spec: DeckSpec }) {
   const [share, setShare] = useState(false)
   const [msgs, setMsgs] = useState<Msg[]>([
     { id: 1, from: "you", text: spec.ask },
-    { id: 2, from: "ally", text: `Here's the storyline. The storyboard is open on the right: ${spec.slides.length} slides, one per beat. Drag to reorder, or tell me what to change.` },
+    { id: 2, from: "ally", text: `Here's the storyline. The storyboard is open on the right: ${spec.slides.length} slides, one per beat. Drag to reorder, or tell me what to change.${spec.context ? ` ${spec.context}` : ""}` },
   ])
   const next = useRef(3)
 
@@ -105,7 +105,7 @@ export function DeckWorkspace({ spec }: { spec: DeckSpec }) {
   function openStoryboard() {
     setMsgs([
       { id: 1, from: "you", text: spec.ask },
-      { id: 2, from: "ally", text: `Here's the storyline. The storyboard is open on the right: ${slides.length} slides, one per beat. Drag to reorder, or tell me what to change.` },
+      { id: 2, from: "ally", text: `Here's the storyline. The storyboard is open on the right: ${slides.length} slides, one per beat. Drag to reorder, or tell me what to change.${spec.context ? ` ${spec.context}` : ""}` },
     ])
     setView("storyboard")
     setRetro({ stage: "storyboard" })
@@ -252,6 +252,7 @@ export function DeckWorkspace({ spec }: { spec: DeckSpec }) {
                 <StorylineStep
                   verdict={spec.verdict}
                   sources={spec.sources}
+                  context={spec.context}
                   forWhom={spec.forWhom.split(" ")[0]}
                   step={step}
                   slides={slides}

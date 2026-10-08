@@ -11,7 +11,8 @@ import { useNudge } from "../nudge-context"
 import { GAP_TREE } from "../ops/gap-data"
 import { PRIMARY, SECONDARY } from "../mike/buttons"
 import { useWork } from "./sarah-parts"
-import { ASKS, INBOX, LAST_CALL, NEXT_MEETING, RECAP, SINCE_LAST } from "./data"
+import { ASKS, CONTEXT_CHANGES, INBOX, LAST_CALL, NEXT_MEETING, RECAP, SENTIMENT, SINCE_LAST } from "./data"
+import { moodLine, useAttendees } from "./heard"
 
 /** What Ally read and decided while building the prep, in order. */
 const STEPS = [
@@ -59,8 +60,8 @@ export function MeetingPrep() {
   // Where each ask stands: Ally did it; on autopilot it's done, otherwise it waits for Sarah's approval.
   const askStatus = (answeredBy: string) => {
     const it = INBOX.find((x) => x.id === answeredBy)!
-    if (it.kind === "autopilot") return callItems[it.id] === "dismissed" ? { text: "Undone", tone: "text-slate-500", done: false } : { text: "Done by Ally · on autopilot", tone: "text-success-700", done: true }
-    return callItems[it.id] === "done" ? { text: "Approved", tone: "text-success-700", done: true } : { text: "Done by Ally · waiting for your approval", tone: "font-medium text-warning-700", done: false }
+    if (it.kind === "autopilot") return callItems[it.id] === "dismissed" ? { text: "Undone", tone: "text-slate-500", done: false } : { text: "Done on autopilot", tone: "text-success-700", done: true }
+    return callItems[it.id] === "done" ? { text: "Done · approved", tone: "text-success-700", done: true } : { text: "Built · goes out when you approve", tone: "text-slate-500", done: true }
   }
   const delivered = ASKS.filter((a) => askStatus(a.answeredBy).done).length
   const forward = RECAP.find((r) => r.id === "forward")!.lines
@@ -71,10 +72,11 @@ export function MeetingPrep() {
     { text: "Put seasonal content on autopilot from the next event", value: "394 more SKUs", agenda: "Decide on seasonal autopilot" },
   ].filter(Boolean) as { text: string; value: string; agenda: string }[]
   const agenda = [
+    `Your asks from ${LAST_CALL.short}: ${delivered === ASKS.length ? "all" : delivered} ${delivered === ASKS.length ? ASKS.length : `of ${ASKS.length}`} done`,
     "Halloween countdown: 21 days to publish, $660K one approval away",
     ...decisions.map((d) => d.agenda),
-    `Last week's asks: ${delivered} of ${ASKS.length} done`,
   ].slice(0, 5)
+  const attendees = useAttendees()
   const [sending, setSending] = useState(false)
   const [steps, setSteps] = useState(false)
   // Sending the agenda approves the call plan, here or from Sarah's inbox.
@@ -90,7 +92,7 @@ export function MeetingPrep() {
           </div>
           <h1 className="mt-1 text-[28px] leading-tight font-bold tracking-tight text-slate-950">{NEXT_MEETING.title}</h1>
           <div className="mt-1 text-[15px] text-slate-700">
-            {NEXT_MEETING.when} · {NEXT_MEETING.length} · {NEXT_MEETING.attendees.join(", ")}
+            {NEXT_MEETING.when} · {NEXT_MEETING.length} · {attendees.join(", ")}
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -126,7 +128,7 @@ export function MeetingPrep() {
       {sending && !sent && (
         // A send to the customer: shown first, sent on a second click.
         <div className="mt-5 rounded-xl border border-slate-200 bg-slate-25 px-6 py-4 text-sm">
-          <div className="text-slate-500">To {NEXT_MEETING.attendees.join(", ")}</div>
+          <div className="text-slate-500">To {attendees.join(", ")}</div>
           <div className="mt-1 font-semibold text-slate-950">Agenda · {NEXT_MEETING.title}, {NEXT_MEETING.when}</div>
           <ol className="mt-2 list-decimal pl-5 text-slate-700">
             {agenda.map((a) => (
@@ -138,7 +140,7 @@ export function MeetingPrep() {
               type="button"
               onClick={() => {
                 setSent(true)
-                toast.success(`Agenda sent to ${NEXT_MEETING.attendees.length} attendees`, { position: "top-right" })
+                toast.success(`Agenda sent to ${attendees.length} attendees`, { position: "top-right" })
               }}
               className={PRIMARY}
             >
@@ -152,7 +154,19 @@ export function MeetingPrep() {
       )}
 
       <div className="mt-6">
-        <Section n={1} title="Where they stand">
+        <Section n={1} title={`Your asks from ${LAST_CALL.short} · ${delivered === ASKS.length ? `all ${ASKS.length}` : `${delivered} of ${ASKS.length}`} done by Ally`}>
+          <Bullets
+            items={ASKS.map((c) => {
+              const st = askStatus(c.answeredBy)
+              return (
+                <>
+                  <span className="font-medium text-slate-950">{c.title}</span> · <span className={st.tone}>{st.text}</span>
+                </>
+              )
+            })}
+          />
+        </Section>
+        <Section n={2} title="Where they stand">
           <Bullets
             items={[
               <>
@@ -164,12 +178,15 @@ export function MeetingPrep() {
               </>,
               <>Top cause: {top.title}</>,
               <>
+                Claire on {LAST_CALL.short}: {moodLine} · {SENTIMENT.did.toLowerCase()}
+              </>,
+              <>
                 <b className="font-mono text-slate-950">{l.open.totalLabel}</b> in the pipeline to close it
               </>,
             ]}
           />
         </Section>
-        <Section n={2} title="What we owe them this week">
+        <Section n={3} title="What we owe them this week">
           <Bullets
             items={due.map((i) => (
               <>
@@ -177,18 +194,6 @@ export function MeetingPrep() {
                 <span className={/due today/i.test(i.last ?? "") ? "font-medium text-warning-700" : "text-slate-500"}>{i.last}</span>
               </>
             ))}
-          />
-        </Section>
-        <Section n={3} title={`What they asked for on ${LAST_CALL.date}`}>
-          <Bullets
-            items={ASKS.map((c) => {
-              const st = askStatus(c.answeredBy)
-              return (
-                <>
-                  <span className="font-medium text-slate-950">{c.title}</span> · <span className={st.tone}>{st.text}</span>
-                </>
-              )
-            })}
           />
         </Section>
         <Section n={4} title={`From your ${LAST_CALL.short} recap`}>
@@ -212,7 +217,16 @@ export function MeetingPrep() {
             ))}
           />
         </Section>
-        <Section n={7} title="Agenda">
+        <Section n={7} title="Changed because of what Claire said">
+          <Bullets
+            items={CONTEXT_CHANGES.map((c) => (
+              <>
+                {c.what} · <span className="text-slate-500">{c.why}</span>
+              </>
+            ))}
+          />
+        </Section>
+        <Section n={8} title="Agenda">
           <ol className="flex list-decimal flex-col gap-1.5 pl-5">
             {agenda.map((a) => (
               <li key={a}>{a}</li>

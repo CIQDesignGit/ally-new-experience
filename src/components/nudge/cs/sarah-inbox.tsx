@@ -11,10 +11,11 @@ import { useLive } from "../live-model"
 import { PRIMARY, SECONDARY } from "../mike/buttons"
 import { GROUPS } from "../mike/rail"
 import { DoneReel } from "../ui/done-reel"
-import { ASKS, INBOX, LAST_CALL, NEXT_MEETING, RECAP, REEL, SARAH_NOW } from "./data"
+import { ASKS, CONTEXT_CHANGES, INBOX, LAST_CALL, NEXT_MEETING, RECAP, REEL, SARAH_NOW, YOUR_CALL } from "./data"
 import type { InboxItem } from "./data"
 import { Artifact, useWork } from "./sarah-parts"
 import { WhyIcon } from "./why-icon"
+import { HeardPane, SentimentPane, moodLine, useAttendees, useHeard } from "./heard"
 
 const HEAD = "text-xs font-medium text-slate-500"
 const DOT = Object.fromEntries(GROUPS.map((g) => [g.tier, g.dot])) as Record<"approval" | "input" | "autopilot", string>
@@ -28,6 +29,7 @@ export function useCallIn() {
 export function SarahHero() {
   const { waiting } = useWork()
   const call = useCallIn()
+  const attendees = useAttendees()
   return (
     <div className="px-10 pt-2 pb-6">
       <div className="text-2xl font-semibold tracking-tight text-slate-700">
@@ -37,7 +39,7 @@ export function SarahHero() {
         {waiting.length ? `${waiting.length} ${waiting.length === 1 ? "needs" : "need"} your approval before it.` : "Nothing is waiting for you."}
       </h1>
       <div className="mt-2 inline-flex items-center gap-1.5 text-sm text-slate-500">
-        <CalendarDays className="size-3.5" /> {NEXT_MEETING.title} · {NEXT_MEETING.when} · {NEXT_MEETING.attendees.join(", ")}
+        <CalendarDays className="size-3.5" /> {NEXT_MEETING.title} · {NEXT_MEETING.when} · {attendees.join(", ")}
       </div>
       <div className="mt-5">
         <DoneReel items={REEL} since="since yesterday" />
@@ -58,6 +60,7 @@ export function SarahInbox() {
   const rank = (i: InboxItem) => (w.callItems[i.id] ? 100 : 0) + (i.id === "p-call" ? 0 : i.due === "Today" ? 1 : 2)
   const ordered = [...approvals].sort((a, b) => rank(a) - rank(b))
   const [sel, setSel] = useState<Sel>(ordered[0].id)
+  const heard = useHeard()
   const selected = INBOX.find((i) => i.id === sel)
 
 
@@ -84,8 +87,10 @@ export function SarahInbox() {
         })}
         <div className="flex items-center justify-between border-y border-slate-100 bg-slate-25 py-2 pr-4 pl-10 text-xs font-medium text-slate-500">
           <span>From the {LAST_CALL.short} call</span>
-          <span className="font-mono">{RECAP.reduce((n, r) => n + r.lines.length, 0)}</span>
+          <span className="font-mono">3</span>
         </div>
+        <InboxRow id="mood" active={sel === "mood"} onSelect={setSel} dot={DOT.input} title="How Claire felt" meta={moodLine} right={<span className="text-warning-700">Mixed</span>} />
+        <InboxRow id="heard" active={sel === "heard"} onSelect={setSel} dot={DOT.input} title="What Claire said" meta={`${ASKS.length} asks · ${YOUR_CALL.length} your call · 1 product ask`} right={heard.open ? <span className="text-slate-950">{heard.open} to sort</span> : <span className="text-success-700">Sorted</span>} />
         <InboxRow id="recap" active={sel === "recap"} onSelect={setSel} dot={DOT.input} title="Recap and context" meta={`Saved on its own ${LAST_CALL.savedOn} · edit anytime`} right={<span className="text-success-700">Saved</span>} />
         <div className="flex items-center justify-between border-y border-slate-100 bg-slate-25 py-2 pr-4 pl-10 text-xs font-medium text-slate-500">
           <span>On autopilot</span>
@@ -95,7 +100,7 @@ export function SarahInbox() {
           <InboxRow key={i.id} id={i.id} active={sel === i.id} onSelect={setSel} dot={DOT.autopilot} done title={i.line} meta={i.ask ? `From the ${LAST_CALL.short} call` : i.source} right={w.undone(i.id) ? <span className="text-slate-500">{i.undo === "Undo" ? "Undone" : "Recalled"}</span> : <span className="text-slate-500">Done</span>} />
         ))}
       </div>
-      <div className="min-w-0 px-10 py-8">{sel === "recap" ? <RecapPane /> : selected ? <ItemPane item={selected} /> : null}</div>
+      <div className="min-w-0 px-10 py-8">{sel === "recap" ? <RecapPane /> : sel === "mood" ? <SentimentPane /> : sel === "heard" ? <HeardPane /> : selected ? <ItemPane item={selected} /> : null}</div>
     </div>
   )
 }
@@ -129,10 +134,11 @@ function ItemPane({ item }: { item: InboxItem }) {
   const ask = ASKS.find((a) => a.id === item.ask)
   const done = w.approved(item.id)
   const auto = item.kind === "autopilot"
+  const attendees = useAttendees()
   function approveIt() {
     w.setCallItem(item.id, "done")
     if (item.approves) approve(item.approves)
-    toast.success(item.id === "p-call" ? `Agenda sent to ${NEXT_MEETING.attendees.length} attendees` : `Approved · ${title(item)}`, { position: "top-right" })
+    toast.success(item.id === "p-call" ? `Agenda sent to ${attendees.length} attendees` : `Approved · ${title(item)}`, { position: "top-right" })
   }
   return (
     <div className="flex flex-col gap-5">
@@ -207,16 +213,16 @@ function CallPlan() {
     const it = INBOX.find((x) => x.id === id)!
     return it.kind === "autopilot" ? callItems[it.id] !== "dismissed" : callItems[it.id] === "done"
   }
-  const done = ASKS.filter((a) => status(a.answeredBy))
-  const open = ASKS.filter((a) => !status(a.answeredBy))
   const agenda = [
     { title: "Halloween content", text: "$660K is one approval from live. It has to publish by Oct 26." },
     { title: "Black Friday deals", text: "Pick deals for 6 strong SKUs by Nov 6. About $1.1M is at stake." },
     { title: "The $500K budget plan", text: "Approve the split. It adds about $1.04M in sales." },
     { title: "Seasonal on autopilot", text: "Let core seasonal pages ship without review from the next event: 394 more SKUs." },
   ]
+  // Ally did every ask; the ones that change money or make a promise go out once Sarah approves.
+  const built = ASKS.filter((a) => !status(a.answeredBy))
   return (
-    <div className="flex flex-col gap-5 text-[15px]">
+    <div className="flex flex-col gap-6 text-[15px]">
       <p className="text-slate-700">
         Aurelle is tracking to <span className="font-semibold text-slate-950">{fmtBiz(pace)}</span> against a {fmtBiz(plan)} plan,{" "}
         <span className={cn("font-semibold", plan > pace ? "text-error-600" : "text-success-700")}>
@@ -225,7 +231,25 @@ function CallPlan() {
         . The biggest cause is the buy box lost on hero SKUs.
       </p>
       <div>
-        <div className={HEAD}>The agenda you&apos;ll send</div>
+        <div className={HEAD}>
+          Your asks from {LAST_CALL.short} · all {ASKS.length} done by Ally
+        </div>
+        <ul className="mt-2 flex flex-col">
+          {ASKS.map((a) => {
+            const out = status(a.answeredBy)
+            return (
+              <li key={a.id} className="grid grid-cols-[16px_minmax(0,1fr)_auto] items-baseline gap-2 border-t border-slate-100 py-2 first:border-t-0">
+                <Check className="size-3.5 translate-y-0.5 text-success-600" />
+                <span className="text-slate-950">{out ? a.did : a.title}</span>
+                <span className="text-[13px] whitespace-nowrap text-slate-500">{out ? "Done" : "Built · goes out when you approve"}</span>
+              </li>
+            )
+          })}
+        </ul>
+        {built.length > 0 && <p className="mt-1 text-[13px] text-slate-500">Approve {built.length === 1 ? "it" : `the ${built.length}`} before the call and you present all {ASKS.length} as done.</p>}
+      </div>
+      <div>
+        <div className={HEAD}>Then the agenda</div>
         <ol className="mt-2 flex flex-col gap-3">
           {agenda.map((a, i) => (
             <li key={a.title} className="grid grid-cols-[24px_minmax(0,1fr)] gap-2">
@@ -235,17 +259,18 @@ function CallPlan() {
               </span>
             </li>
           ))}
-          <li className="grid grid-cols-[24px_minmax(0,1fr)] gap-2">
-            <span className="font-mono text-sm text-slate-400">{agenda.length + 1}</span>
-            <span>
-              <span className="font-semibold text-slate-950">What we did on your asks.</span>{" "}
-              <span className="text-slate-700">{done.map((a) => a.did).join("; ")}.</span>
-              {open.length > 0 && <span className="text-slate-500"> Still to come: {open.map((a) => a.pending).join("; ")}.</span>}
-            </span>
-          </li>
         </ol>
       </div>
-      <p className="text-[13px] text-slate-500">The deck opens with the competitor slide, which Claire liked last time.</p>
+      <div>
+        <div className={HEAD}>Changed because of what Claire said</div>
+        <ul className="mt-2 flex flex-col gap-1">
+          {CONTEXT_CHANGES.map((c) => (
+            <li key={c.what} className="text-slate-950">
+              · {c.what} <span className="text-[13px] text-slate-500">· {c.why}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
       <Link href="/sarah/prep" className="inline-flex w-fit items-center gap-1 text-sm font-medium text-brand-700 hover:underline">
         Open the full prep <ArrowRight className="size-3.5" />
       </Link>

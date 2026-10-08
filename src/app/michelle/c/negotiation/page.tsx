@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react"
 import { PageShell } from "@/components/layout/page-shell"
-import { TopStrip } from "@/components/nudge/top-strip"
+import { TopStrip, useViewer } from "@/components/nudge/top-strip"
 import { AppDrawer } from "@/components/nudge/app-drawer"
 import { AskBar, ChatProvider, ChatThread, hasThread, useChat, useChatSource } from "@/components/nudge/chat/inline-chat"
 import { PREP_CHIP, RUN_BY_NAME_CHIP } from "@/components/nudge/skill/answers"
@@ -24,6 +24,8 @@ export default function NegotiationThread() {
 
 function Thread() {
   const { ask } = useChat()
+  // Michelle's skill; Sarah opens it from her page too.
+  const { viewer, home } = useViewer("michelle")
   const started = useRef(false)
   useChatSource({ chips: [RUN_BY_NAME_CHIP, PREP_CHIP], files: PREP_FILES }, "negotiation")
   // The task it was opened for, asked once on arrival.
@@ -39,7 +41,7 @@ function Thread() {
   return (
     <PageShell className="bg-slate-50 xl:bg-white">
       <div className="mx-auto min-h-screen max-w-[1280px] bg-white">
-        <TopStrip person="michelle" crumbs={[{ label: "Daily brief", href: "/michelle" }, { label: "Amazon vendor negotiation" }]} />
+        <TopStrip person={viewer} crumbs={[{ label: viewer === "sarah" ? "Today" : "Daily brief", href: home }, { label: "Amazon vendor negotiation" }]} />
         <div className="pt-2">
           <ChatThread />
         </div>

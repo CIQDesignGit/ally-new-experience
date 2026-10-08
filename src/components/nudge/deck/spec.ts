@@ -37,6 +37,8 @@ export interface DeckSpec {
   lessons?: boolean
   dashboard?: boolean
   repeat: { title: string; sub: string }
+  /** What the account's context changed in this deck, said in Ally's first message. */
+  context?: string
   /** Who builds it, when it isn't Michelle (Sarah's weekly session deck). */
   author?: { person: "sarah"; home: string; label: string }
 }
@@ -104,4 +106,14 @@ export function deckSlides(spec: DeckSpec, order: string[], edits: Pick<RetroSta
       question: edits.questions?.[s.id] ?? s.question,
       title: edits.answers?.[s.id] ?? s.title,
     }))
+}
+
+/** Sarah's Prime Day deck for Claire: the same retro, opened with the competitor slide Claire liked on Oct 2. */
+export const SARAH_PRIME_DAY_DECK: DeckSpec = {
+  ...PRIME_DAY_DECK,
+  id: "prime-day-retro-sarah",
+  path: "/sarah/decks/prime-day",
+  slides: [...SLIDES.filter((x) => x.id === "competition"), ...SLIDES.filter((x) => x.id !== "competition")],
+  context: "From Aurelle's context: it opens with the competitor slide, which Claire liked on Oct 2, and every play holds her 32% margin floor.",
+  author: { person: "sarah", home: "/sarah", label: "Today" },
 }

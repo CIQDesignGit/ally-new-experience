@@ -17,6 +17,8 @@ import { DidYouKnow } from "../chat/agent-run"
 export function StorylineStep(p: {
   verdict: string
   sources: string
+  /** What the account's context changed in this storyline. */
+  context?: string
   /** Who the deck is for, by first name. */
   forWhom: string
   step: "questions" | "answers"
@@ -77,6 +79,7 @@ export function StorylineStep(p: {
           {asking ? `Here are the ${n} questions I'd answer for ${p.forWhom}.` : p.verdict}
         </motion.p>
       )}
+      {p.context && !planning && <p className="-mt-3 text-[14px] text-slate-500">{p.context}</p>}
 
       <ol className="flex flex-col">
         {p.slides.map((s, i) => (planning && i >= planned ? null : (

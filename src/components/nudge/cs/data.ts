@@ -321,3 +321,57 @@ export const REEL = [
 
 /** How a plan deliverable reaches the customer: on its own, or after Sarah reviews it. */
 export const PLAN_DOES: Partial<Record<RunItem["does"], string>> = { act: "On autopilot", draft: "Sarah reviews first" }
+
+/** Sarah's manager: brought in only when Sarah asks. */
+export const MANAGER = { name: "Rachel Moore", first: "Rachel", role: "Director, Customer Success" }
+
+/**
+ * How Claire sounded, call by call, read from Gong. It goes to Sarah first, with
+ * the reason and what Ally already did; nothing goes to her manager unless she sends it.
+ */
+export const SENTIMENT = {
+  calls: [
+    { date: "Sep 18", mood: "Positive" },
+    { date: "Sep 25", mood: "Positive" },
+    { date: "Oct 2", mood: "Mixed" },
+  ],
+  why: [
+    { quote: "The buy box fix is taking longer than we planned.", at: "14:30" },
+    { quote: "I have to tell my CEO when the hero SKUs are back.", at: "33:15" },
+  ],
+  did: "Added a buy box slide to Thursday's deck: a back-in date for each hero SKU",
+  note: {
+    subject: "Aurelle: Claire less positive on Oct 2. Can you join Thursday?",
+    body: [
+      "Claire sounded less positive on Oct 2, after two positive calls. She raised the buy box twice and needs dates for her CEO.",
+      "Thursday's deck has a back-in date for each hero SKU. It would help to have you there to back the dates.",
+      "Thu, Oct 8 · 2:00 PM · 45 min. Brief attached: where Aurelle stands, the 6 asks we closed, the 4 decisions.",
+    ],
+  },
+}
+
+/** What Claire said that isn't a plain ask: things we don't build, and things Ally won't act on without Sarah. */
+export interface Heard {
+  id: string
+  who: string
+  at: string
+  quote: string
+  title: string
+  /** Product asks: where it went. Your call: Ally's read. */
+  note: string
+}
+export const PRODUCT_ASKS: Heard[] = [
+  { id: "h-tiktok", who: "Claire Bennett", at: "36:02", quote: "Can you give us the same view for TikTok Shop?", title: "A TikTok Shop view", note: "Logged for the product team, Oct 5 · not on the roadmap this quarter" },
+]
+export const YOUR_CALL: Heard[] = [
+  { id: "h-discount", who: "Claire Bennett", at: "19:40", quote: "Maybe we just stop discounting Cedar & Smoke.", title: "Stop discounting Cedar & Smoke", note: "Said in passing, then dropped. It's out of stock until Oct 20, so there's nothing to discount yet." },
+  { id: "h-walmart", who: "Claire Bennett", at: "38:10", quote: "At some point we should do the Walmart pages too.", title: "Walmart content", note: "No date or owner. Fully managed covers Amazon content only, so it would change the plan." },
+]
+
+/** What Ally changed in Thursday's plan because of what Claire said. */
+export const CONTEXT_CHANGES = [
+  { what: "The deck opens with the competitor slide", why: "Claire liked it on Oct 2" },
+  { what: "A buy box slide with a back-in date per hero SKU", why: "Claire raised it twice on Oct 2" },
+  { what: "Target is in the WBR", why: "Claire asked on Oct 2" },
+  { what: "Every play holds the 32% margin floor", why: "Claire set it on Oct 2" },
+]

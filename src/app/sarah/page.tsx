@@ -9,12 +9,15 @@ import { SarahHero, SarahInbox } from "@/components/nudge/cs/sarah-inbox"
 import { ASKS, LAST_CALL, PLAN } from "@/components/nudge/cs/data"
 import { aeoChip } from "@/components/nudge/cs/aeo-report"
 import { togetherChip } from "@/components/nudge/media/answers"
+import { SARAH_TYPED } from "@/components/nudge/cs/sarah-asks"
 
 /** Sarah's questions: prep opens its own page; the rest answer from the plan and the call. */
 function SarahChat() {
   useChatSource(
     {
       chips: [
+        // Typed only, checked first: "launch…" or "prime day…" means the skill, not a question about the call.
+        ...SARAH_TYPED,
         aeoChip,
         togetherChip,
         { q: "Prep me for my Aurelle meeting", match: /prep|meeting|session/i, task: "/sarah/prep", render: () => null },
