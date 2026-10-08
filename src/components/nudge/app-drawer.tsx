@@ -12,6 +12,7 @@ import { useLive } from "./live-model"
 import { shortDate } from "./model"
 import { RETRO } from "./retro/prime-day"
 import { MEDIA_BATCHES } from "./media/data"
+import { CALL_ITEMS } from "./cs/data"
 
 const OPEN_W = "264px"
 const SHUT_W = "64px"
@@ -30,7 +31,7 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
     const t = window.setTimeout(() => setSaved(rememberedHome()), 0)
     return () => window.clearTimeout(t)
   }, [path])
-  const home = ["/claire-waterfall", "/mike", "/michelle", "/james"].includes(path) ? path : (homeProp ?? saved ?? "/michelle")
+  const home = ["/claire-waterfall", "/mike", "/michelle", "/james", "/sarah"].includes(path) ? path : (homeProp ?? saved ?? "/michelle")
   const kind = path === home ? "brief" : "conversation"
   // Pinned stays open everywhere; unpinned closes on its own a few seconds after the pointer leaves it.
   const [pinned, setPinned] = useState(false)
@@ -69,7 +70,7 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
     } catch {}
     if (next) setOpen(true)
   }
-  const { retro, alerts, dashboards, decks, skills, conversations, approved, policy, launchReady, period } = useNudge()
+  const { retro, alerts, dashboards, decks, skills, conversations, approved, policy, launchReady, period, callItems } = useNudge()
   const qbr = decks.qbr
   // Being on the conversation counts as started, even before its state has loaded.
   const started = Object.keys(retro).length > 0 || path === "/michelle/retro"
@@ -118,7 +119,11 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
       title: "Reports and decks",
       icon: Presentation,
       // Claire sees what Michelle has sent her, the moment she sends it; Michelle sees what she built.
-      items: home === "/claire-waterfall" ? [
+      items: home === "/sarah" ? [
+        { label: "Joint plan · Aurelle", sub: "Shared with Claire", href: "/plan", on: path === "/plan" },
+        { label: "Aurelle weekly session", sub: "Prep for Thu, 2:00 PM", href: "/sarah/prep", on: path === "/sarah/prep" },
+      ] : home === "/claire-waterfall" ? [
+        { label: "Your plan with CommerceIQ", sub: "From Sarah Kim", href: "/plan", on: path === "/plan" },
         ...(retro.sentToClaire ? [{ label: RETRO.name, sub: "From Michelle", href: "/michelle/retro?view=deck" }] : []),
         ...(qbr?.sentToClaire ? [{ label: "Q4 business review", sub: qbr.repeat ? "From Michelle · every Monday" : "From Michelle", href: "/michelle/decks/qbr?view=deck" }] : []),
       ] : [
@@ -154,6 +159,8 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
         ? opsBatches(policy).filter((b) => b.tier === "approval" && !approved[b.id]).length
         : home === "/james"
           ? MEDIA_BATCHES.filter((b) => b.tier === "approval" && !approved[b.id]).length
+          : home === "/sarah"
+            ? CALL_ITEMS.filter((c) => !callItems[c.id]).length
           : live.approval.rows.filter((r) => (r.valueM ?? 0) > 0).length
 
   // Lists open in place; only Ask Ally shows its recent items without a click.

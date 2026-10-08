@@ -41,7 +41,7 @@ function Alerts() {
 
   // Everything on one clock in one shape: the briefs Ally sends, then the alerts it watches (yours first, then Ally's own).
   const added = runs.added
-  const briefs: RunItem[] = [MONDAY_BRIEF, ...added.filter((x) => x.kind === "brief")]
+  const briefs: RunItem[] = [MONDAY_BRIEF, ...added.filter((x) => x.kind === "brief" && !x.plan)]
   const custom: RunItem[] = alerts.map((a) => ({
     id: `alert-${a.id}`,
     kind: "alert",

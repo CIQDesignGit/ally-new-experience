@@ -23,6 +23,11 @@ export function RunList({
   placeholder,
   editor,
   extra,
+  whatLabel,
+  lastLabel = "Last run",
+  builtInLabel = "built in",
+  author = "Claire Bennett",
+  planned,
 }: {
   title: string
   items: RunItem[]
@@ -33,6 +38,14 @@ export function RunList({
   editor?: (item: RunItem) => React.ReactNode | null
   /** Extra detail under the editor (a skill's version history). */
   extra?: (item: RunItem) => React.ReactNode | null
+  /** Column and tag wording for lists that aren't Ally's own (the joint plan: "Deliverable", "Last sent", "in the contract"). */
+  whatLabel?: string
+  lastLabel?: string
+  builtInLabel?: string
+  /** Who "+ New" is made by. */
+  author?: string
+  /** New items belong to the joint plan. */
+  planned?: boolean
 }) {
   const { runs, setRuns } = useNudge()
   const [open, setOpen] = useState<string | null>(null)
@@ -57,7 +70,7 @@ export function RunList({
       setError(kind === "skill" ? "Describe the skill first" : "Say what to watch for first")
       return
     }
-    const item = draftFromSentence(text, kind, "Claire Bennett")
+    const item = { ...draftFromSentence(text, kind, author), ...(planned ? { plan: true } : {}) }
     setRuns((r) => ({ ...r, added: [item, ...r.added] }))
     setText("")
     setComposing(false)
@@ -106,10 +119,10 @@ export function RunList({
 
       <div className={cn(GRID, "px-6 pt-3 pb-1 text-xs font-medium text-slate-500")}>
         <span />
-        <span>{kind === "skill" ? "Skill" : "What"}</span>
+        <span>{whatLabel ?? (kind === "skill" ? "Skill" : "What")}</span>
         <span>Runs</span>
         <span>What Ally does</span>
-        <span>Last run</span>
+        <span>{lastLabel}</span>
         <span className="text-right">Status</span>
       </div>
       <div className="px-6 pb-2">
@@ -124,7 +137,7 @@ export function RunList({
                   <span className="block font-medium text-slate-950">{i.name}</span>
                   <span className="block truncate text-[13px] text-slate-500">
                     {i.what}
-                    {i.owner === "built in" ? " · built in" : ""}
+                    {i.owner === "built in" ? ` · ${builtInLabel}` : ""}
                   </span>
                 </span>
                 <span className="text-slate-700">{i.runs}</span>

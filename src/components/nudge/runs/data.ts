@@ -28,6 +28,8 @@ export interface RunItem {
   usedBy?: string[]
   /** Who made it and when (yours only). */
   by?: string
+  /** Part of a customer's joint plan (Sarah's), not a person's own brief. */
+  plan?: boolean
 }
 
 export const DOES_LABEL: Record<RunDoes, string> = { tell: "Tells you", draft: "Drafts it for your OK", act: "Does it, you can undo" }

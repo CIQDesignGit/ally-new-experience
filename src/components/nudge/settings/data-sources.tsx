@@ -12,7 +12,7 @@ type Method = "amazon" | "password" | "warehouse"
 interface Source {
   id: string
   name: string
-  group: "Retailers" | "Your data"
+  group: "Retailers" | "Your data" | "Meetings"
   feeds: string
   method: Method
   status: Status
@@ -34,6 +34,8 @@ const SEED: Source[] = [
   { id: "walmart", name: "Walmart Scintilla", group: "Retailers", feeds: "Sales, inventory, search", method: "password", status: "connected", note: "Synced today, 5:30 AM", mark: "W" },
   { id: "target", name: "Target Partners Online", group: "Retailers", feeds: "Sales, inventory", method: "password", status: "attention", note: "Password changed Oct 6 · synced Oct 5", mark: "T" },
   { id: "pim", name: "Salsify PIM", group: "Your data", feeds: "Content agent: product source of truth", method: "password", status: "connected", note: "Synced today, 4:00 AM", logo: "/logos/salsify.png", mark: "S" },
+  { id: "calendar", name: "Google Calendar", group: "Meetings", feeds: "Meeting prep: who's meeting, when", method: "amazon", status: "connected", note: "Sarah Kim · next: Thu, Oct 8, 2:00 PM", mark: "G" },
+  { id: "gong", name: "Gong", group: "Meetings", feeds: "Calls with Aurelle: asks, changes, context", method: "amazon", status: "connected", note: "Last call Oct 1 · 6 items", mark: "G" },
   { id: "lake", name: "Your data lake", group: "Your data", feeds: "Plan, margin, first-party sales", method: "warehouse", status: "off", note: "Snowflake, BigQuery, Databricks or S3", mark: "D" },
 ]
 
@@ -65,7 +67,7 @@ export function DataSources() {
 
   return (
     <div className="flex flex-col gap-8">
-      {(["Retailers", "Your data"] as const).map((group) => (
+      {(["Retailers", "Your data", "Meetings"] as const).map((group) => (
         <section key={group} className="overflow-hidden rounded-xl border border-slate-200 bg-white">
           <div className="border-b border-slate-100 px-6 py-3.5 text-[15px] font-semibold text-slate-950">{group}</div>
           <div className="grid grid-cols-[36px_minmax(0,1fr)_150px_112px] lg:grid-cols-[36px_minmax(0,1fr)_minmax(0,1fr)_200px_112px] items-center gap-4 px-6 pt-3 pb-1 text-xs font-medium text-slate-500">

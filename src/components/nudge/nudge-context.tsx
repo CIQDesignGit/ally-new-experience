@@ -89,6 +89,8 @@ interface StoredState {
   skills?: { id: string; name: string; shared: "me" | "team" | "account"; version?: number }[]
   /** Things Ally runs (briefs, alerts, skills): what's paused, removed, added, and edited. */
   runs?: RunsState
+  /** Sarah's items from customer calls: done (sent, added, saved) or set aside. */
+  callItems?: Record<string, "done" | "dismissed">
   /** Every conversation, newest first: what was asked, where, and how to open it again. */
   conversations?: Conversation[]
 }
@@ -159,6 +161,8 @@ interface NudgeContextValue extends StoredState {
   autoShipped: NonNullable<StoredState["autoShipped"]>
   runs: RunsState
   setRuns: (fn: (r: RunsState) => RunsState) => void
+  callItems: Record<string, "done" | "dismissed">
+  setCallItem: (id: string, v: "done" | "dismissed") => void
   /** Approves several batches in one update (the team's work as the demo week moves on). */
   approveMany: (ids: string[]) => void
   /** Ally ships a row's unapproved work at Claire's deadline. */
@@ -363,6 +367,8 @@ export function NudgeProvider({ children }: { children: React.ReactNode }) {
         autoShipped: state.autoShipped ?? {},
         runs: state.runs ?? EMPTY_RUNS,
         setRuns: (fn) => update((prev) => ({ ...prev, runs: fn(prev.runs ?? EMPTY_RUNS) })),
+        callItems: state.callItems ?? {},
+        setCallItem: (id, v) => update((prev) => ({ ...prev, callItems: { ...(prev.callItems ?? {}), [id]: v } })),
         approveMany: (ids) => update((prev) => ({ ...prev, approved: { ...prev.approved, ...Object.fromEntries(ids.map((id) => [id, true])) } })),
         autoShip: (key, ids) =>
           update((prev) => ({ ...prev, approved: { ...prev.approved, ...Object.fromEntries(ids.map((id) => [id, true])) }, autoShipped: { ...(prev.autoShipped ?? {}), [key]: ids } })),

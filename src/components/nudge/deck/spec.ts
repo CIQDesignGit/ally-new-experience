@@ -37,6 +37,8 @@ export interface DeckSpec {
   lessons?: boolean
   dashboard?: boolean
   repeat: { title: string; sub: string }
+  /** Who builds it, when it isn't Michelle (Sarah's weekly session deck). */
+  author?: { person: "sarah"; home: string; label: string }
 }
 
 export const PRIME_DAY_DECK: DeckSpec = {
