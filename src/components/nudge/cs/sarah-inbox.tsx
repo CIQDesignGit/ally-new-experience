@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import Link from "next/link"
 import { ArrowRight, CalendarDays, Check, Mic, Presentation } from "lucide-react"
 import { toast } from "sonner"
@@ -50,25 +50,10 @@ export function SarahHero() {
 
 type Sel = string
 
-/** Two visual treatments under review: ?look=b (the open item on a card) and ?look=c (colored bucket headers). */
-type Look = "b" | "c" | undefined
-function useLook(): Look {
-  const [look, setLook] = useState<Look>(undefined)
-  useEffect(() => {
-    const l = new URLSearchParams(window.location.search).get("look")
-    const t = window.setTimeout(() => setLook(l === "b" || l === "c" ? l : undefined), 0)
-    return () => window.clearTimeout(t)
-  }, [])
-  return look
-}
-
-const TONE = { approval: "text-ally-700", input: "text-warning-700", autopilot: "text-info-700" } as const
-
-/** A bucket's header: its name and count; with look C, its color too. */
-function GroupHead({ tier, label, n, look, first }: { tier: keyof typeof TONE; label: string; n: number; look: Look; first?: boolean }) {
+/** A bucket's header: its name and count. */
+function GroupHead({ label, n, first }: { label: string; n: number; first?: boolean }) {
   return (
-    <div className={cn("relative flex items-center justify-between border-b border-slate-200 bg-slate-25 py-2 pr-4 pl-10 text-xs font-medium text-slate-500", !first && "border-t border-t-slate-200", look === "c" && TONE[tier])}>
-      {look === "c" && <span className={cn("absolute inset-y-0 left-0 w-[3px]", DOT[tier])} />}
+    <div className={cn("flex items-center justify-between border-b border-slate-200 bg-slate-25 py-2 pr-4 pl-10 text-xs font-medium text-slate-500", !first && "border-t border-t-slate-200")}>
       <span>{label}</span>
       <span className="font-mono">{n}</span>
     </div>
@@ -87,14 +72,13 @@ export function SarahInbox() {
   const [sel, setSel] = useState<Sel>(ordered[0].id)
   const { callItems } = useNudge()
   const mood = moodDecided(callItems)
-  const look = useLook()
   const selected = INBOX.find((i) => i.id === sel)
 
 
   return (
     <div className="grid grid-cols-1 border-t border-slate-300 lg:grid-cols-[400px_minmax(0,1fr)]">
       <div className="border-b border-slate-300 bg-white lg:border-r lg:border-b-0">
-        <GroupHead tier="approval" label="One approval away" n={w.waiting.length} look={look} first />
+        <GroupHead label="One approval away" n={w.waiting.length} first />
         {ordered.map((i) => {
           const done = w.approved(i.id)
           return (
@@ -109,16 +93,17 @@ export function SarahInbox() {
             />
           )
         })}
-        <GroupHead tier="input" label="Needs your input" n={mood ? 0 : 1} look={look} />
+        <GroupHead label="Needs your input" n={mood ? 0 : 1} />
         <InboxRow id="mood" active={sel === "mood"} onSelect={setSel} dot={DOT.input} done={mood} title="How Claire felt" meta={`${moodLine} · value concern`} right={mood ? <span className="text-slate-500">Done</span> : <span className="text-warning-700">Negative</span>} />
-        <GroupHead tier="autopilot" label="On autopilot" n={autos.length + 1} look={look} />
+        <GroupHead label="On autopilot" n={autos.length + 1} />
         <InboxRow id="recap" active={sel === "recap"} onSelect={setSel} dot={DOT.autopilot} done title={`Saved the ${LAST_CALL.short} recap to context`} meta={`On its own ${LAST_CALL.savedOn} · edit anytime`} right={<span className="text-slate-500">Done</span>} />
         {autos.map((i) => (
           <InboxRow key={i.id} id={i.id} active={sel === i.id} onSelect={setSel} dot={DOT.autopilot} done title={i.line} meta={i.ask ? `From the ${LAST_CALL.short} call` : i.source} right={w.undone(i.id) ? <span className="text-slate-500">{i.undo === "Undo" ? "Undone" : "Recalled"}</span> : <span className="text-slate-500">Done</span>} />
         ))}
       </div>
-      <div className={cn("min-w-0", look === "b" ? "bg-slate-50 p-6" : "px-10 py-8")}>
-        <div className={cn(look === "b" && "rounded-2xl border border-slate-300 bg-white px-8 py-7 shadow-md")}>
+      {/* The open item sits on a card: the rail is where you find work, the card is where you act on it. */}
+      <div className="min-w-0 bg-slate-50 p-6">
+        <div className="rounded-2xl border border-slate-300 bg-white px-8 py-7 shadow-md">
           {sel === "recap" ? <RecapPane /> : sel === "mood" ? <SentimentPane /> : selected ? <ItemPane item={selected} /> : null}
         </div>
       </div>
