@@ -405,7 +405,7 @@ const LATEST: Record<string, { label: string; href: string }> = {
   "jbp-walmart-pacing": { label: "Open Walmart pacing", href: "/claire-waterfall" },
   "jbp-shipped": { label: "Open what shipped", href: "/content-results?period=qtd" },
   "jbp-session": { label: "Open meeting prep", href: "/sarah/prep" },
-  "jbp-visibility": { label: "Open the readout", href: "/ai-tracking" },
+  "jbp-visibility": { label: "Open the readout", href: "/reports/ai-visibility" },
   "jbp-value": { label: "Open the value report", href: "/content-results?period=qtd" },
   "jbp-qbr": { label: "Open the QBR", href: "/michelle/decks/qbr?view=deck" },
 }

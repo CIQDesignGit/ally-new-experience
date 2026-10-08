@@ -6,12 +6,14 @@ import { AnswerCard, AskBar, ChatProvider, ChatThread, useChatSource } from "@/c
 import { ResetDemoButton } from "@/components/nudge/reset-demo-button"
 import { Inbox, Portfolio, RecapCard, SarahHeader, SarahHero } from "@/components/nudge/cs/sarah-parts"
 import { ASKS, LAST_CALL, PLAN } from "@/components/nudge/cs/data"
+import { aeoChip } from "@/components/nudge/cs/aeo-report"
 
 /** Sarah's questions: prep opens its own page; the rest answer from the plan and the call. */
 function SarahChat() {
   useChatSource(
     {
       chips: [
+        aeoChip,
         { q: "Prep me for my Aurelle meeting", match: /prep|meeting|session/i, task: "/sarah/prep", render: () => null },
         {
           q: "What did Claire ask for last time?",

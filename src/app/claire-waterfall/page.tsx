@@ -17,6 +17,7 @@ import type { GrowView } from "@/components/nudge/market/grow-cards"
 import { GrowViewSwitch } from "@/components/nudge/market/views"
 import { Answer, QUESTIONS } from "@/components/nudge/claire/ask-ally-answers"
 import { budgetChip } from "@/components/nudge/media/answers"
+import { aeoChip } from "@/components/nudge/cs/aeo-report"
 import { AskBar, ChatProvider, ChatThread, useChat, useChatSource } from "@/components/nudge/chat/inline-chat"
 import type { Chip } from "@/components/nudge/chat/inline-chat"
 import { useRouter } from "next/navigation"
@@ -40,7 +41,11 @@ function HomeChat() {
   const router = useRouter()
   // "How am I doing compared to plan?" is forward-looking: where the week lands and what closes it.
   const planChip: Chip = { q: "How am I doing compared to plan?", match: /\b(make|making|against|compared to|vs\.?|versus|behind|short of|gap to) plan\b/i, render: () => <ForwardAnalysis node={GAP_TREE} onInbox={(id) => router.push(`/michelle?open=${id}`)} /> }
-  const chips: Chip[] = QUESTIONS.map((q, i) => (i === 4 ? planChip : i === 0 ? { ...budgetChip("claire"), q } : { q, hidden: i === 2 || i === 5, render: () => <div className="max-w-[860px] rounded-2xl bg-white px-5 py-4 text-[15px] leading-relaxed text-slate-700 ring-1 ring-slate-200"><Answer q={q} /></div> }))
+  const chips: Chip[] = [
+    ...QUESTIONS.map((q, i) => (i === 4 ? planChip : i === 0 ? { ...budgetChip("claire"), q } : { q, hidden: i === 2 || i === 5, render: () => <div className="max-w-[860px] rounded-2xl bg-white px-5 py-4 text-[15px] leading-relaxed text-slate-700 ring-1 ring-slate-200"><Answer q={q} /></div> })),
+    // The monthly AI visibility readout: answered when asked, not one of the four starters.
+    { ...aeoChip, hidden: true },
+  ]
   useChatSource({ chips }, "home")
   // A question reopened from Ask Ally's history ("?ask=…") is asked again, once.
   const { ask } = useChat()
