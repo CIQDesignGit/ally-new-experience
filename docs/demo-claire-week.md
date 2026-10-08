@@ -70,3 +70,15 @@
 - One full run sends 4 real emails. The limit is 20 an hour.
 - If something goes wrong, refresh to start the week over.
 - The emails' reply buttons are acted out with the Demo row. Ally doesn't read real replies.
+
+## Sarah (CommerceIQ retail expert) · optional cut-away
+
+- Open `/sarah`: her next session with Aurelle is Thursday at 2:00 PM, and six items from the Oct 1 call are waiting.
+- Click through the items:
+  - Send the supply gap to Ally
+  - Add Walmart pacing
+  - Change the WBR to Tuesday
+  - Add the Brightwick alert
+  - Save the margin floor to Knowledge
+- **Open meeting prep.** It shows what each ask became. **Send agenda to attendees** shows the email first. **Open as slides** builds the weekly session deck.
+- Switch to Claire: Reports and decks › **Your plan with CommerceIQ** shows the same plan, with what changed from the call.

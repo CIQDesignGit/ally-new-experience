@@ -2,6 +2,41 @@
 
 Every screenshot or note Himanshu sends becomes a line here. Status: **open** → **built** (shown, waiting for his OK) → **locked** (committed and deployed). Newest first in each section.
 
+## Oct 8: Sarah's CS view, built and waiting for your OK (localhost only)
+
+**What's built**
+1. **Sarah's page (`/sarah`).** She's Sarah Kim, retail expert at CommerceIQ, and the fifth person in the account menu. Her page shows:
+   - her next session from the calendar
+   - her four accounts in one line (only Aurelle is built deep)
+   - the Oct 1 call's six items
+   - the joint plan with Aurelle
+2. **Joint plan.** Thirteen deliverables from the Fully managed tier, grouped Weekly, Monthly, Quarterly, and Events and annual. It's built on the same list as Scheduled: open a row to edit it, pause it, or open its latest version. "Added from calls" holds what calls added.
+3. **Call items (Gong sample).** Each item shows the quote, who said it and when, then what Ally will do, with one button:
+   - **Supply gap:** Send to Ally
+   - **New SKU:** Send to Ally
+   - **Walmart pacing:** Add to plan
+   - **WBR to Tuesday with Target:** Change the plan
+   - **Brightwick promo alert:** Add the alert (it appears on Scheduled)
+   - **Q4 margin floor:** Save to Knowledge
+4. **Meeting prep (`/sarah/prep`), from the calendar event:**
+   - where they stand
+   - what we owe this week
+   - what they asked for last time, with each item's status
+   - what changed
+   - decisions to get
+   - the agenda, ranked deadline first
+
+   Send agenda shows the email first; Open as slides opens the weekly session deck on the existing deck builder.
+5. **Claire's plan (`/plan`).** Read-only, with "What changed · from our Oct 1 call · you asked". It's in her Reports and decks.
+6. **Data sources** has a Meetings group: Google Calendar and Gong, both connected.
+
+**Assumptions**
+1. **Sample call and calendar event.** They're in the shape the Gong and Calendar connectors return; nothing reads them for real yet.
+2. **Work items stay on Sarah's page.** "Send to Ally" (supply gap, new SKU) marks them done and says where the work went. It doesn't add rows to James's or Mike's queues, so their numbers don't move.
+3. **The agenda doesn't send a real email.** Send shows the email first, then confirms with a message on screen.
+4. **The plan's dates are set for Monday, Oct 5** (WBR due today, the session Thursday). They don't move with the demo clock yet.
+5. **The other accounts aren't clickable.** Lumen Pet, Northwind Home and Brightway Foods only show where they stand.
+
 ## Overnight, Oct 7 → 8: locked (deployed Oct 8)
 
 Deployed to Vercel as `content-agent-demo-5p7k6zzxo`. Rollback point: commit `3a0a920`.

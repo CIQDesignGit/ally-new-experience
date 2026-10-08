@@ -57,6 +57,14 @@ One use case can use several abilities. "Launch the Winter Hearth collection" is
 | 25 | **Connect a data source** | Retailer sign-in (Amazon) or username and password kept in a vault (portals with no API) or a database share (data lake) → first sync → status and freshness | Settings › Data sources: Vendor Central, Amazon Ads, Walmart Scintilla, Target Partners Online (reconnect after a password change), PIM, data lake | Admin, CSM | D1 · P1 · P4 |
 | 26 | **Hold a conversation that keeps context** | Thread per task → carry the page's context → keep history | Ask Ally on every page · conversation history | Everyone | C1 |
 
+### Managed services (Sarah, retail expert)
+
+| # | Ability | Steps it runs | Examples in the demo | Who | Capabilities |
+|---|---|---|---|---|---|
+| 27 | **Generate a joint plan from the contract** | Read the tier → list each deliverable with its cadence, owner and due day → Ally drafts each one, the expert checks it → status: sent, due, late | Aurelle's joint plan: WBR, media pacing, media actions update, AI visibility, competitor insights, QBR, trends, seasonal calendar, annual plan | Sarah, Claire | O2 · A7 · P5 |
+| 28 | **Turn a customer call into plan changes and work** | Read the call → pull out new deliverables, changes, work and context, each with its quote → the expert accepts → the plan is versioned, work is routed, context goes to Knowledge | Oct 1 call: Walmart pacing, WBR to Tuesday, supply gap, new SKU, Brightwick alert, margin floor | Sarah | D6 · C1 · O4 · M1 · P5 |
+| 29 | **Prep the next meeting from the calendar** | Find the next meeting with the account → where they stand, what we owe, last call's asks and their status, what changed, decisions → agenda → send it, or open it as slides | Aurelle weekly session, Thu 2:00 PM | Sarah | D6 · D4 · A7 · N1 |
+
 ## Part 2: PRD use cases not built yet
 
 | Use case | Ability it needs | New capabilities |
@@ -83,7 +91,8 @@ One use case can use several abilities. "Launch the Winter Hearth collection" is
 | **Channels** | N1 one notification service (email, Slack, Teams) · N2 signed actionable replies | 10, 11, 20, 21 | Email and Slack real; YES links same-browser only |
 | **Chat** | C1 agent runtime: threads, page context, uploads, tool calls · C2 sentence → object | 1, 4, 15, 17, 19, 26 | Scripted chips |
 | **Memory and learning** | M1 knowledge by scope · M2 skills with versions · M3 examples and corrections · M4 eval suite · **M5 shared keyword ledger (agent-to-agent state)** | 1, 13, 17, 18 | Browser storage; ledger is static |
-| **Proof and platform** | V1 live verification · V2 value measurement · V3 A/B testing · P1 tenants, identity, roles · P2 templates · P3 retailer as a dimension everywhere · P4 credential vault | 5, 7, 24, 25 | Static numbers; passwords never kept |
+| **Meetings** | D6 Calendar and Gong connectors (meetings, calls, transcripts) | 28, 29 | Sample event and call |
+| **Proof and platform** | V1 live verification · V2 value measurement · V3 A/B testing · P1 tenants, identity, roles · P2 templates · P3 retailer as a dimension everywhere · P4 credential vault · P5 joint plan as versioned data | 5, 7, 24, 25 | Static numbers; passwords never kept |
 
 ### The pieces that make it agentic
 
