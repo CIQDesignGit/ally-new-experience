@@ -4,33 +4,49 @@ Every screenshot or note Himanshu sends becomes a line here. Status: **open** �
 
 ## Oct 8: Sarah's CS view, built and waiting for your OK (localhost only)
 
-**Reworked after your note:** Ally does the work; Sarah reviews it and delivers it to the customer. She never assigns work.
+**How it works:** Ally does the work. Anything that changes money or makes a new promise waits for Sarah's approval; the rest runs on autopilot. Everything from a call goes into context.
 
 **What's built**
-1. **Sarah's page (`/sarah`):** "Ally did the work from the plan and the Oct 1 call. 5 ready for your review · 2 due to Claire today."
-2. **Ready for your review.** Each row is finished work, with where it came from (the plan, or the call with its quote and minute) and when the customer expects it:
-   - WBR deck with Target
-   - Cedar & Smoke supply gap: ads paused, VM note drafted, page update held
-   - Agenda for Thursday's session
-   - Pumpkin Chai mini launch kit
-   - Walmart pacing, first report
+1. **Today (`/sarah`):** "Ally did 9 things for Aurelle since Thursday. 3 need your approval · 2 due today."
+2. **The inbox arrives.** Each item checks off as it slides in, then the list settles into two groups:
+   - **Needs your approval:**
+     - the $24K budget move (above the $5K limit)
+     - the Amazon VM note on Cedar & Smoke
+     - the Pumpkin Chai launch kit
 
-   Opening a row shows what Ally did, a link to the work, and the drafted note to the customer (editable). Send delivers it; Hold keeps it back.
-3. **Ally changed from the Oct 1 call (with undo):**
-   - Walmart pacing added to the plan
-   - WBR moved to Tuesday with Target
-   - Brightwick alert set up (it shows on Scheduled)
-   - 32% margin floor saved to Knowledge
-4. **Sent on autopilot this week:** media pacing, the media actions update, AI visibility. In the plan, routine deliverables say "Does it, you can undo"; anything that speaks for CommerceIQ says "Drafts it for your OK".
-5. **Meeting prep** shows each ask's status: done by Ally, waiting for Sarah's review, delivered, or undone. Sending the agenda delivers the agenda item.
-6. **Claire's plan (`/plan`):** "Delivered this week" (autopilot items plus what Sarah sent), and "What changed · you asked" once Sarah has sent something.
+     The work shows inline (the move, the note, the kit), with the quote from the call. Approve or Hold. Approving the budget move also approves James's matching play.
+   - **On autopilot** (folded):
+     - Tuesday's WBR with Target
+     - Cedar & Smoke ads paused
+     - plan updated from the call
+     - Brightwick alert
+     - prep and agenda
+     - routine reports
+
+     Each has Recall, Hold or Undo.
+
+   The list plays once a visit, when it scrolls into view, and has a Replay link.
+3. **Recap of the Oct 2 call (`/sarah/recap`):** Decided · Asked for · What landed well · Going forward · Facts we learned.
+   - Every line is editable or removable, and nothing needs approval.
+   - It saves to context 72 hours after the call (today, 2:45 PM), or now with Save now.
+   - Send to Claire delivers it.
+   - The Going forward lines show in Thursday's prep as "included".
+4. **Context (`/context`):** "Ally knows 64 things about Aurelle."
+   - Drafts approved first time, weekly since August (58% → 86%), with the moments it jumped
+   - Entries learned (12 → 64)
+   - Edits per draft, time to approve, and share on autopilot
+   - The library by type, each entry with its source, how often it was used, and what it changed
+   - Category patterns across candle brands, with evidence and status, signed off by a category lead
+5. **"Why Ally did this" icon** on Sarah's items, Mike's Halloween drafts and James's plays. It opens the brand and category context used.
+6. **Prep shows "Ally worked through 6 steps"**, so the reasons are visible where the work was built.
+7. **Claire's home:** "Ally knows 64 things about Aurelle · 86% of drafts approved first time, was 58% · See what Ally knows".
+8. **Michelle's and James's queues** stack on narrow screens.
 
 **Assumptions**
-1. **Sample call and event.** They're shaped like what the Gong and Calendar connectors return.
-2. **The queues don't move.** The work Ally did for the supply gap and the launch is described, not added as rows to Mike's or James's queues.
-3. **Send doesn't send a real email.** The note is editable, and Send confirms on screen.
-4. **Plan changes reach Claire with the first thing Sarah sends.**
-5. **Dates are fixed to Monday, Oct 5.**
+1. The last call is **Fri, Oct 2**, so its recap saves today at 2:45 PM. That gives the 72-hour window a live moment in the demo.
+2. **The $5K limit** is the default for budget moves, set per account in the joint plan.
+3. **The growth numbers are illustrative but consistent.** First-time approval 58% → 86% and entries 12 → 64 match the type counts.
+4. **Undoing the plan change** puts the plan back for both Sarah and Claire.
 
 ## Overnight, Oct 7 → 8: locked (deployed Oct 8)
 
