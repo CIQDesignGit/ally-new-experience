@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { CalendarDays, Check, Presentation } from "lucide-react"
+import { CalendarDays, Check, Presentation, Sparkles } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { BUSINESS, fmtBiz } from "../data"
@@ -11,8 +11,17 @@ import { useNudge } from "../nudge-context"
 import { GAP_TREE } from "../ops/gap-data"
 import { PRIMARY, SECONDARY } from "../mike/buttons"
 import { useWork } from "./sarah-parts"
-import { ALLY_DID, ASKS, LAST_CALL, NEXT_MEETING, REVIEW_ITEMS, SINCE_LAST } from "./data"
+import { ASKS, INBOX, LAST_CALL, NEXT_MEETING, RECAP, SINCE_LAST } from "./data"
 
+/** What Ally read and decided while building the prep, in order. */
+const STEPS = [
+  "Read Thursday's event from Google Calendar: 45 min, Claire, Mike and Michelle",
+  "Pulled the forecast, plan and top cause from Claire's page",
+  "Checked where each of the 6 asks from the Oct 2 call stands",
+  "Added the 3 going-forward items from your Oct 2 recap",
+  "Read Brightwick's promo tracker: gift-set price cut still live",
+  "Ranked the decisions by deadline, then dollars",
+]
 const HEAD = "text-xs font-medium tracking-wide text-slate-500 uppercase font-mono"
 const Section = ({ n, title, children }: { n: number; title: string; children: React.ReactNode }) => (
   <section className="grid grid-cols-[32px_minmax(0,1fr)] gap-4 border-t border-slate-100 py-6">
@@ -47,13 +56,14 @@ export function MeetingPrep() {
   const top = GAP_TREE.drivers[0]
   // What's due by the meeting: this week's plan items, as they stand now (a call can have moved one).
   const due = useWork().plan[0].items.map((i) => ({ ...i, ...runs.edits[i.id] }))
-  // Where each ask stands: Ally did it; then Sarah sent it, or it waits for her review.
+  // Where each ask stands: Ally did it; on autopilot it's done, otherwise it waits for Sarah's approval.
   const askStatus = (answeredBy: string) => {
-    if (ALLY_DID.some((x) => x.id === answeredBy)) return callItems[answeredBy] === "dismissed" ? { text: "Undone", tone: "text-slate-500" } : { text: "Done by Ally", tone: "text-success-700" }
-    const r = REVIEW_ITEMS.find((x) => x.id === answeredBy)!
-    return callItems[r.id] === "done" ? { text: `Delivered to ${r.to[0].split(" ")[0]}`, tone: "text-success-700" } : { text: "Done by Ally · waiting for your review", tone: "font-medium text-warning-700" }
+    const it = INBOX.find((x) => x.id === answeredBy)!
+    if (it.kind === "autopilot") return callItems[it.id] === "dismissed" ? { text: "Undone", tone: "text-slate-500", done: false } : { text: "Done by Ally · on autopilot", tone: "text-success-700", done: true }
+    return callItems[it.id] === "done" ? { text: "Approved", tone: "text-success-700", done: true } : { text: "Done by Ally · waiting for your approval", tone: "font-medium text-warning-700", done: false }
   }
-  const delivered = ASKS.filter((a) => askStatus(a.answeredBy).text.startsWith("Delivered") || askStatus(a.answeredBy).text === "Done by Ally").length
+  const delivered = ASKS.filter((a) => askStatus(a.answeredBy).done).length
+  const forward = RECAP.find((r) => r.id === "forward")!.lines
   // Ranked like every list: what has a deadline first (soonest), then dollars.
   const decisions = [
     { text: "Black Friday deals on 6 strong SKUs, set by Nov 6", value: "$1.1M at stake", agenda: "Decide on Black Friday deals, due Nov 6" },
@@ -61,14 +71,15 @@ export function MeetingPrep() {
     { text: "Put seasonal content on autopilot from the next event", value: "394 more SKUs", agenda: "Decide on seasonal autopilot" },
   ].filter(Boolean) as { text: string; value: string; agenda: string }[]
   const agenda = [
-    "Halloween content: $660K one approval away, publish by Oct 26",
+    "Halloween countdown: 21 days to publish, $660K one approval away",
     ...decisions.map((d) => d.agenda),
-    `Last week's asks: ${delivered} of ${ASKS.length} delivered`,
+    `Last week's asks: ${delivered} of ${ASKS.length} done`,
   ].slice(0, 5)
   const [sending, setSending] = useState(false)
-  // Sending the agenda delivers the prep's review item, here or from Sarah's queue.
-  const sent = callItems["rev-prep"] === "done"
-  const setSent = (v: boolean) => v && setCallItem("rev-prep", "done")
+  const [steps, setSteps] = useState(false)
+  // The agenda goes out on autopilot the day before; if Sarah recalled it, she can send it from here.
+  const sent = callItems["a-prep"] !== "dismissed"
+  const setSent = (v: boolean) => v && setCallItem("a-prep", "done")
 
   return (
     <div className="px-10 pt-2 pb-10">
@@ -88,7 +99,7 @@ export function MeetingPrep() {
           </Link>
           {sent ? (
             <span className="inline-flex h-10 items-center gap-1.5 px-2 text-sm font-medium text-success-700">
-              <Check className="size-4" /> Agenda sent
+              <Check className="size-4" /> Agenda sent on autopilot
             </span>
           ) : (
             <button type="button" onClick={() => setSending(true)} className={PRIMARY}>
@@ -96,6 +107,20 @@ export function MeetingPrep() {
             </button>
           )}
         </div>
+      </div>
+
+      {/* How Ally built it, written as it worked: the reasons, at the moment they were used. */}
+      <div className="mt-4">
+        <button type="button" onClick={() => setSteps((v) => !v)} aria-expanded={steps} className="inline-flex items-center gap-1.5 text-[13px] font-medium text-slate-500 hover:text-slate-800">
+          <Sparkles className="size-3.5 text-ally-600" /> Ally worked through {STEPS.length} steps · {steps ? "Hide" : "Show"} steps
+        </button>
+        {steps && (
+          <ol className="mt-2 flex flex-col gap-1 border-l-2 border-ally-100 pl-4 text-[13px] text-slate-700">
+            {STEPS.map((x) => (
+              <li key={x}>{x}</li>
+            ))}
+          </ol>
+        )}
       </div>
 
       {sending && !sent && (
@@ -166,10 +191,19 @@ export function MeetingPrep() {
             })}
           />
         </Section>
-        <Section n={4} title="What's changed since">
+        <Section n={4} title={`From your ${LAST_CALL.short} recap`}>
+          <Bullets
+            items={forward.map((f) => (
+              <>
+                {f} · <span className="text-success-700">included</span>
+              </>
+            ))}
+          />
+        </Section>
+        <Section n={5} title="What's changed since">
           <Bullets items={SINCE_LAST} />
         </Section>
-        <Section n={5} title="Decisions to get">
+        <Section n={6} title="Decisions to get">
           <Bullets
             items={decisions.map((d) => (
               <>
@@ -178,7 +212,7 @@ export function MeetingPrep() {
             ))}
           />
         </Section>
-        <Section n={6} title="Agenda">
+        <Section n={7} title="Agenda">
           <ol className="flex list-decimal flex-col gap-1.5 pl-5">
             {agenda.map((a) => (
               <li key={a}>{a}</li>

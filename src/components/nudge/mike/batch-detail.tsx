@@ -10,6 +10,16 @@ import { useChat } from "../chat/inline-chat"
 import { UploadDialog } from "../chat/upload-dialog"
 import { LAUNCH_CHIP } from "../launch/answers"
 import { MediaLink } from "../media/content-link"
+import { WhyIcon } from "../cs/why-icon"
+import type { Why } from "../cs/data"
+
+/** What these drafts used: Aurelle's context and what CommerceIQ learned across candle brands. */
+const HALLOWEEN_WHY: Why[] = [
+  { text: 'Never claim "non-toxic"', scope: "Brand", source: "Legal" },
+  { text: "Warm and sensory: scent first, specs second", scope: "Brand", source: "Mike's edits, Aug" },
+  { text: "Burn time and scent notes lift conversion 3–6%", scope: "Category", source: "Proven at 9 brands" },
+  { text: "Trending: spooky party décor, fall centerpiece, boo basket", scope: "Category", source: "Search data, 14 brands" },
+]
 import { LAUNCH_FILES, LAUNCH_PAGES, NEW_SKUS, PAGE_FACTS } from "../launch/data"
 import { AdaptedImage } from "../launch/images"
 import { LaunchPagePreview } from "../launch/page-preview"
@@ -110,7 +120,10 @@ export function BatchDetail({ batch, onApprove, onReviewAll, onSelect, onSelectS
             {batch.type}
             {batch.partLabel && ` · ${batch.partLabel}`}
           </div>
-          <div className="mt-0.5 text-2xl font-semibold tracking-tight text-slate-950">{batch.name}</div>
+          <div className="mt-0.5 flex items-center gap-1 text-2xl font-semibold tracking-tight text-slate-950">
+            {batch.name}
+            {/^(halloween|gifts)/.test(batch.id) && <WhyIcon why={HALLOWEEN_WHY} align="left" />}
+          </div>
           {/* Who asked and by when, then the deadline that makes it urgent: the ask by weight (it's not a link), the expiry in amber. */}
           <div className="mt-1.5 text-sm">
             <span className={ask || shipped.length ? "font-medium text-slate-950" : "text-slate-500"}>{source}</span>

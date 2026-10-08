@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { useState } from "react"
 import { ChevronRight } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -10,6 +11,7 @@ import { useNudge } from "../nudge-context"
 import { AGENT_LABEL } from "../types"
 import type { AgentId, TierRow } from "../types"
 import { ContentWaterfall } from "./content-waterfall"
+import { BRAND_TOTAL, GROWTH } from "../cs/context-data"
 
 /** How each lever with a breakdown by type of work draws it. Media has none yet, so it stays a summary row. */
 const DRILLDOWN: Partial<Record<AgentId, { order?: string[]; barClass?: string; teamRow?: TierRow; resultsHref?: string }>> = {
@@ -116,6 +118,14 @@ export function ThisQuarterSection() {
         </span>
       </div>
 
+      {/* Why the delivered number keeps rising: what Ally has learned about the brand. */}
+      <div className="mt-2 text-sm text-slate-500">
+        Ally knows <span className="font-mono font-semibold text-slate-950">{BRAND_TOTAL}</span> things about Aurelle · <span className="font-mono font-semibold text-slate-950">{GROWTH[GROWTH.length - 1].firstPass}%</span> of drafts approved first time, was{" "}
+        <span className="font-mono">{GROWTH[0].firstPass}%</span> ·{" "}
+        <Link href="/context?from=claire" className="font-medium text-brand-700 hover:underline">
+          See what Ally knows
+        </Link>
+      </div>
       {/* The key, once: what the fill, the tick and the shading mean. */}
       <div className="mt-4 flex flex-wrap gap-4 text-xs text-slate-500">
         <span className="flex items-center gap-1.5"><span className="h-2 w-3 rounded-sm bg-ally-500" /> Delivered</span>

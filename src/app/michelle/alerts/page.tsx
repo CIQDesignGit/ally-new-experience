@@ -65,7 +65,7 @@ function Alerts() {
     last: b.now,
   }))
   // Alerts Ally set up from a customer call (Sarah's account) show here unless she undid them.
-  const fromCalls = callItems["did-alert"] === "dismissed" ? [] : [PROMO_ALERT]
+  const fromCalls = callItems["a-alert"] === "dismissed" ? [] : [PROMO_ALERT]
   const alertItems = [...custom, ...fromCalls, ...added.filter((x) => x.kind === "alert"), ...builtIn]
   // Michelle's own alerts keep their full card (terms, threshold, cap); the rest use the shared editor.
   const editor = (i: RunItem) => {

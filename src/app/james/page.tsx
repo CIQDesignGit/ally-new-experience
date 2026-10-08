@@ -58,8 +58,8 @@ function James() {
       <div className="mx-auto max-w-[1280px] overflow-clip bg-white shadow-pane-lg sm:my-6 sm:rounded-2xl sm:ring-1 sm:ring-slate-900/6 xl:my-0 xl:rounded-none xl:shadow-none xl:ring-0">
         <JamesHeader />
         <MediaProgress celebrate={celebrate} stage={filter === "all" ? undefined : filter} onStage={(st) => pickFilter(st, true)} />
-        <div ref={queueRef} className="grid grid-cols-[340px_minmax(0,1fr)]">
-          <div className="border-r border-slate-200 bg-white">
+        <div ref={queueRef} className="grid grid-cols-1 lg:grid-cols-[340px_minmax(0,1fr)]">
+          <div className="border-b border-slate-200 bg-white lg:border-r lg:border-b-0">
             <MediaList selectedId={selectedId} filter={filter} onFilter={(f) => pickFilter(f)} onSelect={setSelectedId} />
           </div>
           <MediaDetail batch={selected} onAction={act} />

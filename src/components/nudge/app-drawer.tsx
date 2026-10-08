@@ -12,7 +12,7 @@ import { useLive } from "./live-model"
 import { shortDate } from "./model"
 import { RETRO } from "./retro/prime-day"
 import { MEDIA_BATCHES } from "./media/data"
-import { REVIEW_ITEMS } from "./cs/data"
+import { INBOX } from "./cs/data"
 
 const OPEN_W = "264px"
 const SHUT_W = "64px"
@@ -121,6 +121,8 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
       // Claire sees what Michelle has sent her, the moment she sends it; Michelle sees what she built.
       items: home === "/sarah" ? [
         { label: "Joint plan · Aurelle", sub: "Shared with Claire", href: "/plan", on: path === "/plan" },
+        { label: "Aurelle's context", sub: "64 things Ally knows", href: "/context", on: path === "/context" },
+        { label: "Recap · Oct 2 call", sub: "Saves to context today", href: "/sarah/recap", on: path === "/sarah/recap" },
         { label: "Aurelle weekly session", sub: "Prep for Thu, 2:00 PM", href: "/sarah/prep", on: path === "/sarah/prep" },
       ] : home === "/claire-waterfall" ? [
         { label: "Your plan with CommerceIQ", sub: "From Sarah Kim", href: "/plan", on: path === "/plan" },
@@ -160,7 +162,7 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
         : home === "/james"
           ? MEDIA_BATCHES.filter((b) => b.tier === "approval" && !approved[b.id]).length
           : home === "/sarah"
-            ? REVIEW_ITEMS.filter((c) => !callItems[c.id]).length
+            ? INBOX.filter((c) => c.kind === "approval" && !callItems[c.id]).length
           : live.approval.rows.filter((r) => (r.valueM ?? 0) > 0).length
 
   // Lists open in place; only Ask Ally shows its recent items without a click.

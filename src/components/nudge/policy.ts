@@ -87,8 +87,8 @@ export const DEFAULT_POLICY: Policy = {
 }
 
 export const DEFAULT_KNOWLEDGE: KnowledgeEntry[] = [
-  // Kept by Ally from the Oct 1 call with Claire (Sarah's account); undo is on Sarah's page.
-  { id: "kn-margin", text: "Q4 margin floor is 32%: no media or promo play below it", retailer: "All retailers", brands: [], skuGroups: [], author: "Ally, from the Oct 1 call", date: "Oct 1", source: "from the Oct 1 call with Claire" },
+  // Kept by Ally from the Oct 2 call with Claire (Sarah's account); undo is on Sarah's page.
+  { id: "kn-margin", text: "Q4 margin floor is 32%: no media or promo play below it", retailer: "All retailers", brands: [], skuGroups: [], author: "Ally, from the Oct 2 call", date: "Oct 2", source: "from the Oct 2 call with Claire" },
   {
     id: "k1",
     text: 'Do not use language such as "Made in USA". We\'re not legally allowed to make that claim; where relevant, "Originates in USA" can be used.',

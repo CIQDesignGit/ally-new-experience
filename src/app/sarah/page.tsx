@@ -4,7 +4,7 @@ import { AppDrawer } from "@/components/nudge/app-drawer"
 import { PageShell } from "@/components/layout/page-shell"
 import { AnswerCard, AskBar, ChatProvider, ChatThread, useChatSource } from "@/components/nudge/chat/inline-chat"
 import { ResetDemoButton } from "@/components/nudge/reset-demo-button"
-import { AllyDid, JointPlan, Portfolio, ReviewQueue, SarahHeader, SarahHero } from "@/components/nudge/cs/sarah-parts"
+import { Inbox, Portfolio, RecapCard, SarahHeader, SarahHero } from "@/components/nudge/cs/sarah-parts"
 import { ASKS, LAST_CALL, PLAN } from "@/components/nudge/cs/data"
 
 /** Sarah's questions: prep opens its own page; the rest answer from the plan and the call. */
@@ -18,7 +18,7 @@ function SarahChat() {
           match: /ask(ed)?|last (call|time|week)/i,
           render: () => (
             <AnswerCard>
-              <p className="font-semibold text-slate-950">{ASKS.length} asks on the {LAST_CALL.short} call. Ally has done all of them.</p>
+              <p className="font-semibold text-slate-950">{ASKS.length} asks on the {LAST_CALL.short} call. Ally did all of them; 3 wait for your approval.</p>
               <ul className="mt-2 flex flex-col gap-1 text-[14px]">
                 {ASKS.map((c) => (
                   <li key={c.id}>· {c.title}</li>
@@ -51,8 +51,8 @@ function SarahChat() {
 
 /**
  * Sarah, CommerceIQ's retail expert. Ally does the work from the plan and the
- * calls; Sarah reviews what's finished and sends it to the customer. Then what
- * Ally changed on its own (with undo), what went out on autopilot, and the plan.
+ * calls: what changes money or makes a new promise waits for her approval;
+ * the rest runs on autopilot. The call's recap saves itself into context.
  */
 export default function SarahPage() {
   return (
@@ -63,9 +63,8 @@ export default function SarahPage() {
           <SarahHeader />
           <SarahHero />
           <Portfolio />
-          <ReviewQueue />
-          <AllyDid />
-          <JointPlan />
+          <Inbox />
+          <RecapCard />
           <ChatThread />
           <div className="flex justify-end px-10 pb-24 opacity-50 hover:opacity-100">
             <ResetDemoButton />

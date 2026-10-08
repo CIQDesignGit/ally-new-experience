@@ -31,12 +31,12 @@ const ASKS: RetroSlide = {
   id: "asks",
   question: "What did you ask for last week?",
   eyebrow: "Week of Oct 5 · Your asks",
-  title: "What you asked for on Oct 1, and where each stands",
+  title: "What you asked for on Oct 2, and where each stands",
   chart: {
     kind: "list",
     items: ["Walmart media pacing, weekly", "WBR on Tuesdays, with Target", "Brightwick promo alert", "Cedar & Smoke supply gap handled", "Pumpkin Chai mini ready for Nov 20", "Q4 margin floor 32% in every play"],
   },
-  insights: [{ figure: "6", text: "asks from the Oct 1 call" }],
+  insights: [{ figure: "6", text: "asks from the Oct 2 call" }],
 }
 
 const SLIDES = [pick("landing"), pick("delivered"), MEDIA_ACTIONS, pick("risk"), pick("competition"), ASKS]
@@ -48,7 +48,7 @@ export const WEEKLY_DECK: DeckSpec = {
   path: "/sarah/decks/weekly",
   ask: "Build the deck for my Aurelle session on Thursday",
   verdict: "Tracking to $48M, $4M short of plan. $660K of Halloween content is one approval away; media moved $21K a week into the keywords content added.",
-  sources: "Claire's page · James's media actions · the Oct 1 call",
+  sources: "Claire's page · James's media actions · the Oct 2 call",
   file: "Aurelle-weekly-session",
   slides: SLIDES,
   all: SLIDES,

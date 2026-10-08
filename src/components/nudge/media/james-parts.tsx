@@ -23,6 +23,22 @@ import { LEDGER, LOOP_DELIVERED, MEDIA_BATCHES, MONTH_GONE, PACING, PLAY_RULES, 
 import type { MediaBatch } from "./data"
 import { budgetChip } from "./answers"
 import { contentApproved } from "./content-link"
+import { WhyIcon } from "../cs/why-icon"
+import type { Why } from "../cs/data"
+
+/** What each play used: Aurelle's context and what CommerceIQ learned across candle brands. */
+const MEDIA_WHY: Record<string, Why[]> = {
+  "media-rebalance": [
+    { text: "Gift-set searches spike 3 weeks before Thanksgiving", scope: "Category", source: "Proven at 14 brands" },
+    { text: "Q4 margin floor is 32%: the move stays above it", scope: "Brand", source: "Oct 2 call" },
+    { text: "Priorities this quarter: gift sets, then Halloween", scope: "Brand", source: "Annual plan" },
+  ],
+  "media-harvest": [{ text: "When organic rank is top 3, paid adds little", scope: "Category", source: "Incrementality tests, 10 brands" }],
+  "media-protect": [
+    { text: "No ads on pages that can't sell", scope: "Category", source: "Proven at 11 brands" },
+    { text: "Cedar & Smoke short at the DC until Oct 20", scope: "Brand", source: "Oct 2 call" },
+  ],
+}
 
 const DOT = Object.fromEntries(GROUPS.map((g) => [g.tier, g.dot])) as Record<MediaBatch["tier"], string>
 const HEAD = "text-xs font-medium text-slate-500"
@@ -188,7 +204,10 @@ export function MediaDetail({ batch, onAction }: { batch: MediaBatch; onAction: 
       <div className="flex items-start justify-between gap-8">
         <div className="min-w-0">
           <div className="text-sm font-medium text-slate-500">{batch.play}</div>
-          <div className="mt-0.5 text-2xl font-semibold tracking-tight text-slate-950">{batch.name}</div>
+          <div className="mt-0.5 flex items-center gap-1 text-2xl font-semibold tracking-tight text-slate-950">
+            {batch.name}
+            {MEDIA_WHY[batch.id] && <WhyIcon why={MEDIA_WHY[batch.id]} align="left" />}
+          </div>
           {w && !done && <div className={cn("mt-1 text-sm font-medium", w.ready ? "text-brand-700" : "text-slate-500")}>{w.text}</div>}
         </div>
         <div className="shrink-0 text-right">
