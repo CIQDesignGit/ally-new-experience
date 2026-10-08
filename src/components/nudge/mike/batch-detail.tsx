@@ -9,7 +9,7 @@ import { Upload } from "lucide-react"
 import { useChat } from "../chat/inline-chat"
 import { UploadDialog } from "../chat/upload-dialog"
 import { LAUNCH_CHIP } from "../launch/answers"
-import { MediaLink } from "../media/content-link"
+import { MediaLink, adTermFor } from "../media/content-link"
 import { WhyIcon } from "../cs/why-icon"
 import type { Why } from "../cs/data"
 
@@ -112,6 +112,10 @@ export function BatchDetail({ batch, onApprove, onReviewAll, onSelect, onSelectS
     </button>
   )
 
+  // The search term that converts in ads, added to these drafts: one of the changes, like the rest.
+  const ad = adTermFor(batch.id)
+  const changes = ad ? [...batch.changes, { text: `Added "${ad.keyword}", a search term that converts in ads`, detail: `$${ad.iroas.toFixed(2)} return in ads · wasn't on these pages`, skus: batch.skus }] : batch.changes
+
   return (
     <div className="flex min-w-0 flex-col px-10 py-8">
       <div className="flex items-start justify-between gap-8">
@@ -146,7 +150,7 @@ export function BatchDetail({ batch, onApprove, onReviewAll, onSelect, onSelectS
           {batch.changesTitle ?? "What Ally changed"}
         </div>
         <div>
-          {batch.changes.map((change, i) => (
+          {changes.map((change, i) => (
             <div key={i} className={cn("flex items-start gap-3 px-5 py-3.5", i > 0 && "border-t border-slate-100")}>
               <Check className="mt-0.5 size-4 shrink-0 text-success-600" />
               <div className="min-w-0 flex-1">
