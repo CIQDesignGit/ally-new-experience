@@ -10,6 +10,8 @@ import { BUSINESS, fmtBiz } from "../data"
 import { useLive } from "../live-model"
 import { PRIMARY, SECONDARY } from "../mike/buttons"
 import { GROUPS } from "../mike/rail"
+import { InboxFilters } from "../ops/ops-batch-list"
+import type { InboxFilter } from "../ops/ops-batch-list"
 import { DoneReel } from "../ui/done-reel"
 import { ASKS, CONTEXT_CHANGES, INBOX, LAST_CALL, NEXT_MEETING, PRODUCT_ASKS, RECAP, REEL, SARAH_NOW } from "./data"
 import type { InboxItem } from "./data"
@@ -50,16 +52,6 @@ export function SarahHero() {
 
 type Sel = string
 
-/** A bucket's header: its name and count. */
-function GroupHead({ label, n, first }: { label: string; n: number; first?: boolean }) {
-  return (
-    <div className={cn("flex items-center justify-between border-b border-slate-200 bg-slate-25 py-2 pr-4 pl-10 text-xs font-medium text-slate-500", !first && "border-t border-t-slate-200")}>
-      <span>{label}</span>
-      <span className="font-mono">{n}</span>
-    </div>
-  )
-}
-
 /** Sarah's inbox, laid out like Mike's and Michelle's: groups on the left, the selected work on the right. */
 export function SarahInbox() {
   const w = useWork()
@@ -72,14 +64,17 @@ export function SarahInbox() {
   const [sel, setSel] = useState<Sel>(ordered[0].id)
   const { callItems } = useNudge()
   const mood = moodDecided(callItems)
+  // The same filters as the other queues: one ranked list, the bucket in each row's dot.
+  const [filter, setFilter] = useState<InboxFilter>("all")
+  const show = (t: InboxFilter) => filter === "all" || filter === t
   const selected = INBOX.find((i) => i.id === sel)
 
 
   return (
     <div className="grid grid-cols-1 border-t border-slate-300 lg:grid-cols-[400px_minmax(0,1fr)]">
       <div className="border-b border-slate-300 bg-white lg:border-r lg:border-b-0">
-        <GroupHead label="One approval away" n={w.waiting.length} first />
-        {ordered.map((i) => {
+        <InboxFilters filter={filter} onFilter={setFilter} />
+        {show("approval") && ordered.map((i) => {
           const done = w.approved(i.id)
           return (
             <InboxRow
@@ -93,11 +88,9 @@ export function SarahInbox() {
             />
           )
         })}
-        <GroupHead label="Needs your input" n={mood ? 0 : 1} />
-        <InboxRow id="mood" active={sel === "mood"} onSelect={setSel} dot={DOT.input} done={mood} title="How Claire felt" meta={`${moodLine} · value concern`} right={mood ? <span className="text-slate-500">Done</span> : <span className="text-warning-700">Negative</span>} />
-        <GroupHead label="On autopilot" n={autos.length + 1} />
-        <InboxRow id="recap" active={sel === "recap"} onSelect={setSel} dot={DOT.autopilot} done title={`Saved the ${LAST_CALL.short} recap to context`} meta={`On its own ${LAST_CALL.savedOn} · edit anytime`} right={<span className="text-slate-500">Done</span>} />
-        {autos.map((i) => (
+        {show("input") && <InboxRow id="mood" active={sel === "mood"} onSelect={setSel} dot={DOT.input} done={mood} title="How Claire felt" meta={`${moodLine} · value concern`} right={mood ? <span className="text-slate-500">Done</span> : <span className="text-warning-700">Negative</span>} />}
+        {show("autopilot") && <InboxRow id="recap" active={sel === "recap"} onSelect={setSel} dot={DOT.autopilot} done title={`Saved the ${LAST_CALL.short} recap to context`} meta={`On its own ${LAST_CALL.savedOn} · edit anytime`} right={<span className="text-slate-500">Done</span>} />}
+        {show("autopilot") && autos.map((i) => (
           <InboxRow key={i.id} id={i.id} active={sel === i.id} onSelect={setSel} dot={DOT.autopilot} done title={i.line} meta={i.ask ? `From the ${LAST_CALL.short} call` : i.source} right={w.undone(i.id) ? <span className="text-slate-500">{i.undo === "Undo" ? "Undone" : "Recalled"}</span> : <span className="text-slate-500">Done</span>} />
         ))}
       </div>
@@ -119,10 +112,8 @@ function InboxRow({ id, title, meta, right, dot, done, active, onSelect }: RowPr
     <button
       type="button"
       onClick={() => onSelect(id)}
-      className={cn("relative grid w-full grid-cols-[8px_minmax(0,1fr)_auto] items-baseline gap-x-2.5 border-b border-slate-100 py-2.5 pr-4 pl-10 text-left outline-none hover:bg-slate-50 focus-visible:ring-2 focus-visible:ring-brand-200 focus-visible:ring-inset", active && "bg-slate-50")}
+      className={cn("relative grid w-full grid-cols-[8px_minmax(0,1fr)_auto] items-baseline gap-x-2.5 border-b border-slate-100 py-2.5 pr-4 pl-10 text-left outline-none hover:bg-slate-50 focus-visible:ring-2 focus-visible:ring-brand-300 focus-visible:ring-inset", active && "bg-slate-50 shadow-[inset_2px_0_0_var(--color-brand-500)]")}
     >
-      {/* Selected: a bar in the bucket's color, the same width and edge as the bucket header's. */}
-      {active && <span className={cn("absolute inset-y-0 left-0 w-[3px]", dot)} />}
       <span className={cn("size-2 -translate-y-px rounded-full", dot)} />
       <span className="min-w-0">
         <span className={cn("block text-[14px] leading-snug", done ? "text-slate-500" : "font-medium text-slate-950")}>{title}</span>
