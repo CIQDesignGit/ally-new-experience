@@ -231,7 +231,7 @@ function CallPlan() {
       </p>
       <div>
         <div className={HEAD}>
-          Your asks from {LAST_CALL.short} · all {ASKS.length} done by Ally
+          Your asks from {LAST_CALL.short} · all {ASKS.length} completed
         </div>
         <ul className="mt-2 flex flex-col">
           {ASKS.map((a) => {

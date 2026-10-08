@@ -72,7 +72,7 @@ export function MeetingPrep() {
     { text: "Put seasonal content on autopilot from the next event", value: "394 more SKUs", agenda: "Decide on seasonal autopilot" },
   ].filter(Boolean) as { text: string; value: string; agenda: string }[]
   const agenda = [
-    `Your asks from ${LAST_CALL.short}: ${delivered === ASKS.length ? "all" : delivered} ${delivered === ASKS.length ? ASKS.length : `of ${ASKS.length}`} done`,
+    `Your asks from ${LAST_CALL.short}: ${delivered === ASKS.length ? "all" : delivered} ${delivered === ASKS.length ? ASKS.length : `of ${ASKS.length}`} completed`,
     "Halloween countdown: 21 days to publish, $660K one approval away",
     ...decisions.map((d) => d.agenda),
   ].slice(0, 5)
@@ -154,7 +154,7 @@ export function MeetingPrep() {
       )}
 
       <div className="mt-6">
-        <Section n={1} title={`Your asks from ${LAST_CALL.short} · ${delivered === ASKS.length ? `all ${ASKS.length}` : `${delivered} of ${ASKS.length}`} done by Ally`}>
+        <Section n={1} title={`Your asks from ${LAST_CALL.short} · ${delivered === ASKS.length ? `all ${ASKS.length}` : `${delivered} of ${ASKS.length}`} completed`}>
           <Bullets
             items={[
               ...ASKS.map((c) => {
