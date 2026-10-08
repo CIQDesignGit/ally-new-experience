@@ -67,7 +67,7 @@ const TONE = { approval: "text-ally-700", input: "text-warning-700", autopilot: 
 /** A bucket's header: its name and count; with look C, its color too. */
 function GroupHead({ tier, label, n, look, first }: { tier: keyof typeof TONE; label: string; n: number; look: Look; first?: boolean }) {
   return (
-    <div className={cn("relative flex items-center justify-between border-b border-slate-100 bg-slate-25 py-2 pr-4 pl-10 text-xs font-medium text-slate-500", !first && "border-t", look === "c" && TONE[tier])}>
+    <div className={cn("relative flex items-center justify-between border-b border-slate-200 bg-slate-25 py-2 pr-4 pl-10 text-xs font-medium text-slate-500", !first && "border-t border-t-slate-200", look === "c" && TONE[tier])}>
       {look === "c" && <span className={cn("absolute inset-y-0 left-0 w-[3px]", DOT[tier])} />}
       <span>{label}</span>
       <span className="font-mono">{n}</span>
@@ -92,8 +92,8 @@ export function SarahInbox() {
 
 
   return (
-    <div className="grid grid-cols-1 border-t border-slate-200 lg:grid-cols-[400px_minmax(0,1fr)]">
-      <div className="border-b border-slate-200 bg-white lg:border-r lg:border-b-0">
+    <div className="grid grid-cols-1 border-t border-slate-300 lg:grid-cols-[400px_minmax(0,1fr)]">
+      <div className="border-b border-slate-300 bg-white lg:border-r lg:border-b-0">
         <GroupHead tier="approval" label="One approval away" n={w.waiting.length} look={look} first />
         {ordered.map((i) => {
           const done = w.approved(i.id)
@@ -118,7 +118,7 @@ export function SarahInbox() {
         ))}
       </div>
       <div className={cn("min-w-0", look === "b" ? "bg-slate-50 p-6" : "px-10 py-8")}>
-        <div className={cn(look === "b" && "rounded-2xl border border-slate-200 bg-white px-8 py-7 shadow-md")}>
+        <div className={cn(look === "b" && "rounded-2xl border border-slate-300 bg-white px-8 py-7 shadow-md")}>
           {sel === "recap" ? <RecapPane /> : sel === "mood" ? <SentimentPane /> : selected ? <ItemPane item={selected} /> : null}
         </div>
       </div>
@@ -134,8 +134,10 @@ function InboxRow({ id, title, meta, right, dot, done, active, onSelect }: RowPr
     <button
       type="button"
       onClick={() => onSelect(id)}
-      className={cn("grid w-full grid-cols-[8px_minmax(0,1fr)_auto] items-baseline gap-x-2.5 border-b border-slate-100 py-2.5 pr-4 pl-10 text-left hover:bg-slate-50", active && "bg-slate-50 shadow-[inset_2px_0_0_var(--color-brand-500)]")}
+      className={cn("relative grid w-full grid-cols-[8px_minmax(0,1fr)_auto] items-baseline gap-x-2.5 border-b border-slate-100 py-2.5 pr-4 pl-10 text-left outline-none hover:bg-slate-50 focus-visible:ring-2 focus-visible:ring-brand-200 focus-visible:ring-inset", active && "bg-slate-50")}
     >
+      {/* Selected: a bar in the bucket's color, the same width and edge as the bucket header's. */}
+      {active && <span className={cn("absolute inset-y-0 left-0 w-[3px]", dot)} />}
       <span className={cn("size-2 -translate-y-px rounded-full", dot)} />
       <span className="min-w-0">
         <span className={cn("block text-[14px] leading-snug", done ? "text-slate-500" : "font-medium text-slate-950")}>{title}</span>
