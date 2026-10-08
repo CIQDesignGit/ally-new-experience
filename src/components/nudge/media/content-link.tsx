@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { ArrowRight, ChevronDown, Megaphone } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
@@ -44,7 +44,31 @@ export function MediaLink({ batchId }: { batchId: string }) {
   const base = Object.keys(LINKS).find((k) => batchId === k || batchId.startsWith(`${k}-`))
   const a = base ? AGENT[base] : undefined
   const [open, setOpen] = useState(false)
+  // Wakes up each time a job opens: calling, then the line it settles into.
+  const [waking, setWaking] = useState(true)
   const funded = base ? !!approved[LINKS[base].play] : false
+  const box = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    let t = 0
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      t = window.setTimeout(() => setWaking(false), 0)
+      return () => window.clearTimeout(t)
+    }
+    // Starts when the line is on screen, so it's seen, not finished below the fold.
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((e) => e.isIntersecting)) return
+        io.disconnect()
+        t = window.setTimeout(() => setWaking(false), 1300)
+      },
+      { threshold: 0.5 },
+    )
+    if (box.current) io.observe(box.current)
+    return () => {
+      io.disconnect()
+      window.clearTimeout(t)
+    }
+  }, [])
   useEffect(() => {
     if (!base || !a || funded) return
     let seen: string[] = []
@@ -62,16 +86,32 @@ export function MediaLink({ batchId }: { batchId: string }) {
   }, [base, a, funded])
   if (!base || !a) return null
   return (
-    <div className="mt-3 animate-in fade-in-0 duration-500">
-      <button type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open} className="flex w-full items-center gap-2 rounded-lg px-1 py-1.5 text-left text-sm text-slate-700 hover:bg-slate-50">
-        <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-ally-100 text-ally-700">
-          <Megaphone className="size-3.5" />
+    <div ref={box} className="mt-3">
+      <button
+        type="button"
+        onClick={() => !waking && setOpen((v) => !v)}
+        aria-expanded={open}
+        className={cn("group flex w-full items-center gap-2 rounded-lg px-1 py-1.5 text-left text-sm text-slate-700", !waking && "hover:bg-slate-50")}
+      >
+        <span className="relative flex size-6 shrink-0 items-center justify-center rounded-full bg-ally-100 text-ally-700">
+          {waking && <span className="absolute inset-0 animate-ping rounded-full bg-ally-300" />}
+          <Megaphone className={cn("relative size-3.5", waking && "animate-pulse")} />
         </span>
-        <span className="font-semibold text-slate-950">{funded ? "Media agent · James approved" : "Media agent pinged"}</span>
-        <span className="min-w-0 truncate text-slate-500">· {a.line}</span>
-        <ChevronDown className={cn("ml-auto size-4 shrink-0 text-slate-400 transition-transform", open && "rotate-180")} />
+        {waking ? (
+          <span className="font-medium whitespace-nowrap text-ally-700">Calling the media agent…</span>
+        ) : (
+          <>
+            <span className="shrink-0 font-semibold whitespace-nowrap text-slate-950 animate-in fade-in-0 duration-300">{funded ? "Media agent · James approved" : "Media agent pinged"}</span>
+            <span className="min-w-0 truncate text-slate-500 animate-in fade-in-0 duration-300">· {a.line}</span>
+            {/* The cue: it opens. */}
+            <span className="ml-auto inline-flex shrink-0 items-center gap-0.5 text-[13px] font-medium text-brand-700 group-hover:underline">
+              {open ? "Less" : "Details"}
+              <ChevronDown className={cn("size-4 transition-transform", open && "rotate-180")} />
+            </span>
+          </>
+        )}
       </button>
-      {open && (
+      {open && !waking && (
         <div className="mt-1 ml-9 flex flex-col gap-2 text-sm animate-in fade-in-0 slide-in-from-top-1 duration-200">
           <span className="flex flex-wrap gap-1.5">
             {a.campaigns.map((c) => (
