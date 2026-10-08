@@ -116,7 +116,7 @@ export const INBOX: InboxItem[] = [
     undo: "Undo",
     why: [
       { text: "Cedar & Smoke short at the DC until Oct 20", scope: "Brand", source: "Oct 2 call" },
-      { text: "No ads on pages that can't sell", scope: "Category", source: "Proven at 11 brands" },
+      { text: "Pause ads on SKUs shoppers can't buy from you", scope: "Category", source: "Proven at 11 brands" },
     ],
   },
   {

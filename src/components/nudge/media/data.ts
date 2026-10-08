@@ -5,7 +5,7 @@ import type { Tier } from "../model"
  * is a slice of one of Claire's three media rows, so nothing new is added:
  *   One approval away  $560K = fund content's keywords + Winter Hearth launch + rebalance categories
  *   Needs your input  $1.04M = the plan for $500K of new budget
- *   On autopilot       $500K = bids and pacing + keyword harvesting + no ads on pages that can't sell
+ *   On autopilot       $500K = bids and pacing + keyword harvesting + ads paused on SKUs you can't sell
  *
  * Both agents read and write one keyword ledger: content adds the keywords that
  * are trending and important in a category, media funds them; where organic rank
@@ -169,7 +169,7 @@ export const MEDIA_BATCHES: MediaBatch[] = [
     id: "media-protect",
     tier: "autopilot",
     play: "Protect",
-    name: "No ads on pages that can't sell",
+    name: "Ads paused on SKUs you can't sell right now",
     value: 0.09,
     count: 11,
     noun: "SKUs",
@@ -232,7 +232,7 @@ export const PLAY_RULES: { play: LedgerRow["play"]; when: string; does: string }
   { play: "Build", when: "Weak organic rank, paid works", does: "Content adds it, media funds it" },
   { play: "Harvest", when: "Strong organic rank, paid adds little", does: "Bids down, money moves to Build" },
   { play: "Defend", when: "Strong organic rank, a competitor bids on your brand", does: "Bids held" },
-  { play: "Fix the page first", when: "The page can't sell", does: "Ads paused until it's fixed" },
+  { play: "Fix the page first", when: "Out of stock or buy box lost", does: "Ads paused until it's fixed" },
   { play: "Add to the page", when: "Converts in ads, not on the page", does: "Sent to content" },
   { play: "Negative", when: "Reviews contradict the claim on a SKU", does: "Negative on those SKUs only" },
 ]

@@ -967,7 +967,7 @@ const SNAPSHOT: Snapshot = {
       canNudgeTeam: false,
       describe: {
         content: "Always-on PIM to PDP fixes.",
-        media: "Bids and pacing, keyword harvesting, no ads on pages that can't sell.",
+        media: "Bids and pacing, keyword harvesting, pausing ads on SKUs you can't sell right now.",
         ops: "Promotions not live.",
       },
     },
