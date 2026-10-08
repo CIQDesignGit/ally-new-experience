@@ -257,29 +257,48 @@ export function paceOf(budget: number, spent: number) {
 export const LOOP_DELIVERED = 0.038
 
 /**
- * Content and media together, Sep 7 – Oct 4: content added 12 keywords; organic
- * rank rose; media pulled back on the 9 that reached the top 3 and moved that
- * money to 22 starved keywords. Sales: organic +$118K, reinvested +$194K.
+ * Content and media together, as a lifecycle you can follow keyword by keyword:
+ * this week's new keywords get bids to win rank; July's now rank on their own,
+ * so their bids come down; that money funds keywords that had almost none; and
+ * a claim reviews contradict becomes a negative keyword on those SKUs only.
+ * Sales from July's keywords and the money they freed: +$312K since July.
  */
 export const TOGETHER = {
-  period: "Sep 7 – Oct 4",
-  keywords: 12,
-  pages: 140,
-  rank: { from: 31, to: 9 },
-  organic: 118,
-  harvested: 9,
-  cpc: -22,
-  freed: 21,
-  starved: 22,
-  moved: 84,
-  newSales: 286,
-  oldSales: 92,
-  weekly: [62, 71, 84, 98],
-  rows: [
-    { keyword: "fall centerpiece candle", rank: "#31 → #3", bid: "$1.18 → $0.71", note: "Organic took over" },
-    { keyword: "cozy autumn candle", rank: "#22 → #2", bid: "$0.94 → $0.56", note: "Organic took over" },
-    { keyword: "spiced apple candle", rank: "#40 → #12", bid: "$1.06 → $1.06", note: "Still building · bids held" },
-  ],
+  since: "since July",
+  now: {
+    keywords: 14,
+    rows: [
+      { keyword: "spooky party décor", sov: "9%", bid: "$0.62 → $0.95" },
+      { keyword: "boo basket", sov: "6%", bid: "$0.80 → $1.20" },
+      { keyword: "fall centerpiece", sov: "14%", bid: "$0.55 → $0.78" },
+    ],
+  },
+  july: {
+    keywords: 12,
+    pages: 140,
+    rank: { from: 31, to: 9 },
+    organic: 118,
+    cut: 9,
+    cpc: -22,
+    freed: 21,
+    rows: [
+      { keyword: "soy jar candle 16 oz", rank: "#24 → #2", bid: "$0.95 → $0.57" },
+      { keyword: "cedar candle", rank: "#31 → #3", bid: "$0.70 → $0.42" },
+      { keyword: "long burn candle", rank: "#40 → #12", bid: "$1.06 → $1.06", note: "Still building · bids held" },
+    ],
+  },
+  starved: {
+    keywords: 22,
+    moved: 84,
+    newSales: 286,
+    oldSales: 92,
+    rows: [
+      { keyword: "candle gift for her", spend: "$40 → $2.1K a week", ret: "$3.60" },
+      { keyword: "hostess gift candle", spend: "$25 → $1.4K a week", ret: "$3.40" },
+      { keyword: "candle sampler set", spend: "$30 → $1.2K a week", ret: "$3.20" },
+    ],
+  },
+  negative: { reviews: 23, skus: "Cedar & Smoke and Coastal Linen", terms: ["clean burning", "soot free"], moved: "$1.8K" },
 }
-export const TOGETHER_REINVESTED = TOGETHER.newSales - TOGETHER.oldSales
-export const TOGETHER_TOTAL = TOGETHER.organic + TOGETHER_REINVESTED
+export const TOGETHER_REINVESTED = TOGETHER.starved.newSales - TOGETHER.starved.oldSales
+export const TOGETHER_TOTAL = TOGETHER.july.organic + TOGETHER_REINVESTED
