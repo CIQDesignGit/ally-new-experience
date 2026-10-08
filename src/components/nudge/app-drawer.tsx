@@ -7,9 +7,8 @@ import { Bell, ClipboardList, Clock, GraduationCap, Home, LayoutDashboard, Messa
 import { cn } from "@/lib/utils"
 import { useNudge } from "./nudge-context"
 import { rememberHome, rememberedHome } from "./top-strip"
-import { AUTOPILOT_GO_LIVE, BUSINESS, contentBatches, fmtBiz, fmtValue, launchedIds, opsBatches } from "./data"
+import { BUSINESS, contentBatches, fmtBiz, fmtValue, launchedIds, opsBatches } from "./data"
 import { useLive } from "./live-model"
-import { shortDate } from "./model"
 import { RETRO } from "./retro/prime-day"
 import { MEDIA_BATCHES } from "./media/data"
 import { INBOX } from "./cs/data"
@@ -356,7 +355,7 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
   )
 }
 
-/** Ally's work in flight, at the foot of the rail: what's on autopilot and when it goes live. Real numbers, from the waterfall. */
+/** Ally's work in flight, at the foot of the rail: what's on autopilot. Real numbers, from the waterfall. */
 function AllyWorking() {
   const { stages } = useLive()
   const auto = stages.find((s) => s.id === "autopilot")
@@ -367,7 +366,7 @@ function AllyWorking() {
         <span className="size-2 animate-pulse rounded-full bg-success-500" aria-hidden /> Ally is working
       </div>
       <div className="mt-1 text-xs text-brand-200">
-        <span className="font-mono text-white">{fmtValue(auto.value)}</span> on autopilot · goes live {shortDate(AUTOPILOT_GO_LIVE)}
+        <span className="font-mono text-white">{fmtValue(auto.value)}</span> on autopilot
       </div>
     </div>
   )
@@ -378,6 +377,6 @@ function AllyWorkingDot() {
   const { stages } = useLive()
   const auto = stages.find((x) => x.id === "autopilot")
   if (!auto || auto.value <= 0) return null
-  const say = `Ally is working · ${fmtValue(auto.value)} on autopilot · goes live ${shortDate(AUTOPILOT_GO_LIVE)}`
+  const say = `Ally is working · ${fmtValue(auto.value)} on autopilot`
   return <span title={say} aria-label={say} className="mt-auto size-2.5 animate-pulse rounded-full bg-success-500" />
 }
