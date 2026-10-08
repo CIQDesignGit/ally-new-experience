@@ -98,7 +98,7 @@ function AccountMenu({ person }: { person: Person }) {
         </div>
         <DropdownMenuSeparator />
         <div className="px-2.5 pt-1.5 pb-1 text-xs font-medium text-slate-500">View as</div>
-        {(["claire", "michelle", "mike"] as const).map((p) => (
+        {(["claire", "michelle", "mike", "james", "sarah"] as const).map((p) => (
           <DropdownMenuItem key={p} onClick={() => router.push(HOMES[p])} className="gap-2.5 px-2.5 py-2 text-sm">
             <Avatar person={p} className="size-7" />
             <span className="flex-1">

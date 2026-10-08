@@ -34,6 +34,10 @@ const MEDIA_WHY: Record<string, Why[]> = {
     { text: "Priorities this quarter: gift sets, then Halloween", scope: "Brand", source: "Annual plan" },
   ],
   "media-harvest": [{ text: "When organic rank is top 3, paid adds little", scope: "Category", source: "Incrementality tests, 10 brands" }],
+  "media-negative": [
+    { text: "23 reviews on these 2 SKUs say smoky or left soot", scope: "Brand", source: "Review mining, content agent" },
+    { text: "A claim reviews contradict sends paid clicks to 1-star reviews", scope: "Category", source: "Seen at 6 brands" },
+  ],
   "media-protect": [
     { text: "No ads on pages that can't sell", scope: "Category", source: "Proven at 11 brands" },
     { text: "Cedar & Smoke short at the DC until Oct 20", scope: "Brand", source: "Oct 2 call" },
@@ -240,6 +244,20 @@ export function MediaDetail({ batch, onAction }: { batch: MediaBatch; onAction: 
           </ul>
         </div>
       </div>
+
+      {batch.timeline && (
+        <div>
+          <div className={HEAD}>On and off with the pages</div>
+          <ol className="mt-2 grid gap-2 sm:grid-cols-3">
+            {batch.timeline.map((t) => (
+              <li key={t.date} className="rounded-lg bg-slate-25 px-3 py-2 ring-1 ring-slate-100">
+                <span className="block font-mono text-xs text-slate-500">{t.date}</span>
+                <span className="mt-0.5 block text-sm text-slate-950">{t.text}</span>
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
 
       {batch.changes && (
         <div className="overflow-hidden rounded-xl border border-slate-200">

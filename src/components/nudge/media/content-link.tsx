@@ -27,9 +27,9 @@ export function adTermFor(batchId: string) {
 }
 
 /** What the media agent was pinged to do for a content batch, in one line, and the campaigns it touches. */
-const AGENT: Record<string, { line: string; campaigns: string[]; ping: string }> = {
-  halloween: { line: "Adding 14 keywords to 3 campaigns", campaigns: ["Halloween · jar candles", "Seasonal gifting", "Brand + seasonal"], ping: "14 keywords for 3 campaigns" },
-  gifts: { line: "Adding 14 keywords to 3 campaigns", campaigns: ["Gift sets · exact", "Seasonal gifting", "Brand + seasonal"], ping: "14 keywords for 3 campaigns" },
+const AGENT: Record<string, { line: string; campaigns: string[]; ping: string; after?: string }> = {
+  halloween: { line: "Adding 14 keywords to 3 campaigns", campaigns: ["Halloween · jar candles", "Seasonal gifting", "Brand + seasonal"], ping: "14 keywords for 3 campaigns", after: "Paused Nov 1, when these pages revert · $6K a week moves to gift sets" },
+  gifts: { line: "Adding 14 keywords to 3 campaigns", campaigns: ["Gift sets · exact", "Seasonal gifting", "Brand + seasonal"], ping: "14 keywords for 3 campaigns", after: "Paused Nov 1, when these pages revert · $6K a week moves to gift sets" },
   concepts: { line: "DSP awareness campaign and 4 search campaigns for the 3 new SKUs", campaigns: ["DSP · winter-gift shoppers", "Brand", "Jar candles", "Gift sets", "Winter scents"], ping: "the Winter Hearth launch campaigns" },
 }
 const PINGED_KEY = "ally-james-pinged"
@@ -120,6 +120,7 @@ export function MediaLink({ batchId }: { batchId: string }) {
               </span>
             ))}
           </span>
+          {a.after && <span className="text-slate-700">{a.after}</span>}
           <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
             <span className={funded ? "text-success-700" : "text-slate-500"}>{funded ? "Bids rise when these pages go live" : "Waiting for James to approve · goes live with these pages"}</span>
             <Link href="/james?from=mike" className="inline-flex items-center gap-0.5 font-medium text-brand-700 hover:underline">

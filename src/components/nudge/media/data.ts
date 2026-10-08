@@ -11,7 +11,7 @@ import type { Tier } from "../model"
  * are trending and important in a category, media funds them; where organic rank
  * is already strong and paid adds little, media pulls back and moves the money.
  */
-export type MediaPlay = "Build" | "Launch" | "Rebalance" | "Budget" | "Pacing" | "Harvest" | "Protect"
+export type MediaPlay = "Build" | "Launch" | "Rebalance" | "Budget" | "Pacing" | "Harvest" | "Protect" | "Negative"
 
 export interface MediaChange {
   what: string
@@ -39,6 +39,8 @@ export interface MediaBatch {
   spend?: string
   /** Waits on content: shown until that content batch is approved. */
   waitsOn?: { batch: string; waiting: string; ready: string }
+  /** Dated steps, for plays that switch on and off with content. */
+  timeline?: { date: string; text: string }[]
   /** Primary action, and what the row says once it's done. */
   cta?: string
   doneLabel?: string
@@ -68,7 +70,12 @@ export const MEDIA_BATCHES: MediaBatch[] = [
     noun: "keywords",
     spend: "+$6K a week",
     found: ["14 trending keywords added to Mike's Halloween pages and gift sets", "Share of voice 6–14% on them", "Brightwick holds 7 of 12 sponsored slots"],
-    does: ["Raises bids until share of voice reaches 25%", "Caps spend at $6K a week", "Starts when the pages go live"],
+    does: ["Raises bids until share of voice reaches 25%", "Caps spend at $6K a week", "Pauses them Nov 1, when the pages revert"],
+    timeline: [
+      { date: "Oct 26", text: "Pages live · 14 keywords on, bids up" },
+      { date: "Oct 31", text: "Halloween" },
+      { date: "Nov 1", text: "Pages revert · keywords paused · $6K a week moves to gift sets" },
+    ],
     changes: [
       { what: "spooky party décor", from: "$0.62", to: "$0.95", why: "Share of voice 9%" },
       { what: "boo basket", from: "$0.80", to: "$1.20", why: "Share of voice 6%" },
@@ -135,7 +142,7 @@ export const MEDIA_BATCHES: MediaBatch[] = [
     tier: "autopilot",
     play: "Pacing",
     name: "Bids and budget pacing",
-    value: 0.25,
+    value: 0.23,
     count: 1400,
     noun: "keywords",
     found: ["Every keyword, every hour", "Large jars and travel tins pacing to plan", "Wax melts underpacing"],
@@ -170,6 +177,22 @@ export const MEDIA_BATCHES: MediaBatch[] = [
     found: ["6 SKUs lost the buy box", "5 show out of stock but aren't", "Spend on them goes to other sellers or nowhere"],
     does: ["Pauses their ads", "Moves the spend to SKUs that convert", "Resumes when Michelle's fixes land"],
   },
+  {
+    id: "media-negative",
+    tier: "autopilot",
+    play: "Negative",
+    name: "Negative keywords from reviews",
+    value: 0.02,
+    count: 2,
+    noun: "SKUs",
+    spend: "$1.8K a week moved",
+    found: ["23 reviews on Cedar & Smoke and Coastal Linen say \"smoky\" or \"left soot\"", "Content agent took \"clean burning\" off their bullets", "Paid clicks on those terms ended in 1-star reviews"],
+    does: ["Makes \"clean burning\" and \"soot free\" negative on those 2 SKUs only", "Keeps them on the SKUs where they convert", "Moves the spend to SKUs that convert"],
+    changes: [
+      { what: "clean burning · Cedar & Smoke, Coastal Linen", from: "Bidding", to: "Negative", why: "23 reviews: smoky, soot" },
+      { what: "soot free · the same 2 SKUs", from: "Bidding", to: "Negative", why: "The page no longer claims it" },
+    ],
+  },
 ]
 
 /** Claire's three media rows, from the batches. */
@@ -184,7 +207,7 @@ export interface LedgerRow {
   organic: number | null
   sov: number
   iroas: number
-  play: "Build" | "Harvest" | "Defend" | "Fix the page first" | "Add to the page"
+  play: "Build" | "Harvest" | "Defend" | "Fix the page first" | "Add to the page" | "Negative"
   status: string
 }
 
@@ -198,6 +221,7 @@ export const LEDGER: LedgerRow[] = [
   { keyword: "soy jar candle 16 oz", category: "Large jars", onPage: "On the page", organic: 2, sov: 33, iroas: 1.1, play: "Harvest", status: "Bid −40% · on autopilot" },
   { keyword: "aurelle noir cherry", category: "Brand", onPage: "On the page", organic: 1, sov: 52, iroas: 2.4, play: "Defend", status: "Brightwick bidding on it · bids held" },
   { keyword: "coastal linen candle", category: "Large jars", onPage: "On the page", organic: 7, sov: 18, iroas: 0.8, play: "Fix the page first", status: "Buy box lost · ads paused" },
+  { keyword: "soot free candle", category: "Large jars", onPage: "On the page", organic: 15, sov: 12, iroas: 0.4, play: "Negative", status: "Negative on Cedar & Smoke, Coastal Linen · on autopilot" },
 ]
 
 /** Media's search terms that convert in ads but aren't on the page: sent to content. */
@@ -210,6 +234,7 @@ export const PLAY_RULES: { play: LedgerRow["play"]; when: string; does: string }
   { play: "Defend", when: "Strong organic rank, a competitor bids on your brand", does: "Bids held" },
   { play: "Fix the page first", when: "The page can't sell", does: "Ads paused until it's fixed" },
   { play: "Add to the page", when: "Converts in ads, not on the page", does: "Sent to content" },
+  { play: "Negative", when: "Reviews contradict the claim on a SKU", does: "Negative on those SKUs only" },
 ]
 
 /** October budget by category: spend so far against how much of the month has gone (8 of 31 days, 26%). */
@@ -230,3 +255,31 @@ export function paceOf(budget: number, spent: number) {
 
 /** Of media's delivered this quarter, the part from keywords content added: the loop's one number. */
 export const LOOP_DELIVERED = 0.038
+
+/**
+ * Content and media together, Sep 7 – Oct 4: content added 12 keywords; organic
+ * rank rose; media pulled back on the 9 that reached the top 3 and moved that
+ * money to 22 starved keywords. Sales: organic +$118K, reinvested +$194K.
+ */
+export const TOGETHER = {
+  period: "Sep 7 – Oct 4",
+  keywords: 12,
+  pages: 140,
+  rank: { from: 31, to: 9 },
+  organic: 118,
+  harvested: 9,
+  cpc: -22,
+  freed: 21,
+  starved: 22,
+  moved: 84,
+  newSales: 286,
+  oldSales: 92,
+  weekly: [62, 71, 84, 98],
+  rows: [
+    { keyword: "fall centerpiece candle", rank: "#31 → #3", bid: "$1.18 → $0.71", note: "Organic took over" },
+    { keyword: "cozy autumn candle", rank: "#22 → #2", bid: "$0.94 → $0.56", note: "Organic took over" },
+    { keyword: "spiced apple candle", rank: "#40 → #12", bid: "$1.06 → $1.06", note: "Still building · bids held" },
+  ],
+}
+export const TOGETHER_REINVESTED = TOGETHER.newSales - TOGETHER.oldSales
+export const TOGETHER_TOTAL = TOGETHER.organic + TOGETHER_REINVESTED

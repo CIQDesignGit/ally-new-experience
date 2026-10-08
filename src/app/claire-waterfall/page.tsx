@@ -16,7 +16,7 @@ import { GrowCards } from "@/components/nudge/market/grow-cards"
 import type { GrowView } from "@/components/nudge/market/grow-cards"
 import { GrowViewSwitch } from "@/components/nudge/market/views"
 import { Answer, QUESTIONS } from "@/components/nudge/claire/ask-ally-answers"
-import { budgetChip } from "@/components/nudge/media/answers"
+import { budgetChip, togetherChip } from "@/components/nudge/media/answers"
 import { aeoChip } from "@/components/nudge/cs/aeo-report"
 import { AskBar, ChatProvider, ChatThread, useChat, useChatSource } from "@/components/nudge/chat/inline-chat"
 import type { Chip } from "@/components/nudge/chat/inline-chat"
@@ -45,6 +45,7 @@ function HomeChat() {
     ...QUESTIONS.map((q, i) => (i === 4 ? planChip : i === 0 ? { ...budgetChip("claire"), q } : { q, hidden: i === 2 || i === 5, render: () => <div className="max-w-[860px] rounded-2xl bg-white px-5 py-4 text-[15px] leading-relaxed text-slate-700 ring-1 ring-slate-200"><Answer q={q} /></div> })),
     // The monthly AI visibility readout: answered when asked, not one of the four starters.
     { ...aeoChip, hidden: true },
+    { ...togetherChip, hidden: true },
   ]
   useChatSource({ chips }, "home")
   // A question reopened from Ask Ally's history ("?ask=…") is asked again, once.
