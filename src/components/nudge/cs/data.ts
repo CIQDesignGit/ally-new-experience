@@ -342,18 +342,18 @@ export const SENTIMENT = {
   calls: [
     { date: "Sep 18", mood: "Positive" },
     { date: "Sep 25", mood: "Positive" },
-    { date: "Oct 2", mood: "Mixed" },
+    { date: "Oct 2", mood: "Negative" },
   ],
   why: [
-    { quote: "The buy box fix is taking longer than we planned.", at: "14:30" },
-    { quote: "I have to tell my CEO when the hero SKUs are back.", at: "33:15" },
+    { quote: "Honestly, I'm not getting enough value from profit recovery automation.", at: "27:40" },
+    { quote: "We're still chasing shortage claims by hand. I can't justify that line to finance.", at: "28:05" },
   ],
-  did: "Added a buy box slide to Thursday's deck: a back-in date for each hero SKU",
+  did: "Added a profit recovery slide to Thursday's deck: $41K recovered this quarter, $120K still in dispute, and a plan to clear the 30-day backlog",
   note: {
-    subject: "Aurelle: Claire less positive on Oct 2. Can you join Thursday?",
+    subject: "Aurelle: Claire questioning the value of profit recovery automation. Can you join Thursday?",
     body: [
-      "Claire sounded less positive on Oct 2, after two positive calls. She raised the buy box twice and needs dates for her CEO.",
-      "Thursday's deck has a back-in date for each hero SKU. It would help to have you there to back the dates.",
+      "On Oct 2, after two positive calls, Claire said she isn't getting enough value from profit recovery automation. Her team still chases shortage claims by hand, and she can't justify it to finance.",
+      "Thursday's deck shows $41K recovered this quarter, $120K still in dispute, and a plan to clear the backlog. It would help to have you there to commit to it.",
       "Thu, Oct 8 · 2:00 PM · 45 min. Brief attached: where Aurelle stands, the 6 asks we closed, the 4 decisions.",
     ],
   },
@@ -376,7 +376,7 @@ export const PRODUCT_ASKS: Heard[] = [
 /** What Ally changed in Thursday's plan because of what Claire said. */
 export const CONTEXT_CHANGES = [
   { what: "The deck opens with the competitor slide", why: "Claire liked it on Oct 2" },
-  { what: "A buy box slide with a back-in date per hero SKU", why: "Claire raised it twice on Oct 2" },
+  { what: "A profit recovery slide: recovered, in dispute, the backlog plan", why: "Claire questioned its value on Oct 2" },
   { what: "Target is in the WBR", why: "Claire asked on Oct 2" },
   { what: "Every play holds the 32% margin floor", why: "Claire set it on Oct 2" },
 ]
