@@ -253,7 +253,7 @@ export const PLAN: { title: string; items: RunItem[] }[] = [
       d("pacing", "Media pacing and budget", "Spend vs plan by category, over- and underpacing, budget moves", "Every Monday, 8 AM", "Sent Mon, Oct 5, 8 AM", "act"),
       d("actions", "Media actions update", "Bid and budget actions by type: Build, Harvest, Defend, Pause, Pacing, with why", "Every Monday, 8 AM", "Sent Mon, Oct 5, 8 AM", "act"),
       d("shipped", "Content shipped", "Published, rejected and fixed, by type of work", "Every Friday", "Sent Fri, Oct 2", "act"),
-      d("session", "Weekly session", "Prep and agenda the day before, then the call", "Every Thursday, 2 PM", "Agenda sent · Thu, Oct 8", "act"),
+      d("session", "Weekly session", "Prep and agenda the day before, then the call", "Every Thursday, 2 PM", "Next Thu, Oct 8"),
     ],
   },
   {
@@ -288,7 +288,7 @@ export const WALMART_PACING: RunItem = {
   name: "Walmart media pacing",
   what: "Spend vs plan by category on Walmart, over- and underpacing",
   runs: "Every Monday, 8 AM",
-  does: "draft",
+  does: "act",
   owner: "yours",
   last: "First one Mon, Oct 12",
   by: `From the ${LAST_CALL.short} call`,
@@ -318,3 +318,6 @@ export const REEL = [
   "Drafted the recap of the Oct 2 call",
   "Built Thursday's prep and agenda",
 ]
+
+/** How a plan deliverable reaches the customer: on its own, or after Sarah reviews it. */
+export const PLAN_DOES: Partial<Record<RunItem["does"], string>> = { act: "On autopilot", draft: "Sarah reviews first" }

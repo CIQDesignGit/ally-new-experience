@@ -28,6 +28,8 @@ export function RunList({
   builtInLabel = "built in",
   author = "Claire Bennett",
   planned,
+  doesLabel,
+  doesHeader = "What Ally does",
 }: {
   title: string
   items: RunItem[]
@@ -44,6 +46,9 @@ export function RunList({
   builtInLabel?: string
   /** Who "+ New" is made by. */
   author?: string
+  /** The "What Ally does" column in this list's words (the joint plan: "On autopilot", "Sarah reviews first"); its header too. */
+  doesLabel?: Partial<Record<RunItem["does"], string>>
+  doesHeader?: string
   /** New items belong to the joint plan. */
   planned?: boolean
 }) {
@@ -121,7 +126,7 @@ export function RunList({
         <span />
         <span>{whatLabel ?? (kind === "skill" ? "Skill" : "What")}</span>
         <span>Runs</span>
-        <span>What Ally does</span>
+        <span>{doesHeader}</span>
         <span>{lastLabel}</span>
         <span className="text-right">Status</span>
       </div>
@@ -137,11 +142,11 @@ export function RunList({
                   <span className="block font-medium text-slate-950">{i.name}</span>
                   <span className="block truncate text-[13px] text-slate-500">
                     {i.what}
-                    {i.owner === "built in" ? ` · ${builtInLabel}` : ""}
+                    {i.owner === "built in" && builtInLabel ? ` · ${builtInLabel}` : ""}
                   </span>
                 </span>
                 <span className="text-slate-700">{i.runs}</span>
-                <span className="text-slate-700">{DOES_LABEL[i.does]}</span>
+                <span className="text-slate-700">{doesLabel?.[i.does] ?? DOES_LABEL[i.does]}</span>
                 <span className="text-[13px] text-slate-500">{i.last ?? "—"}</span>
                 <span className={cn("flex items-center justify-end gap-1.5 text-[13px] font-medium", off ? "text-slate-500" : "text-success-700")}>
                   <span className={cn("size-1.5 rounded-full", off ? "bg-slate-400" : "bg-success-500")} />
@@ -150,7 +155,7 @@ export function RunList({
               </button>
               {isOpen && (
                 <div className="mb-3 ml-8 rounded-lg border border-slate-200 bg-white px-5 py-4">
-                  {editor?.(i) ?? <GenericEditor item={i} kind={kind} onEdit={(p) => edit(i.id, p)} />}
+                  {editor?.(i) ?? <GenericEditor item={i} kind={kind} onEdit={(p) => edit(i.id, p)} doesLabel={doesLabel} doesHeader={doesHeader} />}
                   {extra?.(i)}
                   <div className="mt-4 flex items-center gap-5 border-t border-slate-100 pt-3 text-[13px] font-medium">
                     <button type="button" onClick={() => togglePause(i)} className="text-brand-700 hover:underline">
@@ -176,7 +181,7 @@ export function RunList({
 const FIELD = "h-9 w-full rounded-lg border border-slate-200 bg-white px-3 text-sm text-slate-950 outline-none focus:border-brand-300 focus:ring-2 focus:ring-brand-100"
 
 /** Name, trigger, when it runs and what Ally does; a skill also lists its steps. Built-in items keep their name and steps. */
-function GenericEditor({ item, kind, onEdit }: { item: RunItem; kind: "scheduled" | "skill"; onEdit: (p: Partial<RunItem>) => void }) {
+function GenericEditor({ item, kind, onEdit, doesLabel, doesHeader = "What Ally does" }: { item: RunItem; kind: "scheduled" | "skill"; onEdit: (p: Partial<RunItem>) => void; doesLabel?: Partial<Record<RunItem["does"], string>>; doesHeader?: string }) {
   const mine = item.owner === "yours"
   return (
     <div className="grid gap-4 text-sm md:grid-cols-2">
@@ -205,9 +210,9 @@ function GenericEditor({ item, kind, onEdit }: { item: RunItem; kind: "scheduled
       {/* A brief only ever tells you; alerts and skills choose how far Ally goes. */}
       {item.kind !== "brief" && (
       <div className="flex flex-col gap-1.5">
-        <span className="text-xs font-medium text-slate-500">What Ally does</span>
+        <span className="text-xs font-medium text-slate-500">{doesHeader}</span>
         <div className="inline-flex w-fit rounded-lg border border-slate-200 bg-slate-50 p-0.5">
-          {DOES.map((d) => (
+          {DOES.filter((d) => !doesLabel || doesLabel[d]).map((d) => (
             <button
               key={d}
               type="button"
@@ -215,7 +220,7 @@ function GenericEditor({ item, kind, onEdit }: { item: RunItem; kind: "scheduled
               aria-pressed={item.does === d}
               className={cn("rounded-md px-3 py-1.5 text-[13px] font-medium whitespace-nowrap", item.does === d ? "bg-white text-slate-950 shadow-xs ring-1 ring-slate-200" : "text-slate-500 hover:text-slate-800")}
             >
-              {DOES_LABEL[d]}
+              {doesLabel?.[d] ?? DOES_LABEL[d]}
             </button>
           ))}
         </div>

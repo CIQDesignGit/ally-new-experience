@@ -6,7 +6,7 @@ import { TopStrip } from "../top-strip"
 import { useNudge } from "../nudge-context"
 import { RunList } from "../runs/run-list"
 import type { RunItem } from "../runs/data"
-import { ACCOUNT, ASKS, INBOX, LAST_CALL, PLAN, SARAH, SARAH_NOW, WALMART_PACING, WBR_EDIT } from "./data"
+import { ACCOUNT, ASKS, INBOX, LAST_CALL, PLAN, PLAN_DOES, SARAH, SARAH_NOW, WALMART_PACING, WBR_EDIT } from "./data"
 import type { InboxItem } from "./data"
 
 const HEAD = "text-xs font-medium text-slate-500"
@@ -117,9 +117,9 @@ export function JointPlan({ readOnly, customer }: { readOnly?: boolean; /** Read
   return (
     <div className="flex flex-col gap-5">
       {plan.map((g) => (
-        <RunList key={g.title} title={g.title} items={g.items} kind="scheduled" placeholder="Send a Target content report every Friday" whatLabel="Deliverable" lastLabel="Last sent or next" builtInLabel="in the contract" author={SARAH.name} planned extra={extra} />
+        <RunList key={g.title} title={g.title} items={g.items} kind="scheduled" placeholder="Send a Target content report every Friday" whatLabel="Deliverable" lastLabel="Last sent or next" builtInLabel="" author={SARAH.name} planned extra={extra} doesLabel={PLAN_DOES} doesHeader="How it goes out" />
       ))}
-      <RunList title="Added from calls" items={added} kind="scheduled" placeholder="Send a Target content report every Friday" whatLabel="Deliverable" lastLabel="Last sent or next" builtInLabel="in the contract" author={SARAH.name} planned extra={extra} />
+      <RunList title="Added from calls" items={added} kind="scheduled" placeholder="Send a Target content report every Friday" whatLabel="Deliverable" lastLabel="Last sent or next" builtInLabel="" author={SARAH.name} planned extra={extra} doesLabel={PLAN_DOES} doesHeader="How it goes out" />
     </div>
   )
 }
@@ -147,9 +147,10 @@ function PlanTable({ customer }: { customer?: boolean }) {
       {groups.map((g) => (
         <section key={g.title} className="overflow-hidden rounded-xl border border-slate-200 bg-white">
           <div className="border-b border-slate-100 px-6 py-3.5 text-[15px] font-semibold text-slate-950">{g.title}</div>
-          <div className="grid grid-cols-[minmax(0,1fr)_180px_180px] gap-4 px-6 pt-3 pb-1 text-xs font-medium text-slate-500">
+          <div className="grid grid-cols-[minmax(0,1fr)_170px_170px_170px] gap-4 px-6 pt-3 pb-1 text-xs font-medium text-slate-500">
             <span>Deliverable</span>
             <span>When</span>
+            <span>How it goes out</span>
             <span>Last sent or next</span>
           </div>
           <div className="px-6 pb-2">
@@ -157,12 +158,13 @@ function PlanTable({ customer }: { customer?: boolean }) {
               .map((i) => ({ ...i, ...runs.edits[i.id] }))
               .filter((i) => !runs.removed.includes(i.id))
               .map((i) => (
-                <div key={i.id} className="grid grid-cols-[minmax(0,1fr)_180px_180px] items-baseline gap-4 border-t border-slate-100 py-3 text-sm first:border-t-0">
+                <div key={i.id} className="grid grid-cols-[minmax(0,1fr)_170px_170px_170px] items-baseline gap-4 border-t border-slate-100 py-3 text-sm first:border-t-0">
                   <span className="min-w-0">
                     <span className="block font-medium text-slate-950">{i.name}</span>
                     <span className="block text-[13px] text-slate-500">{i.what}</span>
                   </span>
                   <span className="text-slate-700">{i.runs}</span>
+                  <span className="text-slate-700">{PLAN_DOES[i.does] ?? "Sarah reviews first"}</span>
                   <span className="text-[13px] text-slate-500">{i.last}</span>
                 </div>
               ))}
