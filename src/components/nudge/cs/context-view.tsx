@@ -12,15 +12,15 @@ const HEAD = "text-xs font-medium text-slate-500"
  * of drafts approved first time as context grew, the entries by type with what
  * each did, and the category patterns learned across brands.
  */
-export function ContextView() {
+export function ContextView({ editor }: { /** The editable rules, opened from the list. */ editor?: React.ReactNode }) {
   const first = GROWTH[0]
   const last = GROWTH[GROWTH.length - 1]
   return (
-    <div className="flex flex-col gap-10 px-10 pt-2 pb-12">
+    <div className="flex flex-col gap-10">
       <div>
-        <h1 className="text-[28px] leading-tight font-bold tracking-tight text-slate-950">
+        <h2 className="text-2xl leading-tight font-bold tracking-tight text-slate-950">
           Ally knows <span className="font-mono">{BRAND_TOTAL}</span> things about Aurelle.
-        </h1>
+        </h2>
         <div className="mt-1 text-lg text-slate-700">
           Drafts approved first time: <span className="font-mono font-semibold text-slate-950">{last.firstPass}%</span>, up from <span className="font-mono">{first.firstPass}%</span> in August.
         </div>
@@ -47,7 +47,7 @@ export function ContextView() {
         </div>
       </section>
 
-      <BrandContext />
+      <BrandContext editor={editor} />
 
       <section>
         <div className="flex flex-wrap items-baseline justify-between gap-4">
@@ -98,12 +98,13 @@ function GrowthChart() {
   const PAD = { l: 40, r: 16 }
   const x = (i: number) => PAD.l + (i * (W - PAD.l - PAD.r)) / (GROWTH.length - 1)
   // Line: 50% to 90%.
-  const LH = 170
-  const y = (v: number) => 20 + ((90 - v) / 40) * (LH - 40)
+  // Room above the top line for the notes on the points.
+  const LH = 184
+  const y = (v: number) => 36 + ((90 - v) / 40) * (LH - 56)
   const path = GROWTH.map((g, i) => `${i ? "L" : "M"}${x(i).toFixed(1)},${y(g.firstPass).toFixed(1)}`).join(" ")
   // Columns: 0 to 70 entries.
   const BH = 90
-  const by = (v: number) => (v / 70) * (BH - 24)
+  const by = (v: number) => (v / 80) * (BH - 24)
   const [hover, setHover] = useState<number | null>(null)
   const h = hover !== null ? GROWTH[hover] : null
   return (
@@ -160,14 +161,19 @@ function GrowthChart() {
 }
 
 /** The library: entries by type, each with where it came from and what it changed. */
-function BrandContext() {
+function BrandContext({ editor }: { editor?: React.ReactNode }) {
   const [type, setType] = useState<ContextType | "All">("All")
+  const [editing, setEditing] = useState(false)
   const rows = BRAND_CONTEXT.filter((e) => type === "All" || e.type === type)
   return (
     <section>
       <div className="flex flex-wrap items-baseline justify-between gap-4">
         <h2 className="text-xl font-semibold tracking-tight text-slate-950">What Ally knows about Aurelle</h2>
-        <span className="text-sm text-slate-500">From calls, edits, the brand team and legal · editable in Teach Ally</span>
+        {editor && (
+          <button type="button" onClick={() => setEditing((v) => !v)} aria-expanded={editing} className="text-sm font-medium text-brand-700 hover:underline">
+            {editing ? "Done editing" : "Add or edit"}
+          </button>
+        )}
       </div>
       <div className="mt-4 flex flex-wrap gap-1.5">
         {(["All", ...CONTEXT_TYPES] as const).map((t) => (
@@ -210,8 +216,9 @@ function BrandContext() {
         </table>
       </div>
       <p className="mt-2 text-[13px] text-slate-500">
-        Showing {rows.length} of {type === "All" ? BRAND_TOTAL : TYPE_COUNTS[type]}
+        Showing {rows.length} of {type === "All" ? BRAND_TOTAL : TYPE_COUNTS[type]} · from calls, edits, the brand team and legal
       </p>
+      {editing && <div className="mt-5">{editor}</div>}
     </section>
   )
 }

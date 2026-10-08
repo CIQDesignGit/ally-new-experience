@@ -117,9 +117,9 @@ export function JointPlan({ readOnly, customer }: { readOnly?: boolean; /** Read
   return (
     <div className="flex flex-col gap-5">
       {plan.map((g) => (
-        <RunList key={g.title} title={g.title} items={g.items} kind="scheduled" placeholder="Send a Target content report every Friday" whatLabel="Deliverable" lastLabel="Last sent or next" builtInLabel="" author={SARAH.name} planned extra={extra} doesLabel={PLAN_DOES} doesHeader="How it goes out" />
+        <RunList key={g.title} title={g.title} items={g.items} kind="scheduled" placeholder="Send a Target content report every Friday" whatLabel="Deliverable" lastLabel="Last sent or next" builtInLabel="" author={SARAH.name} planned extra={extra} doesLabel={PLAN_DOES} doesHeader="Review" />
       ))}
-      <RunList title="Added from calls" items={added} kind="scheduled" placeholder="Send a Target content report every Friday" whatLabel="Deliverable" lastLabel="Last sent or next" builtInLabel="" author={SARAH.name} planned extra={extra} doesLabel={PLAN_DOES} doesHeader="How it goes out" />
+      <RunList title="Added from calls" items={added} kind="scheduled" placeholder="Send a Target content report every Friday" whatLabel="Deliverable" lastLabel="Last sent or next" builtInLabel="" author={SARAH.name} planned extra={extra} doesLabel={PLAN_DOES} doesHeader="Review" />
     </div>
   )
 }
@@ -150,7 +150,7 @@ function PlanTable({ customer }: { customer?: boolean }) {
           <div className="grid grid-cols-[minmax(0,1fr)_170px_170px_170px] gap-4 px-6 pt-3 pb-1 text-xs font-medium text-slate-500">
             <span>Deliverable</span>
             <span>When</span>
-            <span>How it goes out</span>
+            <span>Review</span>
             <span>Last sent or next</span>
           </div>
           <div className="px-6 pb-2">

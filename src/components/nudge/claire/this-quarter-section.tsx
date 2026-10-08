@@ -122,7 +122,7 @@ export function ThisQuarterSection() {
       <div className="mt-2 text-sm text-slate-500">
         Ally knows <span className="font-mono font-semibold text-slate-950">{BRAND_TOTAL}</span> things about Aurelle · <span className="font-mono font-semibold text-slate-950">{GROWTH[GROWTH.length - 1].firstPass}%</span> of drafts approved first time, was{" "}
         <span className="font-mono">{GROWTH[0].firstPass}%</span> ·{" "}
-        <Link href="/context?from=claire" className="font-medium text-brand-700 hover:underline">
+        <Link href="/settings?tab=context&from=claire" className="font-medium text-brand-700 hover:underline">
           See what Ally knows
         </Link>
       </div>

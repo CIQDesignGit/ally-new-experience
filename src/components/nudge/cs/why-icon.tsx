@@ -34,7 +34,7 @@ export function WhyIcon({ why, align = "right" }: { why: Why[]; align?: "left" |
               </span>
             ))}
           </span>
-          <Link href="/context" className="mt-3 inline-flex items-center gap-1 text-[13px] font-medium text-brand-700 hover:underline">
+          <Link href="/settings?tab=context" className="mt-3 inline-flex items-center gap-1 text-[13px] font-medium text-brand-700 hover:underline">
             See what Ally knows <ArrowRight className="size-3.5" />
           </Link>
         </span>

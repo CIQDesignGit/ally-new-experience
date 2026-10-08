@@ -2,12 +2,13 @@
 
 import { Suspense, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { TopStrip } from "@/components/nudge/top-strip"
+import { TopStrip, useViewer } from "@/components/nudge/top-strip"
 import { cn } from "@/lib/utils"
 import { AppDrawer } from "@/components/nudge/app-drawer"
 import { PageShell } from "@/components/layout/page-shell"
 import { ReviewPolicy } from "@/components/nudge/settings/review-policy"
 import { Knowledge } from "@/components/nudge/settings/knowledge"
+import { ContextView } from "@/components/nudge/cs/context-view"
 import { BusinessSettings } from "@/components/nudge/settings/business-settings"
 import { DataSources } from "@/components/nudge/settings/data-sources"
 import { AnswerCard, AskBar, ChatProvider, ChatThread, StarterChips } from "@/components/nudge/chat/inline-chat"
@@ -18,7 +19,7 @@ import { GAP_STEPS } from "@/components/nudge/ops/gap-data"
 
 const TABS = [
   { id: "skills", label: "Skills" },
-  { id: "knowledge", label: "Knowledge" },
+  { id: "knowledge", label: "Context" },
   { id: "policy", label: "Autopilot" },
   { id: "business", label: "Business view" },
   { id: "sources", label: "Data sources" },
@@ -32,17 +33,20 @@ const SETTINGS_TABS: string[] = ["business", "sources"]
  */
 function Settings() {
   const router = useRouter()
+  const { viewer, home } = useViewer("claire")
   const params = useSearchParams()
-  const [tab, setTab] = useState<(typeof TABS)[number]["id"]>(TABS.find((t) => t.id === params.get("tab"))?.id ?? "skills")
+  // "context" is the tab's name now; "knowledge" links still land on it.
+  const asked = params.get("tab") === "context" ? "knowledge" : params.get("tab")
+  const [tab, setTab] = useState<(typeof TABS)[number]["id"]>(TABS.find((t) => t.id === asked)?.id ?? "skills")
 
   function back() {
     if (window.history.length > 1) router.back()
-    else router.push("/claire-waterfall")
+    else router.push(home)
   }
 
   return (
     <>
-    <TopStrip person="claire" home="/claire-waterfall" className="px-12" crumbs={[{ label: "Home", onClick: back }, { label: SETTINGS_TABS.includes(tab) ? "Settings" : "Teach Ally" }]} />
+    <TopStrip person={viewer} home={home} className="px-12" crumbs={[{ label: "Home", onClick: back }, { label: SETTINGS_TABS.includes(tab) ? "Settings" : "Teach Ally" }]} />
     <div className="flex flex-col gap-6 px-12 pt-4 pb-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <h1 className="text-[28px] font-semibold tracking-tight text-slate-950">{SETTINGS_TABS.includes(tab) ? "Settings" : "Teach Ally"}</h1>
@@ -63,7 +67,7 @@ function Settings() {
           ))}
         </div>
       </div>
-      {tab === "policy" ? <ReviewPolicy /> : tab === "skills" ? <SkillsList /> : tab === "knowledge" ? <Knowledge /> : tab === "sources" ? <DataSources /> : <BusinessSettings />}
+      {tab === "policy" ? <ReviewPolicy /> : tab === "skills" ? <SkillsList /> : tab === "knowledge" ? <ContextView editor={<Knowledge />} /> : tab === "sources" ? <DataSources /> : <BusinessSettings />}
     </div>
     </>
   )

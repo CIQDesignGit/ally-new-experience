@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Bell, BookOpen, ClipboardList, Clock, GraduationCap, Home, LayoutDashboard, MessageSquare, PanelLeft, Pin, PinOff, Presentation, Sparkles, TrendingDown, Wand2 } from "lucide-react"
+import { Bell, ClipboardList, Clock, GraduationCap, Home, LayoutDashboard, MessageSquare, PanelLeft, Pin, PinOff, Presentation, Sparkles, TrendingDown, Wand2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useNudge } from "./nudge-context"
 import { rememberHome, rememberedHome } from "./top-strip"
@@ -266,9 +266,6 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
               <Link href="/plan" className={row(path === "/plan")}>
                 <ClipboardList className="size-4" /> <span className="flex-1">Joint plan</span>
               </Link>
-              <Link href="/context" className={row(path === "/context")}>
-                <BookOpen className="size-4" /> <span className="flex-1">Context</span>
-              </Link>
             </>
           )}
           <Link href="/michelle/gap" className={row(path === "/michelle/gap")}>
@@ -325,9 +322,6 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
             <>
               <Link href="/plan" aria-label="Joint plan" title="Joint plan" className={iconBtn(path === "/plan")}>
                 <ClipboardList className="size-4" />
-              </Link>
-              <Link href="/context" aria-label="Context" title="Context" className={iconBtn(path === "/context")}>
-                <BookOpen className="size-4" />
               </Link>
             </>
           )}
