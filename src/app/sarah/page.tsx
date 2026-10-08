@@ -4,8 +4,8 @@ import { AppDrawer } from "@/components/nudge/app-drawer"
 import { PageShell } from "@/components/layout/page-shell"
 import { AnswerCard, AskBar, ChatProvider, ChatThread, useChatSource } from "@/components/nudge/chat/inline-chat"
 import { ResetDemoButton } from "@/components/nudge/reset-demo-button"
-import { CallInbox, JointPlan, Portfolio, SarahHeader, SarahHero } from "@/components/nudge/cs/sarah-parts"
-import { CALL_ITEMS, LAST_CALL, PLAN } from "@/components/nudge/cs/data"
+import { AllyDid, JointPlan, Portfolio, ReviewQueue, SarahHeader, SarahHero } from "@/components/nudge/cs/sarah-parts"
+import { ASKS, LAST_CALL, PLAN } from "@/components/nudge/cs/data"
 
 /** Sarah's questions: prep opens its own page; the rest answer from the plan and the call. */
 function SarahChat() {
@@ -18,9 +18,9 @@ function SarahChat() {
           match: /ask(ed)?|last (call|time|week)/i,
           render: () => (
             <AnswerCard>
-              <p className="font-semibold text-slate-950">{CALL_ITEMS.length} asks on the {LAST_CALL.short} call.</p>
+              <p className="font-semibold text-slate-950">{ASKS.length} asks on the {LAST_CALL.short} call. Ally has done all of them.</p>
               <ul className="mt-2 flex flex-col gap-1 text-[14px]">
-                {CALL_ITEMS.map((c) => (
+                {ASKS.map((c) => (
                   <li key={c.id}>· {c.title}</li>
                 ))}
               </ul>
@@ -50,8 +50,9 @@ function SarahChat() {
 }
 
 /**
- * Sarah, CommerceIQ's retail expert: her accounts, the next meeting, what the
- * last call asked for (each one acted on with a click), and the joint plan.
+ * Sarah, CommerceIQ's retail expert. Ally does the work from the plan and the
+ * calls; Sarah reviews what's finished and sends it to the customer. Then what
+ * Ally changed on its own (with undo), what went out on autopilot, and the plan.
  */
 export default function SarahPage() {
   return (
@@ -62,7 +63,8 @@ export default function SarahPage() {
           <SarahHeader />
           <SarahHero />
           <Portfolio />
-          <CallInbox />
+          <ReviewQueue />
+          <AllyDid />
           <JointPlan />
           <ChatThread />
           <div className="flex justify-end px-10 pb-24 opacity-50 hover:opacity-100">

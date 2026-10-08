@@ -34,119 +34,142 @@ export const NEXT_MEETING = {
 /** The last call, as Gong recorded it. */
 export const LAST_CALL = { title: "Aurelle weekly session", date: "Thu, Oct 1", short: "Oct 1", length: "42 min", source: "Gong" }
 
-export type CallItemKind = "add" | "change" | "work" | "context"
-
-/** One thing Ally heard on the call: the quote, and what it proposes. */
-export interface CallItem {
+/** What the customer asked for on the call, each with the work that answers it. */
+export interface Ask {
   id: string
-  kind: CallItemKind
   who: string
   at: string
   quote: string
-  /** What it is, in a few words. */
   title: string
-  /** What Ally will do once Sarah says yes. */
-  will: string[]
-  /** The button. */
-  cta: string
-  /** Once done: what happened, and where. */
-  done: string
+  /** The review item or the Ally change that answers it. */
+  answeredBy: string
 }
 
-export const KIND_LABEL: Record<CallItemKind, string> = {
-  add: "New deliverable",
-  change: "Change to the plan",
-  work: "Work to do",
-  context: "Context",
+export const ASKS: Ask[] = [
+  { id: "ask-supply", who: "Michelle Ortiz", at: "18:22", quote: "Cedar & Smoke is short at the DC until October 20. We'll be out on Amazon for about ten days.", title: "Supply gap: Cedar & Smoke out until Oct 20", answeredBy: "rev-supply" },
+  { id: "ask-launch", who: "Claire Bennett", at: "24:05", quote: "We're launching the Pumpkin Chai mini on November 20. Can you have it ready for Black Friday?", title: "New SKU: Pumpkin Chai mini, launches Nov 20", answeredBy: "rev-launch" },
+  { id: "ask-walmart", who: "Claire Bennett", at: "12:40", quote: "Can we get the same pacing view for Walmart? I'm flying blind there.", title: "Walmart media pacing, weekly", answeredBy: "rev-walmart" },
+  { id: "ask-wbr", who: "Claire Bennett", at: "05:10", quote: "Monday's too early for the WBR. Tuesday works better, and put Target in it.", title: "WBR on Tuesdays, with Target", answeredBy: "rev-wbr" },
+  { id: "ask-promo", who: "Claire Bennett", at: "31:48", quote: "We didn't hear about Brightwick's gift-set promo until it had been running a week.", title: "Brightwick promo alert", answeredBy: "did-alert" },
+  { id: "ask-margin", who: "Claire Bennett", at: "36:15", quote: "Finance moved our Q4 margin floor to 32%, so don't chase volume below that.", title: "Q4 margin floor is 32%", answeredBy: "did-margin" },
+]
+
+/** Finished work, waiting for Sarah to review it and send it to the customer. */
+export interface ReviewItem {
+  id: string
+  title: string
+  /** What Ally already did. */
+  did: string[]
+  /** Where it came from: the plan, or the call. */
+  source: string
+  /** The ask it answers, when it came from the call. */
+  ask?: string
+  due: string
+  /** Days from Mon, Oct 5: ranks the queue, soonest first. */
+  dueIn: number
+  to: string[]
+  /** The work itself. */
+  open: { label: string; href: string }
+  /** The note to the customer, drafted by Ally. */
+  note: string
 }
 
-export const CALL_ITEMS: CallItem[] = [
+export const REVIEW_ITEMS: ReviewItem[] = [
   {
-    id: "call-supply",
-    kind: "work",
-    who: "Michelle Ortiz",
-    at: "18:22",
-    quote: "Cedar & Smoke is short at the DC until October 20. We'll be out on Amazon for about ten days.",
-    title: "Supply gap: Cedar & Smoke out until Oct 20",
-    will: ["Pause its ads until it's back in stock · Ally for Media", "Draft the note to the Amazon VM · Michelle's queue", "Hold its Halloween page update until it's back"],
-    cta: "Send to Ally",
-    done: "Ads paused · VM note in Michelle's queue · page update held",
+    id: "rev-wbr",
+    title: "WBR deck · Amazon and Target",
+    did: ["Built this week's deck: sales vs plan, the gap and why, what shipped, next week", "Added Target, as asked on the Oct 1 call"],
+    source: "Plan · weekly, moved to Tuesday on the Oct 1 call",
+    ask: "ask-wbr",
+    due: "Today",
+    dueIn: 0,
+    to: ["Claire Bennett"],
+    open: { label: "Open the WBR", href: "/sarah/decks/weekly" },
+    note: "Hi Claire, this week's WBR is attached, now with Target. You're tracking to $48M, $4M short of plan. $660K of Halloween content is one approval away; it has to publish by Oct 26.",
   },
   {
-    id: "call-launch",
-    kind: "work",
-    who: "Claire Bennett",
-    at: "24:05",
-    quote: "We're launching the Pumpkin Chai mini on November 20. Can you have it ready for Black Friday?",
-    title: "New SKU: Pumpkin Chai mini, launches Nov 20",
-    will: ["Draft the launch page · Mike's queue", "Build a launch campaign from the new copy · James's queue", "Add it to the Black Friday calendar"],
-    cta: "Send to Ally",
-    done: "Launch page in Mike's queue · campaign in James's queue · on the Black Friday calendar",
+    id: "rev-supply",
+    title: "Cedar & Smoke supply gap",
+    did: ["Paused its ads until it's back in stock on Oct 20", "Drafted the note to the Amazon VM, in Michelle's queue", "Held its Halloween page update until it's back"],
+    source: "Oct 1 call",
+    ask: "ask-supply",
+    due: "Today",
+    dueIn: 0,
+    to: ["Michelle Ortiz", "Claire Bennett"],
+    open: { label: "Open the VM note", href: "/michelle?from=sarah" },
+    note: "Hi Michelle, on Cedar & Smoke: we paused its ads until Oct 20 so no spend goes to a page that can't sell, held its Halloween update, and drafted the note to your Amazon VM. It's in your queue to send.",
   },
   {
-    id: "call-walmart",
-    kind: "add",
-    who: "Claire Bennett",
-    at: "12:40",
-    quote: "Can we get the same pacing view for Walmart? I'm flying blind there.",
-    title: "Walmart media pacing, weekly",
-    will: ["Add a weekly Walmart pacing report to the plan", "First one Mon, Oct 12"],
-    cta: "Add to plan",
-    done: "Added to the plan · first one Mon, Oct 12",
+    id: "rev-prep",
+    title: "Agenda for Thursday's session",
+    did: ["Built the prep from Thursday's calendar event", "Drafted a 5-line agenda, ranked by deadline"],
+    source: "Plan · weekly session",
+    due: "Wed, Oct 7",
+    dueIn: 2,
+    to: ["Claire Bennett", "Mike Chen", "Michelle Ortiz"],
+    open: { label: "Open meeting prep", href: "/sarah/prep" },
+    note: "Agenda for Thursday: Halloween content (publish by Oct 26), Black Friday deals (set by Nov 6), the $500K budget plan, seasonal autopilot, and where last week's asks stand.",
   },
   {
-    id: "call-wbr",
-    kind: "change",
-    who: "Claire Bennett",
-    at: "05:10",
-    quote: "Monday's too early for the WBR. Tuesday works better, and put Target in it.",
-    title: "WBR moves to Tuesday and adds Target",
-    will: ["WBR: every Tuesday, 10 AM", "Covers Amazon and Target"],
-    cta: "Change the plan",
-    done: "WBR now every Tuesday, Amazon and Target",
+    id: "rev-launch",
+    title: "Pumpkin Chai mini launch kit",
+    did: ["Drafted the launch page: title, bullets and images, checked against your claim rules", "Built a launch campaign on 38 keywords from the new copy, starts Nov 20", "Added it to the Black Friday calendar"],
+    source: "Oct 1 call",
+    ask: "ask-launch",
+    due: "Fri, Oct 9",
+    dueIn: 4,
+    to: ["Claire Bennett"],
+    open: { label: "Open the launch page", href: "/mike?from=sarah" },
+    note: "Hi Claire, the Pumpkin Chai mini is ready for Nov 20: page, launch campaign and Black Friday slot. One thing needs you: approve the page copy by Nov 6.",
   },
   {
-    id: "call-promo",
-    kind: "add",
-    who: "Claire Bennett",
-    at: "31:48",
-    quote: "We didn't hear about Brightwick's gift-set promo until it had been running a week.",
-    title: "Brightwick promo alert",
-    will: ["Watch Brightwick's prices and deals every morning", "Tell Sarah and Claire the day a promo starts"],
-    cta: "Add the alert",
-    done: "Alert live · on Scheduled",
-  },
-  {
-    id: "call-margin",
-    kind: "context",
-    who: "Claire Bennett",
-    at: "36:15",
-    quote: "Finance moved our Q4 margin floor to 32%, so don't chase volume below that.",
-    title: "Q4 margin floor is 32%",
-    will: ["Save to Knowledge for the account", "Media and promo plays respect it"],
-    cta: "Save to Knowledge",
-    done: "Saved to Knowledge",
+    id: "rev-walmart",
+    title: "Walmart media pacing · first report",
+    did: ["Added a weekly Walmart pacing report to the plan", "Built the first one: gift sets underpacing, large jars on pace"],
+    source: "Oct 1 call",
+    ask: "ask-walmart",
+    due: "Mon, Oct 12",
+    dueIn: 7,
+    to: ["Claire Bennett"],
+    open: { label: "Open Walmart pacing", href: "/claire-waterfall" },
+    note: "Hi Claire, here's the Walmart pacing view you asked for. Gift sets are underpacing ahead of holiday; we'll send this every Monday.",
   },
 ]
 
+/** What Ally changed on its own from the call, each with undo. */
+export const ALLY_DID = [
+  { id: "did-plan-walmart", text: "Added Walmart media pacing to the plan, weekly", ask: "ask-walmart" },
+  { id: "did-plan-wbr", text: "Moved the WBR to Tuesdays and added Target", ask: "ask-wbr" },
+  { id: "did-alert", text: "Set up the Brightwick promo alert, every morning", ask: "ask-promo" },
+  { id: "did-margin", text: "Saved the 32% margin floor to Knowledge and applied it to 3 plays", ask: "ask-margin" },
+]
+
+/** Routine deliverables that went to the customer on their own this week. */
+export const AUTOSENT = [
+  { name: "Media pacing and budget", when: "Sent today, 8 AM" },
+  { name: "Media actions update", when: "Sent today, 8 AM" },
+  { name: "AI visibility readout", when: "Sent today, 9 AM" },
+]
+
 /** The plan, from the Fully managed tier: one list per cadence. Ally drafts each; Sarah checks it before it goes out. */
-const d = (id: string, name: string, what: string, runs: string, last: string): RunItem => ({ id: `jbp-${id}`, kind: "brief", name, what, runs, does: "draft", owner: "built in", last, plan: true })
+/** "draft": Ally drafts it for Sarah's review; "act": routine, it goes to the customer on its own. */
+const d = (id: string, name: string, what: string, runs: string, last: string, does: RunItem["does"] = "draft"): RunItem => ({ id: `jbp-${id}`, kind: "brief", name, what, runs, does, owner: "built in", last, plan: true })
 
 export const PLAN: { title: string; items: RunItem[] }[] = [
   {
     title: "Weekly",
     items: [
       d("wbr", "WBR deck", "Sales vs plan, the gap and why, what shipped, next week · Amazon", "Every Monday, 10 AM", "Due today · draft ready"),
-      d("pacing", "Media pacing and budget", "Spend vs plan by category, over- and underpacing, budget moves", "Every Monday, 8 AM", "Sent today, 8 AM"),
-      d("actions", "Media actions update", "Bid and budget actions by type: Build, Harvest, Defend, Pause, Pacing, with why", "Every Monday, 8 AM", "Sent today, 8 AM"),
-      d("shipped", "Content shipped", "Published, rejected and fixed, by type of work", "Every Friday", "Sent Fri, Oct 2"),
+      d("pacing", "Media pacing and budget", "Spend vs plan by category, over- and underpacing, budget moves", "Every Monday, 8 AM", "Sent today, 8 AM", "act"),
+      d("actions", "Media actions update", "Bid and budget actions by type: Build, Harvest, Defend, Pause, Pacing, with why", "Every Monday, 8 AM", "Sent today, 8 AM", "act"),
+      d("shipped", "Content shipped", "Published, rejected and fixed, by type of work", "Every Friday", "Sent Fri, Oct 2", "act"),
       d("session", "Weekly session", "Agenda from the open items, then the call", "Every Thursday, 2 PM", "Thu, Oct 8 · prep ready"),
     ],
   },
   {
     title: "Monthly",
     items: [
-      d("visibility", "AI visibility readout", "AI visibility and weighted share of voice on priority prompts", "First Monday", "Sent today, 9 AM"),
+      d("visibility", "AI visibility readout", "AI visibility and weighted share of voice on priority prompts", "First Monday", "Sent today, 9 AM", "act"),
       d("value", "Value report", "Delivered vs projected, the method, and the gap", "First Tuesday", "Due Tue, Oct 6"),
       d("competitors", "Competitor insights", "Price, promos, share, sponsored slots, launches", "Second Monday", "Due Mon, Oct 12"),
     ],

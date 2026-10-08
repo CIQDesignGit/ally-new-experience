@@ -12,7 +12,7 @@ import { useLive } from "./live-model"
 import { shortDate } from "./model"
 import { RETRO } from "./retro/prime-day"
 import { MEDIA_BATCHES } from "./media/data"
-import { CALL_ITEMS } from "./cs/data"
+import { REVIEW_ITEMS } from "./cs/data"
 
 const OPEN_W = "264px"
 const SHUT_W = "64px"
@@ -160,7 +160,7 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
         : home === "/james"
           ? MEDIA_BATCHES.filter((b) => b.tier === "approval" && !approved[b.id]).length
           : home === "/sarah"
-            ? CALL_ITEMS.filter((c) => !callItems[c.id]).length
+            ? REVIEW_ITEMS.filter((c) => !callItems[c.id]).length
           : live.approval.rows.filter((r) => (r.valueM ?? 0) > 0).length
 
   // Lists open in place; only Ask Ally shows its recent items without a click.

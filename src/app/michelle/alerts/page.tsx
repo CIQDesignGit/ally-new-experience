@@ -11,6 +11,7 @@ import { ALERT_RULES, BUILT_IN_ALERTS, alertTrigger } from "@/components/nudge/a
 import type { CustomAlert } from "@/components/nudge/alerts/data"
 import { AlertCard, isCrossed } from "@/components/nudge/alerts/alert-card"
 import { RunList } from "@/components/nudge/runs/run-list"
+import { PROMO_ALERT } from "@/components/nudge/cs/data"
 import { MONDAY_BRIEF, doesFromMode, type RunItem } from "@/components/nudge/runs/data"
 
 /**
@@ -29,7 +30,7 @@ export default function AlertsPage() {
 const NOW: Record<CustomAlert["id"], string> = { "brand-terms": "27%", "gift-terms": "18%" }
 
 function Alerts() {
-  const { alerts: saved, addAlert, markAlertsSeen, runs } = useNudge()
+  const { alerts: saved, addAlert, markAlertsSeen, runs, callItems } = useNudge()
   // Alerts saved by an older version of the demo get today's fields.
   const alerts = saved.map((a) => ({ ...ALERT_RULES[a.id], ...a }))
 
@@ -63,7 +64,9 @@ function Alerts() {
     owner: "built in",
     last: b.now,
   }))
-  const alertItems = [...custom, ...added.filter((x) => x.kind === "alert"), ...builtIn]
+  // Alerts Ally set up from a customer call (Sarah's account) show here unless she undid them.
+  const fromCalls = callItems["did-alert"] === "dismissed" ? [] : [PROMO_ALERT]
+  const alertItems = [...custom, ...fromCalls, ...added.filter((x) => x.kind === "alert"), ...builtIn]
   // Michelle's own alerts keep their full card (terms, threshold, cap); the rest use the shared editor.
   const editor = (i: RunItem) => {
     const a = alerts.find((x) => `alert-${x.id}` === i.id)

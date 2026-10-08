@@ -10,7 +10,8 @@ import { useLive } from "../live-model"
 import { useNudge } from "../nudge-context"
 import { GAP_TREE } from "../ops/gap-data"
 import { PRIMARY, SECONDARY } from "../mike/buttons"
-import { CALL_ITEMS, LAST_CALL, NEXT_MEETING, PLAN, SINCE_LAST } from "./data"
+import { useWork } from "./sarah-parts"
+import { ALLY_DID, ASKS, LAST_CALL, NEXT_MEETING, REVIEW_ITEMS, SINCE_LAST } from "./data"
 
 const HEAD = "text-xs font-medium tracking-wide text-slate-500 uppercase font-mono"
 const Section = ({ n, title, children }: { n: number; title: string; children: React.ReactNode }) => (
@@ -40,12 +41,19 @@ const Bullets = ({ items }: { items: React.ReactNode[] }) => (
  */
 export function MeetingPrep() {
   const l = useLive()
-  const { callItems, approved, runs } = useNudge()
+  const { callItems, setCallItem, approved, runs } = useNudge()
   const { plan } = BUSINESS[l.period]
   const pace = l.pace(l.period)
   const top = GAP_TREE.drivers[0]
   // What's due by the meeting: this week's plan items, as they stand now (a call can have moved one).
-  const due = PLAN[0].items.map((i) => ({ ...i, ...runs.edits[i.id] }))
+  const due = useWork().plan[0].items.map((i) => ({ ...i, ...runs.edits[i.id] }))
+  // Where each ask stands: Ally did it; then Sarah sent it, or it waits for her review.
+  const askStatus = (answeredBy: string) => {
+    if (ALLY_DID.some((x) => x.id === answeredBy)) return callItems[answeredBy] === "dismissed" ? { text: "Undone", tone: "text-slate-500" } : { text: "Done by Ally", tone: "text-success-700" }
+    const r = REVIEW_ITEMS.find((x) => x.id === answeredBy)!
+    return callItems[r.id] === "done" ? { text: `Delivered to ${r.to[0].split(" ")[0]}`, tone: "text-success-700" } : { text: "Done by Ally · waiting for your review", tone: "font-medium text-warning-700" }
+  }
+  const delivered = ASKS.filter((a) => askStatus(a.answeredBy).text.startsWith("Delivered") || askStatus(a.answeredBy).text === "Done by Ally").length
   // Ranked like every list: what has a deadline first (soonest), then dollars.
   const decisions = [
     { text: "Black Friday deals on 6 strong SKUs, set by Nov 6", value: "$1.1M at stake", agenda: "Decide on Black Friday deals, due Nov 6" },
@@ -55,10 +63,12 @@ export function MeetingPrep() {
   const agenda = [
     "Halloween content: $660K one approval away, publish by Oct 26",
     ...decisions.map((d) => d.agenda),
-    `Last week's asks: ${CALL_ITEMS.filter((c) => callItems[c.id] === "done").length} of ${CALL_ITEMS.length} done`,
+    `Last week's asks: ${delivered} of ${ASKS.length} delivered`,
   ].slice(0, 5)
   const [sending, setSending] = useState(false)
-  const [sent, setSent] = useState(false)
+  // Sending the agenda delivers the prep's review item, here or from Sarah's queue.
+  const sent = callItems["rev-prep"] === "done"
+  const setSent = (v: boolean) => v && setCallItem("rev-prep", "done")
 
   return (
     <div className="px-10 pt-2 pb-10">
@@ -146,12 +156,14 @@ export function MeetingPrep() {
         </Section>
         <Section n={3} title={`What they asked for on ${LAST_CALL.date}`}>
           <Bullets
-            items={CALL_ITEMS.map((c) => (
-              <>
-                <span className="font-medium text-slate-950">{c.title}</span> ·{" "}
-                {callItems[c.id] === "done" ? <span className="text-success-700">{c.done}</span> : callItems[c.id] === "dismissed" ? <span className="text-slate-500">Set aside</span> : <span className="font-medium text-warning-700">Not done yet</span>}
-              </>
-            ))}
+            items={ASKS.map((c) => {
+              const st = askStatus(c.answeredBy)
+              return (
+                <>
+                  <span className="font-medium text-slate-950">{c.title}</span> · <span className={st.tone}>{st.text}</span>
+                </>
+              )
+            })}
           />
         </Section>
         <Section n={4} title="What's changed since">
