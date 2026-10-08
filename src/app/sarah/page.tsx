@@ -4,7 +4,8 @@ import { AppDrawer } from "@/components/nudge/app-drawer"
 import { PageShell } from "@/components/layout/page-shell"
 import { AnswerCard, AskBar, ChatProvider, ChatThread, useChatSource } from "@/components/nudge/chat/inline-chat"
 import { ResetDemoButton } from "@/components/nudge/reset-demo-button"
-import { Inbox, Portfolio, RecapCard, SarahHeader, SarahHero } from "@/components/nudge/cs/sarah-parts"
+import { SarahHeader } from "@/components/nudge/cs/sarah-parts"
+import { SarahHero, SarahInbox } from "@/components/nudge/cs/sarah-inbox"
 import { ASKS, LAST_CALL, PLAN } from "@/components/nudge/cs/data"
 import { aeoChip } from "@/components/nudge/cs/aeo-report"
 import { togetherChip } from "@/components/nudge/media/answers"
@@ -66,9 +67,7 @@ export default function SarahPage() {
         <div className="mx-auto max-w-[1280px] overflow-clip bg-white shadow-pane-lg sm:my-6 sm:rounded-2xl sm:ring-1 sm:ring-slate-900/6 xl:my-0 xl:rounded-none xl:shadow-none xl:ring-0">
           <SarahHeader />
           <SarahHero />
-          <Portfolio />
-          <Inbox />
-          <RecapCard />
+          <SarahInbox />
           <ChatThread />
           <div className="flex justify-end px-10 pb-24 opacity-50 hover:opacity-100">
             <ResetDemoButton />

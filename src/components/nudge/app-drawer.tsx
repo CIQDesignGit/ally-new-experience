@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Bell, Clock, GraduationCap, Home, LayoutDashboard, MessageSquare, PanelLeft, Pin, PinOff, Presentation, Sparkles, TrendingDown, Wand2 } from "lucide-react"
+import { Bell, BookOpen, ClipboardList, Clock, GraduationCap, Home, LayoutDashboard, MessageSquare, PanelLeft, Pin, PinOff, Presentation, Sparkles, TrendingDown, Wand2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useNudge } from "./nudge-context"
 import { rememberHome, rememberedHome } from "./top-strip"
@@ -120,10 +120,9 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
       icon: Presentation,
       // Claire sees what Michelle has sent her, the moment she sends it; Michelle sees what she built.
       items: home === "/sarah" ? [
-        { label: "Joint plan · Aurelle", sub: "Shared with Claire", href: "/plan", on: path === "/plan" },
-        { label: "Aurelle's context", sub: "64 things Ally knows", href: "/context", on: path === "/context" },
-        { label: "Recap · Oct 2 call", sub: "Saves to context today", href: "/sarah/recap", on: path === "/sarah/recap" },
+        { label: "Recap · Oct 2 call", sub: "Saved to context", href: "/sarah/recap", on: path === "/sarah/recap" },
         { label: "Aurelle weekly session", sub: "Prep for Thu, 2:00 PM", href: "/sarah/prep", on: path === "/sarah/prep" },
+        { label: "AI visibility", sub: "Readout · Oct 5", href: "/reports/ai-visibility", on: path === "/reports/ai-visibility" },
       ] : home === "/claire-waterfall" ? [
         { label: "Your plan with CommerceIQ", sub: "From Sarah Kim", href: "/plan", on: path === "/plan" },
         ...(retro.sentToClaire ? [{ label: RETRO.name, sub: "From Michelle", href: "/michelle/retro?view=deck" }] : []),
@@ -257,6 +256,17 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
             {/* What's waiting on one approval: owners' rows for Claire, items in the queue for Mike and Michelle. */}
             {waiting > 0 && <span className="rounded-full bg-ally-500 px-1.5 text-[11px] font-semibold text-white">{waiting}</span>}
           </Link>
+          {/* Sarah's standing objects: the plan agreed with Claire, and what Ally knows about the account. */}
+          {home === "/sarah" && (
+            <>
+              <Link href="/plan" className={row(path === "/plan")}>
+                <ClipboardList className="size-4" /> <span className="flex-1">Joint plan</span>
+              </Link>
+              <Link href="/context" className={row(path === "/context")}>
+                <BookOpen className="size-4" /> <span className="flex-1">Context</span>
+              </Link>
+            </>
+          )}
           <Link href="/michelle/gap" className={row(path === "/michelle/gap")}>
             <TrendingDown className="size-4" /> <span className="flex-1">Gap to plan</span>
             {gap > 0 && <span className="rounded bg-error-600/25 px-1.5 font-mono text-[11px] text-error-200">−{fmtBiz(gap)}</span>}
@@ -307,6 +317,16 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
             <Home className="size-4" />
             {waiting > 0 && <span aria-hidden className="absolute top-2 right-2 size-2 rounded-full bg-ally-500 ring-2 ring-brand-950" />}
           </Link>
+          {home === "/sarah" && (
+            <>
+              <Link href="/plan" aria-label="Joint plan" title="Joint plan" className={iconBtn(path === "/plan")}>
+                <ClipboardList className="size-4" />
+              </Link>
+              <Link href="/context" aria-label="Context" title="Context" className={iconBtn(path === "/context")}>
+                <BookOpen className="size-4" />
+              </Link>
+            </>
+          )}
           <Link href="/michelle/gap" aria-label="Gap to plan" title={gap > 0 ? `Gap to plan · −${fmtBiz(gap)}` : "Gap to plan"} className={iconBtn(path === "/michelle/gap")}>
             <TrendingDown className="size-4" />
             {gap > 0 && <span aria-hidden className="absolute top-2 right-2 size-2 rounded-full bg-error-500 ring-2 ring-brand-950" />}

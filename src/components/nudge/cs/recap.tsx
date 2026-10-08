@@ -18,7 +18,8 @@ const HEAD = "text-xs font-medium text-slate-500"
  */
 export function Recap() {
   const { callItems, setCallItem } = useNudge()
-  const saved = callItems["recap-saved"] === "done"
+  // It saved itself 72 hours after the call; edits now update what's saved.
+  const saved = true
   const sent = callItems["recap-sent"] === "done"
   const [lines, setLines] = useState(() => Object.fromEntries(RECAP.map((s) => [s.id, s.lines])) as Record<string, string[]>)
   const [editing, setEditing] = useState<string | null>(null)
@@ -35,7 +36,7 @@ export function Recap() {
           </div>
           <h1 className="mt-1 text-[28px] leading-tight font-bold tracking-tight text-slate-950">Recap of the {LAST_CALL.short} call</h1>
           <div className={cn("mt-1 text-[15px] font-medium", saved ? "text-success-700" : "text-warning-700")}>
-            {saved ? `Saved to Aurelle's context · ${total} things` : `${total} things save to Aurelle's context ${LAST_CALL.savesAt}, 72 hours after the call`}
+            {saved ? `${total} things saved to Aurelle's context on their own, ${LAST_CALL.savedOn}, 72 hours after the call · edit anytime` : ""}
           </div>
         </div>
         <div className="flex items-center gap-2">

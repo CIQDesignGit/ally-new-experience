@@ -77,9 +77,9 @@ export function MeetingPrep() {
   ].slice(0, 5)
   const [sending, setSending] = useState(false)
   const [steps, setSteps] = useState(false)
-  // The agenda goes out on autopilot the day before; if Sarah recalled it, she can send it from here.
-  const sent = callItems["a-prep"] !== "dismissed"
-  const setSent = (v: boolean) => v && setCallItem("a-prep", "done")
+  // Sending the agenda approves the call plan, here or from Sarah's inbox.
+  const sent = callItems["p-call"] === "done"
+  const setSent = (v: boolean) => v && setCallItem("p-call", "done")
 
   return (
     <div className="px-10 pt-2 pb-10">
@@ -99,7 +99,7 @@ export function MeetingPrep() {
           </Link>
           {sent ? (
             <span className="inline-flex h-10 items-center gap-1.5 px-2 text-sm font-medium text-success-700">
-              <Check className="size-4" /> Agenda sent on autopilot
+              <Check className="size-4" /> Agenda sent
             </span>
           ) : (
             <button type="button" onClick={() => setSending(true)} className={PRIMARY}>

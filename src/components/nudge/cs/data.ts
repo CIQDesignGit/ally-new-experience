@@ -31,8 +31,11 @@ export const NEXT_MEETING = {
   source: "Google Calendar",
 }
 
-/** The last call, as Gong recorded it. Its recap saves to context 72 hours after the call. */
-export const LAST_CALL = { title: "Aurelle weekly session", date: "Fri, Oct 2", short: "Oct 2", length: "42 min", source: "Gong", savesAt: "today, 2:45 PM" }
+/** The last call, as Gong recorded it. Its recap saved itself to context 72 hours after the call, since nobody edited it. */
+export const LAST_CALL = { title: "Aurelle weekly session", date: "Fri, Oct 2", short: "Oct 2", length: "42 min", source: "Gong", savedOn: "Mon, Oct 5" }
+
+/** Sarah's clock in the demo: Wednesday, 9:00 PM, the night before the weekly session (Thu, 2:00 PM). */
+export const SARAH_NOW = { label: "Wed, 9:00 PM", callIn: "17 hours", callInShort: "17h" }
 
 /** Sarah's approval limit for budget moves; above it, Ally drafts the move and waits. Set per account in the joint plan. */
 export const BUDGET_LIMIT = "$5K a week"
@@ -78,7 +81,7 @@ export interface InboxItem {
   source: string
   /** Approval only: when the customer expects it, and the work to review. */
   due?: string
-  artifact?: { kind: "budget"; rows: { what: string; from: string; to: string }[]; note: string } | { kind: "launch"; parts: { label: string; value: string }[] } | { kind: "email"; to: string; subject: string; body: string }
+  artifact?: { kind: "budget"; rows: { what: string; from: string; to: string }[]; note: string } | { kind: "launch"; parts: { label: string; value: string }[] } | { kind: "email"; to: string; subject: string; body: string } | { kind: "call" }
   why: Why[]
   /** The undo verb for autopilot items: "Recall" for something sent, "Hold" for something about to send, "Undo" for a change. */
   undo?: "Recall" | "Undo" | "Hold"
@@ -134,24 +137,25 @@ export const INBOX: InboxItem[] = [
     why: [{ text: "Brightwick is Aurelle's main gift-set competitor", scope: "Brand", source: "Onboarding" }],
   },
   {
-    id: "a-prep",
-    kind: "autopilot",
-    line: "Built Thursday's prep and sent the agenda",
-    source: "Plan · weekly session",
-    undo: "Recall",
-    href: "/sarah/prep",
-    why: [
-      { text: "Open each session with the Halloween countdown", scope: "Brand", source: "Oct 2 recap" },
-      { text: "Add the Brightwick promo tracker to every prep", scope: "Brand", source: "Oct 2 recap" },
-    ],
-  },
-  {
     id: "a-reports",
     kind: "autopilot",
     line: "Sent media pacing, the media actions update and the AI visibility readout",
     source: "Plan · weekly and monthly",
     undo: "Recall",
     why: [{ text: "Routine reports run on autopilot", scope: "Brand", source: "Joint plan" }],
+  },
+  {
+    id: "p-call",
+    kind: "approval",
+    line: "Built the plan for Thursday's call",
+    source: "Plan · weekly session",
+    due: "Thu, 2:00 PM",
+    artifact: { kind: "call" },
+    href: "/sarah/prep",
+    why: [
+      { text: "Open each session with the Halloween countdown", scope: "Brand", source: "Oct 2 recap" },
+      { text: "Add the Brightwick promo tracker to every prep", scope: "Brand", source: "Oct 2 recap" },
+    ],
   },
   {
     id: "p-budget",
@@ -301,3 +305,13 @@ export const PROMO_ALERT: RunItem = {
 }
 export const MARGIN_RULE = "Q4 margin floor is 32%: no media or promo play below it"
 
+
+/** What ran on its own since Thursday, for the "Ally already did this" band: the autopilot items plus the drafts Ally built. */
+export const REEL = [
+  "Sent media pacing, the actions update and the AI visibility readout",
+  "Paused Cedar & Smoke ads until it's back on Oct 20",
+  "Added Walmart pacing to the plan and moved the WBR to Tuesdays",
+  "Set up a Brightwick promo alert",
+  "Drafted the recap of the Oct 2 call",
+  "Built Thursday's prep and agenda",
+]
