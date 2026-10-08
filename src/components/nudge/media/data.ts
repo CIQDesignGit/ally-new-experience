@@ -5,7 +5,7 @@ import type { Tier } from "../model"
  * is a slice of one of Claire's three media rows, so nothing new is added:
  *   One approval away  $560K = fund content's keywords + Winter Hearth launch + rebalance categories
  *   Needs your input  $1.04M = the plan for $500K of new budget
- *   On autopilot       $500K = bids and pacing + keyword harvesting + ads paused on SKUs you can't sell
+ *   On autopilot       $500K = bids and pacing + keyword harvesting + spend held on pages content is fixing
  *
  * Both agents read and write one keyword ledger: content adds the keywords that
  * are trending and important in a category, media funds them; where organic rank
@@ -132,7 +132,7 @@ export const MEDIA_BATCHES: MediaBatch[] = [
     count: 4,
     noun: "lines",
     spend: "$500K",
-    found: ["$500K unlocked for Q4", `Next dollar returns $${MARGINAL_IROAS.toFixed(2)}, vs your $3.01 average`, "Held back from 11 SKUs that can't sell"],
+    found: ["$500K unlocked for Q4", `Next dollar returns $${MARGINAL_IROAS.toFixed(2)}, vs your $3.01 average`, "Held back from 7 SKUs whose pages content is fixing"],
     does: ["Splits it across 4 lines", "Projects $1.04M in incremental sales", "Needs your OK on the split"],
     cta: "Review the plan",
     doneLabel: "Plan approved",
@@ -169,13 +169,13 @@ export const MEDIA_BATCHES: MediaBatch[] = [
     id: "media-protect",
     tier: "autopilot",
     play: "Protect",
-    name: "Ads paused on SKUs you can't sell right now",
+    name: "Spend held on pages content is fixing",
     value: 0.09,
-    count: 11,
+    count: 7,
     noun: "SKUs",
     spend: "$9K a week moved",
-    found: ["6 SKUs lost the buy box", "5 show out of stock but aren't", "Spend on them goes to other sellers or nowhere"],
-    does: ["Pauses their ads", "Moves the spend to SKUs that convert", "Resumes when Michelle's fixes land"],
+    found: ["7 SKUs convert at half the category rate", "Content agent found why: 2 images, no A+, thin bullets", "Mike's fixes go live Oct 12"],
+    does: ["Lowers bids 50% on these 7 until the new pages are live", "Moves $9K a week to SKUs that convert", "Ramps back up the day the fixes go live"],
   },
   {
     id: "media-negative",
@@ -220,7 +220,7 @@ export const LEDGER: LedgerRow[] = [
   { keyword: "aurelle candle", category: "Brand", onPage: "On the page", organic: 1, sov: 41, iroas: 0.9, play: "Harvest", status: "Bid −40% · on autopilot" },
   { keyword: "soy jar candle 16 oz", category: "Large jars", onPage: "On the page", organic: 2, sov: 33, iroas: 1.1, play: "Harvest", status: "Bid −40% · on autopilot" },
   { keyword: "aurelle noir cherry", category: "Brand", onPage: "On the page", organic: 1, sov: 52, iroas: 2.4, play: "Defend", status: "Brightwick bidding on it · bids held" },
-  { keyword: "coastal linen candle", category: "Large jars", onPage: "On the page", organic: 7, sov: 18, iroas: 0.8, play: "Fix the page first", status: "Buy box lost · ads paused" },
+  { keyword: "coastal linen candle", category: "Large jars", onPage: "On the page", organic: 7, sov: 18, iroas: 0.8, play: "Fix the page first", status: "Page converts at half the category rate · bids held until Mike's fix" },
   { keyword: "soot free candle", category: "Large jars", onPage: "On the page", organic: 15, sov: 12, iroas: 0.4, play: "Negative", status: "Negative on Cedar & Smoke, Coastal Linen · on autopilot" },
 ]
 
@@ -232,7 +232,7 @@ export const PLAY_RULES: { play: LedgerRow["play"]; when: string; does: string }
   { play: "Build", when: "Weak organic rank, paid works", does: "Content adds it, media funds it" },
   { play: "Harvest", when: "Strong organic rank, paid adds little", does: "Bids down, money moves to Build" },
   { play: "Defend", when: "Strong organic rank, a competitor bids on your brand", does: "Bids held" },
-  { play: "Fix the page first", when: "Out of stock or buy box lost", does: "Ads paused until it's fixed" },
+  { play: "Fix the page first", when: "The page converts poorly; content is fixing it", does: "Bids held until the new page is live" },
   { play: "Add to the page", when: "Converts in ads, not on the page", does: "Sent to content" },
   { play: "Negative", when: "Reviews contradict the claim on a SKU", does: "Negative on those SKUs only" },
 ]

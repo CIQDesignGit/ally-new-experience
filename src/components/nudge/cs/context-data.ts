@@ -72,7 +72,7 @@ export const CATEGORY = { name: "Candles and home fragrance", brands: 14, lead: 
 export const PATTERNS: Pattern[] = [
   { text: "Burn time and scent notes in bullets lift conversion", evidence: "A/B tests at 9 brands, +3% to 6%", status: "Proven", aurelle: "140 pages · +4.1% conversion vs control" },
   { text: "Gift-set searches spike 3 weeks before Thanksgiving", evidence: "Search data, 14 brands, 2 years", status: "Proven", aurelle: "Budget moved 3 weeks early" },
-  { text: "Pause ads on SKUs that are out of stock or have lost the buy box", evidence: "Spend and sales at 11 brands", status: "Proven", aurelle: "11 SKUs · $9K a week moved" },
+  { text: "Hold spend on pages that convert poorly until content fixes them", evidence: "Spend and sales at 11 brands", status: "Proven", aurelle: "7 SKUs · $9K a week moved" },
   { text: "Amazon caps titles at 75 characters on mobile search", evidence: "Retailer rule change, Sep 2026", status: "Proven", aurelle: "Applied to every title on day one" },
   { text: "\"Clean burning\" is the fastest-growing shopper question", evidence: "AI prompt panels, 6 weeks, 5 brands", status: "Waiting for sign-off", aurelle: "Not used: Aurelle's rule on wax melt claims comes first" },
   { text: "Bundles of 3 minis outsell single minis in Q4", evidence: "Sales at 3 brands", status: "Testing", aurelle: "Not used yet" },

@@ -14,7 +14,7 @@ const HEAD = "px-3 pb-2 text-xs font-medium text-slate-500"
 
 /**
  * "I have $500K more budget. How do I spend it?" Ally's split: funded where the
- * next dollar returns most, held back from pages that can't sell. James approves
+ * next dollar returns most, held back from pages content is still fixing. James approves
  * it (the plan is his Needs your input item); from Claire's page it's sent to him.
  */
 export function BudgetPlanAnswer({ who }: { who: "james" | "claire" }) {
@@ -55,7 +55,7 @@ export function BudgetPlanAnswer({ who }: { who: "james" | "claire" }) {
         </tbody>
       </table>
       <ul className="flex flex-col gap-1 text-sm text-slate-500">
-        <li>Held back: 11 SKUs that lost the buy box or show out of stock. Spend there goes to other sellers.</li>
+        <li>Held back: 7 SKUs whose pages convert at half the category rate, until content's fixes go live.</li>
         <li>Not on your brand terms: you already rank in the top 3 there.</li>
       </ul>
       {who === "james" ? (

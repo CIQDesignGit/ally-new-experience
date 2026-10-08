@@ -39,8 +39,8 @@ const MEDIA_WHY: Record<string, Why[]> = {
     { text: "A claim reviews contradict sends paid clicks to 1-star reviews", scope: "Category", source: "Seen at 6 brands" },
   ],
   "media-protect": [
-    { text: "Pause ads on SKUs shoppers can't buy from you", scope: "Category", source: "Proven at 11 brands" },
-    { text: "Cedar & Smoke short at the DC until Oct 20", scope: "Brand", source: "Oct 2 call" },
+    { text: "These 7 pages convert at half the category rate", scope: "Brand", source: "Amazon Ads and the content agent" },
+    { text: "Bidding on a weak page wastes about half the spend; fix the page, then fund it", scope: "Category", source: "Seen at 11 brands" },
   ],
 }
 
