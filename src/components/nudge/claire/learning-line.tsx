@@ -50,6 +50,8 @@ export function LearningLine({ href }: { href: string }) {
 
   return (
     <div ref={ref} className="mt-2 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-sm text-slate-600">
+      <span className="font-semibold text-ally-700">Getting better</span>
+      <span className="text-slate-300">·</span>
       <span>
         <span className="font-mono font-semibold text-slate-950 tabular-nums">{known}</span> things learned
       </span>
