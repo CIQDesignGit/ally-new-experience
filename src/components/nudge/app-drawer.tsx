@@ -50,12 +50,15 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
   }, [])
   const timer = useRef<number | undefined>(undefined)
   const hovering = useRef(false)
+  const aside = useRef<HTMLElement>(null)
+  // The pointer can already be on the rail when a page opens (after a click in it), with no mouseenter yet: ask the element.
+  const pointerOn = () => hovering.current || !!aside.current?.matches(":hover")
   /** Closes after the pointer leaves (quickly) or a while after opening without a hover (slower). */
   const scheduleClose = (ms = 800) => {
     window.clearTimeout(timer.current)
     if (pinned) return
     timer.current = window.setTimeout(() => {
-      if (!hovering.current) setOpen(false)
+      if (!pointerOn()) setOpen(false)
     }, ms)
   }
   useEffect(() => {
@@ -202,6 +205,7 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
 
   return (
     <aside
+      ref={aside}
       aria-label="Ally"
       style={{ width: open ? OPEN_W : SHUT_W }}
       onMouseEnter={() => {
