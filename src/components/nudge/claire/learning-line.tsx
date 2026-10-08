@@ -2,21 +2,19 @@
 
 import Link from "next/link"
 import { useEffect, useRef, useState } from "react"
+import { cn } from "@/lib/utils"
 import { GROWTH } from "../cs/context-data"
 
-const W = 96
-const H = 24
-
 /**
- * Ally getting better, shown as it happens: when the line comes on screen, the
- * ten weeks of first-time approvals draw in, the percentage counts up from
- * August's, and this week's new things tick in at the end.
+ * Ally getting better, in two numbers: what it has learned about the brand
+ * (this week's new things pop in as a chip) and how often its drafts are right
+ * first time. Both count up once, when the line comes on screen.
  */
 export function LearningLine({ href }: { href: string }) {
-  const first = GROWTH[0]
+  const prev = GROWTH[GROWTH.length - 2]
   const last = GROWTH[GROWTH.length - 1]
-  const newThisWeek = last.entries - GROWTH[GROWTH.length - 2].entries
-  const ref = useRef<HTMLParagraphElement>(null)
+  const first = GROWTH[0]
+  const ref = useRef<HTMLDivElement>(null)
   const [t, setT] = useState(0)
 
   useEffect(() => {
@@ -29,7 +27,7 @@ export function LearningLine({ href }: { href: string }) {
         io.disconnect()
         const start = performance.now()
         const tick = (now: number) => {
-          const p = Math.min(1, (now - start) / 1600)
+          const p = Math.min(1, (now - start) / 1200)
           setT(p)
           if (p < 1) raf = requestAnimationFrame(tick)
         }
@@ -44,30 +42,28 @@ export function LearningLine({ href }: { href: string }) {
     }
   }, [])
 
-  // Ease out, so it settles rather than stops.
+  // Ease out, so the numbers settle rather than stop.
   const e = 1 - Math.pow(1 - t, 3)
+  const known = Math.round(prev.entries + (last.entries - prev.entries) * Math.min(1, e * 1.3))
   const pct = Math.round(first.firstPass + (last.firstPass - first.firstPass) * e)
-  const min = first.firstPass - 4
-  const max = 100
-  const pts = GROWTH.map((g, i) => [(i / (GROWTH.length - 1)) * (W - 4) + 2, H - 2 - ((g.firstPass - min) / (max - min)) * (H - 4)] as const)
-  const path = pts.map(([x, y], i) => `${i ? "L" : "M"}${x.toFixed(1)},${y.toFixed(1)}`).join(" ")
-  const len = 140
-  const end = pts[pts.length - 1]
+  const popped = e * 1.3 >= 1
 
   return (
-    <p ref={ref} className="mt-2 flex items-center gap-2.5 text-sm text-slate-600">
-      <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden className="shrink-0">
-        <path d={path} fill="none" stroke="var(--color-ally-500)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" strokeDasharray={len} strokeDashoffset={len * (1 - e)} />
-        <circle cx={end[0]} cy={end[1]} r="3" fill="var(--color-ally-500)" opacity={t >= 1 ? 1 : 0} className="transition-opacity duration-300" />
-      </svg>
-      <span className="min-w-0">
-        Ally learns from your team every day:{" "}
-        <span className={t >= 1 ? "font-semibold text-slate-950 transition-colors duration-500" : "font-semibold text-slate-400"}>{newThisWeek} new things</span> about Aurelle this week, and{" "}
-        <span className="font-semibold text-slate-950 tabular-nums">{pct}%</span> of its drafts are now approved first time, up from {first.firstPass}% in August.{" "}
-        <Link href={href} className="font-medium text-brand-700 hover:underline">
-          See what Ally knows
-        </Link>
+    <div ref={ref} className="mt-2 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-sm text-slate-600">
+      <span>
+        <span className="font-mono font-semibold text-slate-950 tabular-nums">{known}</span> things learned
       </span>
-    </p>
+      <span className={cn("rounded-full bg-ally-50 px-2 py-0.5 text-xs font-medium text-ally-700 transition-all duration-300 ease-[cubic-bezier(.3,1.6,.5,1)]", popped ? "scale-100 opacity-100" : "scale-50 opacity-0")}>
+        +{last.entries - prev.entries} this week
+      </span>
+      <span className="text-slate-300">·</span>
+      <span>
+        <span className="font-mono font-semibold text-slate-950 tabular-nums">{pct}%</span> right first time
+      </span>
+      <span className="text-slate-300">·</span>
+      <Link href={href} className="font-medium text-brand-700 hover:underline">
+        See what Ally knows
+      </Link>
+    </div>
   )
 }
