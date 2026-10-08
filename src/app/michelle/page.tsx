@@ -1,5 +1,6 @@
 "use client"
 
+import { DetailCard } from "@/components/nudge/ui/detail-card"
 import { AppDrawer } from "@/components/nudge/app-drawer"
 import { useEffect, useRef, useState } from "react"
 import { toast } from "sonner"
@@ -221,11 +222,13 @@ function Michelle() {
               }}
             />
           </div>
+          <DetailCard>
           {selectedSku ? (
             <OpsSkuPane batch={selected} asin={selectedSku} checked={checked[selected.id] ?? {}} onBack={() => setSelectedSku(null)} onCheck={check} onSend={handleAction} />
           ) : (
             <OpsBatchDetail batch={selected} onAction={handleAction} onReviewAll={reviewAll} />
           )}
+          </DetailCard>
         </div>
         <InboxChat />
         <OpsDelivered />

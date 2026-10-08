@@ -1,5 +1,6 @@
 "use client"
 
+import { DetailCard } from "@/components/nudge/ui/detail-card"
 import { LAUNCH_CHIP } from "@/components/nudge/launch/answers"
 import { LAUNCH_FILES } from "@/components/nudge/launch/data"
 import { useEffect, useRef, useState } from "react"
@@ -151,6 +152,7 @@ export default function MikePage() {
             onSelectBatch={handleSelectBatch}
             onSelectSku={handleSelectSku}
           />
+          <DetailCard>
           {selectedRow ? (
             <SkuDetailPane
               batch={selected}
@@ -163,6 +165,7 @@ export default function MikePage() {
           ) : (
             <BatchDetail batch={selected} onApprove={handleApprove} onReviewAll={handleReviewAll} onSelect={handleSelectBatch} onSelectSku={handleSelectSku} />
           )}
+          </DetailCard>
         </div>
         <MikeDelivered />
         {/* Answers go last, so the conversation is the end of the page (same as Claire's and Michelle's). */}

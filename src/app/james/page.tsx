@@ -1,5 +1,6 @@
 "use client"
 
+import { DetailCard } from "@/components/nudge/ui/detail-card"
 import { useRef, useState } from "react"
 import { AppDrawer } from "@/components/nudge/app-drawer"
 import { PageShell } from "@/components/layout/page-shell"
@@ -62,7 +63,9 @@ function James() {
           <div className="border-b border-slate-200 bg-white lg:border-r lg:border-b-0">
             <MediaList selectedId={selectedId} filter={filter} onFilter={(f) => pickFilter(f)} onSelect={setSelectedId} />
           </div>
-          <MediaDetail batch={selected} onAction={act} />
+          <DetailCard>
+            <MediaDetail batch={selected} onAction={act} />
+          </DetailCard>
         </div>
         <JamesChat />
         <PacingSection />

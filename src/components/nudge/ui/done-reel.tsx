@@ -37,7 +37,7 @@ export function DoneReel({ items, since = "since Thursday" }: { items: string[];
   return (
     <div className={cn("rounded-xl px-5 transition-all duration-500", folded ? "bg-ally-50/70 py-3" : "bg-ally-50 py-4")}>
       {folded ? (
-        <button type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open} className="flex w-full items-center gap-2.5 text-left">
+        <button type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open} className="flex w-full items-center gap-2.5 rounded-md text-left outline-none focus-visible:ring-2 focus-visible:ring-brand-300">
           <span className="flex size-5 items-center justify-center rounded-full bg-ally-500">
             <Check className="size-3 text-white" />
           </span>
@@ -66,7 +66,7 @@ export function DoneReel({ items, since = "since Thursday" }: { items: string[];
                     <path d="M2 6.5l2.5 2.5L10 3.5" fill="none" stroke="white" strokeWidth={3} strokeDasharray={20} strokeDashoffset={done ? 0 : 20} style={{ transition: "stroke-dashoffset 350ms ease 60ms" }} />
                   </svg>
                 </span>
-                <span className={done ? "text-ally-800" : "text-ally-600"}>{x}</span>
+                <span className={done ? "text-slate-900" : "text-slate-500"}>{x}</span>
               </li>
             )
           })}

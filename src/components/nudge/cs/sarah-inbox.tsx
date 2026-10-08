@@ -12,6 +12,7 @@ import { PRIMARY, SECONDARY } from "../mike/buttons"
 import { GROUPS } from "../mike/rail"
 import { InboxFilters } from "../ops/ops-batch-list"
 import type { InboxFilter } from "../ops/ops-batch-list"
+import { DetailCard } from "../ui/detail-card"
 import { DoneReel } from "../ui/done-reel"
 import { ASKS, CONTEXT_CHANGES, INBOX, LAST_CALL, NEXT_MEETING, PRODUCT_ASKS, RECAP, REEL, SARAH_NOW } from "./data"
 import type { InboxItem } from "./data"
@@ -94,12 +95,11 @@ export function SarahInbox() {
           <InboxRow key={i.id} id={i.id} active={sel === i.id} onSelect={setSel} dot={DOT.autopilot} done title={i.line} meta={i.ask ? `From the ${LAST_CALL.short} call` : i.source} right={w.undone(i.id) ? <span className="text-slate-500">{i.undo === "Undo" ? "Undone" : "Recalled"}</span> : <span className="text-slate-500">Done</span>} />
         ))}
       </div>
-      {/* The open item sits on a card: the rail is where you find work, the card is where you act on it. */}
-      <div className="min-w-0 bg-slate-50 p-6">
-        <div className="rounded-2xl border border-slate-300 bg-white px-8 py-7 shadow-md">
+      <DetailCard>
+        <div className="px-10 py-8">
           {sel === "recap" ? <RecapPane /> : sel === "mood" ? <SentimentPane /> : selected ? <ItemPane item={selected} /> : null}
         </div>
-      </div>
+      </DetailCard>
     </div>
   )
 }

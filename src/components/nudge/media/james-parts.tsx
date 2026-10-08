@@ -12,6 +12,7 @@ import { useLive } from "../live-model"
 import { money } from "../model"
 import { useNudge } from "../nudge-context"
 import { MiniWaterfall } from "../mini-waterfall"
+import { QueueDelivered } from "../claire/delivered/bar-row"
 import type { Stage } from "../mini-waterfall"
 import { SplitBar } from "../mike/split-bar"
 import { GROUPS } from "../mike/rail"
@@ -420,29 +421,17 @@ export function MediaDelivered() {
   const { period } = useNudge()
   const d = DELIVERED[period]
   const m = d.media
-  const delta = m.delivered - m.promised
   // The loop's share is only known for this quarter's keywords.
   const loop = period === "quarter" || period === "month" ? LOOP_DELIVERED : undefined
+  // Media has no breakdown by play yet: Claire's Media row, on its own.
   return (
-    <section id="media-delivered" className="border-t border-slate-200 px-10 pt-9 pb-10">
-      <div className="font-mono text-xs tracking-wide text-slate-500 uppercase">{d.label}</div>
-      <div className="mt-2 flex flex-wrap items-baseline gap-x-6 gap-y-1">
-        <span className="text-2xl font-semibold tracking-tight text-slate-500">
-          Projected <span className="font-mono">{money(m.promised)}</span>
-        </span>
-        <span className="text-2xl font-semibold tracking-tight text-slate-950">
-          Delivered <span className="font-mono text-brand-600">{money(m.delivered)}</span>
-        </span>
-        <span className={cn("font-mono text-sm font-semibold tabular-nums", delta >= 0 ? "text-success-700" : "text-error-600")}>
-          {delta >= 0 ? "+" : "−"}
-          {money(Math.abs(delta))}
-        </span>
-      </div>
-      <ul className="mt-4 flex flex-col gap-1.5 text-[15px] text-slate-700">
-        <li>{m.reason}</li>
-        {loop !== undefined && <li>38 keywords harvested · $21K a week moved to them</li>}
-      </ul>
-    </section>
+    <div id="media-delivered">
+      <QueueDelivered
+        label={d.label}
+        rows={[{ name: "Media", did: m.reason, delivered: m.delivered, promised: m.promised }]}
+        footer={loop !== undefined && <p className="text-[15px] text-slate-700">38 keywords harvested · $21K a week moved to them</p>}
+      />
+    </div>
   )
 }
 
