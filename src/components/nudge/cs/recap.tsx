@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Check, Mic, X } from "lucide-react"
+import { Mic, Plus, X } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { useNudge } from "../nudge-context"
@@ -13,14 +13,26 @@ const HEAD = "text-xs font-medium text-slate-500"
 /**
  * The recap of the last call, drafted by Ally from Gong. Every line is
  * editable; nothing needs approval. It saves itself into Aurelle's context
- * 72 hours after the call, or now with Save. Going forward lines shape every
- * future prep. Send to Claire delivers the recap itself.
+ * 72 hours after the call. Going forward lines shape every future prep. Add
+ * context is for what Ally missed; it saves with the rest.
  */
 export function Recap() {
-  const { callItems, setCallItem } = useNudge()
+  const { setCallItem } = useNudge()
   // It saved itself 72 hours after the call; edits now update what's saved.
   const saved = true
-  const sent = callItems["recap-sent"] === "done"
+  // What Ally missed: Sarah adds it, and it saves to context with the rest.
+  const [adding, setAdding] = useState(false)
+  const [draft, setDraft] = useState("")
+  const [added, setAdded] = useState(0)
+  function addLine() {
+    const v = draft.trim()
+    if (!v) return
+    setLines((x) => ({ ...x, facts: [...x.facts, v] }))
+    setDraft("")
+    setAdded((n) => n + 1)
+    setAdding(false)
+    toast.success("Saved to Aurelle's context", { position: "top-right" })
+  }
   const [lines, setLines] = useState(() => Object.fromEntries(RECAP.map((s) => [s.id, s.lines])) as Record<string, string[]>)
   const [editing, setEditing] = useState<string | null>(null)
   const total = Object.values(lines).reduce((n, l) => n + l.length, 0)
@@ -36,7 +48,7 @@ export function Recap() {
           </div>
           <h1 className="mt-1 text-[28px] leading-tight font-bold tracking-tight text-slate-950">Recap of the {LAST_CALL.short} call</h1>
           <div className={cn("mt-1 text-[15px] font-medium", saved ? "text-success-700" : "text-warning-700")}>
-            {saved ? `${total} things saved to Aurelle's context on their own, ${LAST_CALL.savedOn}, 72 hours after the call · edit anytime` : ""}
+            {saved ? `${total - added} things saved to Aurelle's context on their own, ${LAST_CALL.savedOn}, 72 hours after the call${added ? ` · ${added} added by you` : ""} · edit anytime` : ""}
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -52,24 +64,34 @@ export function Recap() {
               Save now
             </button>
           )}
-          {sent ? (
-            <span className="inline-flex h-10 items-center gap-1.5 px-2 text-sm font-medium text-success-700">
-              <Check className="size-4" /> Sent to Claire
-            </span>
-          ) : (
-            <button
-              type="button"
-              onClick={() => {
-                setCallItem("recap-sent", "done")
-                toast.success("Recap sent to Claire", { position: "top-right" })
-              }}
-              className={PRIMARY}
-            >
-              Send to Claire
-            </button>
-          )}
+          <button type="button" onClick={() => setAdding(true)} className={PRIMARY}>
+            <Plus className="size-4" /> Add context
+          </button>
         </div>
       </div>
+
+      {adding && (
+        <div className="mt-5 flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-25 px-4 py-3">
+          <input
+            autoFocus
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") addLine()
+              if (e.key === "Escape") setAdding(false)
+            }}
+            placeholder="Claire's team is moving to a new 3PL in January"
+            aria-label="What should Ally know from this call?"
+            className="h-10 min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-3 text-[15px] text-slate-950 outline-none focus:border-brand-300 focus:ring-2 focus:ring-brand-100"
+          />
+          <button type="button" onClick={addLine} className={PRIMARY}>
+            Save
+          </button>
+          <button type="button" onClick={() => setAdding(false)} className="px-2 text-[13px] font-medium text-slate-500 hover:text-slate-800">
+            Cancel
+          </button>
+        </div>
+      )}
 
       <div className="mt-6 flex flex-col">
         {RECAP.map((s) => (
