@@ -2,9 +2,9 @@
 
 Every screenshot or note Himanshu sends becomes a line here. Status: **open** → **built** (shown, waiting for his OK) → **locked** (committed and deployed). Newest first in each section.
 
-## Overnight, Oct 7 → 8: built, waiting for your OK (localhost only)
+## Overnight, Oct 7 → 8: locked (deployed Oct 8)
 
-Nothing is on Vercel; it's all on localhost:3000 and committed on `claire-exec-demo`. Rollback point: commit `3a0a920`.
+Deployed to Vercel as `content-agent-demo-5p7k6zzxo`. Rollback point: commit `3a0a920`.
 
 **What's built**
 1. **James's page** (`/james`), laid out like Michelle's:
@@ -77,13 +77,13 @@ You asked me to finish everything and push to live. Rollback point if any of thi
 
 ## Still open (for you to decide)
 
-- **Built Oct 7 → 8** (see top): James's page and the flywheel, Data sources, retailer switch, use-case doc. Waiting for your OK before Vercel.
 
 - Pausing an alert doesn't yet stop it showing up in Michelle's inbox; it's a status on the Scheduled page for now.
 - The Scheduled page's sparkline trend column was dropped in the new list ("Last run" shows the number). Say if you want the trend back.
 
 ## Locked
 
+- Oct 7 → 8 items above: James's page and the flywheel, $500K budget plan, Data sources, retailer switch, use-case doc.
 - Overnight items 1–13 above.
 - Rail pushes the page in step (nothing covered); vendor note draft cleanup; Michelle's forecast · plan · gap.
 - Autopilot tab in plain words; Ask Ally folds with a count; no false highlights; decks reach Claire only when Michelle sends them.
