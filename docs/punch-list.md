@@ -42,6 +42,16 @@ Every screenshot or note Himanshu sends becomes a line here. Status: **open** �
 7. **Claire's home:** "Ally knows 64 things about Aurelle · 86% of drafts approved first time, was 58% · See what Ally knows".
 8. **Michelle's and James's queues** stack on narrow screens.
 
+**AI visibility report** (in Ask Ally, and at `/reports/ai-visibility`)
+- **The claim:** "You're #5 on Alexa Shopping at 9.2%, down 2.6 pts and 3 places. Bath & Body Works leads at 24.8%."
+- **Weekly visibility on one axis,** with your place labelled on each week. Two y-axes were cut.
+- **The top 10,** with places moved.
+- **Topics vs Bath & Body Works,** biggest drop first: bars with a tick for the leader, in place of the rings.
+- **The 8 questions lost,** with where you appear and what Ally drafted. The "non-toxic" question's icon explains your legal rule.
+- **The close:** "Ally drafted fixes for 16 SKUs · live on autopilot Thu, Oct 8."
+- **Where it shows:** a starter in Sarah's Ask Ally, and answered when Claire asks for it. The plan's readout row links to it.
+- **Cut from the screenshots:** the explanatory subtitles, the gauges and rings, the search box and filters, and the pills on every number.
+
 **Assumptions**
 1. The last call is **Fri, Oct 2**, so its recap saves today at 2:45 PM. That gives the 72-hour window a live moment in the demo.
 2. **The $5K limit** is the default for budget moves, set per account in the joint plan.
