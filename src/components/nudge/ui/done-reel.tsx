@@ -31,7 +31,9 @@ export function DoneReel({ items, since = "since Thursday" }: { items: string[];
     }
     return () => t.forEach(window.clearTimeout)
   }, [items])
-  const count = Math.max(0, ticked)
+  const count = Math.max(1, ticked)
+  // One phrase, playing and folded: "Since yesterday, Ally did 6 things".
+  const lead = since.charAt(0).toUpperCase() + since.slice(1)
   return (
     <div className={cn("rounded-xl px-5 transition-all duration-500", folded ? "bg-ally-50/70 py-3" : "bg-ally-50 py-4")}>
       {folded ? (
@@ -40,7 +42,7 @@ export function DoneReel({ items, since = "since Thursday" }: { items: string[];
             <Check className="size-3 text-white" />
           </span>
           <span className="text-sm font-semibold text-ally-800">
-            Ally did {items.length} things on autopilot {since}
+            {lead}, Ally did {items.length} things on autopilot
           </span>
           <span className="ml-auto inline-flex items-center gap-0.5 text-[13px] font-medium text-brand-700">
             {open ? "Hide" : "See all"}
@@ -49,7 +51,7 @@ export function DoneReel({ items, since = "since Thursday" }: { items: string[];
         </button>
       ) : (
         <div className="text-sm font-semibold text-ally-800">
-          While you were away, Ally did <span className="font-mono">{count}</span> {count === 1 ? "thing" : "things"}
+          {lead}, Ally did <span className="font-mono">{count}</span> {count === 1 ? "thing" : "things"}
         </div>
       )}
       {(!folded || open) && (

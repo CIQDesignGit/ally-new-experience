@@ -204,7 +204,7 @@ function Michelle() {
             showProgress()
           }}
         />
-        <div ref={queueRef} className="grid grid-cols-1 lg:grid-cols-[340px_minmax(0,1fr)]">
+        <div ref={queueRef} className="grid grid-cols-1 lg:grid-cols-[400px_minmax(0,1fr)]">
           <div className="border-b border-slate-200 bg-white lg:border-r lg:border-b-0">
             <OpsBatchList
               selectedId={selectedId}

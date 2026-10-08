@@ -170,7 +170,7 @@ export function MediaList({ selectedId, filter, onFilter, onSelect }: { selected
               type="button"
               onClick={() => onSelect(b.id)}
               className={cn(
-                "grid w-full grid-cols-[8px_minmax(0,1fr)_auto] items-baseline gap-x-2.5 border-b border-slate-100 px-3.5 py-2.5 text-left outline-none hover:bg-slate-50 focus-visible:bg-slate-50",
+                "grid w-full grid-cols-[8px_minmax(0,1fr)_auto] items-baseline gap-x-2.5 border-b border-slate-100 py-2.5 pr-4 pl-10 text-left outline-none hover:bg-slate-50 focus-visible:bg-slate-50",
                 selectedId === b.id && "bg-slate-50 shadow-[inset_2px_0_0_var(--color-brand-500)]",
               )}
             >

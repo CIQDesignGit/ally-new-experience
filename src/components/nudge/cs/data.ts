@@ -48,15 +48,18 @@ export interface Ask {
   quote: string
   title: string
   answeredBy: string
+  /** What was done about it, for the agenda; and how it reads while it's still open. */
+  did: string
+  pending: string
 }
 
 export const ASKS: Ask[] = [
-  { id: "ask-supply", who: "Michelle Ortiz", at: "18:22", quote: "Cedar & Smoke is short at the DC until October 20. We'll be out on Amazon for about ten days.", title: "Supply gap: Cedar & Smoke out until Oct 20", answeredBy: "a-supply" },
-  { id: "ask-launch", who: "Claire Bennett", at: "24:05", quote: "We're launching the Pumpkin Chai mini on November 20. Can you have it ready for Black Friday?", title: "New SKU: Pumpkin Chai mini, launches Nov 20", answeredBy: "p-launch" },
-  { id: "ask-walmart", who: "Claire Bennett", at: "12:40", quote: "Can we get the same pacing view for Walmart? I'm flying blind there.", title: "Walmart media pacing, weekly", answeredBy: "a-plan" },
-  { id: "ask-wbr", who: "Claire Bennett", at: "05:10", quote: "Monday's too early for the WBR. Tuesday works better, and put Target in it.", title: "WBR on Tuesdays, with Target", answeredBy: "a-plan" },
-  { id: "ask-promo", who: "Claire Bennett", at: "31:48", quote: "We didn't hear about Brightwick's gift-set promo until it had been running a week.", title: "Brightwick promo alert", answeredBy: "a-alert" },
-  { id: "ask-gifts", who: "Claire Bennett", at: "29:10", quote: "Gift sets feel underfunded going into holiday.", title: "More budget behind gift sets", answeredBy: "p-budget" },
+  { id: "ask-supply", who: "Michelle Ortiz", at: "18:22", quote: "Cedar & Smoke is short at the DC until October 20. We'll be out on Amazon for about ten days.", title: "Supply gap: Cedar & Smoke out until Oct 20", answeredBy: "a-supply", did: "Cedar & Smoke ads paused until it's back", pending: "Cedar & Smoke ads" },
+  { id: "ask-launch", who: "Claire Bennett", at: "24:05", quote: "We're launching the Pumpkin Chai mini on November 20. Can you have it ready for Black Friday?", title: "New SKU: Pumpkin Chai mini, launches Nov 20", answeredBy: "p-launch", did: "Pumpkin Chai mini launch kit approved", pending: "the Pumpkin Chai mini launch kit (ready Friday)" },
+  { id: "ask-walmart", who: "Claire Bennett", at: "12:40", quote: "Can we get the same pacing view for Walmart? I'm flying blind there.", title: "Walmart media pacing, weekly", answeredBy: "a-plan", did: "Walmart pacing added every Monday", pending: "Walmart pacing" },
+  { id: "ask-wbr", who: "Claire Bennett", at: "05:10", quote: "Monday's too early for the WBR. Tuesday works better, and put Target in it.", title: "WBR on Tuesdays, with Target", answeredBy: "a-plan", did: "WBR moved to Tuesdays with Target", pending: "the WBR move" },
+  { id: "ask-promo", who: "Claire Bennett", at: "31:48", quote: "We didn't hear about Brightwick's gift-set promo until it had been running a week.", title: "Brightwick promo alert", answeredBy: "a-alert", did: "Brightwick promo alert on", pending: "the Brightwick alert" },
+  { id: "ask-gifts", who: "Claire Bennett", at: "29:10", quote: "Gift sets feel underfunded going into holiday.", title: "More budget behind gift sets", answeredBy: "p-budget", did: "$24K moved to gift sets", pending: "the $24K move to gift sets" },
 ]
 
 /** Why Ally did it: the context it used, brand or category, and its source. */
@@ -94,10 +97,10 @@ export const INBOX: InboxItem[] = [
   {
     id: "a-wbr",
     kind: "autopilot",
-    line: "Built Tuesday's WBR deck with Target · sends tomorrow, 10 AM",
+    line: "Sent the WBR to Claire, now with Target · Tue, 10 AM",
     ask: "ask-wbr",
     source: "Plan · weekly",
-    undo: "Hold",
+    undo: "Recall",
     href: "/sarah/decks/weekly",
     why: [
       { text: "WBR on Tuesdays, with Target", scope: "Brand", source: "Oct 2 call" },
@@ -246,9 +249,9 @@ export const PLAN: { title: string; items: RunItem[] }[] = [
   {
     title: "Weekly",
     items: [
-      d("wbr", "WBR deck", "Sales vs plan, the gap and why, what shipped, next week · Amazon", "Every Monday, 10 AM", "Sent today, 10 AM", "act"),
-      d("pacing", "Media pacing and budget", "Spend vs plan by category, over- and underpacing, budget moves", "Every Monday, 8 AM", "Sent today, 8 AM", "act"),
-      d("actions", "Media actions update", "Bid and budget actions by type: Build, Harvest, Defend, Pause, Pacing, with why", "Every Monday, 8 AM", "Sent today, 8 AM", "act"),
+      d("wbr", "WBR deck", "Sales vs plan, the gap and why, what shipped, next week · Amazon", "Every Monday, 10 AM", "Sent Mon, Oct 5, 10 AM", "act"),
+      d("pacing", "Media pacing and budget", "Spend vs plan by category, over- and underpacing, budget moves", "Every Monday, 8 AM", "Sent Mon, Oct 5, 8 AM", "act"),
+      d("actions", "Media actions update", "Bid and budget actions by type: Build, Harvest, Defend, Pause, Pacing, with why", "Every Monday, 8 AM", "Sent Mon, Oct 5, 8 AM", "act"),
       d("shipped", "Content shipped", "Published, rejected and fixed, by type of work", "Every Friday", "Sent Fri, Oct 2", "act"),
       d("session", "Weekly session", "Prep and agenda the day before, then the call", "Every Thursday, 2 PM", "Agenda sent · Thu, Oct 8", "act"),
     ],
@@ -256,8 +259,8 @@ export const PLAN: { title: string; items: RunItem[] }[] = [
   {
     title: "Monthly",
     items: [
-      d("visibility", "AI visibility readout", "AI visibility and weighted share of voice on priority prompts", "First Monday", "Sent today, 9 AM", "act"),
-      d("value", "Value report", "Delivered vs projected, the method, and the gap", "First Tuesday", "Due Tue, Oct 6"),
+      d("visibility", "AI visibility readout", "AI visibility and weighted share of voice on priority prompts", "First Monday", "Sent Mon, Oct 5, 9 AM", "act"),
+      d("value", "Value report", "Delivered vs projected, the method, and the gap", "First Tuesday", "Sent Tue, Oct 6"),
       d("competitors", "Competitor insights", "Price, promos, share, sponsored slots, launches", "Second Monday", "Due Mon, Oct 12"),
     ],
   },
@@ -291,7 +294,7 @@ export const WALMART_PACING: RunItem = {
   by: `From the ${LAST_CALL.short} call`,
   plan: true,
 }
-export const WBR_EDIT: Partial<RunItem> = { runs: "Every Tuesday, 10 AM", what: "Sales vs plan, the gap and why, what shipped, next week · Amazon and Target", last: "Sends Tue, Oct 6, 10 AM" }
+export const WBR_EDIT: Partial<RunItem> = { runs: "Every Tuesday, 10 AM", what: "Sales vs plan, the gap and why, what shipped, next week · Amazon and Target", last: "Sent Tue, Oct 6, 10 AM" }
 export const PROMO_ALERT: RunItem = {
   id: "run-brightwick-promo",
   kind: "alert",

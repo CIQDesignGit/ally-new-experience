@@ -92,7 +92,7 @@ export function BatchList({ selectedId, selectedSkuId, expandedBatchId, filter, 
                 tabIndex={0}
                 onClick={() => onSelectBatch(b.id)}
                 onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), onSelectBatch(b.id))}
-                className="grid w-full cursor-pointer grid-cols-[8px_minmax(0,1fr)_auto] items-baseline gap-x-2.5 px-3.5 py-2.5 text-left outline-none hover:bg-slate-50 focus-visible:bg-slate-50 focus-visible:ring-2 focus-visible:ring-brand-300 focus-visible:ring-inset"
+                className="grid w-full cursor-pointer grid-cols-[8px_minmax(0,1fr)_auto] items-baseline gap-x-2.5 py-2.5 pr-4 pl-10 text-left outline-none hover:bg-slate-50 focus-visible:bg-slate-50 focus-visible:ring-2 focus-visible:ring-brand-300 focus-visible:ring-inset"
               >
                 <span className={cn("size-2 -translate-y-px rounded-full", DOT[b.tier])} aria-label={GROUPS.find((g) => g.tier === b.tier)?.label} />
                 <span className="min-w-0">

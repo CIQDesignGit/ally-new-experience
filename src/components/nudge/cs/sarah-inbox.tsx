@@ -62,9 +62,9 @@ export function SarahInbox() {
 
 
   return (
-    <div className="grid grid-cols-1 border-t border-slate-200 lg:grid-cols-[340px_minmax(0,1fr)]">
+    <div className="grid grid-cols-1 border-t border-slate-200 lg:grid-cols-[400px_minmax(0,1fr)]">
       <div className="border-b border-slate-200 bg-white lg:border-r lg:border-b-0">
-        <div className="flex items-center justify-between border-b border-slate-100 bg-slate-25 px-3.5 py-2 text-xs font-medium text-slate-500">
+        <div className="flex items-center justify-between border-b border-slate-100 bg-slate-25 py-2 pr-4 pl-10 text-xs font-medium text-slate-500">
           <span>Needs your approval</span>
           <span className="font-mono">{w.waiting.length}</span>
         </div>
@@ -82,12 +82,12 @@ export function SarahInbox() {
             />
           )
         })}
-        <div className="flex items-center justify-between border-y border-slate-100 bg-slate-25 px-3.5 py-2 text-xs font-medium text-slate-500">
+        <div className="flex items-center justify-between border-y border-slate-100 bg-slate-25 py-2 pr-4 pl-10 text-xs font-medium text-slate-500">
           <span>From the {LAST_CALL.short} call</span>
           <span className="font-mono">{RECAP.reduce((n, r) => n + r.lines.length, 0)}</span>
         </div>
         <InboxRow id="recap" active={sel === "recap"} onSelect={setSel} dot={DOT.input} title="Recap and context" meta={`Saved on its own ${LAST_CALL.savedOn} · edit anytime`} right={<span className="text-success-700">Saved</span>} />
-        <div className="flex items-center justify-between border-y border-slate-100 bg-slate-25 px-3.5 py-2 text-xs font-medium text-slate-500">
+        <div className="flex items-center justify-between border-y border-slate-100 bg-slate-25 py-2 pr-4 pl-10 text-xs font-medium text-slate-500">
           <span>On autopilot</span>
           <span className="font-mono">{autos.length}</span>
         </div>
@@ -108,7 +108,7 @@ function InboxRow({ id, title, meta, right, dot, done, active, onSelect }: RowPr
     <button
       type="button"
       onClick={() => onSelect(id)}
-      className={cn("grid w-full grid-cols-[8px_minmax(0,1fr)_auto] items-baseline gap-x-2.5 border-b border-slate-100 px-3.5 py-2.5 text-left hover:bg-slate-50", active && "bg-slate-50 shadow-[inset_2px_0_0_var(--color-brand-500)]")}
+      className={cn("grid w-full grid-cols-[8px_minmax(0,1fr)_auto] items-baseline gap-x-2.5 border-b border-slate-100 py-2.5 pr-4 pl-10 text-left hover:bg-slate-50", active && "bg-slate-50 shadow-[inset_2px_0_0_var(--color-brand-500)]")}
     >
       <span className={cn("size-2 -translate-y-px rounded-full", dot)} />
       <span className="min-w-0">
@@ -197,34 +197,55 @@ function ItemPane({ item }: { item: InboxItem }) {
   )
 }
 
-/** The call plan, short: the full prep is one click away. */
+/** The plan for the call: the agenda Sarah will send, in plain lines, with what's done on last call's asks. */
 function CallPlan() {
   const l = useLive()
   const { plan } = BUSINESS[l.period]
   const pace = l.pace(l.period)
   const { callItems } = useNudge()
-  const done = ASKS.filter((a) => {
-    const it = INBOX.find((x) => x.id === a.answeredBy)
-    return it && (it.kind === "autopilot" ? callItems[it.id] !== "dismissed" : callItems[it.id] === "done")
-  }).length
-  const forward = RECAP.find((r) => r.id === "forward")!.lines
-  const rows = [
-    { label: "Where they stand", value: <>{fmtBiz(pace)} vs {fmtBiz(plan)} plan · <span className={plan > pace ? "text-error-600" : "text-success-700"}>{plan > pace ? "−" : "+"}{fmtBiz(Math.abs(plan - pace))}</span></> },
-    { label: "Last call's asks", value: `${done} of ${ASKS.length} done` },
-    { label: "From your recap", value: `${forward.length} going-forward items included` },
-    { label: "Decisions to get", value: "Black Friday deals · the $500K plan · seasonal autopilot" },
-    { label: "Agenda", value: "5 lines, ranked by deadline" },
+  const status = (id: string) => {
+    const it = INBOX.find((x) => x.id === id)!
+    return it.kind === "autopilot" ? callItems[it.id] !== "dismissed" : callItems[it.id] === "done"
+  }
+  const done = ASKS.filter((a) => status(a.answeredBy))
+  const open = ASKS.filter((a) => !status(a.answeredBy))
+  const agenda = [
+    { title: "Halloween content", text: "$660K is one approval from live. It has to publish by Oct 26." },
+    { title: "Black Friday deals", text: "Pick deals for 6 strong SKUs by Nov 6. About $1.1M is at stake." },
+    { title: "The $500K budget plan", text: "Approve the split. It adds about $1.04M in sales." },
+    { title: "Seasonal on autopilot", text: "Let core seasonal pages ship without review from the next event: 394 more SKUs." },
   ]
   return (
-    <div className="flex flex-col gap-3">
-      <div className="overflow-hidden rounded-xl border border-slate-200">
-        {rows.map((r) => (
-          <div key={r.label} className="grid grid-cols-[160px_minmax(0,1fr)] gap-4 border-t border-slate-100 px-5 py-3 text-sm first:border-t-0">
-            <span className={HEAD}>{r.label}</span>
-            <span className="text-slate-950">{r.value}</span>
-          </div>
-        ))}
+    <div className="flex flex-col gap-5 text-[15px]">
+      <p className="text-slate-700">
+        Aurelle is tracking to <span className="font-semibold text-slate-950">{fmtBiz(pace)}</span> against a {fmtBiz(plan)} plan,{" "}
+        <span className={cn("font-semibold", plan > pace ? "text-error-600" : "text-success-700")}>
+          {fmtBiz(Math.abs(plan - pace))} {plan > pace ? "short" : "ahead"}
+        </span>
+        . The biggest cause is the buy box lost on hero SKUs.
+      </p>
+      <div>
+        <div className={HEAD}>The agenda you&apos;ll send</div>
+        <ol className="mt-2 flex flex-col gap-3">
+          {agenda.map((a, i) => (
+            <li key={a.title} className="grid grid-cols-[24px_minmax(0,1fr)] gap-2">
+              <span className="font-mono text-sm text-slate-400">{i + 1}</span>
+              <span>
+                <span className="font-semibold text-slate-950">{a.title}.</span> <span className="text-slate-700">{a.text}</span>
+              </span>
+            </li>
+          ))}
+          <li className="grid grid-cols-[24px_minmax(0,1fr)] gap-2">
+            <span className="font-mono text-sm text-slate-400">{agenda.length + 1}</span>
+            <span>
+              <span className="font-semibold text-slate-950">What we did on your asks.</span>{" "}
+              <span className="text-slate-700">{done.map((a) => a.did).join("; ")}.</span>
+              {open.length > 0 && <span className="text-slate-500"> Still to come: {open.map((a) => a.pending).join("; ")}.</span>}
+            </span>
+          </li>
+        </ol>
       </div>
+      <p className="text-[13px] text-slate-500">The deck opens with the competitor slide, which Claire liked last time.</p>
       <Link href="/sarah/prep" className="inline-flex w-fit items-center gap-1 text-sm font-medium text-brand-700 hover:underline">
         Open the full prep <ArrowRight className="size-3.5" />
       </Link>

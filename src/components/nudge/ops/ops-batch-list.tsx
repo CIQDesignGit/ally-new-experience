@@ -100,7 +100,7 @@ export function OpsBatchList({ selectedId, selectedSku, expandedId, checked, fil
                 tabIndex={0}
                 onClick={() => onSelect(b.id)}
                 onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), onSelect(b.id))}
-                className="grid w-full cursor-pointer focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-300 grid-cols-[8px_minmax(0,1fr)_auto] items-baseline gap-x-2.5 px-3.5 py-2.5 text-left outline-none hover:bg-slate-50 focus-visible:bg-slate-50"
+                className="grid w-full cursor-pointer focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-300 grid-cols-[8px_minmax(0,1fr)_auto] items-baseline gap-x-2.5 py-2.5 pr-4 pl-10 text-left outline-none hover:bg-slate-50 focus-visible:bg-slate-50"
               >
                 <span className={cn("size-2 -translate-y-px rounded-full", DOT[b.tier])} aria-label={GROUPS.find((g) => g.tier === b.tier)?.label} />
                 <span className="min-w-0">
@@ -158,7 +158,7 @@ export function OpsBatchList({ selectedId, selectedSku, expandedId, checked, fil
 /** The inbox filters, shared by Mike's and Michelle's pages: the page's switch style, each part sized to its label. */
 export function InboxFilters({ filter, onFilter }: { filter: InboxFilter; onFilter: (f: InboxFilter) => void }) {
   return (
-      <div className="border-b border-slate-200 px-3 py-2.5">
+      <div className="border-b border-slate-200 py-2.5 pr-4 pl-10">
         <div className="flex h-9 rounded-lg border border-slate-200 bg-slate-25 p-0.5">
           {FILTERS.map((f) => (
             <button
