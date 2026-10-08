@@ -11,7 +11,7 @@ import { useNudge } from "../nudge-context"
 import { GAP_TREE } from "../ops/gap-data"
 import { PRIMARY, SECONDARY } from "../mike/buttons"
 import { useWork } from "./sarah-parts"
-import { ASKS, CONTEXT_CHANGES, INBOX, LAST_CALL, NEXT_MEETING, RECAP, SENTIMENT, SINCE_LAST } from "./data"
+import { ASKS, CONTEXT_CHANGES, INBOX, LAST_CALL, NEXT_MEETING, PRODUCT_ASKS, RECAP, SENTIMENT, SINCE_LAST } from "./data"
 import { moodLine, useAttendees } from "./heard"
 
 /** What Ally read and decided while building the prep, in order. */
@@ -156,14 +156,21 @@ export function MeetingPrep() {
       <div className="mt-6">
         <Section n={1} title={`Your asks from ${LAST_CALL.short} · ${delivered === ASKS.length ? `all ${ASKS.length}` : `${delivered} of ${ASKS.length}`} done by Ally`}>
           <Bullets
-            items={ASKS.map((c) => {
-              const st = askStatus(c.answeredBy)
-              return (
+            items={[
+              ...ASKS.map((c) => {
+                const st = askStatus(c.answeredBy)
+                return (
+                  <>
+                    <span className="font-medium text-slate-950">{c.title}</span> · <span className={st.tone}>{st.text}</span>
+                  </>
+                )
+              }),
+              ...PRODUCT_ASKS.map((h) => (
                 <>
-                  <span className="font-medium text-slate-950">{c.title}</span> · <span className={st.tone}>{st.text}</span>
+                  <span className="font-medium text-slate-950">{h.title}</span> · <span className="text-slate-500">{h.note}</span>
                 </>
-              )
-            })}
+              )),
+            ]}
           />
         </Section>
         <Section n={2} title="Where they stand">

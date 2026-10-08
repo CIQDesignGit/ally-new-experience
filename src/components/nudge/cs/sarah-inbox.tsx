@@ -11,11 +11,11 @@ import { useLive } from "../live-model"
 import { PRIMARY, SECONDARY } from "../mike/buttons"
 import { GROUPS } from "../mike/rail"
 import { DoneReel } from "../ui/done-reel"
-import { ASKS, CONTEXT_CHANGES, INBOX, LAST_CALL, NEXT_MEETING, RECAP, REEL, SARAH_NOW, YOUR_CALL } from "./data"
+import { ASKS, CONTEXT_CHANGES, INBOX, LAST_CALL, NEXT_MEETING, PRODUCT_ASKS, RECAP, REEL, SARAH_NOW } from "./data"
 import type { InboxItem } from "./data"
 import { Artifact, useWork } from "./sarah-parts"
 import { WhyIcon } from "./why-icon"
-import { HeardPane, SentimentPane, moodLine, useAttendees, useHeard } from "./heard"
+import { SentimentPane, moodDecided, moodLine, useAttendees } from "./heard"
 
 const HEAD = "text-xs font-medium text-slate-500"
 const DOT = Object.fromEntries(GROUPS.map((g) => [g.tier, g.dot])) as Record<"approval" | "input" | "autopilot", string>
@@ -60,7 +60,8 @@ export function SarahInbox() {
   const rank = (i: InboxItem) => (w.callItems[i.id] ? 100 : 0) + (i.id === "p-call" ? 0 : i.due === "Today" ? 1 : 2)
   const ordered = [...approvals].sort((a, b) => rank(a) - rank(b))
   const [sel, setSel] = useState<Sel>(ordered[0].id)
-  const heard = useHeard()
+  const { callItems } = useNudge()
+  const mood = moodDecided(callItems)
   const selected = INBOX.find((i) => i.id === sel)
 
 
@@ -68,7 +69,7 @@ export function SarahInbox() {
     <div className="grid grid-cols-1 border-t border-slate-200 lg:grid-cols-[400px_minmax(0,1fr)]">
       <div className="border-b border-slate-200 bg-white lg:border-r lg:border-b-0">
         <div className="flex items-center justify-between border-b border-slate-100 bg-slate-25 py-2 pr-4 pl-10 text-xs font-medium text-slate-500">
-          <span>Needs your approval</span>
+          <span>One approval away</span>
           <span className="font-mono">{w.waiting.length}</span>
         </div>
         {ordered.map((i) => {
@@ -86,21 +87,20 @@ export function SarahInbox() {
           )
         })}
         <div className="flex items-center justify-between border-y border-slate-100 bg-slate-25 py-2 pr-4 pl-10 text-xs font-medium text-slate-500">
-          <span>From the {LAST_CALL.short} call</span>
-          <span className="font-mono">3</span>
+          <span>Needs your input</span>
+          <span className="font-mono">{mood ? 0 : 1}</span>
         </div>
-        <InboxRow id="mood" active={sel === "mood"} onSelect={setSel} dot={DOT.input} title="How Claire felt" meta={moodLine} right={<span className="text-warning-700">Mixed</span>} />
-        <InboxRow id="heard" active={sel === "heard"} onSelect={setSel} dot={DOT.input} title="What Claire said" meta={`${ASKS.length} asks · ${YOUR_CALL.length} your call · 1 product ask`} right={heard.open ? <span className="text-slate-950">{heard.open} to sort</span> : <span className="text-success-700">Sorted</span>} />
-        <InboxRow id="recap" active={sel === "recap"} onSelect={setSel} dot={DOT.input} title="Recap and context" meta={`Saved on its own ${LAST_CALL.savedOn} · edit anytime`} right={<span className="text-success-700">Saved</span>} />
+        <InboxRow id="mood" active={sel === "mood"} onSelect={setSel} dot={DOT.input} done={mood} title="How Claire felt" meta={`${moodLine} · bring in Rachel?`} right={mood ? <span className="text-slate-500">Done</span> : <span className="text-warning-700">Mixed</span>} />
         <div className="flex items-center justify-between border-y border-slate-100 bg-slate-25 py-2 pr-4 pl-10 text-xs font-medium text-slate-500">
           <span>On autopilot</span>
-          <span className="font-mono">{autos.length}</span>
+          <span className="font-mono">{autos.length + 1}</span>
         </div>
+        <InboxRow id="recap" active={sel === "recap"} onSelect={setSel} dot={DOT.autopilot} done title={`Saved the ${LAST_CALL.short} recap to context`} meta={`On its own ${LAST_CALL.savedOn} · edit anytime`} right={<span className="text-slate-500">Done</span>} />
         {autos.map((i) => (
           <InboxRow key={i.id} id={i.id} active={sel === i.id} onSelect={setSel} dot={DOT.autopilot} done title={i.line} meta={i.ask ? `From the ${LAST_CALL.short} call` : i.source} right={w.undone(i.id) ? <span className="text-slate-500">{i.undo === "Undo" ? "Undone" : "Recalled"}</span> : <span className="text-slate-500">Done</span>} />
         ))}
       </div>
-      <div className="min-w-0 px-10 py-8">{sel === "recap" ? <RecapPane /> : sel === "mood" ? <SentimentPane /> : sel === "heard" ? <HeardPane /> : selected ? <ItemPane item={selected} /> : null}</div>
+      <div className="min-w-0 px-10 py-8">{sel === "recap" ? <RecapPane /> : sel === "mood" ? <SentimentPane /> : selected ? <ItemPane item={selected} /> : null}</div>
     </div>
   )
 }
@@ -245,6 +245,15 @@ function CallPlan() {
               </li>
             )
           })}
+        </ul>
+        <ul className="flex flex-col">
+          {PRODUCT_ASKS.map((h) => (
+            <li key={h.id} className="grid grid-cols-[16px_minmax(0,1fr)_auto] items-baseline gap-2 border-t border-slate-100 py-2">
+              <Check className="size-3.5 translate-y-0.5 text-success-600" />
+              <span className="text-slate-950">{h.title}</span>
+              <span className="text-[13px] whitespace-nowrap text-slate-500">{h.note}</span>
+            </li>
+          ))}
         </ul>
         {built.length > 0 && <p className="mt-1 text-[13px] text-slate-500">Approve {built.length === 1 ? "it" : `the ${built.length}`} before the call and you present all {ASKS.length} as done.</p>}
       </div>

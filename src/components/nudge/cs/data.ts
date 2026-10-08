@@ -140,6 +140,15 @@ export const INBOX: InboxItem[] = [
     why: [{ text: "Brightwick is Aurelle's main gift-set competitor", scope: "Brand", source: "Onboarding" }],
   },
   {
+    id: "a-product",
+    kind: "autopilot",
+    line: "Logged Claire's TikTok Shop ask with product",
+    source: "From the Oct 2 call",
+    undo: "Undo",
+    artifact: { kind: "email", to: "Product team · ecommerce requests", subject: "Aurelle (Fully managed): a TikTok Shop view", body: "Claire Bennett, VP Ecommerce, asked on the Oct 2 call (36:02): \"Can you give us the same view for TikTok Shop?\" She wants the Amazon pacing and share view for TikTok Shop. Sarah Kim owes her an update by Wed, Oct 21." },
+    why: [{ text: "Asks for things we don't build go to product, with the customer's words", scope: "Category", source: "CS playbook" }],
+  },
+  {
     id: "a-reports",
     kind: "autopilot",
     line: "Sent media pacing, the media actions update and the AI visibility readout",
@@ -350,22 +359,18 @@ export const SENTIMENT = {
   },
 }
 
-/** What Claire said that isn't a plain ask: things we don't build, and things Ally won't act on without Sarah. */
+/** What Claire asked for that we don't build: Ally logs it with product, and the plan tells her when she'll hear back. */
 export interface Heard {
   id: string
   who: string
   at: string
   quote: string
   title: string
-  /** Product asks: where it went. Your call: Ally's read. */
+  /** Where it went and when she hears back. */
   note: string
 }
 export const PRODUCT_ASKS: Heard[] = [
-  { id: "h-tiktok", who: "Claire Bennett", at: "36:02", quote: "Can you give us the same view for TikTok Shop?", title: "A TikTok Shop view", note: "Logged for the product team, Oct 5 · not on the roadmap this quarter" },
-]
-export const YOUR_CALL: Heard[] = [
-  { id: "h-discount", who: "Claire Bennett", at: "19:40", quote: "Maybe we just stop discounting Cedar & Smoke.", title: "Stop discounting Cedar & Smoke", note: "Said in passing, then dropped. It's out of stock until Oct 20, so there's nothing to discount yet." },
-  { id: "h-walmart", who: "Claire Bennett", at: "38:10", quote: "At some point we should do the Walmart pages too.", title: "Walmart content", note: "No date or owner. Fully managed covers Amazon content only, so it would change the plan." },
+  { id: "h-tiktok", who: "Claire Bennett", at: "36:02", quote: "Can you give us the same view for TikTok Shop?", title: "TikTok Shop view", note: "Queued with product · update by Wed, Oct 21" },
 ]
 
 /** What Ally changed in Thursday's plan because of what Claire said. */

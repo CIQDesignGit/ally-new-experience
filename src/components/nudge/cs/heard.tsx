@@ -6,8 +6,7 @@ import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { useNudge } from "../nudge-context"
 import { PRIMARY, SECONDARY } from "../mike/buttons"
-import { ASKS, LAST_CALL, MANAGER, NEXT_MEETING, PRODUCT_ASKS, SENTIMENT, YOUR_CALL } from "./data"
-import type { Heard } from "./data"
+import { LAST_CALL, MANAGER, NEXT_MEETING, SENTIMENT } from "./data"
 
 const HEAD = "text-xs font-medium text-slate-500"
 const INVITED = "mgr-invite"
@@ -18,17 +17,13 @@ export function useAttendees() {
   return callItems[INVITED] === "done" ? [...NEXT_MEETING.attendees, MANAGER.name] : NEXT_MEETING.attendees
 }
 
-/** Where each "your call" item stands: decided, or still Sarah's to sort. */
-export function useHeard() {
-  const { callItems } = useNudge()
-  const state = (h: Heard) => (callItems[`${h.id}:product`] === "done" ? "product" : callItems[h.id] === "done" ? "doing" : callItems[h.id] === "dismissed" ? "later" : "open")
-  return { state, open: YOUR_CALL.filter((h) => state(h) === "open").length }
-}
-
 const latest = SENTIMENT.calls[SENTIMENT.calls.length - 1]
 
 /** The rail's line for the mood: how Claire sounded, against the calls before. */
 export const moodLine = `${latest.mood}, down from ${SENTIMENT.calls[SENTIMENT.calls.length - 2].mood.toLowerCase()}`
+
+/** Sarah has decided on the mood: brought in her manager, or not this time. */
+export const moodDecided = (c: Record<string, string>) => !!c[INVITED]
 
 /**
  * How Claire sounded on the last call. Sarah sees it first, with the reason and
@@ -68,7 +63,9 @@ export function SentimentPane() {
         <div className={HEAD}>What Ally did</div>
         <p className="mt-1 text-[15px] text-slate-950">{SENTIMENT.did}</p>
       </div>
-      {invited ? (
+      {callItems[INVITED] === "dismissed" ? (
+        <span className="text-sm text-slate-500">Not this time</span>
+      ) : invited ? (
         <span className="inline-flex items-center gap-1.5 text-sm font-medium text-success-700">
           <Check className="size-4" /> {MANAGER.first} is on Thursday&apos;s call · brief sent
         </span>
@@ -105,83 +102,11 @@ export function SentimentPane() {
           <button type="button" onClick={() => setDrafting(true)} className={SECONDARY}>
             <UserPlus className="size-4" /> Bring in {MANAGER.first}
           </button>
-          <span className="text-[13px] text-slate-500">Nothing goes to your manager unless you send it</span>
+          <button type="button" onClick={() => setCallItem(INVITED, "dismissed")} className="text-[13px] font-medium text-slate-500 hover:text-slate-800">
+            Not this time
+          </button>
         </div>
       )}
-    </div>
-  )
-}
-
-/**
- * Everything Claire said, sorted: what we're doing (her asks), what we don't
- * build (logged for product), and what Ally won't act on without Sarah.
- */
-export function HeardPane() {
-  const { setCallItem } = useNudge()
-  const { state } = useHeard()
-  const verdict = { doing: "Doing it · added to the plan", later: "Not now", product: "Logged for the product team" } as const
-  return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <div className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500">
-          <Mic className="size-3.5" /> {LAST_CALL.title} · {LAST_CALL.date} · from {LAST_CALL.source}
-        </div>
-        <div className="mt-0.5 text-2xl font-semibold tracking-tight text-slate-950">What Claire said</div>
-      </div>
-      <section>
-        <div className={HEAD}>Your call · Ally won&apos;t act on these without you</div>
-        <ul className="mt-2 flex flex-col">
-          {YOUR_CALL.map((h) => {
-            const s = state(h)
-            return (
-              <li key={h.id} className="flex flex-col gap-2 border-t border-slate-100 py-4 first:border-t-0 first:pt-2">
-                <div className="text-[15px] font-semibold text-slate-950">{h.title}</div>
-                <div className="border-l-2 border-slate-200 pl-3 text-[14px] text-slate-700">
-                  &ldquo;{h.quote}&rdquo; <span className="text-[13px] text-slate-500">· Claire, {h.at}</span>
-                </div>
-                <div className="text-[14px] text-slate-700">
-                  <span className="text-slate-500">Ally&apos;s read:</span> {h.note}
-                </div>
-                {s === "open" ? (
-                  <div className="mt-1 flex flex-wrap items-center gap-2">
-                    <button type="button" onClick={() => setCallItem(h.id, "done")} className={SECONDARY}>
-                      Do it
-                    </button>
-                    <button type="button" onClick={() => setCallItem(h.id, "dismissed")} className={SECONDARY}>
-                      Not now
-                    </button>
-                    <button type="button" onClick={() => setCallItem(`${h.id}:product`, "done")} className="px-2 text-[13px] font-medium text-brand-700 hover:underline">
-                      Log as a product ask
-                    </button>
-                  </div>
-                ) : (
-                  <span className="inline-flex items-center gap-1.5 text-sm font-medium text-success-700">
-                    <Check className="size-4" /> {verdict[s]}
-                  </span>
-                )}
-              </li>
-            )
-          })}
-        </ul>
-      </section>
-      <section>
-        <div className={HEAD}>Product asks · things we don&apos;t build yet</div>
-        <ul className="mt-2 flex flex-col gap-2">
-          {PRODUCT_ASKS.map((h) => (
-            <li key={h.id} className="text-[15px]">
-              <span className="font-medium text-slate-950">{h.title}</span> <span className="text-slate-500">· &ldquo;{h.quote}&rdquo; · {h.note}</span>
-            </li>
-          ))}
-        </ul>
-      </section>
-      <section>
-        <div className={HEAD}>Doing it · her {ASKS.length} asks</div>
-        <ul className="mt-2 flex flex-col gap-1 text-[15px] text-slate-950">
-          {ASKS.map((a) => (
-            <li key={a.id}>· {a.title}</li>
-          ))}
-        </ul>
-      </section>
     </div>
   )
 }
