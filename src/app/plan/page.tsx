@@ -5,7 +5,7 @@ import { PageShell } from "@/components/layout/page-shell"
 import { AskBar, ChatProvider, ChatThread } from "@/components/nudge/chat/inline-chat"
 import { TopStrip, useViewer } from "@/components/nudge/top-strip"
 import { JointPlan } from "@/components/nudge/cs/sarah-parts"
-import { ACCOUNT, SARAH } from "@/components/nudge/cs/data"
+import { ACCOUNT } from "@/components/nudge/cs/data"
 
 /** The joint plan, as the customer sees it: read-only, with what changed and why. Sarah edits it on her page. */
 export default function PlanPage() {
@@ -18,7 +18,7 @@ export default function PlanPage() {
           <div className="px-10 pt-2 pb-10">
             <h1 className="text-[28px] leading-tight font-bold tracking-tight text-slate-950">{viewer === "sarah" ? `Joint plan with ${ACCOUNT.name}` : "Your plan with CommerceIQ"}</h1>
             <div className="mt-1 mb-6 text-[15px] text-slate-700">
-              {ACCOUNT.name} · {ACCOUNT.tier} · agreed with {ACCOUNT.contact} in the annual plan, Jan 12 · reviewed each QBR · {SARAH.name}, retail expert{viewer === "sarah" ? " · reports run on autopilot; what makes a new promise is drafted for your OK" : ""}
+              {ACCOUNT.name} · {ACCOUNT.tier} · Agreed with {ACCOUNT.contact}, Jan 12
             </div>
             {/* Sarah edits the plan here; everyone else reads it. */}
             <JointPlan readOnly={viewer !== "sarah"} customer={viewer === "claire"} />
