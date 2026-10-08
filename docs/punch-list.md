@@ -148,3 +148,6 @@ You asked me to finish everything and push to live. Rollback point if any of thi
 - New nav: Today (count) · Gap to plan · Scheduled | Reports and decks · Dashboards | Teach Ally · Ask Ally | Ally is working.
 - Palette A (indigo actions, magenta Ally, one color per data job); gap bracket; "$0.7M over plan".
 - Claire's week (Mon assign → Wed deadline → Fri auto-ship → autopilot), email and product parity.
+- Oct 8 · locked: content × media story as a lifecycle (new keywords → July's bids down → starved keywords → negative claim).
+- Oct 8 · locked: Sarah's mood (profit recovery value concern) with Bring in Rachel; product asks logged with an update date; asks-first prep; typed triggers (Prime Day deck, AVN, plan gap, Vendor Central, Winter Hearth).
+- Oct 8 · locked: all four queues share filter pills, the open item on a card, darker structural borders, Claire's per-row delivered bars; "since yesterday" band with dark text.
