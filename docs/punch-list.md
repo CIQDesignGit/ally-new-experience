@@ -151,3 +151,4 @@ You asked me to finish everything and push to live. Rollback point if any of thi
 - Oct 8 · locked: content × media story as a lifecycle (new keywords → July's bids down → starved keywords → negative claim).
 - Oct 8 · locked: Sarah's mood (profit recovery value concern) with Bring in Rachel; product asks logged with an update date; asks-first prep; typed triggers (Prime Day deck, AVN, plan gap, Vendor Central, Winter Hearth).
 - Oct 8 · locked: all four queues share filter pills, the open item on a card, darker structural borders, Claire's per-row delivered bars; "since yesterday" band with dark text.
+- Oct 9 · locked: Context tab without charts (Learning now, buckets, learned → unlocks); "Getting better every day" link on Claire's page; recap's Add context; one shape for every "against plan" statement (VsPlan), rule in DESIGN.md.
