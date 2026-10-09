@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { cn } from "@/lib/utils"
 import { BRAND_CONTEXT, BRAND_TOTAL, CATEGORY, GROWTH, NEW_BRAND_START, PATTERNS, TYPE_COUNTS } from "./context-data"
-import type { ContextType } from "./context-data"
+import type { ContextEntry, ContextType } from "./context-data"
 
 const HEAD = "text-xs font-medium text-slate-500"
 
@@ -12,7 +12,7 @@ const HEAD = "text-xs font-medium text-slate-500"
  * buckets, each thing it learned with what it unlocks, and the category
  * patterns learned across brands.
  */
-export function ContextView({ editor }: { /** The editable rules, opened from the list. */ editor?: React.ReactNode }) {
+export function ContextView({ editor, extra = [] }: { /** The editable rules, opened from the list. */ editor?: React.ReactNode; /** Entries that live elsewhere (the Business view's choices), shown with the rest. */ extra?: ContextEntry[] }) {
   const first = GROWTH[0]
   const last = GROWTH[GROWTH.length - 1]
   return (
@@ -27,7 +27,7 @@ export function ContextView({ editor }: { /** The editable rules, opened from th
         </div>
       </div>
 
-      <BrandContext editor={editor} />
+      <BrandContext editor={editor} extra={extra} />
 
       <section>
         <div className="flex flex-wrap items-baseline justify-between gap-4">
@@ -113,10 +113,10 @@ const BUCKET: Record<ContextType, string> = { Voice: "Brand voice", Rules: "Clai
 const BUCKET_ORDER: ContextType[] = ["Voice", "Rules", "Calendar", "Operations", "Business", "People", "Preferences"]
 
 /** The library: entries by type, each with where it came from and what it changed. */
-function BrandContext({ editor }: { editor?: React.ReactNode }) {
+function BrandContext({ editor, extra }: { editor?: React.ReactNode; extra: ContextEntry[] }) {
   const [type, setType] = useState<ContextType | "All">("All")
   const [editing, setEditing] = useState(false)
-  const rows = BRAND_CONTEXT.filter((e) => type === "All" || e.type === type)
+  const rows = [...BRAND_CONTEXT, ...extra].filter((e) => type === "All" || e.type === type)
   return (
     <section>
       <div className="flex flex-wrap items-baseline justify-between gap-4">

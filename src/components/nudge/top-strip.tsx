@@ -10,7 +10,6 @@ import { cn } from "@/lib/utils"
 import { PeriodSwitch, RetailerSwitch } from "./period-switch"
 import { dayLabel } from "./claire/claire-actions"
 import { useNudge } from "./nudge-context"
-import { SettingsGear } from "./settings-gear"
 
 /** Ally's mark, redrawn as a vector from the brand file (public/ally-logo.png): hair and ring, two sparks and a streak. */
 export function AllyLogo({ className }: { className?: string }) {
@@ -277,7 +276,6 @@ export function TopStrip({ person, greeting, crumbs, period, facts, controls, ic
       <div className="flex shrink-0 items-center gap-2">
         {controls && <div className="mr-2 flex items-center">{controls}</div>}
         {icons}
-        <SettingsGear />
         <AccountMenu person={person} />
       </div>
     </header>

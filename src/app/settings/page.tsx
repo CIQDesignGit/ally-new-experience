@@ -1,5 +1,6 @@
 "use client"
 
+import type { ContextEntry } from "@/components/nudge/cs/context-data"
 import { Suspense, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { TopStrip, useViewer } from "@/components/nudge/top-strip"
@@ -17,27 +18,32 @@ import { RunList } from "@/components/nudge/runs/run-list"
 import { builtInSkills, type RunItem } from "@/components/nudge/runs/data"
 import { GAP_STEPS } from "@/components/nudge/ops/gap-data"
 
+/** What Ally knows, what it can do, what it does on its own, what it can see. There is no separate Settings page. */
 const TABS = [
-  { id: "skills", label: "Skills" },
   { id: "knowledge", label: "Context" },
+  { id: "skills", label: "Skills" },
   { id: "policy", label: "Autopilot" },
-  { id: "business", label: "Business view" },
   { id: "sources", label: "Data sources" },
 ] as const
-/** The gear's tabs (Settings); the rest are Teach Ally's. */
-const SETTINGS_TABS: string[] = ["business", "sources"]
 
 /**
- * Teach Ally (from the nav): what runs on autopilot, the skills it has learned,
- * and what it knows. The gear opens the same page on Business view, as Settings.
+ * Teach Ally: everything that shapes Ally, in one place. How the Business view
+ * ranks and groups the business is a preference in Context, not a setting.
  */
 function Settings() {
   const router = useRouter()
   const { viewer, home } = useViewer("claire")
   const params = useSearchParams()
   // "context" is the tab's name now; "knowledge" links still land on it.
-  const asked = params.get("tab") === "context" ? "knowledge" : params.get("tab")
-  const [tab, setTab] = useState<(typeof TABS)[number]["id"]>(TABS.find((t) => t.id === asked)?.id ?? "skills")
+  // "context" is the tab's name now; old "business" (Settings) links land on Context too.
+  const asked = ["context", "business"].includes(params.get("tab") ?? "") ? "knowledge" : params.get("tab")
+  const [tab, setTab] = useState<(typeof TABS)[number]["id"]>(TABS.find((t) => t.id === asked)?.id ?? "knowledge")
+  const { businessSort, businessGroup } = useNudge()
+  // The Business view's two choices, as preferences Ally knows.
+  const prefs: ContextEntry[] = [
+    { text: businessSort === "gap" ? "Rank the business by gap to plan, furthest behind first" : "Rank the business by sales, top SKUs first", type: "Preferences", source: "Set at onboarding", applied: 48, result: "Business view and gap to plan open in this order" },
+    { text: businessGroup === "Brand" ? "Organize the business as Brand › Category › SKU" : "Organize the business as Category › Brand › SKU", type: "Preferences", source: "Set at onboarding", applied: 48, result: "Every page groups the business this way" },
+  ]
 
   function back() {
     if (window.history.length > 1) router.back()
@@ -46,13 +52,12 @@ function Settings() {
 
   return (
     <>
-    <TopStrip person={viewer} home={home} className="px-12" crumbs={[{ label: "Home", onClick: back }, { label: SETTINGS_TABS.includes(tab) ? "Settings" : "Teach Ally" }]} />
+    <TopStrip person={viewer} home={home} className="px-12" crumbs={[{ label: "Home", onClick: back }, { label: "Teach Ally" }]} />
     <div className="flex flex-col gap-6 px-12 pt-4 pb-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
-        <h1 className="text-[28px] font-semibold tracking-tight text-slate-950">{SETTINGS_TABS.includes(tab) ? "Settings" : "Teach Ally"}</h1>
+        <h1 className="text-[28px] font-semibold tracking-tight text-slate-950">Teach Ally</h1>
         <div className="flex rounded-lg border border-slate-200 bg-slate-25 p-1">
-          {/* Teach Ally's three tabs; the gear's Business view stands on its own as Settings. */}
-          {TABS.filter((t) => SETTINGS_TABS.includes(tab) === SETTINGS_TABS.includes(t.id)).map((t) => (
+          {TABS.map((t) => (
             <button
               key={t.id}
               type="button"
@@ -67,7 +72,19 @@ function Settings() {
           ))}
         </div>
       </div>
-      {tab === "policy" ? <ReviewPolicy /> : tab === "skills" ? <SkillsList /> : tab === "knowledge" ? <ContextView editor={<Knowledge />} /> : tab === "sources" ? <DataSources /> : <BusinessSettings />}
+      {tab === "policy" ? <ReviewPolicy /> : tab === "skills" ? <SkillsList /> : tab === "knowledge" ? (
+        <ContextView
+          extra={prefs}
+          editor={
+            <div className="flex flex-col gap-6">
+              <Knowledge />
+              <BusinessSettings />
+            </div>
+          }
+        />
+      ) : (
+        <DataSources />
+      )}
     </div>
     </>
   )
