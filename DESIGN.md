@@ -13,6 +13,9 @@ Every screen follows these rules. When a screen needs something they don't cover
 | `AgentRun`, `DidYouKnow` | `components/nudge/chat/agent-run.tsx` | Big runs only (files, skills, analyses). |
 | `MemorySaved`, `MemoryRecall` | `components/nudge/chat/memory.tsx` | Anything Ally keeps or recalls. |
 | `InboxFilters` | `components/nudge/ops/ops-batch-list.tsx` | Segmented filters (same as Business/Ops style switches). |
+| `VsPlan` | `components/nudge/ops/vs-plan.tsx` | Any number against plan (projected, so far, last week): label, gap, then actual of plan and %. |
+| `QueueDelivered`, `BarRow`, `WorkTypeBars` | `components/nudge/claire/delivered/bar-row.tsx` | Projected vs delivered on every page: one bar per row, on one scale. |
+| `DetailCard` | `components/nudge/ui/detail-card.tsx` | The open item in a queue, on a card. |
 | `RunList` | `components/nudge/runs/run-list.tsx` | Anything Ally runs (Scheduled briefs and alerts, Skills): one row each with when it runs, what Ally does, last run and Live / Paused; opens in place to edit; "New" turns a sentence into a draft. Built-in items can be paused or retuned, not deleted. |
 
 ## Buttons
@@ -45,6 +48,20 @@ How things look is the rest of this file. This section is what's there, in what 
 7. **Show a few, reveal the rest:** the three most recent, then "See all". Lists open in place.
 8. **One job per column or section.** Status says where the work is; Action says what you can do. The title says what's in it ("Task", not "What's waiting").
 9. **Same structure for every person;** only the contents change.
+
+## Consistency
+
+The same kind of statement always has the same shape, on every page. Before adding a number, find where the product already says that kind of thing and copy its order, words and size. Two different shapes for one idea make people re-learn the screen.
+
+**Against plan (projected, so far, last week, a quarter):** one shape, in this order:
+
+1. What it is: Projected · So far · Actual. Context goes in the label ("So far · 57% of the week gone"), never between the numbers.
+2. The gap, first and biggest, colored: −$200K.
+3. Actual of plan · %: $3.5M of $3.7M · 95%.
+
+Statements side by side use the same size. If one starts with the gap, they all start with the gap. Use `VsPlan`; don't hand-build it.
+
+**Projected vs delivered:** the same bar rows (`BarRow`) on Claire's page and every queue, and a row opened on Claire's page shows the same bars the owner sees.
 
 ## Type and numbers
 
@@ -89,7 +106,7 @@ No gradients, glows or tinted boxes to signal a state; state is a word or a dot.
 
 First: structure and labels pass `structure-review` (keep / change / cut for every existing item). Then the visual check.
 
-Check at 1440px, and **measure, don't eyeball**: for every set of peers (buttons, rows, cards), compare their left edge, width, and vertical center in the browser; they must match. Then: every action indigo, magenta only for Ally; one numeric font per line; red only for real loss or a falling change; nothing wraps or truncates by accident; every number ties; every state (empty, in progress, done) looks right.
+Check at 1440px, and **measure, don't eyeball**: for every set of peers (buttons, rows, cards), compare their left edge, width, and vertical center in the browser; they must match. Then: every action indigo, magenta only for Ally; one numeric font per line; red only for real loss or a falling change; nothing wraps or truncates by accident; every number ties; the same kind of statement has the same shape as everywhere else (see Consistency); every state (empty, in progress, done) looks right.
 
 ## Proposed changes to the CIQ design system
 

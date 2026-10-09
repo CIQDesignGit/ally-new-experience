@@ -397,9 +397,9 @@ export function ForwardAnalysis({ node, onInbox, recipe: given, nested }: { node
             {/* Context, numbers only: last week, this week so far, where it lands. The causes of last week live in the backward analysis. */}
             <div className="grid grid-cols-3 divide-x divide-slate-100 rounded-xl border border-slate-200 text-sm tabular-nums">
               {[
-                { k: "Last week", v: mm(lw, true), sub: `${pct(node.lastWeek.sales, node.lastWeek.plan)} of plan`, bad: lw < 0 },
-                { k: "So far this week", v: mm(node.wtd), sub: `${Math.round(GAP_WEEK.elapsed * 100)}% of the week gone · ${mm(node.wtd - toDate, true)} vs plan to date` },
-                { k: "Projected", v: mm(gap, true), sub: `${pct(node.eow.projected, node.eow.plan)} of plan`, bad: gap < 0 },
+                { k: "Last week", v: mm(lw, true), sub: `${mm(node.lastWeek.sales)} of ${mm(node.lastWeek.plan)} · ${pct(node.lastWeek.sales, node.lastWeek.plan)}`, bad: lw < 0 },
+                { k: `So far · ${Math.round(GAP_WEEK.elapsed * 100)}% of the week gone`, v: mm(node.wtd - toDate, true), sub: `${mm(node.wtd)} of ${mm(toDate)} · ${pct(node.wtd, toDate)}`, bad: node.wtd < toDate },
+                { k: "Projected", v: mm(gap, true), sub: `${mm(node.eow.projected)} of ${mm(node.eow.plan)} · ${pct(node.eow.projected, node.eow.plan)}`, bad: gap < 0 },
               ].map((c) => (
                 <div key={c.k} className="px-4 py-3">
                   <div className="text-xs text-slate-500">{c.k}</div>
@@ -511,7 +511,12 @@ export function GapDiagnostic({ nodeId, onInbox }: { nodeId: string; onInbox: (b
           bad={gap < 0}
           lines={[`${m(node.lastWeek.sales)} of ${m(node.lastWeek.plan)} plan`, `${pct(node.lastWeek.sales, node.lastWeek.plan)} of plan`]}
         />
-        <Card eyebrow={`Week to date · ${GAP_WEEK.current}`} value={m(node.wtd)} lines={["in sales", `${Math.round(GAP_WEEK.elapsed * 100)}% of the week gone`]} />
+        <Card
+          eyebrow={`So far · ${Math.round(GAP_WEEK.elapsed * 100)}% of the week gone`}
+          value={m(node.wtd - node.eow.plan * GAP_WEEK.elapsed, true)}
+          bad={node.wtd < node.eow.plan * GAP_WEEK.elapsed}
+          lines={[`${m(node.wtd)} of ${m(node.eow.plan * GAP_WEEK.elapsed)} plan to date`, `${pct(node.wtd, node.eow.plan * GAP_WEEK.elapsed)} of plan`]}
+        />
         <Card
           eyebrow="Projected end of week"
           value={`${m(eowGap, true)}`}

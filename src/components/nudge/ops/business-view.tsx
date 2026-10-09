@@ -1,5 +1,6 @@
 "use client"
 
+import { VsPlan } from "./vs-plan"
 import { Fragment, useEffect, useRef, useState } from "react"
 import { ChevronRight } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -24,7 +25,6 @@ const m = (v: number, signed = false) => {
   const s = a >= 1 ? `$${+a.toFixed(2)}M` : a >= 0.1 ? `$${Math.round(a * 1000)}K` : `$${+(a * 1000).toFixed(1)}K`
   return signed ? `${v < 0 ? "−" : "+"}${s}` : s
 }
-const pct = (a: number, b: number) => `${Math.round((a / b) * 100)}%`
 const PERIOD_WORDS: Record<Period, string> = { week: "this week", month: "this month", quarter: "this quarter", year: "this year" }
 
 /* ------------------------------------------------------------------------- */
@@ -193,21 +193,10 @@ export function BusinessPane({ root, nodeId, onSelect, onOpenOps }: { root: GapN
       <div className="mt-5 grid gap-4 md:grid-cols-2">
         <div className="flex flex-col rounded-xl border border-slate-200 px-5 py-4">
           <div className="text-[13px] font-semibold text-slate-950">This week</div>
-          <div className="mt-2 text-xs text-slate-500">Projected vs plan</div>
-          <div className="mt-0.5 flex items-baseline gap-2 tabular-nums">
-            <span className={cn("text-[26px] font-semibold tracking-tight", eow < 0 ? "text-error-600" : "text-success-700")}>{m(eow, true)}</span>
-            <span className="text-sm text-slate-500">
-              {m(n.eow.projected)} of {m(n.eow.plan)} · {pct(n.eow.projected, n.eow.plan)}
-            </span>
-          </div>
-          <div className="mt-2 text-sm text-slate-600 tabular-nums">
-            {/* Pacing: so far against the plan for the days gone. */}
-            <span className="block">
-              So far <span className="font-semibold text-slate-950">{m(n.wtd)}</span> · {Math.round(GAP_WEEK.elapsed * 100)}% of the week gone
-            </span>
-            <span className="mt-0.5 block">
-              <span className={cn("font-semibold", n.wtd < toDate ? "text-error-600" : "text-success-700")}>{m(n.wtd - toDate, true)}</span> vs plan to date · {pct(n.wtd, toDate)}
-            </span>
+          {/* Two statements, one shape: where the week lands, and where it stands now. */}
+          <div className="mt-2 flex flex-col gap-3">
+            <VsPlan label="Projected" actual={n.eow.projected} plan={n.eow.plan} fmt={m} />
+            <VsPlan label={`So far · ${Math.round(GAP_WEEK.elapsed * 100)}% of the week gone`} actual={n.wtd} plan={toDate} fmt={m} />
           </div>
           <div className="mt-auto pt-4">
             <button type="button" onClick={() => ask(forward, n.id)} className={cn(PRIMARY, "w-[200px]")}>
@@ -217,12 +206,8 @@ export function BusinessPane({ root, nodeId, onSelect, onOpenOps }: { root: GapN
         </div>
         <div className="flex flex-col rounded-xl border border-slate-200 px-5 py-4">
           <div className="text-[13px] font-semibold text-slate-950">Last week</div>
-          <div className="mt-2 text-xs text-slate-500">Actual vs plan</div>
-          <div className="mt-0.5 flex items-baseline gap-2 tabular-nums">
-            <span className={cn("text-[26px] font-semibold tracking-tight", g < 0 ? "text-error-600" : "text-success-700")}>{m(g, true)}</span>
-            <span className="text-sm text-slate-500">
-              {m(n.lastWeek.sales)} of {m(n.lastWeek.plan)} · {pct(n.lastWeek.sales, n.lastWeek.plan)}
-            </span>
+          <div className="mt-2">
+            <VsPlan label="Actual" actual={n.lastWeek.sales} plan={n.lastWeek.plan} fmt={m} />
           </div>
           <div className="mt-auto pt-4">
             <button type="button" onClick={() => ask(backward, n.id)} className={cn(PRIMARY, "w-[200px]")}>
