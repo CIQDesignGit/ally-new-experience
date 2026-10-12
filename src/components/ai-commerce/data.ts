@@ -117,40 +117,6 @@ export const RETAILER_LINKS = [
   { retailer: "Other", share: 8 },
 ]
 
-/** Recommended SKUs whose shelf breaks at the retailer the agent links to. $K a week of AI-sent demand at risk. */
-export const LEAKS = [
-  {
-    id: "variety-walmart",
-    sku: "Hershey's Halloween Snack Size Variety Bag, 150 pc",
-    agent: "ChatGPT and Perplexity · 9 prompts",
-    retailer: "Walmart",
-    issue: "Out of stock 6 days",
-    atRisk: 84,
-    deadline: "Halloween in 19 days",
-    owner: "Ops agent",
-  },
-  {
-    id: "twizzlers-amazon",
-    sku: "Twizzlers Twists Halloween, 105 pc",
-    agent: "Alexa for Shopping · 5 prompts",
-    retailer: "Amazon",
-    issue: "3P seller holds the buy box at +18%",
-    atRisk: 31,
-    deadline: "Halloween in 19 days",
-    owner: "Ops agent",
-  },
-  {
-    id: "reeses-target",
-    sku: "Reese's Snack Size, 24 oz",
-    agent: "Gemini · 4 prompts",
-    retailer: "Target",
-    issue: "Priced 14% above the median competitor",
-    atRisk: 18,
-    deadline: null,
-    owner: "Pricing decision (your team)",
-  },
-]
-
 /** Brand share by source, latest week, %. Hershey's row is the rollup of its surfaces, so it always ties. */
 export const BRANDS = ["Hershey's", "Mars", "Ferrero", "Mondelez"] as const
 const ours = (id: SourceId) => Math.round(sourceSeries(id).filter((v): v is number => v != null).at(-1) ?? 0)
@@ -179,3 +145,56 @@ export const PROMPTS = [
   { q: "bulk halloween candy for trick or treaters", need: "Bulk variety bags", ours: 38, leader: "Mars variety pack", leaderRate: 41, link: "Walmart" },
   { q: "individually wrapped candy for the office", need: "Individually wrapped", ours: 44, leader: "Hershey's", leaderRate: 44, link: "Amazon" },
 ]
+
+/* ── What Ally will do: five buckets of action ─────────────────────────────── */
+
+export type BucketId = "content" | "citations" | "feeds" | "ops" | "media"
+export type Autonomy = "autopilot" | "approval" | "input"
+
+export const BUCKETS: { id: BucketId; name: string; does: string; owner: string; note?: string }[] = [
+  { id: "ops", name: "Ops fixes", does: "Fix the shelf where AI sends shoppers", owner: "Ops agent" },
+  { id: "content", name: "Content", does: "Product pages agents read", owner: "Content agent" },
+  { id: "media", name: "Media", does: "Paid AI placements", owner: "Media agent", note: "Autonomous agents have no paid option: ads carry no weight in how they choose." },
+  { id: "citations", name: "Citations", does: "Brand-site pages and sources agents cite", owner: "Content agent and your PR lead" },
+  { id: "feeds", name: "Data feeds", does: "Product data that flows to agents", owner: "Content agent" },
+]
+
+/**
+ * Each action: what changes, why (the need or prompt it wins), its weekly value
+ * (ops: sales protected; the rest: projected incremental sales), autonomy, the
+ * verb on its button, and the drafted work shown before approval.
+ */
+export const ACTIONS: {
+  id: string
+  bucket: BucketId
+  what: string
+  why: string
+  value: number
+  kind: "protects" | "adds"
+  autonomy: Autonomy
+  verb: string
+  deadline?: string
+  draft: { label: string; lines: string[] }
+}[] = [
+  // Ops: the shelf leaks (sales at risk, protected by the fix)
+  { id: "op-variety", bucket: "ops", what: "Variety bag, 150 pc, out of stock at Walmart 6 days", why: "ChatGPT and Perplexity send shoppers there on 9 prompts", value: 84, kind: "protects", autonomy: "approval", verb: "Send vendor note", deadline: "Halloween in 19 days", draft: { label: "Note to Walmart vendor manager", lines: ["Hershey's Halloween Snack Size Variety Bag, 150 pc, out of stock since Oct 6", "AI shopping answers send shoppers to this item: about $84K a week at risk", "Ask: expedite the open PO and confirm an in-stock date before Oct 24"] } },
+  { id: "op-twizzlers", bucket: "ops", what: "Twizzlers Twists Halloween: 3P seller holds the Amazon buy box at +18%", why: "Alexa for Shopping recommends it on 5 prompts", value: 31, kind: "protects", autonomy: "approval", verb: "Send escalation", deadline: "Halloween in 19 days", draft: { label: "Escalation to Amazon vendor manager", lines: ["Twizzlers Twists Halloween, 105 pc: buy box held by a third-party seller at +18%", "Evidence: crawl captures Oct 3–9", "Ask: restore the 1P offer and review seller compliance"] } },
+  { id: "op-reeses", bucket: "ops", what: "Reese's Snack Size, 24 oz, priced 14% above the median at Target", why: "Gemini links here on 4 prompts", value: 18, kind: "protects", autonomy: "input", verb: "Decide price", draft: { label: "Pricing decision brief", lines: ["Option A: match the median ($X): protects about $18K a week", "Option B: hold price, add a Target Circle offer", "Option C: do nothing"] } },
+  // Content: the product pages agents read
+  { id: "ct-titles", bucket: "content", what: "Put the piece count and \"individually wrapped\" first in 3 variety bag titles", why: "Bulk variety bags: $6.8M a month · you're at 38%, Mars at 41%", value: 22, kind: "adds", autonomy: "approval", verb: "Approve 3 title changes", deadline: "Halloween in 19 days", draft: { label: "Title, before and after", lines: ["Before: Hershey's Assorted Halloween Candy Snack Size Bag", "After: Hershey's Halloween Candy Variety Bag, 150 pc, Individually Wrapped Snack Size Chocolate"] } },
+  { id: "ct-nutfree", bucket: "content", what: "Say \"nut-free\" on Twizzlers and Jolly Rancher pages", why: "Nut-free for school: $2.1M a month, +200% · you're at 8%", value: 15, kind: "adds", autonomy: "input", verb: "Confirm nut-free claim", deadline: "Halloween in 19 days", draft: { label: "Needs your sign-off", lines: ["Claim: \"Made without peanuts or tree nuts\"", "Needs: allergen certification on file and legal approval before it goes live"] } },
+  { id: "ct-nonchoc", bucket: "content", what: "Lead Jolly Rancher bullets with \"non-chocolate\" and \"won't melt\"", why: "Non-chocolate: $1.9M a month · you're at 18%", value: 7, kind: "adds", autonomy: "approval", verb: "Approve bullets", draft: { label: "First bullet, after", lines: ["Non-chocolate hard candy that won't melt: individually wrapped for trick-or-treat bags and lunchboxes"] } },
+  // Media: paid AI placements
+  { id: "md-sponsored", bucket: "media", what: "Sponsored Prompts in Alexa for Shopping on nut-free school prompts, Twizzlers", why: "Organic share 8%; starts after the nut-free page fix", value: 12, kind: "adds", autonomy: "approval", verb: "Approve $3K a week test", draft: { label: "Media plan", lines: ["Surface: Alexa for Shopping, Sponsored Prompts", "Budget: $3K a week for 3 weeks", "Measured by: orders in Amazon Ads prompt reporting"] } },
+  { id: "md-dsp", bucket: "media", what: "ChatGPT ads through Amazon DSP for the variety bag on bulk candy prompts", why: "Bulk variety bags: $6.8M a month; sends shoppers to Amazon, where it's in stock", value: 18, kind: "adds", autonomy: "approval", verb: "Approve $5K a week pilot", deadline: "Halloween in 19 days", draft: { label: "Media plan", lines: ["Surface: ChatGPT ads, bought through Amazon DSP (pilot)", "Budget: $5K a week through Oct 31", "Measured by: Amazon DSP conversions on the variety bag"] } },
+  { id: "md-sparky", bucket: "media", what: "Sparky sponsored prompts on non-chocolate candy, Jolly Rancher", why: "Non-chocolate: you're at 18%, Nerds at 49%", value: 6, kind: "adds", autonomy: "approval", verb: "Approve $2K a week test", draft: { label: "Media plan", lines: ["Surface: Walmart Sparky, sponsored prompts", "Budget: $2K a week for 3 weeks", "Measured by: Walmart Connect closed-loop sales"] } },
+  // Citations: brand-site pages and sources agents cite
+  { id: "ci-guides", bucket: "citations", what: "Correct 2 buying guides that list a discontinued Hershey's SKU", why: "Agents cite them on 6 bulk candy prompts", value: 5, kind: "adds", autonomy: "approval", verb: "Review evidence pack", draft: { label: "Evidence pack, sent by your PR lead", lines: ["Current lineup with piece counts and price per piece, verified Oct 2026", "12K reviews at 4.7★ on the variety bag", "Suggested correction for each guide"] } },
+  { id: "ci-schoolguide", bucket: "citations", what: "Publish a nut-free school party candy guide on hersheys.com", why: "Nut-free for school: agents cite 3 parenting sites, none with Hershey's", value: 9, kind: "adds", autonomy: "input", verb: "Review page draft", draft: { label: "Page outline", lines: ["Which Hershey's candies are made without nuts, with certification", "Price per piece for a class of 25", "Linked to Amazon, Walmart and Target pages"] } },
+  // Data feeds: product data that flows to agents
+  { id: "fd-attrs", bucket: "feeds", what: "Add allergen and piece-count attributes to 14 SKU records", why: "Agents compute value per piece from these; 9 records have no count", value: 8, kind: "adds", autonomy: "autopilot", verb: "Hold", draft: { label: "Runs tonight on autopilot", lines: ["piece_count, allergen_statement, individually_wrapped on 14 SKUs", "Tail SKUs only; hero SKUs go through review"] } },
+  { id: "fd-brand", bucket: "feeds", what: "Fill the missing brand field on 3 records", why: "Records with no brand are dropped from brand answers", value: 3, kind: "adds", autonomy: "autopilot", verb: "Hold", draft: { label: "Runs tonight on autopilot", lines: ["brand = Hershey's on 3 Jolly Rancher records"] } },
+]
+
+/** Sales at risk at the shelf: the open ops fixes. */
+export const LEAK_TOTAL = ACTIONS.filter((a) => a.bucket === "ops").reduce((t, a) => t + a.value, 0)

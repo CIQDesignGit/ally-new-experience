@@ -1,11 +1,12 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
-import { Check, ChevronDown } from "lucide-react"
+import { ChevronDown } from "lucide-react"
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
 import { cn } from "@/lib/utils"
-import { BRANDS, BRAND_SHARE, LEAKS, META, MIN_WEEKS, NEEDS, PROMPTS, RETAILER_LINKS, RETAILER_NAME, RETAILER_SALES, SALES, SOURCES, SURFACES, WEEKS, correlation, sourceSeries, strength } from "./data"
+import { BRANDS, BRAND_SHARE, LEAK_TOTAL, META, MIN_WEEKS, NEEDS, PROMPTS, RETAILER_LINKS, RETAILER_NAME, RETAILER_SALES, SALES, SOURCES, SURFACES, WEEKS, correlation, sourceSeries, strength } from "./data"
 import type { SourceId } from "./data"
+import { ActionBuckets } from "./actions"
 
 const CARD = "rounded-2xl bg-white ring-1 ring-slate-200"
 const ROW = "grid grid-cols-[minmax(0,1fr)_190px_120px_90px_230px_120px] gap-4"
@@ -42,7 +43,6 @@ function linkLine(c: ReturnType<typeof correlation>) {
 export function AiCommerceView() {
   const [mounted, setMounted] = useState(false)
   const [sel, setSel] = useState<string>("answer")
-  const [sent, setSent] = useState<Record<string, boolean>>({})
   // Sources whose surfaces are open: one at a time, or all.
   const [open, setOpen] = useState<SourceId[]>([])
   const toggle = (id: SourceId) => setOpen((o) => (o.includes(id) ? o.filter((x) => x !== id) : o.length === SOURCES.length ? o : [id]))
@@ -72,9 +72,7 @@ export function AiCommerceView() {
   const ansLeader = leaderOf("answer")
   // Where Hershey's stands among the tracked brands by answer agent recommendation rate.
   const answerPos = [...BRANDS].sort((a, b) => BRAND_SHARE[b].answer - BRAND_SHARE[a].answer).indexOf("Hershey's") + 1
-  const leakTotal = LEAKS.reduce((t, l) => t + l.atRisk, 0)
-  // Rank: deadline first, then dollars.
-  const leaks = [...LEAKS].sort((a, b) => Number(!!b.deadline) - Number(!!a.deadline) || b.atRisk - a.atRisk)
+  const leakTotal = LEAK_TOTAL
 
   if (!mounted) return <div className="min-h-[60vh]" />
 
@@ -119,6 +117,9 @@ export function AiCommerceView() {
             {META.prompts} prompts · 4 sources · {META.runsPerWeek} runs per prompt per engine a week
           </p>
         </section>
+
+        {/* What to do first: the five buckets of action */}
+        <ActionBuckets />
 
         {/* Share by source, and how each moves with sales */}
         <section className="flex flex-col gap-4">
@@ -254,8 +255,8 @@ export function AiCommerceView() {
         {/* Where AI sends shoppers, and where it leaks */}
         <section className="flex flex-col gap-4">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <h3 className={SECTION}>Leaking at the shelf</h3>
-            <span className="font-mono text-sm font-semibold text-error-600">−${leakTotal}K a week</span>
+            <h3 className={SECTION}>Where AI sends shoppers</h3>
+            <span className="text-sm text-slate-700">−${leakTotal}K a week at risk on the shelf</span>
           </div>
           <div className={cn(CARD, "overflow-hidden")}>
             <div className="border-b border-slate-100 px-6 py-4">
@@ -273,36 +274,9 @@ export function AiCommerceView() {
                 ))}
               </div>
             </div>
-            <div className={cn(HEAD, "grid grid-cols-[minmax(0,1fr)_200px_96px_150px] gap-4 px-6 pt-3 pb-1")}>
-              <span>Recommended SKU</span>
-              <span>At the retailer</span>
-              <span className="text-right">At risk</span>
-              <span />
+            <div className="px-6 py-3 text-sm text-slate-700">
+              3 recommended SKUs have a broken shelf at the retailer the agent links to. The fixes are in <span className="font-medium text-slate-950">Ops fixes</span> above.
             </div>
-            {leaks.map((l) => (
-              <div key={l.id} className="grid grid-cols-[minmax(0,1fr)_200px_96px_150px] items-center gap-4 border-t border-slate-100 px-6 py-3">
-                <div className="min-w-0">
-                  <div className="text-[15px] font-medium text-slate-950">{l.sku}</div>
-                  <div className="text-xs text-slate-500">{l.agent}</div>
-                </div>
-                <div className="text-sm">
-                  <div className="text-slate-950">{l.retailer}: {l.issue}</div>
-                  {l.deadline && <div className="text-xs font-medium text-warning-700">{l.deadline}</div>}
-                </div>
-                <div className="text-right font-mono text-sm whitespace-nowrap text-slate-950 tabular-nums">${l.atRisk}K/wk</div>
-                <div className="text-right">
-                  {sent[l.id] ? (
-                    <span className="inline-flex items-center gap-1 text-sm font-medium text-success-700">
-                      <Check className="size-4" /> Sent
-                    </span>
-                  ) : (
-                    <button type="button" onClick={() => setSent((s) => ({ ...s, [l.id]: true }))} className="text-sm font-medium text-brand-700 hover:underline">
-                      {l.owner === "Ops agent" ? "Send to Ally" : "Draft pricing brief"}
-                    </button>
-                  )}
-                </div>
-              </div>
-            ))}
           </div>
         </section>
 
