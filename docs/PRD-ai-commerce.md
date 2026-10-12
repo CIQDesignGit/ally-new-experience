@@ -125,9 +125,11 @@ Seasonality caveat: Halloween ends Oct 31, so a first read is fast but the basel
 - Extend the demo's `/ai-tracking` page (brand standing, Alexa leaderboard, prompt performance, competitor comparison, gap table) with: AI share of demand in dollars across all surfaces, retailer link share, the shelf integrity panel, and a recommendation rate vs retailer traffic and sales view.
 - *Acceptance:* Given a category, then one page answers: how much AI demand we win vs competitors, where it sends shoppers, where it leaks, and whether it moves with sales.
 
-**P0.7 Correlation with retailer sales**
-- Weekly recommendation rate per SKU against retailer glance views and sales, lagged one to two weeks, with the caveat shown that correlation isn't causation.
-- *Acceptance:* Given at least 6 weeks of data, then each tracked SKU shows the correlation and its strength, and the method is visible on the page.
+**P0.7 Share by surface, rolled up by source, and its link to sales by retailer**
+- Show every surface at once (Amazon, Walmart and Target search; Alexa for Shopping and Sparky; ChatGPT, Gemini, Google AI Mode, Perplexity and Claude; Muse and Instinct), each with its native metric (share of voice, AI share of voice, AI visibility), the leader, the trend and what it's based on. Each source's overall sits over its surfaces as a summary row: the demand-weighted average of its surfaces, derived, never typed. No grand total across sources: they're different measures.
+- Correlate each with **sales by retailer**: retailer surfaces against their own retailer's sales (Amazon search and Alexa for Shopping vs Amazon sales); answer and autonomous agents against total sales. Use week-over-week changes, so seasonality alone doesn't create a link, and test same week vs one week ahead.
+- *Acceptance:* Given at least 8 weeks of data for a surface, then it shows correlation strength, value, timing and which sales it's compared with; with fewer weeks it says "Not enough data yet". The method and "correlation isn't cause" are visible on the page.
+- *Data dependency:* weekly sales by retailer (Amazon, Walmart, Target) for the brand's tracked SKUs.
 
 ### P1: nice to have
 

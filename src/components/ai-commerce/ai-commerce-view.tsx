@@ -4,22 +4,35 @@ import { useEffect, useMemo, useState } from "react"
 import { Check } from "lucide-react"
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
 import { cn } from "@/lib/utils"
-import { BRANDS, BRAND_SHARE, LEAKS, META, MIN_WEEKS, NEEDS, PROMPTS, RETAILER_LINKS, SALES, SOURCES, WEEKS, correlation, strength } from "./data"
+import { BRANDS, BRAND_SHARE, LEAKS, META, MIN_WEEKS, NEEDS, PROMPTS, RETAILER_LINKS, RETAILER_NAME, RETAILER_SALES, SALES, SOURCES, SURFACES, WEEKS, correlation, sourceSeries, strength } from "./data"
 import type { SourceId } from "./data"
 
 const CARD = "rounded-2xl bg-white ring-1 ring-slate-200"
+const ROW = "grid grid-cols-[minmax(0,1fr)_190px_120px_90px_230px_120px] gap-4"
+
+type Row = {
+  key: string
+  kind: "source" | "surface"
+  name: string
+  metric: string
+  series: (number | null)[]
+  against: number[]
+  againstLabel: string
+  leader: { brand: string; share: number }
+  basis: string
+  corr: ReturnType<typeof correlation>
+}
 const HEAD = "text-xs font-medium text-slate-500"
 const SECTION = "text-xl font-semibold tracking-tight text-slate-950"
 
 const last = (s: (number | null)[]) => s.filter((v): v is number => v != null).at(-1) ?? 0
 const first = (s: (number | null)[]) => s.find((v): v is number => v != null) ?? 0
-const firstWeek = (s: (number | null)[]) => WEEKS[s.findIndex((v) => v != null)]
 const leaderOf = (id: SourceId) => [...BRANDS].sort((a, b) => BRAND_SHARE[b][id] - BRAND_SHARE[a][id])[0]
 
 /** The page's one-line read of a source's link to sales. */
 function linkLine(c: ReturnType<typeof correlation>) {
   if (c.r == null) return `Not enough data yet · ${c.weeks} of ${MIN_WEEKS} weeks`
-  return `${strength(c.r)} (${c.r.toFixed(2)}) · ${c.lead ? "leads sales by 1 week" : "same week"}`
+  return `${strength(c.r)} ${c.r.toFixed(2)} · ${c.lead ? "1 week ahead" : "same week"}`
 }
 
 /**
@@ -28,7 +41,7 @@ function linkLine(c: ReturnType<typeof correlation>) {
  */
 export function AiCommerceView() {
   const [mounted, setMounted] = useState(false)
-  const [sel, setSel] = useState<SourceId>("answer")
+  const [sel, setSel] = useState<string>("answer")
   const [sent, setSent] = useState<Record<string, boolean>>({})
   useEffect(() => {
     // Charts measure the page, so render after mount.
@@ -36,26 +49,41 @@ export function AiCommerceView() {
     return () => window.clearTimeout(t)
   }, [])
 
-  const corr = useMemo(() => Object.fromEntries(SOURCES.map((s) => [s.id, correlation(s.series)])) as Record<SourceId, ReturnType<typeof correlation>>, [])
-  const answer = SOURCES.find((s) => s.id === "answer")!
+  // One row per source (its overall, from its surfaces), then its surfaces. Retailer surfaces compare with their own retailer's sales.
+  const rows = useMemo<Row[]>(
+    () =>
+      SOURCES.flatMap((src) => {
+        const series = sourceSeries(src.id)
+        const lead = leaderOf(src.id)
+        const head: Row = { key: src.id, kind: "source", name: src.name, metric: src.metric, series, against: SALES, againstLabel: "total sales", leader: { brand: lead, share: BRAND_SHARE[lead][src.id] }, basis: `${SURFACES.filter((x) => x.source === src.id).length} surfaces`, corr: correlation(series) }
+        const kids: Row[] = SURFACES.filter((x) => x.source === src.id).map((x) => {
+          const against = x.retailer ? RETAILER_SALES[x.retailer] : SALES
+          return { key: x.id, kind: "surface", name: x.name, metric: src.metric, series: x.series, against, againstLabel: x.retailer ? `${RETAILER_NAME[x.retailer]} sales` : "total sales", leader: x.leader, basis: x.basis, corr: correlation(x.series, against) }
+        })
+        return [head, ...kids]
+      }),
+    [],
+  )
+  const sourceRows = rows.filter((r) => r.kind === "source")
+  const answerShare = BRAND_SHARE["Hershey's"].answer
   const ansLeader = leaderOf("answer")
-  const leakTotal = LEAKS.reduce((s, l) => s + l.atRisk, 0)
+  const leakTotal = LEAKS.reduce((t, l) => t + l.atRisk, 0)
   // Rank: deadline first, then dollars.
   const leaks = [...LEAKS].sort((a, b) => Number(!!b.deadline) - Number(!!a.deadline) || b.atRisk - a.atRisk)
-  const sameWeek = SOURCES.filter((s) => corr[s.id].r != null && corr[s.id].lead === 0).map((s) => s.name.toLowerCase())
-  const leading = SOURCES.filter((s) => corr[s.id].r != null && corr[s.id].lead === 1).map((s) => s.name.toLowerCase())
+  const sameWeek = sourceRows.filter((r) => r.corr.r != null && r.corr.lead === 0).map((r) => r.name.toLowerCase())
+  const leading = sourceRows.filter((r) => r.corr.r != null && r.corr.lead === 1).map((r) => r.name.toLowerCase())
 
   if (!mounted) return <div className="min-h-[60vh]" />
 
-  const src = SOURCES.find((s) => s.id === sel)!
+  const src = rows.find((r) => r.key === sel)!
   // Each line scaled to its own range (low = 0, high = 100), so the shapes compare on one axis.
   const scale = (v: number, lo: number, hi: number) => Math.round(((v - lo) / (hi - lo || 1)) * 100)
   const shares = src.series.filter((v): v is number => v != null)
   const [sLo, sHi] = [Math.min(...shares), Math.max(...shares)]
-  const [aLo, aHi] = [Math.min(...SALES), Math.max(...SALES)]
+  const [aLo, aHi] = [Math.min(...src.against), Math.max(...src.against)]
   const chart = WEEKS.map((w, i) => ({
     week: w,
-    sales: scale(SALES[i], aLo, aHi),
+    sales: scale(src.against[i], aLo, aHi),
     share: src.series[i] == null ? null : scale(src.series[i] as number, sLo, sHi),
   }))
 
@@ -76,7 +104,7 @@ export function AiCommerceView() {
         {/* Hero: fact, gap, reassurance */}
         <section>
           <p className="text-2xl text-slate-700">
-            Shoppers asking about Halloween candy see {META.brand} in <span className="font-semibold text-slate-950">{Math.round(last(answer.series))}%</span> of answer agent replies.
+            Shoppers asking about Halloween candy see {META.brand} in <span className="font-semibold text-slate-950">{answerShare}%</span> of answer agent replies.
           </p>
           <h2 className="mt-1 text-[40px] leading-tight font-bold tracking-tight text-slate-950">
             {ansLeader} is in {BRAND_SHARE[ansLeader].answer}%, and ${leakTotal}K a week of AI-sent demand is leaking at the shelf.
@@ -93,46 +121,71 @@ export function AiCommerceView() {
         {/* Share by source, and how each moves with sales */}
         <section className="flex flex-col gap-4">
           <h3 className={SECTION}>Where shoppers find you</h3>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {SOURCES.map((s) => {
-              const c = corr[s.id]
-              const lead = leaderOf(s.id)
-              const delta = Math.round(last(s.series) - first(s.series))
-              const active = sel === s.id
-              return (
-                <button
-                  key={s.id}
-                  type="button"
-                  onClick={() => setSel(s.id)}
-                  aria-pressed={active}
-                  className={cn(CARD, "flex flex-col gap-1 px-5 py-4 text-left outline-none transition-shadow focus-visible:ring-2 focus-visible:ring-brand-300", active ? "ring-2 ring-brand-500" : "hover:ring-slate-300")}
-                >
-                  <span className="text-[15px] font-semibold text-slate-950">{s.name}</span>
-                  <span className="text-xs text-slate-500">{s.examples}</span>
-                  <span className={cn(HEAD, "mt-3")}>{s.metric}</span>
-                  <span className="flex items-baseline gap-2">
-                    <span className="font-mono text-3xl font-semibold text-slate-950 tabular-nums">{Math.round(last(s.series))}%</span>
-                    <span className="text-sm whitespace-nowrap text-slate-500">
-                      {lead === META.brand ? "You lead" : `${lead} ${BRAND_SHARE[lead][s.id]}%`}
+          <div className={cn(CARD, "overflow-x-auto")}>
+            <div className="min-w-[980px]">
+              <div className={cn(HEAD, ROW, "px-6 pt-3 pb-2")}>
+                <span>Source</span>
+                <span>Hershey&apos;s share</span>
+                <span>Leader</span>
+                <span className="text-right">Since {WEEKS[0]}</span>
+                <span>Moves with sales</span>
+                <span>Based on</span>
+              </div>
+              {rows.map((r) => {
+                const now = last(r.series)
+                const delta = Math.round(now - first(r.series))
+                const active = sel === r.key
+                const top = r.kind === "source"
+                return (
+                  <button
+                    key={r.key}
+                    type="button"
+                    onClick={() => setSel(r.key)}
+                    aria-pressed={active}
+                    className={cn(
+                      ROW,
+                      "w-full items-center border-t px-6 text-left outline-none focus-visible:ring-2 focus-visible:ring-brand-300 focus-visible:ring-inset",
+                      top ? "border-slate-200 bg-slate-50 py-3" : "border-slate-100 py-2.5",
+                      active ? "bg-brand-50 shadow-[inset_3px_0_0_var(--color-brand-500)]" : "hover:bg-slate-50",
+                    )}
+                  >
+                    <span className={cn("min-w-0", !top && "pl-5")}>
+                      <span className={cn("block", top ? "text-[15px] font-semibold text-slate-950" : "text-sm text-slate-950")}>{r.name}</span>
+                      {top && <span className="block text-xs text-slate-500">{r.metric} · overall</span>}
                     </span>
-                  </span>
-                  <span className="text-xs text-slate-500 tabular-nums">
-                    {delta >= 0 ? "+" : "−"}
-                    {Math.abs(delta)} pts since {firstWeek(s.series)}
-                  </span>
-                  <span className="mt-3 border-t border-slate-100 pt-2 text-[13px] text-slate-700">
-                    <span className="text-slate-500">Moves with sales: </span>
-                    {linkLine(c)}
-                  </span>
-                </button>
-              )
-            })}
+                    <span className="flex items-center gap-3">
+                      <span className="relative h-2 w-28 rounded-full bg-slate-100" aria-hidden>
+                        <span className="absolute inset-y-0 left-0 rounded-full bg-brand-500" style={{ width: `${(now / 50) * 100}%` }} />
+                        <span className="absolute -inset-y-1 w-0.5 bg-slate-950" style={{ left: `${(r.leader.share / 50) * 100}%` }} />
+                      </span>
+                      <span className={cn("font-mono tabular-nums", top ? "text-base font-semibold text-slate-950" : "text-sm text-slate-950")}>{Math.round(now)}%</span>
+                    </span>
+                    <span className="text-sm whitespace-nowrap text-slate-700">
+                      {r.leader.brand === META.brand ? "You lead" : <>{r.leader.brand} <span className="font-mono tabular-nums">{r.leader.share}%</span></>}
+                    </span>
+                    <span className="text-right font-mono text-sm text-slate-700 tabular-nums">
+                      {r.series[0] == null ? "New" : `${delta >= 0 ? "+" : "−"}${Math.abs(delta)} pts`}
+                    </span>
+                    <span className="text-sm text-slate-700">
+                      <span className="block">{linkLine(r.corr)}</span>
+                      {r.corr.r != null && <span className="block text-xs text-slate-500">vs {r.againstLabel}</span>}
+                    </span>
+                    <span className="text-xs text-slate-500">{r.basis}</span>
+                  </button>
+                )
+              })}
+              <div className="flex items-center gap-4 border-t border-slate-100 px-6 py-2.5 text-xs text-slate-500">
+                <span className="flex items-center gap-1.5"><span className="h-2 w-4 rounded-full bg-brand-500" /> Hershey&apos;s</span>
+                <span className="flex items-center gap-1.5"><span className="h-3 w-0.5 bg-slate-950" /> Leader</span>
+                <span>Overall = each source&apos;s surfaces, weighted by shopper demand</span>
+              </div>
+            </div>
           </div>
 
           <div className={cn(CARD, "px-6 py-5")}>
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <div className="text-[15px] font-semibold text-slate-950">
-                Sales vs {src.name.toLowerCase()}: {src.metric}
+                {src.againstLabel.replace(/^./, (c) => c.toUpperCase())} vs {src.name}: {src.metric}
               </div>
               <div className="text-xs text-slate-500">Each line from its 12-week low (0) to high (100)</div>
             </div>
@@ -146,16 +199,16 @@ export function AiCommerceView() {
                     contentStyle={{ borderRadius: 8, border: "1px solid #e2e8f0", fontSize: 12 }}
                     formatter={(_v, name, item) => {
                       const i = WEEKS.indexOf(item.payload.week)
-                      return name === "sales" ? [`$${SALES[i].toFixed(1)}M`, "Retailer sales"] : [`${src.series[i]}%`, src.metric]
+                      return name === "sales" ? [`$${src.against[i].toFixed(1)}M`, src.againstLabel] : [`${src.series[i]}%`, src.metric]
                     }}
                   />
                   <Line type="monotone" dataKey="sales" stroke="#0f172a" strokeWidth={2} dot={false} isAnimationActive={false} />
-                  <Line type="monotone" dataKey="share" stroke="#875BF7" strokeWidth={2} dot={{ r: 2.5 }} connectNulls={false} isAnimationActive={false} />
+                  <Line type="monotone" dataKey="share" stroke="var(--color-brand-500)" strokeWidth={2} dot={{ r: 2.5 }} connectNulls={false} isAnimationActive={false} />
                 </LineChart>
               </ResponsiveContainer>
             </div>
             <div className="mt-2 flex flex-wrap items-center gap-x-5 gap-y-1 text-xs text-slate-500">
-              <span className="flex items-center gap-1.5"><span className="h-0.5 w-4 bg-slate-950" /> Retailer sales</span>
+              <span className="flex items-center gap-1.5"><span className="h-0.5 w-4 bg-slate-950" /> {src.againstLabel.replace(/^./, (c) => c.toUpperCase())}</span>
               <span className="flex items-center gap-1.5"><span className="h-0.5 w-4 bg-brand-500" /> {src.metric}</span>
               <span className="ml-auto">Correlation of week-over-week changes, so the Halloween ramp alone doesn&apos;t count. Correlation isn&apos;t cause.</span>
             </div>
