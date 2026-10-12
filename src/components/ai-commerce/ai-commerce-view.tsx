@@ -70,6 +70,8 @@ export function AiCommerceView() {
   const sourceRows = rows.filter((r) => r.kind === "source")
   const answerShare = BRAND_SHARE["Hershey's"].answer
   const ansLeader = leaderOf("answer")
+  // Where Hershey's stands among the tracked brands by answer agent recommendation rate.
+  const answerPos = [...BRANDS].sort((a, b) => BRAND_SHARE[b].answer - BRAND_SHARE[a].answer).indexOf("Hershey's") + 1
   const leakTotal = LEAKS.reduce((t, l) => t + l.atRisk, 0)
   // Rank: deadline first, then dollars.
   const leaks = [...LEAKS].sort((a, b) => Number(!!b.deadline) - Number(!!a.deadline) || b.atRisk - a.atRisk)
@@ -102,15 +104,15 @@ export function AiCommerceView() {
       </div>
 
       <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-12 px-6 pt-8 pb-24">
-        {/* Hero: fact, gap, then the shelf */}
+        {/* Hero: our number first, the leader as context, then the shelf */}
         <section>
-          <p className="text-2xl text-slate-700">
-            AI shopping answers recommend {META.brand} <span className="font-semibold text-slate-950">{answerShare}%</span> of the time for Halloween candy.
-          </p>
-          <h2 className="mt-1 text-[40px] leading-tight font-bold tracking-tight text-slate-950">
-            {ansLeader} is recommended {BRAND_SHARE[ansLeader].answer}% of the time.
+          <h2 className="text-[40px] leading-tight font-bold tracking-tight text-slate-950">
+            AI answers recommend {META.brand} {answerShare}% of the time.
           </h2>
-          <p className="mt-2 text-base text-slate-700">
+          <p className="mt-1 text-xl text-slate-500">
+            (#{answerPos} of {BRANDS.length} tracked brands{answerPos > 1 ? `, behind ${ansLeader} at ${BRAND_SHARE[ansLeader].answer}%` : ""})
+          </p>
+          <p className="mt-3 text-base text-slate-700">
             When AI does send shoppers to you, <span className="font-semibold text-error-600 tabular-nums">${leakTotal}K</span> a week hits an empty or overpriced shelf.
           </p>
           <p className="mt-1 text-sm text-slate-500">
