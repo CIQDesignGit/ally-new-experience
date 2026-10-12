@@ -377,7 +377,7 @@ export function AiCommerceView() {
             </table>
           </div>
           <p className="text-xs text-slate-500">
-            Recommendation rate across {META.runsPerWeek * 4} answer agent runs a week per prompt. A rate, never a rank: answers change from run to run.
+            Recommendation rate across {META.runsPerWeek * SURFACES.filter((x) => x.source === "answer").length} answer agent runs a week per prompt ({META.runsPerWeek} on each of {SURFACES.filter((x) => x.source === "answer").length} engines). A rate, never a rank: answers change from run to run.
           </p>
         </section>
       </div>
