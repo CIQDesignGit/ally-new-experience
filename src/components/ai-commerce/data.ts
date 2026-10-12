@@ -198,3 +198,31 @@ export const ACTIONS: {
 
 /** Sales at risk at the shelf: the open ops fixes. */
 export const LEAK_TOTAL = ACTIONS.filter((a) => a.bucket === "ops").reduce((t, a) => t + a.value, 0)
+
+/* ── AI and your sales: proven, estimated, at risk ────────────────────────── */
+
+/** How sure we are of a dollar figure. */
+export type Confidence = "proven" | "estimated" | "none"
+
+/**
+ * This week's sales tied to AI, split by how we know it. Proven = measured in the
+ * retailer's own reporting. Estimated = from how sales move with AI share (a range,
+ * until experiments run). $K a week; ranges are [low, high].
+ */
+export const AI_SALES: { id: string; name: string; confidence: Confidence; value?: number; range?: [number, number]; how: string }[] = [
+  { id: "paid-alexa", name: "Sponsored Prompts, Alexa for Shopping", confidence: "proven", value: 31, how: "Orders in Amazon Ads prompt reporting" },
+  { id: "paid-sparky", name: "Sparky sponsored prompts", confidence: "proven", value: 15, how: "Walmart Connect closed-loop sales" },
+  { id: "paid-chatgpt", name: "ChatGPT ads through Amazon DSP", confidence: "none", how: "Pilot not started: approve it in Media" },
+  { id: "org-agents", name: "Retail shopping agents, organic", confidence: "estimated", range: [800, 1300], how: "Sales change per point of AI share of voice, same week, Amazon and Walmart" },
+  { id: "org-answer", name: "Answer agents, organic", confidence: "estimated", range: [300, 700], how: "Sales change per point of AI visibility, one week ahead; wider range, moderate link" },
+  { id: "org-autonomous", name: "Autonomous shopping agents", confidence: "none", how: "Not enough data yet: 4 of 8 weeks" },
+]
+
+/** The experiment that turns estimates into proof, once content changes ship. */
+export const EXPERIMENT = {
+  featured: 20,
+  controls: 20,
+  weeks: 4,
+  measures: "Traffic, conversion and sales on featured vs matched control SKUs, plus AI share on both",
+  starts: "When the content fixes ship",
+}

@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils"
 import { BRANDS, BRAND_SHARE, LEAK_TOTAL, META, MIN_WEEKS, NEEDS, PROMPTS, RETAILER_LINKS, RETAILER_NAME, RETAILER_SALES, SALES, SOURCES, SURFACES, WEEKS, correlation, sourceSeries, strength } from "./data"
 import type { SourceId } from "./data"
 import { ActionBuckets } from "./actions"
+import { SalesImpact } from "./sales-impact"
 
 const CARD = "rounded-2xl bg-white ring-1 ring-slate-200"
 const ROW = "grid grid-cols-[minmax(0,1fr)_190px_120px_90px_230px_120px] gap-4"
@@ -120,6 +121,9 @@ export function AiCommerceView() {
 
         {/* What to do first: the five buckets of action */}
         <ActionBuckets />
+
+        {/* What AI is worth in sales: proven, estimated, at risk */}
+        <SalesImpact />
 
         {/* Share by source, and how each moves with sales */}
         <section className="flex flex-col gap-4">
