@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
-import { Check } from "lucide-react"
+import { Check, ChevronDown } from "lucide-react"
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
 import { cn } from "@/lib/utils"
 import { BRANDS, BRAND_SHARE, LEAKS, META, MIN_WEEKS, NEEDS, PROMPTS, RETAILER_LINKS, RETAILER_NAME, RETAILER_SALES, SALES, SOURCES, SURFACES, WEEKS, correlation, sourceSeries, strength } from "./data"
@@ -43,6 +43,9 @@ export function AiCommerceView() {
   const [mounted, setMounted] = useState(false)
   const [sel, setSel] = useState<string>("answer")
   const [sent, setSent] = useState<Record<string, boolean>>({})
+  // Sources whose surfaces are open: one at a time, or all.
+  const [open, setOpen] = useState<SourceId[]>([])
+  const toggle = (id: SourceId) => setOpen((o) => (o.includes(id) ? o.filter((x) => x !== id) : o.length === SOURCES.length ? o : [id]))
   useEffect(() => {
     // Charts measure the page, so render after mount.
     const t = window.setTimeout(() => setMounted(true), 0)
@@ -70,8 +73,6 @@ export function AiCommerceView() {
   const leakTotal = LEAKS.reduce((t, l) => t + l.atRisk, 0)
   // Rank: deadline first, then dollars.
   const leaks = [...LEAKS].sort((a, b) => Number(!!b.deadline) - Number(!!a.deadline) || b.atRisk - a.atRisk)
-  const sameWeek = sourceRows.filter((r) => r.corr.r != null && r.corr.lead === 0).map((r) => r.name.toLowerCase())
-  const leading = sourceRows.filter((r) => r.corr.r != null && r.corr.lead === 1).map((r) => r.name.toLowerCase())
 
   if (!mounted) return <div className="min-h-[60vh]" />
 
@@ -101,17 +102,16 @@ export function AiCommerceView() {
       </div>
 
       <div className="mx-auto flex w-full max-w-[1200px] flex-col gap-12 px-6 pt-8 pb-24">
-        {/* Hero: fact, gap, reassurance */}
+        {/* Hero: fact, gap, then the shelf */}
         <section>
           <p className="text-2xl text-slate-700">
-            Shoppers asking about Halloween candy see {META.brand} in <span className="font-semibold text-slate-950">{answerShare}%</span> of answer agent replies.
+            AI shopping answers recommend {META.brand} <span className="font-semibold text-slate-950">{answerShare}%</span> of the time for Halloween candy.
           </p>
           <h2 className="mt-1 text-[40px] leading-tight font-bold tracking-tight text-slate-950">
-            {ansLeader} is in {BRAND_SHARE[ansLeader].answer}%, and ${leakTotal}K a week of AI-sent demand is leaking at the shelf.
+            {ansLeader} is recommended {BRAND_SHARE[ansLeader].answer}% of the time.
           </h2>
           <p className="mt-2 text-base text-slate-700">
-            {sameWeek.length > 0 && <>{sameWeek.join(" and ").replace(/^./, (c) => c.toUpperCase())} move with your sales in the same week. </>}
-            {leading.length > 0 && <>{leading.join(" and ").replace(/^./, (c) => c.toUpperCase())} lead them by about a week.</>}
+            When AI does send shoppers to you, <span className="font-semibold text-error-600 tabular-nums">${leakTotal}K</span> a week hits an empty or overpriced shelf.
           </p>
           <p className="mt-1 text-sm text-slate-500">
             {META.prompts} prompts · 4 sources · {META.runsPerWeek} runs per prompt per engine a week
@@ -120,67 +120,101 @@ export function AiCommerceView() {
 
         {/* Share by source, and how each moves with sales */}
         <section className="flex flex-col gap-4">
-          <h3 className={SECTION}>Where shoppers find you</h3>
-          <div className={cn(CARD, "overflow-x-auto")}>
-            <div className="min-w-[980px]">
-              <div className={cn(HEAD, ROW, "px-6 pt-3 pb-2")}>
-                <span>Source</span>
-                <span>Hershey&apos;s share</span>
-                <span>Leader</span>
-                <span className="text-right">Since {WEEKS[0]}</span>
-                <span>Moves with sales</span>
-                <span>Based on</span>
-              </div>
-              {rows.map((r) => {
-                const now = last(r.series)
-                const delta = Math.round(now - first(r.series))
-                const active = sel === r.key
-                const top = r.kind === "source"
-                return (
-                  <button
-                    key={r.key}
-                    type="button"
-                    onClick={() => setSel(r.key)}
-                    aria-pressed={active}
-                    className={cn(
-                      ROW,
-                      "w-full items-center border-t px-6 text-left outline-none focus-visible:ring-2 focus-visible:ring-brand-300 focus-visible:ring-inset",
-                      top ? "border-slate-200 bg-slate-50 py-3" : "border-slate-100 py-2.5",
-                      active ? "bg-brand-50 shadow-[inset_3px_0_0_var(--color-brand-500)]" : "hover:bg-slate-50",
-                    )}
-                  >
-                    <span className={cn("min-w-0", !top && "pl-5")}>
-                      <span className={cn("block", top ? "text-[15px] font-semibold text-slate-950" : "text-sm text-slate-950")}>{r.name}</span>
-                      {top && <span className="block text-xs text-slate-500">{r.metric} · overall</span>}
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h3 className={SECTION}>Where shoppers find you</h3>
+            <button type="button" onClick={() => setOpen(open.length === SOURCES.length ? [] : SOURCES.map((x) => x.id))} className="text-sm font-medium text-brand-700 hover:underline">
+              {open.length === SOURCES.length ? "Collapse all" : "Expand all"}
+            </button>
+          </div>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {sourceRows.map((r) => {
+              const id = r.key as SourceId
+              const count = SURFACES.filter((x) => x.source === id).length
+              const isOpen = open.includes(id)
+              return (
+                <div key={r.key} className={cn(CARD, "flex flex-col", sel === r.key && "ring-2 ring-brand-500")}>
+                  <button type="button" onClick={() => setSel(r.key)} aria-pressed={sel === r.key} className="flex flex-1 flex-col gap-1 rounded-t-2xl px-5 pt-4 pb-3 text-left outline-none focus-visible:ring-2 focus-visible:ring-brand-300">
+                    <span className="text-[15px] font-semibold text-slate-950">{r.name}</span>
+                    <span className={cn(HEAD, "mt-2")}>{r.metric}</span>
+                    <span className="font-mono text-3xl font-semibold text-slate-950 tabular-nums">{Math.round(last(r.series))}%</span>
+                    {/* Same bar and leader tick as the surface rows, so both levels read alike. */}
+                    <span className="relative mt-1 h-1.5 w-full rounded-full bg-slate-100" aria-hidden>
+                      <span className="absolute inset-y-0 left-0 rounded-full bg-brand-500" style={{ width: `${(last(r.series) / 50) * 100}%` }} />
+                      <span className="absolute -inset-y-1 w-0.5 bg-slate-950" style={{ left: `${(r.leader.share / 50) * 100}%` }} />
                     </span>
-                    <span className="flex items-center gap-3">
-                      <span className="relative h-2 w-28 rounded-full bg-slate-100" aria-hidden>
-                        <span className="absolute inset-y-0 left-0 rounded-full bg-brand-500" style={{ width: `${(now / 50) * 100}%` }} />
-                        <span className="absolute -inset-y-1 w-0.5 bg-slate-950" style={{ left: `${(r.leader.share / 50) * 100}%` }} />
-                      </span>
-                      <span className={cn("font-mono tabular-nums", top ? "text-base font-semibold text-slate-950" : "text-sm text-slate-950")}>{Math.round(now)}%</span>
+                    <span className="text-xs text-slate-500">{r.leader.brand === META.brand ? "You lead" : `Leader: ${r.leader.brand} ${r.leader.share}%`}</span>
+                    <span className="mt-3 border-t border-slate-100 pt-2.5">
+                      <span className={cn(HEAD, "block")}>Moves with sales</span>
+                      {r.corr.r == null ? (
+                        <span className="block text-sm text-slate-700">Not enough data yet · {r.corr.weeks} of {MIN_WEEKS} weeks</span>
+                      ) : (
+                        <>
+                          <span className="block text-sm font-medium text-slate-950">
+                            {strength(r.corr.r)} · {r.corr.lead ? "1 week ahead" : "same week"}
+                          </span>
+                          <span className="block text-xs text-slate-500 tabular-nums">{r.corr.r.toFixed(2)} correlation</span>
+                        </>
+                      )}
                     </span>
-                    <span className="text-sm whitespace-nowrap text-slate-700">
-                      {r.leader.brand === META.brand ? "You lead" : <>{r.leader.brand} <span className="font-mono tabular-nums">{r.leader.share}%</span></>}
-                    </span>
-                    <span className="text-right font-mono text-sm text-slate-700 tabular-nums">
-                      {r.series[0] == null ? "New" : `${delta >= 0 ? "+" : "−"}${Math.abs(delta)} pts`}
-                    </span>
-                    <span className="text-sm text-slate-700">
-                      <span className="block">{linkLine(r.corr)}</span>
-                      {r.corr.r != null && <span className="block text-xs text-slate-500">vs {r.againstLabel}</span>}
-                    </span>
-                    <span className="text-xs text-slate-500">{r.basis}</span>
                   </button>
-                )
-              })}
-              <div className="flex items-center gap-4 border-t border-slate-100 px-6 py-2.5 text-xs text-slate-500">
-                <span className="flex items-center gap-1.5"><span className="h-2 w-4 rounded-full bg-brand-500" /> Hershey&apos;s</span>
-                <span className="flex items-center gap-1.5"><span className="h-3 w-0.5 bg-slate-950" /> Leader</span>
-                <span>Overall = each source&apos;s surfaces, weighted by shopper demand</span>
+                  <button type="button" onClick={() => toggle(id)} aria-expanded={isOpen} className="flex items-center gap-1 border-t border-slate-100 px-5 py-2.5 text-left text-[13px] font-medium text-brand-700 outline-none hover:bg-slate-50 focus-visible:ring-2 focus-visible:ring-brand-300">
+                    <ChevronDown className={cn("size-4 transition-transform", isOpen && "rotate-180")} />
+                    {isOpen ? "Hide" : "Show"} {count} surfaces
+                  </button>
+                </div>
+              )
+            })}
+          </div>
+
+          {sourceRows.filter((r) => open.includes(r.key as SourceId)).map((src) => (
+            <div key={src.key} className={cn(CARD, "overflow-x-auto")}>
+              <div className="min-w-[820px]">
+                <div className="flex items-baseline justify-between px-6 pt-4 pb-2">
+                  <span className="text-[15px] font-semibold text-slate-950">{src.name}</span>
+                  <span className="text-xs text-slate-500">Overall = its surfaces, weighted by shopper demand</span>
+                </div>
+                <div className={cn(HEAD, ROW, "px-6 pb-2")}>
+                  <span>Surface</span>
+                  <span>Hershey&apos;s {src.metric.toLowerCase().replace("ai ", "AI ")}</span>
+                  <span>Leader</span>
+                  <span className="text-right">Since {WEEKS[0]}</span>
+                  <span>Moves with sales</span>
+                  <span>Based on</span>
+                </div>
+                {rows.filter((r) => r.kind === "surface" && SURFACES.find((x) => x.id === r.key)?.source === src.key).map((r) => {
+                  const now = last(r.series)
+                  const delta = Math.round(now - first(r.series))
+                  return (
+                    <button
+                      key={r.key}
+                      type="button"
+                      onClick={() => setSel(r.key)}
+                      aria-pressed={sel === r.key}
+                      className={cn(ROW, "w-full items-center border-t border-slate-100 px-6 py-2.5 text-left outline-none focus-visible:ring-2 focus-visible:ring-brand-300 focus-visible:ring-inset", sel === r.key ? "bg-slate-100" : "hover:bg-slate-50")}
+                    >
+                      <span className="text-sm text-slate-950">{r.name}</span>
+                      <span className="flex items-center gap-3">
+                        <span className="relative h-2 w-28 rounded-full bg-slate-100" aria-hidden>
+                          <span className="absolute inset-y-0 left-0 rounded-full bg-brand-500" style={{ width: `${(now / 50) * 100}%` }} />
+                          <span className="absolute -inset-y-1 w-0.5 bg-slate-950" style={{ left: `${(r.leader.share / 50) * 100}%` }} />
+                        </span>
+                        <span className="font-mono text-sm text-slate-950 tabular-nums">{Math.round(now)}%</span>
+                      </span>
+                      <span className="text-sm whitespace-nowrap text-slate-700">
+                        {r.leader.brand === META.brand ? "You lead" : <>{r.leader.brand} <span className="font-mono tabular-nums">{r.leader.share}%</span></>}
+                      </span>
+                      <span className="text-right font-mono text-sm text-slate-700 tabular-nums">{r.series[0] == null ? "New" : `${delta >= 0 ? "+" : "−"}${Math.abs(delta)} pts`}</span>
+                      <span className="text-sm text-slate-700">
+                        <span className="block">{linkLine(r.corr)}</span>
+                        {r.corr.r != null && <span className="block text-xs text-slate-500">vs {r.againstLabel}</span>}
+                      </span>
+                      <span className="text-xs text-slate-500">{r.basis}</span>
+                    </button>
+                  )
+                })}
               </div>
             </div>
-          </div>
+          ))}
 
           <div className={cn(CARD, "px-6 py-5")}>
             <div className="flex flex-wrap items-baseline justify-between gap-2">
@@ -253,7 +287,7 @@ export function AiCommerceView() {
                   <div className="text-slate-950">{l.retailer}: {l.issue}</div>
                   {l.deadline && <div className="text-xs font-medium text-warning-700">{l.deadline}</div>}
                 </div>
-                <div className="text-right font-mono text-sm whitespace-nowrap text-error-600 tabular-nums">−${l.atRisk}K/wk</div>
+                <div className="text-right font-mono text-sm whitespace-nowrap text-slate-950 tabular-nums">${l.atRisk}K/wk</div>
                 <div className="text-right">
                   {sent[l.id] ? (
                     <span className="inline-flex items-center gap-1 text-sm font-medium text-success-700">
