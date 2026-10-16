@@ -1,6 +1,7 @@
 "use client"
 
 import { DetailCard } from "@/components/nudge/ui/detail-card"
+import { launchStatusChip } from "@/components/nudge/launch/status"
 import { AppDrawer } from "@/components/nudge/app-drawer"
 import { useEffect, useRef, useState } from "react"
 import { toast } from "sonner"
@@ -66,6 +67,7 @@ function InboxChat() {
         { q: "Claire's Q4 business review", hidden: true, task: "/michelle/decks/qbr?new=1", match: /\b(qbr|business review)\b/i, render: () => null },
         // Gap to plan has its own page; asking for it goes there.
         { q: "Where are we against plan?", task: "/michelle/gap", match: /\b(gap to plan|against plan|behind plan|vs\.? plan|short of plan)\b/i, render: () => null },
+        launchStatusChip("michelle"),
       ],
     },
     "inbox",

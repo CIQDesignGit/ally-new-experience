@@ -143,8 +143,28 @@ export function useChatSource(source: ChatSource, key: string) {
 }
 
 /** Typed questions land on the chip sharing the most words with them. */
+/** A typed question this screen can't answer: the screen's starters instead of silence. */
+function NoMatch() {
+  const { source, ask } = useChat()
+  const starters = source.chips.filter((c) => !c.hidden).slice(0, 4)
+  return (
+    <div className="flex max-w-[860px] flex-col gap-3 rounded-2xl bg-white px-5 py-4 text-[15px] text-slate-700 ring-1 ring-slate-200">
+      <p>I can&apos;t answer that here yet. Try one of these:</p>
+      <div className="flex flex-wrap gap-2">
+        {starters.map((c) => (
+          <button key={c.q} type="button" onClick={() => ask(c)} className="rounded-full bg-white px-3 py-1.5 text-[13px] text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50">
+            {c.q}
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 function closest(chips: Chip[], text: string): Chip | undefined {
-  const words = text.toLowerCase().split(/\W+/).filter((w) => w.length > 3)
+  // Filler words ("what", "should", "about") don't count as meaning: they matched any question.
+  const STOP = new Set(["what", "when", "where", "which", "who", "why", "how", "that", "this", "these", "those", "with", "have", "your", "from", "about", "should", "could", "would", "does", "show", "tell", "give", "more", "there", "their", "into", "over", "next", "want", "need", "help", "please", "today", "tomorrow"])
+  const words = text.toLowerCase().split(/\W+/).filter((w) => w.length > 3 && !STOP.has(w))
   let best: Chip | undefined
   let score = 0
   for (const c of chips) {
@@ -449,6 +469,10 @@ export function AskBar({ placeholder = "What can I take off your plate?" }: { pl
               run(chip, quote ? `“${quote}” ${said}` : said)
               setOpen(false)
               setQuote(null)
+            } else if (text.trim()) {
+              // No answer on this screen: say so, and offer what Ally can answer here.
+              run({ q: text.trim(), render: () => <NoMatch /> }, text.trim())
+              setOpen(false)
             } else setOpen(true)
             setText("")
           }}

@@ -18,6 +18,7 @@ import { GrowViewSwitch } from "@/components/nudge/market/views"
 import { Answer, QUESTIONS } from "@/components/nudge/claire/ask-ally-answers"
 import { budgetChip, togetherChip } from "@/components/nudge/media/answers"
 import { aeoChip } from "@/components/nudge/cs/aeo-report"
+import { launchStatusChip } from "@/components/nudge/launch/status"
 import { AskBar, ChatProvider, ChatThread, useChat, useChatSource } from "@/components/nudge/chat/inline-chat"
 import type { Chip } from "@/components/nudge/chat/inline-chat"
 import { useRouter } from "next/navigation"
@@ -46,6 +47,7 @@ function HomeChat() {
     // The monthly AI visibility readout: answered when asked, not one of the four starters.
     { ...aeoChip, hidden: true },
     { ...togetherChip, hidden: true },
+    launchStatusChip("claire"),
   ]
   useChatSource({ chips }, "home")
   // A question reopened from Ask Ally's history ("?ask=…") is asked again, once.

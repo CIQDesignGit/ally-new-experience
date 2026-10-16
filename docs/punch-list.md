@@ -152,3 +152,5 @@ You asked me to finish everything and push to live. Rollback point if any of thi
 - Oct 8 · locked: Sarah's mood (profit recovery value concern) with Bring in Rachel; product asks logged with an update date; asks-first prep; typed triggers (Prime Day deck, AVN, plan gap, Vendor Central, Winter Hearth).
 - Oct 8 · locked: all four queues share filter pills, the open item on a card, darker structural borders, Claire's per-row delivered bars; "since yesterday" band with dark text.
 - Oct 9 · locked: Context tab without charts (Learning now, buckets, learned → unlocks); "Getting better every day" link on Claire's page; recap's Add context; one shape for every "against plan" statement (VsPlan), rule in DESIGN.md.
+
+- **Oct 15 · Launch Winter Hearth typed on Claire/Michelle does nothing** — locked Oct 16. Launch status answer added to Claire, Michelle (and Sarah, shared chip); unrecognized questions now reply "I can't answer that here yet" with the page's starters; fuzzy match ignores filler words ("what", "should") so off-topic questions no longer get a wrong answer.
