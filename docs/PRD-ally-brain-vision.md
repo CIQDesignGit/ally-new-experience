@@ -488,6 +488,28 @@ Three worker agents execute Brain's plays, one per lever, and a decision brief c
 
 **Ops is core, not an add-on.** Most of today's value sits in ops: lost buy box, out of stock and missing badges. For these the "action" is a prepared escalation with evidence, which is what gets them fixed in hours instead of weeks.
 
+### Ops: fix, not alert (out of stock first)
+
+Customers are overwhelmed by alert volume. Ally fixes out-of-stock issues instead of alerting on them. Tickets to Amazon run on autopilot; emails to people outside the brand need one approval.
+
+| Cause | How Ally knows | Ally's action | Needed from the customer |
+| --- | --- | --- | --- |
+| Shows OOS but Amazon has stock | Page unavailable, Amazon on hand > 0 | Files Vendor Central ticket to reinstate | Nothing (live in ESM today) |
+| Shipment stuck at Amazon | Delivered, not received after 3 days | Files receiving case with PO, ASN, proof of delivery | EDI provider copies 856 (ASN) to CIQ |
+| Brand shipped late | PO accepted, not shipped by ship window | Emails supply chain owner: PO, units, $ a day at risk | Supply chain owner; EDI 855 + 856 copy |
+| PO short-confirmed, brand had stock | Confirmed < ordered, brand stock ≥ ordered | Emails PO confirmation owner the lines to confirm in full | PO confirmation owner; inventory feed (EDI 846 or daily SFTP file) |
+| PO short-confirmed, brand out of stock | Confirmed < ordered, brand stock < ordered | Drafts allocation decision across retailers | Ecommerce lead decides; same inventory feed |
+| Replenishment code wrong | ASIN set to Obsolete or Limited, POs stopped | Files Vendor Central ticket to restore | Nothing |
+| Amazon forecast too low | Orders < demand after OOS days | Emails VM with demand lost to OOS | VM name and email |
+| OOS in some regions only | Unavailable in some zip codes | Escalates to VM with zip-level evidence | VM name and email |
+
+**One-time setup per customer:**
+
+- Name four owners: supply chain, PO confirmations, ecommerce lead, Amazon VM contact.
+- Ask the EDI provider (SPS Commerce, TrueCommerce) to copy 855, 856 and 846 to CommerceIQ. No 846: a daily SFTP file with SKU, on hand, available to promise.
+
+**Next version:** prevent, contain, recover, and backup supply (Direct Fulfillment, 3P).
+
 **Rules every agent follows.**
 
 - Hero SKUs always need approval; core SKUs can be approved in bulk; tail SKUs ship on autopilot; customer rules sit on top.
@@ -586,7 +608,7 @@ These stay out so the product stays opinionated.
 | 4 | Can people approve inline from Teams, or does approval always open Ally? | Engineering, security |
 | 5 | Micro-segments: how often do they refresh, and how much can customers edit before comparisons break? | Data science |
 | 6 | How do we show confidence on competitor share when competitor sales volume isn't visible? | Data science |
-| 7 | Ops execution: drafted email only, or automated Vendor Central cases? | Engineering |
+| 7 | Ops execution: decided for out of stock. Vendor Central cases run on autopilot; emails to people outside the brand need one approval. Still open: do we already ingest the replenishment code and SP-API hourly inventory? | Engineering, data |
 | 8 | Are Seller Central (3P) customers in scope alongside vendors? | Product, GTM |
 | 9 | Chat takes about 80 seconds today on gap to plan questions. What's the latency bar for exec answers? | Engineering |
 | 10 | How does this vision map to Product Box packaging, including whether profit recovery stays bundled? | Product, GTM |
