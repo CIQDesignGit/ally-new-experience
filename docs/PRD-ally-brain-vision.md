@@ -495,20 +495,23 @@ Customers are overwhelmed by alert volume. Ally fixes out-of-stock issues instea
 | Cause | How Ally knows | Ally's action | Needed from the customer |
 | --- | --- | --- | --- |
 | Shows OOS but Amazon has stock | Page unavailable, Amazon on hand > 0 | Files Vendor Central ticket to reinstate | Nothing (live in ESM today) |
-| Shipment stuck at Amazon | Delivered, not received after 3 days | Files receiving case with PO, ASN, proof of delivery | EDI provider copies 856 (ASN) to CIQ |
-| Brand shipped late | PO accepted, not shipped by ship window | Emails supply chain owner: PO, units, $ a day at risk | Supply chain owner; EDI 855 + 856 copy |
-| PO short-confirmed, brand had stock | Confirmed < ordered, brand stock ≥ ordered | Emails PO confirmation owner the lines to confirm in full | PO confirmation owner; inventory feed (EDI 846 or daily SFTP file) |
-| PO short-confirmed, brand out of stock | Confirmed < ordered, brand stock < ordered | Drafts allocation decision across retailers | Ecommerce lead decides; same inventory feed |
-| Replenishment code wrong | ASIN set to Obsolete or Limited, POs stopped | Files Vendor Central ticket to restore | Nothing |
-| Amazon forecast too low | Orders < demand after OOS days | Emails VM with demand lost to OOS | VM name and email |
+| Shipment stuck at Amazon | Shipped, not received after 3 days | Files receiving case with PO, ASN, proof of delivery; **turns on backup supply** until Amazon restocks | Nothing |
+| Brand shipped late | PO accepted, not shipped by ship window | Emails supply chain owner: PO, units, $ a day at risk; **turns on backup supply** until Amazon restocks | Supply chain owner |
+| PO short-confirmed, brand had stock | Confirmed < ordered, brand stock ≥ ordered | Emails PO confirmation owner the lines to confirm in full; **turns on backup supply** until Amazon restocks | PO confirmation owner; inventory feed |
+| PO short-confirmed, brand out of stock | Confirmed < ordered, brand stock < ordered | Drafts allocation decision across retailers | Ecommerce lead decides; inventory feed |
+| Replenishment code wrong | ASIN set to Obsolete or Limited, POs stopped | Files Vendor Central ticket to restore; **turns on backup supply** until Amazon restocks | Nothing |
+| Amazon forecast too low | Orders < demand after OOS days | Emails VM with demand lost to OOS; **turns on backup supply** until Amazon restocks | VM name and email |
 | OOS in some regions only | Unavailable in some zip codes | Escalates to VM with zip-level evidence | VM name and email |
+
+**Backup supply** keeps the product buyable while the fix lands, whenever Amazon is out and the brand has stock. Ally turns on Direct Fulfillment if the ASIN is enabled, otherwise the brand's own 3P offer at or above the last 1P price, and switches it off when Amazon restocks. The first switch-on per SKU needs approval. It needs write access we don't have today, and 3P isn't on the roadmap for the next two quarters.
 
 **One-time setup per customer:**
 
 - Name four owners: supply chain, PO confirmations, ecommerce lead, Amazon VM contact.
-- Ask the EDI provider (SPS Commerce, TrueCommerce) to copy 855, 856 and 846 to CommerceIQ. No 846: a daily SFTP file with SKU, on hand, available to promise.
+- One daily inventory feed from their ERP: SFTP file with SKU, on hand, available to promise. Everything else comes from Amazon PO and shipment data we already pull.
+- For backup supply: DF permissions on our Amazon connection, a daily ship cap and safety stock; for 3P, Seller Central access, a price floor, and confirmation the vendor agreement allows it.
 
-**Next version:** prevent, contain, recover, and backup supply (Direct Fulfillment, 3P).
+**Next version:** prevent, contain and recover.
 
 **Rules every agent follows.**
 
