@@ -513,6 +513,28 @@ Customers are overwhelmed by alert volume. Ally fixes out-of-stock issues instea
 
 **Next version:** prevent, contain and recover.
 
+### Ops: fix, not alert (lost buy box)
+
+Ally fixes lost buy box instead of alerting on it. Tickets to Amazon run on autopilot; MAP notices, Brand Registry reports and emails need one approval.
+
+| Cause | How Ally knows | Ally's action | Needed from the customer |
+| --- | --- | --- | --- |
+| Amazon out of stock, a 3P seller wins | Amazon on hand 0, 3P holds the buy box | Runs the out-of-stock fix; **turns on backup supply** until Amazon restocks | See the out-of-stock table |
+| Amazon's offer missing despite stock | Amazon on hand > 0, Amazon not listed as a seller | Files Vendor Central ticket to reinstate | Nothing (live in ESM today) |
+| Authorized reseller below MAP | Reseller price < MAP and holds the buy box | Sends MAP notice to the reseller with price, time and zip evidence | MAP policy; authorized reseller list with contacts; channel owner who signs notices |
+| Counterfeit seller | Not on the authorized list, plus signs of fakes: price far below cost, new account, reviews mentioning fakes | Test buy, then files Brand Registry report with the order ID as proof | Brand Registry access for CommerceIQ; brand inspects the test buy (see the Brand Registry appendix) |
+| Unauthorized reseller, genuine goods | Not on the authorized list, no signs of fakes | Drafts cease-and-desist letter with the seller's prices and dates | Legal owner who sends it; authorized reseller list |
+| Amazon's price not competitive | Amazon price above a cheaper offer (3P or another retailer) for 2+ days, and ESM flags low Amazon margin | Drafts pricing decision: fund a promo, lower cost to Amazon or change pack size | Ecommerce lead decides |
+| Amazon delivers slower than 3P | Amazon delivery promise longer than 3P's in most zips | Escalates to VM with zip-level delivery evidence | VM name and email |
+
+**One-time setup per customer:**
+
+- Name four owners: channel (MAP), legal, ecommerce lead, Amazon VM contact.
+- Share the MAP policy and the authorized reseller list (seller IDs and contacts).
+- Add CommerceIQ as a user in Brand Registry.
+
+**Next version:** prevent, contain and recover.
+
 **Rules every agent follows.**
 
 - Hero SKUs always need approval; core SKUs can be approved in bulk; tail SKUs ship on autopilot; customer rules sit on top.
