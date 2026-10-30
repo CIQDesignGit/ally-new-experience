@@ -19,7 +19,7 @@ export interface LibrarySkill {
   gives: Gives
   /** On for every customer, no off switch. */
   core?: boolean
-  /** Locked unless the account's tier includes it. */
+  /** Locked: how to get it, shown on the card ("Included with Media managed services"). */
   tier?: string
   /** Something only the customer has; turning it on asks for it and it's ready by tomorrow. */
   needs?: string
@@ -57,8 +57,8 @@ export const COMPETITION_SKILL: LibrarySkill = {
 }
 
 export const LOCKED: LibrarySkill[] = [
-  { id: "media-holdout", name: "Media incrementality test", does: "Measures what media adds with a holdout group, campaign by campaign", gives: "Dashboard", tier: "Fully managed" },
-  { id: "walmart-content-audit", name: "Walmart content audit", does: "Scores every Walmart listing against Walmart's content rules and fixes the gaps", gives: "Dashboard", tier: "Fully managed" },
+  { id: "media-holdout", name: "Media incrementality test", does: "Measures what media adds with a holdout group, campaign by campaign", gives: "Dashboard", tier: "Included with Media managed services" },
+  { id: "walmart-content-audit", name: "Walmart content audit", does: "Scores every Walmart listing against Walmart's content rules and fixes the gaps", gives: "Dashboard", tier: "Add Walmart as a channel" },
 ]
 
 /** Questions Ally answers by offering a skill from the library first. */

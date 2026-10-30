@@ -89,7 +89,7 @@ function SkillCard({ skill }: { skill: LibrarySkill }) {
           </div>
         ) : status === "Locked" ? (
           <div className="flex items-center gap-1.5 text-sm text-slate-500">
-            <Lock className="size-3.5" aria-hidden /> Included in {skill.tier}
+            <Lock className="size-3.5" aria-hidden /> {skill.tier}
           </div>
         ) : asking ? (
           <div className="flex flex-col gap-2 text-sm">
