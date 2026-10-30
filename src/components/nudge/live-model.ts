@@ -3,7 +3,7 @@
 import { useMemo } from "react"
 import { BUSINESS, deadlineView, getSnapshot, launchedIds, openView, tierView, waterfallStages } from "./data"
 import { useNudge } from "./nudge-context"
-import { gapUnit, impactOf, useMvp } from "./mvp"
+import { actionImpact, gapUnit, impactOf, useMvp } from "./mvp"
 import type { Period } from "./types"
 
 /**
@@ -20,8 +20,10 @@ export function useLive() {
     const unit = gapUnit(BUSINESS[period].plan, run)
     return {
       mvp,
-      /** An action's impact level, for the MVP's open work (no dollar value). */
+      /** A bucket's impact level, for the MVP's open work (no dollar value). */
       impact: (valueM: number) => impactOf(valueM, unit),
+      /** One action's impact level (a batch, a fix), on the action scale. */
+      actionImpact: (valueM: number) => actionImpact(valueM, unit),
       period,
       snapshot: getSnapshot(policy, period, launchedIds(approved)),
       stages: waterfallStages(approved, policy, period),

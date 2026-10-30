@@ -10,6 +10,7 @@ import type { OpsBatch } from "../data"
 import { BuyBoxVisual } from "./buybox-visual"
 import { IssueVisual, hasIssueVisual } from "./issue-visuals"
 import { VENDOR_MANAGER, useNote } from "./note-bar"
+import { useOpsLevel } from "./ops-batch-list"
 
 interface OpsBatchDetailProps {
   batch: OpsBatch
@@ -54,6 +55,7 @@ export function OpsBatchDetail({ batch, onAction, onReviewAll }: OpsBatchDetailP
   const each = batch.mode === "each"
   const { addToNote } = useNudge()
   const { sent, notedIn, skus: inNoteNow } = useNote()
+  const level = useOpsLevel()
   const noted = notedIn(batch.id, batch.skus)
   const sentAll = skus.length > 0 && skus.every((x) => sent(batch.id, x.asin))
   const addAll = () => {
@@ -75,11 +77,24 @@ export function OpsBatchDetail({ batch, onAction, onReviewAll }: OpsBatchDetailP
           </div>
           <div className="mt-0.5 text-2xl font-semibold tracking-tight text-slate-950">{batch.name}</div>
         </div>
-        <div className="shrink-0 text-right">
-          <div className={`font-mono text-[28px] font-bold tracking-tight tabular-nums ${done ? "text-success-700" : "text-slate-950"}`}>+{batch.value}</div>
-          {(batch.tier === "autopilot" || done) && <div className="mt-0.5 text-sm text-slate-500">{batch.tier === "autopilot" ? "leakage prevented this quarter" : "sent"}</div>}
-          {batch.urgent && !done && <div className="mt-0.5 text-sm font-semibold text-error-600 tabular-nums">−{daily} a day</div>}
-        </div>
+        {level ? (
+          // The MVP: impact on the gap to plan; the daily figure is what the SKUs normally sell (measured), not a projection.
+          <div className="shrink-0 text-right">
+            <div className="text-[28px] font-bold tracking-tight text-slate-950">{level(batch)}</div>
+            <div className="mt-0.5 text-sm text-slate-500">{done ? "sent · " : ""}impact on the gap to plan</div>
+            {batch.urgent && !done && (
+              <div className="mt-0.5 text-sm text-slate-500">
+                These SKUs normally sell <span className="font-mono text-slate-950">{daily}</span> a day
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="shrink-0 text-right">
+            <div className={`font-mono text-[28px] font-bold tracking-tight tabular-nums ${done ? "text-success-700" : "text-slate-950"}`}>+{batch.value}</div>
+            {(batch.tier === "autopilot" || done) && <div className="mt-0.5 text-sm text-slate-500">{batch.tier === "autopilot" ? "leakage prevented this quarter" : "sent"}</div>}
+            {batch.urgent && !done && <div className="mt-0.5 text-sm font-semibold text-error-600 tabular-nums">−{daily} a day</div>}
+          </div>
+        )}
       </div>
 
       <div className="mt-5 overflow-hidden rounded-xl border border-slate-200">
@@ -136,7 +151,7 @@ export function OpsBatchDetail({ batch, onAction, onReviewAll }: OpsBatchDetailP
         ) : done ? (
           <div className="flex items-center gap-2 text-[15px] font-medium text-success-700">
             <Check className="size-4" />
-            {batch.doneLabel}
+            {level ? batch.doneLabel.split(" · ")[0] : batch.doneLabel}
           </div>
         ) : batch.tier === "input" ? (
           !reviewing && (
@@ -184,7 +199,7 @@ export function OpsBatchDetail({ batch, onAction, onReviewAll }: OpsBatchDetailP
               type="button"
               onClick={() => {
                 onAction(batch)
-                toast.success(`Sent to Ally. ${batch.doneLabel}.`, { position: "top-right" })
+                toast.success(`Sent to Ally. ${level ? batch.doneLabel.split(" · ")[0] : batch.doneLabel}.`, { position: "top-right" })
               }}
               className={PRIMARY}
             >

@@ -28,6 +28,8 @@ import { useNudge } from "../nudge-context"
 import { PRIMARY, SECONDARY } from "./buttons"
 import { SkuSections } from "./sku-diff"
 import type { Batch } from "../types"
+import { useMvp } from "../mvp"
+import { batchSales, fmtSales } from "../sales"
 
 interface BatchDetailProps {
   batch: Batch
@@ -77,6 +79,7 @@ function Actions({ batch, onApprove, onReviewAll, children }: BatchDetailProps &
  */
 export function BatchDetail({ batch, onApprove, onReviewAll, onSelect, onSelectSku }: BatchDetailProps) {
   const { approved, nudged, asks, autoShipped, policy, savePolicy, day } = useNudge()
+  const mvp = useMvp()
   // A policy part scheduled on autopilot ("halloween-auto"): Mike can check it and hold it back, just this once.
   const scheduled = batch.tier === "autopilot" && batch.mode === "autopilot"
   const seedId = batch.id.replace(/-auto$/, "")
@@ -136,12 +139,20 @@ export function BatchDetail({ batch, onApprove, onReviewAll, onSelect, onSelectS
             )}
           </div>
         </div>
-        <div className="shrink-0 text-right">
-          <div className={cn("font-mono text-[28px] font-bold tracking-tight tabular-nums", done ? "text-success-700" : "text-slate-950")}>
-            +{done ? (batch.approveValue >= 1 ? `$${batch.approveValue.toFixed(2)}M` : `$${Math.round(batch.approveValue * 1000)}K`) : batch.value}
+        {mvp ? (
+          // The MVP: what these SKUs sell today, not what Ally projects the work adds.
+          <div className="shrink-0 text-right">
+            <div className="font-mono text-[28px] font-bold tracking-tight text-slate-950 tabular-nums">{fmtSales(batchSales(batch))}</div>
+            <div className="mt-0.5 text-sm text-slate-500">{done ? "approved · " : ""}these SKUs&apos; sales, last 4 weeks</div>
           </div>
-          {done && <div className="mt-0.5 text-sm text-slate-500">approved</div>}
-        </div>
+        ) : (
+          <div className="shrink-0 text-right">
+            <div className={cn("font-mono text-[28px] font-bold tracking-tight tabular-nums", done ? "text-success-700" : "text-slate-950")}>
+              +{done ? (batch.approveValue >= 1 ? `$${batch.approveValue.toFixed(2)}M` : `$${Math.round(batch.approveValue * 1000)}K`) : batch.value}
+            </div>
+            {done && <div className="mt-0.5 text-sm text-slate-500">approved</div>}
+          </div>
+        )}
       </div>
 
       <div className="mt-8 overflow-hidden rounded-xl border border-slate-200">
@@ -200,7 +211,8 @@ export function BatchDetail({ batch, onApprove, onReviewAll, onSelect, onSelectS
         ) : done ? (
           <div className="flex items-center gap-2 text-[15px] font-medium text-success-700">
             <Check className="size-4" />
-            {batch.doneLabel}
+            {/* The MVP drops the projected dollars from "378 published · $500K". */}
+            {mvp ? batch.doneLabel.split(" · ")[0] : batch.doneLabel}
           </div>
         ) : batch.mode === "each" ? (
           <div className="flex flex-wrap items-center gap-3">

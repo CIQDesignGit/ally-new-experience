@@ -13,6 +13,8 @@ import { fillSkus } from "../sku-fill"
 import { SkuFillList } from "../sku-fill-list"
 import { candleThumbnail } from "@/lib/candle-thumbnails"
 import type { Batch } from "../types"
+import { mvpNow, useMvp } from "../mvp"
+import { batchSales, fmtSales } from "../sales"
 
 interface BatchListProps {
   selectedId: Batch["id"]
@@ -30,12 +32,17 @@ const money = (s: string) => parseFloat(s.replace(/[$KM,]/g, "")) / (s.endsWith(
 const fmt = (v: number) => (v >= 1 ? `$${v.toFixed(2)}M` : `$${Math.round(v * 1000)}K`)
 const DOT = Object.fromEntries(GROUPS.map((g) => [g.tier, g.dot])) as Record<Batch["tier"], string>
 
-/** The inbox's order, shared with the page so a filter can open its top row: open work by deadline then value, done after, autopilot last. */
+/**
+ * The inbox's order, shared with the page so a filter can open its top row: open
+ * work by deadline then value (the MVP: then what the SKUs sold), done after,
+ * autopilot last.
+ */
 export function mikeRows(all: Batch[], approved: Record<string, boolean>, filter: InboxFilter) {
   const rank = (b: Batch) => (b.tier === "autopilot" ? 2 : approved[b.id] ? 1 : 0)
+  const weight = mvpNow() ? batchSales : (b: Batch) => money(b.value)
   return all
     .filter((b) => filter === "all" || b.tier === filter)
-    .sort((x, y) => rank(x) - rank(y) || (x.deadline ?? "9999").localeCompare(y.deadline ?? "9999") || money(y.value) - money(x.value))
+    .sort((x, y) => rank(x) - rank(y) || (x.deadline ?? "9999").localeCompare(y.deadline ?? "9999") || weight(y) - weight(x))
 }
 
 /**
@@ -51,10 +58,12 @@ export function BatchList({ selectedId, selectedSkuId, expandedBatchId, filter, 
   const bgs = useBackgrounds()
   const all = contentBatches(policy, launchedIds(approved), launchReady)
   const rows = mikeRows(all, approved, filter)
+  const mvp = useMvp()
 
   return (
     <div className="border-r border-slate-200 bg-white">
       <InboxFilters filter={filter} onFilter={onFilter} />
+      {mvp && <div className="px-10 pt-1 pb-2 text-xs text-slate-500">Sorted by deadline, then 4-week sales</div>}
       <div className="flex flex-col">
         {rows.map((b) => {
           const active = selectedId === b.id
@@ -122,9 +131,16 @@ export function BatchList({ selectedId, selectedSkuId, expandedBatchId, filter, 
                     </span>
                   </span>
                 </span>
-                {/* The money column: value, and under it the status or deadline. */}
+                {/* The money column: value (the MVP: what the SKUs sold in 4 weeks), and under it the status or deadline. */}
                 <span className="text-right">
-                  <span className={cn("block font-mono text-[14px] font-semibold tabular-nums", done ? "text-success-700" : b.tier === "autopilot" ? "text-slate-500" : "text-slate-950")}>{value}</span>
+                  {mvp ? (
+                    <span className={cn("block font-mono text-[14px] font-semibold tabular-nums", b.tier === "autopilot" ? "text-slate-500" : "text-slate-950")} title="What these SKUs sold in the last 4 weeks">
+                      {fmtSales(batchSales(b))}
+                      <span className="font-sans text-xs font-normal text-slate-500"> sales</span>
+                    </span>
+                  ) : (
+                    <span className={cn("block font-mono text-[14px] font-semibold tabular-nums", done ? "text-success-700" : b.tier === "autopilot" ? "text-slate-500" : "text-slate-950")}>{value}</span>
+                  )}
                   {status && <span className="mt-0.5 block text-xs font-medium whitespace-nowrap tabular-nums">{status}</span>}
                 </span>
               </div>

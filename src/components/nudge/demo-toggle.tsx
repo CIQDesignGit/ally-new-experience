@@ -36,7 +36,7 @@ function setShown(on: boolean) {
  * Demo-only switches: the vision (everything we plan, with projections) or the
  * MVP (what ships first, measured only); and the harness a skill is built on,
  * borrowed (Claude Code) or built (our Skill Builder). Hidden until the presenter
- * presses ` (backtick), then small in the bottom-right corner; ` again hides them.
+ * presses Shift+D (or `), then small in the bottom-right corner; again hides them.
  */
 export function DemoToggle() {
   const mvp = useMvp()
@@ -52,8 +52,12 @@ export function DemoToggle() {
   )
 
   useEffect(() => {
+    // ?demo on any page shows them too, no keys needed (it sticks until hidden).
+    if (new URLSearchParams(window.location.search).has("demo")) setShown(true)
     const onKey = (e: KeyboardEvent) => {
-      if (e.key !== "`" || e.metaKey || e.ctrlKey || e.altKey) return
+      // Shift+D (D for demo), or ` (backtick).
+      const hit = e.key === "`" || (e.shiftKey && e.code === "KeyD")
+      if (!hit || e.metaKey || e.ctrlKey || e.altKey) return
       // Typing a backtick in a field is just typing.
       const t = e.target as HTMLElement | null
       if (t && (t.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(t.tagName))) return

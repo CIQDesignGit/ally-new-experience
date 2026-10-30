@@ -16,7 +16,7 @@ import { NoteBar } from "@/components/nudge/ops/note-bar"
 import { PageShell } from "@/components/layout/page-shell"
 import { MichelleHeader } from "@/components/nudge/ops/michelle-header"
 import { OpsProgress } from "@/components/nudge/ops/ops-progress"
-import { OpsBatchList, inboxRows } from "@/components/nudge/ops/ops-batch-list"
+import { OpsBatchList, inboxRows, useOpsLevel } from "@/components/nudge/ops/ops-batch-list"
 import type { InboxFilter } from "@/components/nudge/ops/ops-batch-list"
 import { OpsBatchDetail } from "@/components/nudge/ops/ops-batch-detail"
 import { OpsDelivered } from "@/components/nudge/ops/ops-delivered"
@@ -93,6 +93,7 @@ function Michelle() {
   const { approve, approved, policy, note, addToNote } = useNudge()
   const competition = useCompetition()
   const OPS_BATCHES = opsBatches(policy)
+  const level = useOpsLevel()
   // Open on the top of the inbox (same order as the list).
   const [selectedId, setSelectedId] = useState<OpsBatch["id"]>(() => inboxRows(OPS_BATCHES, approved, "all")[0].id)
   const [celebrate, setCelebrate] = useState<{ value: number; label: string } | null>(null)
@@ -123,7 +124,7 @@ function Michelle() {
   /** A filter (or its waterfall bar) shows that slice and opens its top row. */
   function pickFilter(f: InboxFilter, scroll = false) {
     setFilter(f)
-    const rows = inboxRows(OPS_BATCHES, approved, f)
+    const rows = inboxRows(OPS_BATCHES, approved, f, level)
     if (!rows.some((b) => b.id === selectedId) && rows[0]) selectBatch(rows[0].id)
     if (scroll) scrollToQueue()
   }

@@ -1,7 +1,8 @@
 "use client"
 
 import { PublishConfetti } from "@/components/home/publish-confetti"
-import { OPS_DAYS_SAVED, opsBatches } from "../data"
+import { BUSINESS, OPS_DAYS_SAVED, fmtBiz, opsBatches } from "../data"
+import { useLive } from "../live-model"
 import { DELIVERED } from "../delivered-periods"
 import { useNudge } from "../nudge-context"
 import { MiniWaterfall } from "../mini-waterfall"
@@ -28,6 +29,7 @@ interface Celebrate {
  */
 export function OpsProgress({ celebrate, stage, onStage }: { celebrate: Celebrate | null; /** The inbox filter, shown on its bar. */ stage?: Stage; onStage?: (s: Exclude<Stage, "banked">) => void }) {
   const { approved, policy } = useNudge()
+  const { mvp, pace, period } = useLive()
   const OPS_BATCHES = opsBatches(policy)
 
   const approvalBatches = OPS_BATCHES.filter((b) => b.tier === "approval")
@@ -46,6 +48,50 @@ export function OpsProgress({ celebrate, stage, onStage }: { celebrate: Celebrat
   const jump = (s: Stage) => {
     if (s === "banked") return document.getElementById("ops-delivered")?.scrollIntoView({ behavior: "smooth", block: "start" })
     onStage?.(s)
+  }
+
+  if (mvp) {
+    // The MVP: the gap to plan that ranks the queue, then what waits on her; no projected dollars.
+    const gap = BUSINESS[period].plan - pace(period)
+    const waiting = OPS_BATCHES.filter((b) => b.tier !== "autopilot" && !approved[b.id])
+    const oneApproval = waiting.filter((b) => b.tier === "approval")
+    const losing = oneApproval.filter((b) => b.urgent)
+    return (
+      <div className="flex items-end justify-between gap-8 border-b border-slate-200 px-10 pt-2 pb-6">
+        <div className="min-w-0">
+          <div className="text-2xl font-semibold tracking-tight text-slate-700">
+            {gap > 0 && (
+              <>
+                <span className="font-mono text-slate-950">{fmtBiz(gap)}</span> gap to plan ·{" "}
+              </>
+            )}
+            <span className="font-mono text-slate-950">{waiting.length}</span> fixes waiting on you.
+          </div>
+          <h1 className="mt-1 text-[28px] leading-tight font-bold tracking-tight text-slate-950">
+            {oneApproval.length ? (
+              <>
+                <span className="font-mono">{oneApproval.length}</span> {oneApproval.length === 1 ? "is" : "are"} one approval away.
+              </>
+            ) : (
+              "Everything one approval away is live."
+            )}
+          </h1>
+          {losing.length > 0 && (
+            <div className="mt-2 text-lg font-semibold text-error-600">
+              {losing.length} on SKUs losing sales now
+            </div>
+          )}
+        </div>
+        {celebrate && (
+          <div className="relative text-sm font-semibold text-success-700">
+            {celebrate.label}
+            <div className="absolute -top-1 left-0 size-16">
+              <PublishConfetti />
+            </div>
+          </div>
+        )}
+      </div>
+    )
   }
 
   return (

@@ -76,6 +76,8 @@ export interface Batch {
   skus: number
   reviewMinutes: number
   value: string
+  /** $M the batch's SKUs sold in the last 4 weeks, when a policy part sets it (see mvp.ts batchSales). */
+  sales4w?: number
   approveSkus: number
   approveValue: number
   doneLabel: string

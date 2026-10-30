@@ -10,6 +10,8 @@ import { useNote } from "./note-bar"
 import { fillSkus } from "../sku-fill"
 import { SkuFillList } from "../sku-fill-list"
 import type { OpsBatch } from "../data"
+import { useLive } from "../live-model"
+import { IMPACT_RANK, type Impact } from "../mvp"
 
 export type InboxFilter = "all" | "autopilot" | "approval" | "input"
 
@@ -51,23 +53,42 @@ const DOT = Object.fromEntries(GROUPS.map((g) => [g.tier, g.dot])) as Record<Ops
  * then losing money now, then value), with autopilot last. Effort is the dot;
  * the filters match the waterfall above. The open issue lists its SKUs under it.
  */
-/** The inbox's order, shared with the page so a filter can open its top row. */
-export function inboxRows(all: OpsBatch[], approved: Record<string, boolean>, filter: InboxFilter) {
+/**
+ * The inbox's order, shared with the page so a filter can open its top row. With
+ * `level` (the MVP), after the deadline: impact on the gap to plan, then effort
+ * (one approval before your input), instead of money lost a day and value.
+ */
+export function inboxRows(all: OpsBatch[], approved: Record<string, boolean>, filter: InboxFilter, level?: (b: OpsBatch) => Impact) {
   const rank = (b: OpsBatch) => (b.tier === "autopilot" ? 2 : approved[b.id] ? 1 : 0)
+  const effort = (b: OpsBatch) => (b.tier === "approval" ? 0 : 1)
   return all
     .filter((b) => filter === "all" || b.tier === filter)
-    .sort((x, y) => rank(x) - rank(y) || dueRank(dueOf(x)) - dueRank(dueOf(y)) || perDayOf(y) - perDayOf(x) || money(y.value) - money(x.value))
+    .sort(
+      (x, y) =>
+        rank(x) - rank(y) ||
+        dueRank(dueOf(x)) - dueRank(dueOf(y)) ||
+        (level ? IMPACT_RANK[level(x)] - IMPACT_RANK[level(y)] || effort(x) - effort(y) : perDayOf(y) - perDayOf(x)) ||
+        money(y.value) - money(x.value),
+    )
+}
+
+/** The MVP's level for one fix, from the live model: its share of the gap to plan. */
+export function useOpsLevel() {
+  const { mvp, actionImpact } = useLive()
+  return mvp ? (b: OpsBatch) => actionImpact(money(b.value)) : undefined
 }
 
 export function OpsBatchList({ selectedId, selectedSku, expandedId, checked, filter, onFilter, onToggleExpand, onSelect, onSelectSku }: OpsBatchListProps) {
   const { approved, policy } = useNudge()
   const { notedIn } = useNote()
+  const level = useOpsLevel()
   const all = opsBatches(policy)
-  const rows = inboxRows(all, approved, filter)
+  const rows = inboxRows(all, approved, filter, level)
 
   return (
     <div className="bg-white">
       <InboxFilters filter={filter} onFilter={onFilter} />
+      {level && <div className="px-10 pt-1 pb-2 text-xs text-slate-500">Sorted by deadline, then impact on the gap to plan (High 5% of it or more, Medium 1.5%), then one approval before your input</div>}
 
       <div className="flex flex-col">
         {rows.map((b) => {
@@ -135,7 +156,15 @@ export function OpsBatchList({ selectedId, selectedSku, expandedId, checked, fil
                 </span>
                 {/* The money column: value, and under it the status or urgency. */}
                 <span className="text-right">
-                  <span className={cn("block font-mono text-[14px] font-semibold tabular-nums", done ? "text-success-700" : b.tier === "autopilot" ? "text-slate-500" : "text-slate-950")}>{b.value}</span>
+                  {level ? (
+                    // The MVP: its impact on the gap to plan, not what it's projected to recover.
+                    <span className={cn("block text-[14px] font-semibold", b.tier === "autopilot" ? "text-slate-500" : "text-slate-950")}>
+                      {level(b)}
+                      <span className="text-xs font-normal text-slate-500"> impact</span>
+                    </span>
+                  ) : (
+                    <span className={cn("block font-mono text-[14px] font-semibold tabular-nums", done ? "text-success-700" : b.tier === "autopilot" ? "text-slate-500" : "text-slate-950")}>{b.value}</span>
+                  )}
                   {status && <span className="mt-0.5 block text-xs font-medium whitespace-nowrap tabular-nums">{status}</span>}
                 </span>
               </div>

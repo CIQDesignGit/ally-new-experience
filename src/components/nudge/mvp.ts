@@ -63,6 +63,18 @@ export function impactOf(valueM: number, gapM: number): Impact {
   return share >= 0.25 ? "High" : share >= 0.1 ? "Medium" : "Low"
 }
 
+/**
+ * One action's impact (a batch, a fix), on its own scale: a single action is a
+ * small slice of the gap, so the bucket scale would call every one Low. High is
+ * 5% of the gap or more, Medium 1.5%. Michelle's and James's queues use it;
+ * Claire's rows are whole workstreams, so they stay on the bucket scale.
+ */
+export function actionImpact(valueM: number, gapM: number): Impact {
+  const share = valueM / gapM
+  return share >= 0.05 ? "High" : share >= 0.015 ? "Medium" : "Low"
+}
+export const IMPACT_RANK: Record<Impact, number> = { High: 0, Medium: 1, Low: 2 }
+
 /** How tall each level stands in the waterfall, as a share of the gap: three Highs still stop below the plan line. */
 export const IMPACT_HEIGHT: Record<Impact, number> = { High: 0.3, Medium: 0.2, Low: 0.1 }
 

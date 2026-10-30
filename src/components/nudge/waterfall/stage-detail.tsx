@@ -23,6 +23,7 @@ function TierDetail({ stage }: { stage: WaterfallStage }) {
   const { s } = useClaireActions()
   // The MVP shows impact levels, not what the work is worth.
   const { mvp, impact } = useLive()
+  // Each row is a whole workstream (a lever's part of the bucket), so it reads on the bucket scale.
   const levelOf = (value: string) => (mvp ? impact(toM(value)) : undefined)
   const moves = stage.rows.some((r) => rowAction(r, s))
   const TIER_GRID = gridFor(moves)

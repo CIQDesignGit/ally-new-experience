@@ -84,6 +84,7 @@ export function JamesHeader() {
 /** Media's headline in Claire's words, for his slice, beside the quarter's waterfall. */
 export function MediaProgress({ celebrate, stage, onStage }: { celebrate: { value: number; label: string } | null; stage?: Stage; onStage?: (s: Exclude<Stage, "banked">) => void }) {
   const { approved } = useNudge()
+  const { mvp, pace, period } = useLive()
   const open = (tier: MediaBatch["tier"]) => MEDIA_BATCHES.filter((b) => b.tier === tier && !approved[b.id]).reduce((s, b) => s + b.value, 0)
   const acted = MEDIA_BATCHES.filter((b) => b.tier !== "autopilot" && approved[b.id]).reduce((s, b) => s + b.value, 0)
   const total = MEDIA_BATCHES.reduce((s, b) => s + b.value, 0) - acted
@@ -92,6 +93,44 @@ export function MediaProgress({ celebrate, stage, onStage }: { celebrate: { valu
   const jump = (s: Stage) => {
     if (s === "banked") return document.getElementById("media-delivered")?.scrollIntoView({ behavior: "smooth", block: "start" })
     onStage?.(s)
+  }
+  if (mvp) {
+    // The MVP: the gap to plan that ranks the queue, then what waits on him; no projected dollars.
+    const gap = BUSINESS[period].plan - pace(period)
+    const waiting = MEDIA_BATCHES.filter((b) => b.tier !== "autopilot" && !approved[b.id])
+    const oneApproval = waiting.filter((b) => b.tier === "approval")
+    return (
+      <div className="flex items-end justify-between gap-8 border-b border-slate-200 px-10 pt-2 pb-6">
+        <div className="min-w-0">
+          <div className="text-2xl font-semibold tracking-tight text-slate-700">
+            {gap > 0 && (
+              <>
+                <span className="font-mono text-slate-950">{fmtBiz(gap)}</span> gap to plan ·{" "}
+              </>
+            )}
+            <span className="font-mono text-slate-950">{waiting.length}</span> plays waiting on you.
+          </div>
+          <h1 className="mt-1 text-[28px] leading-tight font-bold tracking-tight text-slate-950">
+            {oneApproval.length ? (
+              <>
+                <span className="font-mono">{oneApproval.length}</span> {oneApproval.length === 1 ? "is" : "are"} one approval away.
+              </>
+            ) : (
+              "Everything one approval away is approved."
+            )}
+          </h1>
+          {!approved["media-build"] && <div className="mt-2 text-lg font-semibold text-warning-700">14 keywords from content are waiting for budget</div>}
+        </div>
+        {celebrate && (
+          <div className="relative text-sm font-semibold text-success-700">
+            {celebrate.label}
+            <div className="absolute -top-1 left-0 size-16">
+              <PublishConfetti />
+            </div>
+          </div>
+        )}
+      </div>
+    )
   }
   return (
     <>
@@ -150,6 +189,7 @@ function waits(b: MediaBatch, approved: Record<string, boolean>) {
 
 export function MediaList({ selectedId, filter, onFilter, onSelect }: { selectedId: string; filter: InboxFilter; onFilter: (f: InboxFilter) => void; onSelect: (id: string) => void }) {
   const { approved } = useNudge()
+  const { mvp, actionImpact } = useLive()
   return (
     <div className="bg-white">
       <InboxFilters filter={filter} onFilter={onFilter} />
@@ -190,7 +230,15 @@ export function MediaList({ selectedId, filter, onFilter, onSelect }: { selected
                 </span>
               </span>
               <span className="text-right">
-                <span className={cn("block font-mono text-[14px] font-semibold tabular-nums", done ? "text-success-700" : b.tier === "autopilot" ? "text-slate-500" : "text-slate-950")}>{fmtValue(b.value)}</span>
+                {mvp ? (
+                  // The MVP: impact on the gap to plan, not the incremental sales it projects.
+                  <span className={cn("block text-[14px] font-semibold", b.tier === "autopilot" ? "text-slate-500" : "text-slate-950")}>
+                    {actionImpact(b.value)}
+                    <span className="text-xs font-normal text-slate-500"> impact</span>
+                  </span>
+                ) : (
+                  <span className={cn("block font-mono text-[14px] font-semibold tabular-nums", done ? "text-success-700" : b.tier === "autopilot" ? "text-slate-500" : "text-slate-950")}>{fmtValue(b.value)}</span>
+                )}
                 {status && <span className="mt-0.5 block text-xs font-medium whitespace-nowrap">{status}</span>}
               </span>
             </button>
@@ -204,6 +252,7 @@ export function MediaList({ selectedId, filter, onFilter, onSelect }: { selected
 /** One play: what Ally found, what it does, the changes, then one action. */
 export function MediaDetail({ batch, onAction }: { batch: MediaBatch; onAction: (b: MediaBatch) => void }) {
   const { approved } = useNudge()
+  const { mvp, actionImpact } = useLive()
   const { ask } = useChat()
   const done = !!approved[batch.id]
   const w = waits(batch, approved)
@@ -228,10 +277,17 @@ export function MediaDetail({ batch, onAction }: { batch: MediaBatch; onAction: 
           </div>
           {w && !done && <div className={cn("mt-1 text-sm font-medium", w.ready ? "text-brand-700" : "text-slate-500")}>{w.text}</div>}
         </div>
-        <div className="shrink-0 text-right">
-          <div className={cn("font-mono text-[28px] font-bold tracking-tight tabular-nums", done ? "text-success-700" : "text-slate-950")}>+{fmtValue(batch.value)}</div>
-          <div className="mt-0.5 text-sm text-slate-500">{batch.spend ? `${batch.spend} · ` : ""}incremental sales</div>
-        </div>
+        {mvp ? (
+          <div className="shrink-0 text-right">
+            <div className="text-[28px] font-bold tracking-tight text-slate-950">{actionImpact(batch.value)}</div>
+            <div className="mt-0.5 text-sm text-slate-500">{batch.spend ? `${batch.spend} · ` : ""}impact on the gap to plan</div>
+          </div>
+        ) : (
+          <div className="shrink-0 text-right">
+            <div className={cn("font-mono text-[28px] font-bold tracking-tight tabular-nums", done ? "text-success-700" : "text-slate-950")}>+{fmtValue(batch.value)}</div>
+            <div className="mt-0.5 text-sm text-slate-500">{batch.spend ? `${batch.spend} · ` : ""}incremental sales</div>
+          </div>
+        )}
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">

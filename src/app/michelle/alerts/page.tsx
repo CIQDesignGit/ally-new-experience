@@ -17,6 +17,7 @@ import { PRIMARY } from "@/components/nudge/mike/buttons"
 import { useCompetition } from "@/components/competition/state"
 import { NAMES as COMPETITION } from "@/components/competition/data"
 import { exportXlsx } from "@/components/competition/exports"
+import { useLive } from "@/components/nudge/live-model"
 
 /**
  * Michelle's alerts in one list and one format: the ones she wrote in chat and
@@ -121,10 +122,39 @@ function Alerts() {
   )
 }
 
-const STARTERS = [
-  {
-    q: "Which alerts fired this week?",
-    render: () => (
+/** The MVP's answer: the same alerts, each at its impact on the gap to plan instead of what its fix is worth. */
+function FiredMvp() {
+  const { actionImpact } = useLive()
+  const rows: [string, string, number, string][] = [
+    ["Lost buy box", "6 SKUs", 0.108, "one approval away"],
+    ["Promo badge missing", "5 SKUs", 0.072, "one approval away"],
+    ["Shows out of stock, but isn't", "5 SKUs", 0.06, "one approval away"],
+    ["Deal page visibility", "8 SKUs", 0.048, "one approval away"],
+    ["Shipping speed slipped", "4 SKUs", 0.024, "one approval away"],
+    ["Chargeback disputes", "9 claims", 0.35, "needs your input"],
+  ]
+  return (
+    <AnswerCard>
+      <p className="font-semibold text-slate-950">Five fired with fixes one approval away. Chargebacks need your input, and promotions ran on autopilot.</p>
+      <ul className="mt-2 flex flex-col gap-1 text-[14px]">
+        {rows.map(([name, count, v, how]) => (
+          <li key={name}>
+            · {name}: {count}, {actionImpact(v)} impact · {how}
+          </li>
+        ))}
+        <li>· Promotion not live: 51 fixed this quarter · on autopilot</li>
+      </ul>
+      <Link href="/michelle" className="mt-3 inline-block text-[14px] font-medium text-brand-700 hover:underline">
+        Open them in your daily brief
+      </Link>
+    </AnswerCard>
+  )
+}
+
+function Fired() {
+  const { mvp } = useLive()
+  if (mvp) return <FiredMvp />
+  return (
       <AnswerCard>
         <p className="font-semibold text-slate-950">Five fired with fixes one approval away, worth $312K. Chargebacks need your input, and promotions ran on autopilot.</p>
         <ul className="mt-2 flex flex-col gap-1 text-[14px]">
@@ -140,7 +170,13 @@ const STARTERS = [
           Open them in your daily brief
         </Link>
       </AnswerCard>
-    ),
+  )
+}
+
+const STARTERS = [
+  {
+    q: "Which alerts fired this week?",
+    render: () => <Fired />,
   },
   {
     q: "What's on autopilot?",

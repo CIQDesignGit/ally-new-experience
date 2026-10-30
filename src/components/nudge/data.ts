@@ -10,6 +10,7 @@ import type { Play } from "./market"
 import { LAUNCH, NEW_SKUS } from "./launch/data"
 import { MEDIA_ITEMS } from "./media/data"
 import { currentRetailer, factors } from "./retailer"
+import { tierSales } from "./sales"
 
 /**
  * Real numbers from the Ally_Home reference artifact — keep exactly as given.
@@ -237,6 +238,7 @@ export function contentBatches(policy?: Policy, launched: string[] = [], launchR
         skus,
         approveSkus: skus,
         value: fmtPart(value),
+        sales4w: tierSales(plan[m].byTier),
         approveValue: value,
         doneLabel: `${skus} published · ${fmtPart(value)}`,
         changes: b.changes.map((c) => ({ ...c, skus: Math.round((c.skus * skus) / b.skus) })),
