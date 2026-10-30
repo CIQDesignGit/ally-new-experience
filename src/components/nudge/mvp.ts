@@ -5,20 +5,21 @@ import { useSyncExternalStore } from "react"
 /**
  * The MVP version of the demo: the same pages with only what the product ships
  * first. No projected dollars: every dollar on screen is measured,
- * and open work shows an impact level instead of what it's worth. /demo/mvp
- * turns it on, /demo/vision turns it off. Kept in its own localStorage key so
- * it survives reloads and the demo's own resets.
+ * and open work shows an impact level instead of what it's worth. It's the
+ * default; /demo/vision (or the demo switch) turns it off, /demo/mvp back on.
+ * Only the vision choice is stored, in its own localStorage key, so it survives
+ * reloads and the demo's own resets.
  */
-const KEY = "ally-mvp"
+const KEY = "ally-vision-mode"
 const listeners = new Set<() => void>()
 let stored: boolean | null = null
 
 function read(): boolean {
   if (stored === null) {
     try {
-      stored = window.localStorage.getItem(KEY) === "1"
+      stored = window.localStorage.getItem(KEY) !== "1"
     } catch {
-      stored = false
+      stored = true
     }
   }
   return stored
@@ -27,13 +28,13 @@ function read(): boolean {
 export function setMvp(on: boolean) {
   stored = on
   try {
-    if (on) window.localStorage.setItem(KEY, "1")
-    else window.localStorage.removeItem(KEY)
+    if (on) window.localStorage.removeItem(KEY)
+    else window.localStorage.setItem(KEY, "1")
   } catch {}
   listeners.forEach((l) => l())
 }
 
-/** Off on the server and on the first client render, so the page hydrates; then the stored choice. */
+/** On on the server and the first client render (the default), so the page hydrates; then the stored choice. */
 export function useMvp(): boolean {
   return useSyncExternalStore(
     (cb) => {
@@ -41,12 +42,12 @@ export function useMvp(): boolean {
       return () => listeners.delete(cb)
     },
     read,
-    () => false,
+    () => true,
   )
 }
 
 // Set by the provider on every render, before its children read any number (as the retailer is).
-let current = false
+let current = true
 export const setCurrentMvp = (on: boolean) => {
   current = on
 }
