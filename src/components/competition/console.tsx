@@ -49,7 +49,12 @@ export function AgentConsole() {
     <div className="flex flex-col">
       <header className="flex items-start justify-between gap-6 px-10 pt-6">
         <div>
-          <div className="text-[13px] text-slate-500">Skills · Aurelle Candles · request {NAMES.request}</div>
+          <div className="text-[13px] text-slate-500">
+            <Link href="/console/skills" className="hover:text-slate-900">
+              Skills
+            </Link>{" "}
+            · Aurelle Candles · request {NAMES.request}
+          </div>
           <h1 className="mt-1 text-[28px] leading-tight font-semibold tracking-tight text-slate-950">{NAMES.skill}</h1>
           <div className="mt-1 flex items-center gap-2 text-[14px] text-slate-500">
             <span className={cn("size-1.5 rounded-full", live ? "bg-success-500" : "bg-slate-400")} aria-hidden />
@@ -249,11 +254,11 @@ function Gate({ ok, text }: { ok: boolean; text: string }) {
 }
 
 type R = { t: string; kind: "plain" | "del" | "add" }
-const lines = (s: string): R[] => s.split("\n").map((t) => ({ t, kind: "plain" }))
+export const lines =(s: string): R[] => s.split("\n").map((t) => ({ t, kind: "plain" }))
 const del = (s: string): R[] => s.split("\n").map((t) => ({ t, kind: "del" }))
 const add = (s: string): R[] => s.split("\n").map((t) => ({ t, kind: "add" }))
 
-function Code({ title, note, rows }: { title: string; note?: string; rows: R[] }) {
+export function Code({ title, note, rows }: { title: string; note?: string; rows: R[] }) {
   return (
     <section className="rounded-xl border border-slate-200">
       <div className="flex items-center justify-between border-b border-slate-200 px-5 py-3">

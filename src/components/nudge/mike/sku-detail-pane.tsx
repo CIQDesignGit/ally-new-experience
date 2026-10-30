@@ -59,10 +59,21 @@ export function SkuDetailPane({ batch, row, onBack, onApprove, onSelectSku }: Sk
 
       <div className="mt-6">
         {/* A drafted new SKU has no live page to compare: the review is the page as it will publish. */}
-        {batch.id === "concepts" && batch.tier === "approval" ? <LaunchPagePreview skuId={row.skuId} /> : <SkuSections sections={row.sections} thumbnailUrl={sku.thumbnailUrl} skuId={row.skuId} onNext={onNext} />}
+        {batch.id === "concepts" && batch.tier === "approval" ? (
+          <LaunchPagePreview skuId={row.skuId} />
+        ) : (
+          <SkuSections
+            sections={row.sections}
+            thumbnailUrl={sku.thumbnailUrl}
+            skuId={row.skuId}
+            onNext={onNext}
+            edit={{ idPrefix: `mike:${batch.id}:${row.skuId}`, subject: sku.title, author: "Mike Chen", applies: `Ally applies it to the other ${batch.approveSkus - 1} SKUs in ${batch.name}` }}
+          />
+        )}
       </div>
 
-      <AllyFeedback key={row.skuId} id={`mike:${batch.id}:${row.skuId}`} sku={sku.title} author="Mike Chen" className="mt-6" />
+      {/* Text fields take an edit with a reason; the rest (images, new pages) a thumbs up or down. */}
+      {!row.sections.some((s) => s.kind === "text") && <AllyFeedback key={row.skuId} id={`mike:${batch.id}:${row.skuId}`} sku={sku.title} author="Mike Chen" className="mt-6" />}
 
       {!done && batch.tier === "input" && needsBackground && (
         <div className="mt-8 flex items-center gap-4">

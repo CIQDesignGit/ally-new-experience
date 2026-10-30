@@ -1,6 +1,20 @@
+"use client"
+
 import { cn } from "@/lib/utils"
 import type { SkuInputSection, SkuSection } from "../types"
 import { BackgroundComposer } from "./background-composer"
+import { CONTENT_REASONS, EditFeedback, useLockedEdit } from "../edit-feedback"
+
+/** Where an edit to Ally's text is saved, and what's said once it's locked. */
+export interface SectionEdit {
+  idPrefix: string
+  subject: string
+  author: string
+  applies: string
+}
+
+/** Amazon's title limit, counted as Mike edits. */
+const TITLE_LIMIT = 200
 
 type Op<T> = { t: "same" | "del" | "add"; v: T }
 
@@ -160,34 +174,73 @@ function InputField({ section }: { section: SkuInputSection }) {
   )
 }
 
+/**
+ * One text field: live on Amazon beside Ally's version. With `edit`, Mike can
+ * change Ally's version and say why; once locked, his text stands in its place.
+ */
+function TextCard({ section, edit }: { section: Extract<SkuSection, { kind: "text" }>; edit?: SectionEdit }) {
+  const ally = section.draft.map((d) => d.text)
+  const id = edit ? `${edit.idPrefix}:${section.label}` : ""
+  const locked = useLockedEdit(id)
+  const draft = locked?.edit ? locked.edit.split("\n") : ally
+  const rows = lineRows(section.live, draft)
+  return (
+    <div className="overflow-hidden rounded-xl border border-slate-200">
+      <div className="border-b border-slate-100 bg-slate-50 px-5 py-2.5 text-sm font-semibold text-slate-950">{section.label}</div>
+      <div className="grid grid-cols-2 divide-x divide-slate-100">
+        <div className="px-5 py-4">
+          <div className="mb-2.5 font-mono text-[11px] tracking-wide text-slate-400 uppercase">Live on Amazon</div>
+          <TextSide rows={rows} side="live" />
+        </div>
+        <div className="bg-brand-25/40 px-5 py-4">
+          <div className="mb-2.5 font-mono text-[11px] tracking-wide text-brand-600 uppercase">{locked ? `${edit!.author.split(" ")[0]}'s edit` : "Ally wrote"}</div>
+          <TextSide rows={rows} side="draft" />
+        </div>
+      </div>
+      {edit && (
+        <div className="border-t border-slate-100 px-5 py-3">
+          <EditFeedback
+            id={id}
+            label={section.label.toLowerCase()}
+            value={ally.join("\n")}
+            multiline={ally.length > 1}
+            limit={section.label === "Title" ? TITLE_LIMIT : undefined}
+            reasons={CONTENT_REASONS}
+            subject={edit.subject}
+            author={edit.author}
+            applies={edit.applies}
+            placeholder={'Add details (optional), e.g. "Always lead with the wax type and burn time"'}
+          />
+        </div>
+      )}
+    </div>
+  )
+}
+
 /** Every changed field for one SKU, live on Amazon beside Ally's version. */
-export function SkuSections({ sections, thumbnailUrl, skuId, onNext }: { sections: SkuSection[]; thumbnailUrl?: string; skuId?: string; onNext?: () => void }) {
+export function SkuSections({ sections, thumbnailUrl, skuId, onNext, edit }: { sections: SkuSection[]; thumbnailUrl?: string; skuId?: string; onNext?: () => void; edit?: SectionEdit }) {
   return (
     <div className="flex flex-col gap-3">
       {sections.map((section, i) => {
         if (section.kind === "input") return <InputField key={i} section={section} />
         if (section.kind === "background") return <BackgroundComposer key={`${skuId}-${i}`} section={section} thumbnailUrl={thumbnailUrl} skuId={skuId ?? ""} onNext={onNext} />
-        const rows = section.kind === "text" ? lineRows(section.live, section.draft.map((d) => d.text)) : []
+        if (section.kind === "text") return <TextCard key={`${skuId}-${i}`} section={section} edit={edit} />
         return (
           <div key={i} className="overflow-hidden rounded-xl border border-slate-200">
             <div className="border-b border-slate-100 bg-slate-50 px-5 py-2.5 text-sm font-semibold text-slate-950">{section.label}</div>
             <div className="grid grid-cols-2 divide-x divide-slate-100">
               <div className="px-5 py-4">
                 <div className="mb-2.5 font-mono text-[11px] tracking-wide text-slate-400 uppercase">Live on Amazon</div>
-                {section.kind === "text" ? (
-                  <TextSide rows={rows} side="live" />
-                ) : (
-                  <div className="relative h-40 overflow-hidden rounded-md bg-slate-100">
-                    <img src={thumbnailUrl} alt={section.liveLabel} className="size-full object-cover" />
-                    <span className="absolute bottom-1.5 left-1.5 rounded bg-white/90 px-1.5 py-0.5 text-[11px] font-medium text-slate-500 shadow-xs">
-                      {section.liveLabel}
-                    </span>
-                  </div>
-                )}
+                <div className="relative h-40 overflow-hidden rounded-md bg-slate-100">
+                  <img src={thumbnailUrl} alt={section.liveLabel} className="size-full object-cover" />
+                  <span className="absolute bottom-1.5 left-1.5 rounded bg-white/90 px-1.5 py-0.5 text-[11px] font-medium text-slate-500 shadow-xs">
+                    {section.liveLabel}
+                  </span>
+                </div>
               </div>
               <div className="bg-brand-25/40 px-5 py-4">
                 <div className="mb-2.5 font-mono text-[11px] tracking-wide text-brand-600 uppercase">Ally wrote</div>
-                {section.kind === "text" ? <TextSide rows={rows} side="draft" /> : <HalloweenShot src={thumbnailUrl} label={section.draftLabel} />}
+                <HalloweenShot src={thumbnailUrl} label={section.draftLabel} />
               </div>
             </div>
           </div>

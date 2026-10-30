@@ -3,14 +3,14 @@
 Status: draft for Himanshu's OK. Nothing built yet.
 
 ## What the MVP demo shows
-Only what the product will do at MVP. Content and ops. No media. No dollar projections. Chat on every Ally screen.
+Only what the product will do at MVP. Content, media and ops. No dollar projections. Chat on every Ally screen.
 
 ## The rules for the cut
 | Rule | What it means on screen |
 |---|---|
 | Measure, never project | No number about the future: no "worth $X", "projected", "opportunity", "at risk", "would recover". Every dollar is something that already happened, with how it was measured next to it (vs the 4 weeks before, or vs an A/B control) |
-| No media | James leaves the person switcher and the drawer. Media leaves Claire's levers |
-| Content and ops only | Mike and Michelle carry the story. Claire sees both on one page |
+| Media stays | Oct 30: media is back in. Claire sees content, media and ops; James stays in the switcher |
+| Content and ops carry the new flows | Mike and Michelle carry the story. Claire sees all three levers on one page |
 | Chat always there | Ask bar on every Ally screen. Claude Code and Agent Console are CommerceIQ tools, so they have no Ally chat |
 | Exports are real files | Dashboards → PowerPoint. Alerts → Excel |
 
@@ -28,7 +28,7 @@ Only what the product will do at MVP. Content and ops. No media. No dollar proje
 | Every queue card | Fix value "one approval away, $X" | SKU's last 4 weeks of sales. Ranking stays deadline first, then this number | `nudge/data.ts` |
 
 ## How we build it
-One codebase with an MVP switch, not a copy. `/demo/mvp` turns the switch on; the same pages hide media and projections. The full vision demo stays as it is at its own links.
+One codebase with an MVP switch, not a copy. `/demo/mvp` turns the switch on; the same pages swap projections for measurements. The full vision demo stays as it is at its own links.
 
 ## The story: 9 screens, one actor each
 
@@ -58,19 +58,15 @@ One codebase with an MVP switch, not a copy. `/demo/mvp` turns the switch on; th
 - Sees: Prime Day recap dashboard, chat under it
 - Does: asks a follow-up in chat, then Export to PowerPoint (real .pptx)
 
-### Part 3 · Edit a skill: the RCA (why did we miss?)
-**6. The answer she corrects** · Michelle Ortiz · Ally
-- Does: asks "Why did we miss plan last week?"
-- Ally: answers in dollars only
-- Does: "You missed that units were flat. Price went up. Check pounds, not just dollars"
-- Ally: "I'll add a units and price check to this analysis. Nora reviews it today." Request #413
-- Shows: her correction becomes a skill change, not a one-off answer
+### Part 3 · Every use case is a skill (Agent Console)
+**6. Skills** · Lena Brooks · Agent Console (`/console/skills`)
+- Sees: Aurelle's skills: event recap deck, gap analysis, vendor negotiation prep (live) and competition watch (in progress)
+- Does: opens one: SKILL.md, the tests it passed, "See it in Ally" to Michelle's screen
+- Shows: the vision demo's use cases (Prime Day deck, why gift sets lag, vendor negotiation) run on the borrowed harness
+- Oct 30: no full RCA edit walkthrough (dropped)
 
-**7. The skill change** · Lena Brooks · Agent Console
-- Sees: the RCA skill, the new step as a diff ("split the gap into units and price")
-- Does: runs tests on the last 8 weekly misses. 7 of 8 pass, 1 fails: a week with a price change and a stockout together
-- Does: fixes the order of the checks, reruns, 8 of 8, publishes for Aurelle
-- Back on Michelle's page: the same question now answers in units and price
+**7. The use cases in Ally** · Michelle Ortiz · Ally
+- Prime Day dashboard and deck (PowerPoint export), the gift-sets thread, the negotiation prep (it projects; allowed)
 
 ### Part 4 · Create a skill: competition watch (built already, 4 screens)
 **8. Request** · Michelle Ortiz · Ally → **Build** · Nora Diaz · Claude Code → **Test and publish** · Lena Brooks · Agent Console
@@ -90,7 +86,6 @@ One codebase with an MVP switch, not a copy. `/demo/mvp` turns the switch on; th
 | Area | Change | Size |
 |---|---|---|
 | MVP switch | `/demo/mvp` sets a mode; pages read it | Small |
-| Media | Hide James in switcher and drawer; drop media lever on Claire | Small |
 | Projections | Swap each projection for its measurement (table above). Numbers must still tie across pages | Medium: about 10 files, `delivered-periods.ts` is the biggest |
 | Mike regenerate | New feedback box, rewrite, diff, apply to all | Medium |
 | RCA skill edit | Michelle's correction, request #413, console with RCA skill and 8 tests | Medium: reuses the competition console |
@@ -98,7 +93,7 @@ One codebase with an MVP switch, not a copy. `/demo/mvp` turns the switch on; th
 | Exports | Done for competition. Add PowerPoint to Prime Day dashboard | Small |
 
 ## Build order
-1. MVP switch, media out, projections out (the cut)
+1. MVP switch, projections out (the cut)
 2. Mike regenerate
 3. RCA skill edit
 4. Stitch the 9 screens into one step bar, click through at 1440px, deploy
@@ -107,6 +102,12 @@ One codebase with an MVP switch, not a copy. `/demo/mvp` turns the switch on; th
 - Oct 29: no projections, measured results are in. Every dollar shown has already happened and says how it was measured.
 - Oct 29: Claire keeps the waterfall. Actions show High, Medium or Low impact instead of a dollar value (no "$4.7M of value").
 - Oct 30: the stacked bars stay below the plan line. The chart ranks the actions; it never shows them closing the gap.
+- Oct 30: media stays in the MVP.
+- Oct 30: the waterfall keeps its final "Total opportunity" bar, with no number on it. It doesn't open (its split by area would be dollars).
+- Oct 30: the grow cards keep their dollars ("+$X a year", "at risk", "at stake").
+- Oct 30: every recommendation takes feedback. Content: Edit opens the title box with reason chips (missing keywords, business knowledge not applied, inaccurate product info, brand voice, retailer guidelines, length), optional details, Approve & lock. Ops: thumbs up or down plus a box. Media: Edit on the budget move with reason chips.
+- Oct 30: the borrow harness shows one full create (competition watch). No full RCA edit walkthrough. The Agent Console lists all four live skills: Prime Day deck, gap analysis (why gift sets lag), vendor negotiation prep, competition watch.
+- Oct 30: negotiation prep can project (it's the customer's own negotiation model, not a forecast of Ally's impact).
 
 ## Open questions
 1. Claire: keep her as the closer, or end on Michelle?

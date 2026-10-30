@@ -26,6 +26,9 @@ import { budgetChip } from "./answers"
 import { contentApproved } from "./content-link"
 import { WhyIcon } from "../cs/why-icon"
 import type { Why } from "../cs/data"
+import { EditFeedback, MEDIA_REASONS, useLockedEdit } from "../edit-feedback"
+
+const editId = (b: MediaBatch) => `james:${b.id}`
 
 /** What each play used: Aurelle's context and what CommerceIQ learned across candle brands. */
 const MEDIA_WHY: Record<string, Why[]> = {
@@ -204,6 +207,16 @@ export function MediaDetail({ batch, onAction }: { batch: MediaBatch; onAction: 
   const { ask } = useChat()
   const done = !!approved[batch.id]
   const w = waits(batch, approved)
+  // James's locked edit, one "keyword: value" per line, stands in for what Ally set.
+  const lockedEdit = useLockedEdit(editId(batch))?.edit
+  const edited = lockedEdit
+    ? Object.fromEntries(
+        lockedEdit
+          .split("\n")
+          .map((l) => [l.slice(0, l.lastIndexOf(":")).trim(), l.slice(l.lastIndexOf(":") + 1).trim()])
+          .filter(([k, v]) => k && v),
+      )
+    : undefined
   return (
     <div className="flex min-w-0 flex-col gap-6 px-10 py-8">
       <div className="flex items-start justify-between gap-8">
@@ -265,20 +278,36 @@ export function MediaDetail({ batch, onAction }: { batch: MediaBatch; onAction: 
           <div className="grid grid-cols-[minmax(0,1fr)_90px_110px_minmax(0,220px)] gap-4 border-b border-slate-100 bg-slate-25 px-5 py-2.5">
             <span className={HEAD}>{batch.play === "Rebalance" ? "Category" : "Keyword"}</span>
             <span className={`${HEAD} text-right`}>Now</span>
-            <span className={`${HEAD} text-right`}>{batch.tier === "autopilot" ? "Ally set" : "Ally sets"}</span>
+            <span className={`${HEAD} text-right`}>{edited ? "James set" : batch.tier === "autopilot" ? "Ally set" : "Ally sets"}</span>
             <span className={HEAD}>Why</span>
           </div>
           {batch.changes.map((c) => (
             <div key={c.what} className="grid grid-cols-[minmax(0,1fr)_90px_110px_minmax(0,220px)] items-baseline gap-4 border-b border-slate-100 px-5 py-2.5 text-sm last:border-b-0">
               <span className="min-w-0 truncate font-medium text-slate-950">{c.what}</span>
               <span className="text-right font-mono whitespace-nowrap text-slate-500 tabular-nums">{c.from}</span>
-              <span className="text-right font-mono whitespace-nowrap text-slate-950 tabular-nums">{c.to}</span>
+              <span className="text-right font-mono whitespace-nowrap text-slate-950 tabular-nums">{edited?.[c.what] ?? c.to}</span>
               <span className="min-w-0 text-slate-500">{c.why}</span>
             </div>
           ))}
           {batch.count > batch.changes.length && batch.play !== "Rebalance" && batch.play !== "Launch" && (
             <div className="px-5 py-2 text-xs text-slate-500">
               Showing {batch.changes.length} of {batch.count} {batch.noun}
+            </div>
+          )}
+          {!done && (
+            <div className="border-t border-slate-100 px-5 py-3">
+              <EditFeedback
+                key={batch.id}
+                id={editId(batch)}
+                label="changes"
+                value={batch.changes.map((c) => `${c.what}: ${c.to}`).join("\n")}
+                multiline
+                reasons={MEDIA_REASONS}
+                subject={batch.name}
+                author="James Okafor"
+                applies="Ally applies it to similar moves"
+                placeholder={'Add details (optional), e.g. "Keep gift-term bids under $3 until the pages are fixed"'}
+              />
             </div>
           )}
         </div>
