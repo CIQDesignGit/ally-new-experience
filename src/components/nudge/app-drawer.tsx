@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Bell, ClipboardList, Clock, GraduationCap, Home, LayoutDashboard, Library as LibraryIcon, MessageSquare, PanelLeft, Pin, PinOff, Sparkles, TrendingDown, Wand2 } from "lucide-react"
+import { Bell, ChevronDown, ClipboardList, Clock, GraduationCap, Home, LayoutDashboard, Library as LibraryIcon, MessageSquare, PanelLeft, Pin, PinOff, Sparkles, TrendingDown, Wand2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useNudge } from "./nudge-context"
 import { rememberHome, rememberedHome } from "./top-strip"
@@ -144,7 +144,7 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
           ? [
               { label: "Recap · Oct 2 call", sub: "Saved to context", href: "/sarah/recap", on: path === "/sarah/recap" },
               { label: "Aurelle weekly session", sub: "Prep for Thu, 2:00 PM", href: "/sarah/prep", on: path === "/sarah/prep" },
-              { label: "AI visibility", sub: "Readout · Oct 5", href: "/reports/ai-visibility", on: path === "/reports/ai-visibility" },
+              { label: "AI visibility", sub: "Dashboard · readout Oct 5", href: "/dashboards/ai-visibility", on: path === "/dashboards/ai-visibility" },
             ]
           : home === "/claire-waterfall"
             ? [
@@ -179,14 +179,14 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
             ? INBOX.filter((c) => c.kind === "approval" && !callItems[c.id]).length
           : live.approval.rows.filter((r) => (r.valueM ?? 0) > 0).length
 
-  // Lists open in place; only Ask Ally shows its recent items without a click.
-  const [openList, setOpenList] = useState<string | null>(path.startsWith("/c/") ? "Ask Ally" : null)
+  // Lists open in place; each page has its own drawer, so the list holding the page you're on opens with it.
+  const here = sections.find((x) => x.title !== "Conversations" && x.items.some((i) => "on" in i && i.on))?.title
+  const [openList, setOpenList] = useState<string | null>(path.startsWith("/c/") ? "Ask Ally" : (here ?? null))
   const [allChats, setAllChats] = useState(false)
   const lists = sections.filter((x) => x.title !== "Conversations")
   const chats = sections.find((x) => x.title === "Conversations")!
   const LIST_ICON: Record<string, typeof Home> = { "My dashboards": LayoutDashboard, Skills: Wand2, Scheduled: Clock }
   const groups = [[lists[0]]]
-  const newChat = () => document.querySelector<HTMLInputElement>('input[placeholder="What can I take off your plate?"]')?.focus()
   // Groups are separated by space, not lines.
   const divider = <div className="h-4" aria-hidden />
 
@@ -298,15 +298,17 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
               <GraduationCap className="size-4" /> <span className="flex-1">Teach Ally</span>
             </Link>
           )}
-          {/* Ask Ally: folded like the other lists; "+ New" starts a question without opening it. */}
-          <div className="flex items-center rounded-lg text-sm text-brand-100 hover:bg-white/10">
-            <button type="button" onClick={() => setOpenList(openList === "Ask Ally" ? null : "Ask Ally")} aria-expanded={openList === "Ask Ally"} className="flex flex-1 items-center gap-2.5 px-2.5 py-2 text-left hover:text-white">
+          {/* Ask Ally opens a new chat, like Claude; the count beside it folds out the recent ones. */}
+          <div className={cn("flex items-center rounded-lg text-sm", path === "/c/new" ? "bg-brand-400 font-semibold text-white" : "text-brand-100 hover:bg-white/10")}>
+            <Link href="/c/new" className="flex flex-1 items-center gap-2.5 px-2.5 py-2 hover:text-white">
               <MessageSquare className="size-4" /> <span className="flex-1">Ask Ally</span>
-              {chats.items.length > 0 && <span className="font-mono text-xs text-brand-300">{chats.items.length}</span>}
-            </button>
-            <button type="button" onClick={newChat} className="mr-1.5 rounded-md px-1.5 py-0.5 text-xs font-medium text-white hover:bg-white/10">
-              + New
-            </button>
+            </Link>
+            {chats.items.length > 0 && (
+              <button type="button" onClick={() => setOpenList(openList === "Ask Ally" ? null : "Ask Ally")} aria-expanded={openList === "Ask Ally"} aria-label="Recent chats" title="Recent chats" className="mr-1 flex items-center gap-1 rounded-md px-1.5 py-1 font-mono text-xs text-brand-300 hover:bg-white/10 hover:text-white">
+                {chats.items.length}
+                <ChevronDown className={cn("size-3.5 transition-transform", openList === "Ask Ally" && "rotate-180")} />
+              </button>
+            )}
           </div>
           {openList === "Ask Ally" && chats.items.length > 0 && (
             <div className="pl-7">
@@ -361,9 +363,9 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
               <GraduationCap className="size-4" />
             </Link>
           )}
-          <button type="button" onClick={() => toggle(true)} aria-label="Ask Ally" title="Ask Ally" className={iconBtn(path.startsWith("/michelle/c/") || path.startsWith("/c/") || path === "/michelle/retro")}>
+          <Link href="/c/new" aria-label="Ask Ally" title="Ask Ally" className={iconBtn(path.startsWith("/michelle/c/") || path.startsWith("/c/") || path === "/michelle/retro")}>
             <MessageSquare className="size-4" />
-          </button>
+          </Link>
           <AllyWorkingDot />
         </nav>
       )}

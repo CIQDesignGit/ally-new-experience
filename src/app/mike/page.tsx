@@ -1,16 +1,14 @@
 "use client"
 
 import { DetailCard } from "@/components/nudge/ui/detail-card"
-import { LAUNCH_CHIP } from "@/components/nudge/launch/answers"
-import { LAUNCH_FILES } from "@/components/nudge/launch/data"
 import { useEffect, useRef, useState } from "react"
 import { AppDrawer } from "@/components/nudge/app-drawer"
 import { PageShell } from "@/components/layout/page-shell"
 import { ResetDemoButton } from "@/components/nudge/reset-demo-button"
-import { AskBar, ChatProvider, ChatThread, useChatSource } from "@/components/nudge/chat/inline-chat"
+import { AskBar, ChatProvider, ChatThread } from "@/components/nudge/chat/inline-chat"
+import { MikeChat } from "@/components/nudge/chat/home-chats"
 import { OPEN_ITEM_EVENT } from "@/components/nudge/chat/open-item"
 import type { OpenItemDetail } from "@/components/nudge/chat/open-item"
-import { MIKE_QUESTIONS, mikeAnswer } from "@/components/nudge/ask-ally-personas"
 import { MikeHeader } from "@/components/nudge/mike/mike-header"
 import { MikeDelivered } from "@/components/nudge/mike/mike-delivered"
 import { MikeProgress } from "@/components/nudge/mike/mike-progress"
@@ -29,18 +27,6 @@ import type { Batch } from "@/components/nudge/types"
  * either the selected batch's summary or one real SKU's full field-by-field
  * comparison on the right.
  */
-/** Mike's questions for the Ask Ally bar; answers appear at the end of the page. */
-function MikeChat() {
-  useChatSource(
-    {
-      chips: [LAUNCH_CHIP, ...MIKE_QUESTIONS.map((q, i) => ({ q, hidden: i === 3, match: i === 2 ? /how am i doing|how('s| is| did).*(quarter|content)/i : undefined, render: () => <div className="max-w-[860px] rounded-2xl bg-white px-5 py-4 text-[15px] leading-relaxed text-slate-700 ring-1 ring-slate-200">{mikeAnswer(q)}</div> }))],
-      files: LAUNCH_FILES,
-    },
-    "mike",
-  )
-  return null
-}
-
 export default function MikePage() {
   const { approve, approved, policy, launchReady } = useNudge()
   const batches = contentBatches(policy, launchedIds(approved), launchReady)

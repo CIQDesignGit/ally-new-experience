@@ -317,8 +317,12 @@ export function ChatThread({ className, anchor }: { className?: string; anchor?:
   )
 }
 
-/** The bar: chips for what's on screen (the ones not yet asked), then the input. */
-export function AskBar({ placeholder = "What can I take off your plate?" }: { placeholder?: string }) {
+/**
+ * The bar: chips for what's on screen (the ones not yet asked), then the input.
+ * Docked at the bottom of every page; `centered` is a new chat before its first
+ * question, the bar mid-page with its starters laid out under it.
+ */
+export function AskBar({ placeholder = "What can I take off your plate?", centered = false }: { placeholder?: string; centered?: boolean }) {
   const { source, turns, ask, clear } = useChat()
   const router = useRouter()
   // Questions about this screen answer here; tasks (make a deck, plan an event) open their own conversation.
@@ -351,7 +355,7 @@ export function AskBar({ placeholder = "What can I take off your plate?" }: { pl
   // suggestions never sit on top of what Ally just said.
   useEffect(() => {
     const el = dockRef.current
-    if (!el) return
+    if (!el || centered) return
     const root = document.documentElement
     const ro = new ResizeObserver(() => {
       root.style.setProperty("--askbar-h", `${el.offsetHeight}px`)
@@ -364,7 +368,7 @@ export function AskBar({ placeholder = "What can I take off your plate?" }: { pl
       root.style.removeProperty("--askbar-h")
       document.body.style.paddingBottom = ""
     }
-  }, [])
+  }, [centered])
 
   useEffect(() => {
     if (!open) return
@@ -375,23 +379,67 @@ export function AskBar({ placeholder = "What can I take off your plate?" }: { pl
     return () => document.removeEventListener("mousedown", onDown)
   }, [open])
 
-  // Follow-ups show while you're using the bar and collapse when you click anywhere else.
-  const showChips = open && chips.length > 0
+  // Follow-ups show while you're using the bar and collapse when you click anywhere else; centered, they sit under it instead.
+  const showChips = open && chips.length > 0 && !centered
 
   const tray = open && (showChips || turns.length > 0)
+  // A paste-and-attach starter fills the bar for you to send; the rest ask now.
+  const pick = (c: Chip) => {
+    if (c.prefill) {
+      setText(c.prefill.text)
+      if (c.prefill.attach) setAttach([c.prefill.attach])
+      return
+    }
+    run(c)
+    // Get out of the answer's way; the follow-ups come back when you click into the bar.
+    setOpen(false)
+  }
+  const chipClass = (c: Chip) =>
+    cn(
+      "rounded-full border px-3 py-1.5 text-sm transition-colors",
+      c.task ? "inline-flex items-center gap-1.5 border-brand-200 bg-brand-25 text-brand-700 hover:border-brand-400" : "border-slate-200 bg-white text-slate-700 hover:border-brand-300 hover:text-brand-700",
+    )
+  const chipLabel = (c: Chip) => (
+    <>
+      {c.task && (
+        <>
+          <Plus className="size-3.5" />
+          <span className="font-semibold">New:</span>
+        </>
+      )}
+      {c.q}
+    </>
+  )
+  const upload = uploading && source.files && (
+    <UploadDialog
+      files={source.files}
+      onClose={() => setUploading(false)}
+      onAttach={(files) => {
+        setAttach(files)
+        setUploading(false)
+        setOpen(true)
+      }}
+    />
+  )
+  if (centered)
+    return (
+      <>
+        {upload}
+        <div className="flex w-full flex-col items-center">
+          {panel()}
+          <div className="mt-4 flex max-w-[760px] flex-wrap justify-center gap-2">
+            {chips.slice(0, 4).map((c) => (
+              <button key={c.q} type="button" onClick={() => pick(c)} className={chipClass(c)}>
+                {chipLabel(c)}
+              </button>
+            ))}
+          </div>
+        </div>
+      </>
+    )
   return (
     <>
-    {uploading && source.files && (
-      <UploadDialog
-        files={source.files}
-        onClose={() => setUploading(false)}
-        onAttach={(files) => {
-          setAttach(files)
-          setUploading(false)
-          setOpen(true)
-        }}
-      />
-    )}
+    {upload}
     {/* The dock, like Claude's: content fades out above it, the box is solid, and nothing shows beside or below it.
         It spans the page card's width, so on grey-backed pages it reads as the card's own bottom. */}
     <div ref={dockRef} className="pointer-events-none fixed inset-x-0 bottom-0 z-40 transition-[left] duration-200 ease-out xl:left-[var(--sidebar-w,0px)]">
@@ -402,7 +450,16 @@ export function AskBar({ placeholder = "What can I take off your plate?" }: { pl
         </div>
       </div>
       <div className="pointer-events-auto mx-auto flex max-w-[1280px] flex-col items-center bg-white px-4 pb-2.5">
-      {/* One solid panel: suggestions sit in a tray above the input, never floating over the page. */}
+      {panel()}
+      <p className="mt-2 text-center text-xs text-slate-400">Ally is AI and can make mistakes. Please double-check responses.</p>
+      </div>
+    </div>
+    </>
+  )
+
+  /** One solid panel: suggestions sit in a tray above the input, never floating over the page. */
+  function panel() {
+    return (
       <div
         ref={rootRef}
         className={cn(
@@ -414,32 +471,8 @@ export function AskBar({ placeholder = "What can I take off your plate?" }: { pl
           <div className="flex flex-wrap items-center gap-2 border-b border-slate-100 px-3 pt-3 pb-2.5">
             {showChips &&
               chips.map((c) => (
-                <button
-                  key={c.q}
-                  type="button"
-                  onClick={() => {
-                    // A paste-and-attach starter fills the bar for you to send; the rest ask now.
-                    if (c.prefill) {
-                      setText(c.prefill.text)
-                      if (c.prefill.attach) setAttach([c.prefill.attach])
-                      return
-                    }
-                    run(c)
-                    // Get out of the answer's way; the follow-ups come back when you click into the bar.
-                    setOpen(false)
-                  }}
-                  className={cn(
-                    "rounded-full border px-3 py-1.5 text-sm transition-colors",
-                    c.task ? "inline-flex items-center gap-1.5 border-brand-200 bg-brand-25 text-brand-700 hover:border-brand-400" : "border-slate-200 bg-white text-slate-700 hover:border-brand-300 hover:text-brand-700",
-                  )}
-                >
-                  {c.task && (
-                    <>
-                      <Plus className="size-3.5" />
-                      <span className="font-semibold">New:</span>
-                    </>
-                  )}
-                  {c.q}
+                <button key={c.q} type="button" onClick={() => pick(c)} className={chipClass(c)}>
+                  {chipLabel(c)}
                 </button>
               ))}
             {turns.length > 0 && (
@@ -515,11 +548,8 @@ export function AskBar({ placeholder = "What can I take off your plate?" }: { pl
           </button>
         </form>
       </div>
-      <p className="mt-2 text-center text-xs text-slate-400">Ally is AI and can make mistakes. Please double-check responses.</p>
-      </div>
-    </div>
-    </>
-  )
+    )
+  }
 }
 
 /** A page's starter chips, registered from inside its ChatProvider. */

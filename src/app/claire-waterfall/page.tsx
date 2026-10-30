@@ -15,15 +15,8 @@ import { ReportsReady } from "@/components/nudge/retro/reports-ready"
 import { GrowCards } from "@/components/nudge/market/grow-cards"
 import type { GrowView } from "@/components/nudge/market/grow-cards"
 import { GrowViewSwitch } from "@/components/nudge/market/views"
-import { Answer, QUESTIONS } from "@/components/nudge/claire/ask-ally-answers"
-import { budgetChip, togetherChip } from "@/components/nudge/media/answers"
-import { aeoChip } from "@/components/nudge/cs/aeo-report"
-import { launchStatusChip } from "@/components/nudge/launch/status"
-import { AskBar, ChatProvider, ChatThread, useChat, useChatSource } from "@/components/nudge/chat/inline-chat"
-import type { Chip } from "@/components/nudge/chat/inline-chat"
-import { useRouter } from "next/navigation"
-import { ForwardAnalysis } from "@/components/nudge/ops/gap-view"
-import { GAP_TREE } from "@/components/nudge/ops/gap-data"
+import { AskBar, ChatProvider, ChatThread, useChat } from "@/components/nudge/chat/inline-chat"
+import { ClaireChat } from "@/components/nudge/chat/home-chats"
 import { useLive } from "@/components/nudge/live-model"
 import { useNudge } from "@/components/nudge/nudge-context"
 
@@ -36,35 +29,6 @@ let resetThisLoad = false
  * opens its line items; clicking "Total opportunity" opens the split by area. Same
  * shared nudge state as the tier version.
  */
-/** The home page's questions for the Ask Ally bar (the views register their own). */
-function HomeChat() {
-  // Four starters; "why is content behind" and "email this summary" still answer when typed.
-  const router = useRouter()
-  // "How am I doing compared to plan?" is forward-looking: where the week lands and what closes it.
-  const planChip: Chip = { q: "How am I doing compared to plan?", match: /\b(make|making|against|compared to|vs\.?|versus|behind|short of|gap to) plan\b/i, render: () => <ForwardAnalysis node={GAP_TREE} onInbox={(id) => router.push(`/michelle?open=${id}`)} /> }
-  const chips: Chip[] = [
-    ...QUESTIONS.map((q, i) => (i === 4 ? planChip : i === 0 ? { ...budgetChip("claire"), q } : { q, hidden: i === 2 || i === 5, render: () => <div className="max-w-[860px] rounded-2xl bg-white px-5 py-4 text-[15px] leading-relaxed text-slate-700 ring-1 ring-slate-200"><Answer q={q} /></div> })),
-    // The monthly AI visibility readout: answered when asked, not one of the four starters.
-    { ...aeoChip, hidden: true },
-    { ...togetherChip, hidden: true },
-    launchStatusChip("claire"),
-  ]
-  useChatSource({ chips }, "home")
-  // A question reopened from Ask Ally's history ("?ask=…") is asked again, once.
-  const { ask } = useChat()
-  useEffect(() => {
-    const q = new URLSearchParams(window.location.search).get("ask")
-    const chip = q && chips.find((c) => c.q === q)
-    if (!chip) return
-    window.history.replaceState(null, "", window.location.pathname)
-    const t = window.setTimeout(() => ask(chip), 400)
-    return () => window.clearTimeout(t)
-    // Once, on arrival.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-  return null
-}
-
 export default function ClaireWaterfallPage() {
   return (
     <ChatProvider thread={{ where: "Daily brief", home: "/claire-waterfall" }}>
@@ -146,7 +110,7 @@ function ClaireWaterfall() {
             <ReportsReady />
             <ThisQuarterSection />
             <GrowCards onOpen={openGrow} />
-            <HomeChat />
+            <ClaireChat />
             <ChatThread />
             {/* Demo-only control, kept out of the product chrome. Room below for the floating Ask Ally bar. */}
             <div className="flex justify-end gap-6 px-12 pt-6 pb-24">

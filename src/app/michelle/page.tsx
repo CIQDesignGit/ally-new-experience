@@ -1,12 +1,12 @@
 "use client"
 
 import { DetailCard } from "@/components/nudge/ui/detail-card"
-import { launchStatusChip } from "@/components/nudge/launch/status"
 import { AppDrawer } from "@/components/nudge/app-drawer"
 import { useEffect, useRef, useState } from "react"
 import { toast } from "sonner"
-import { AskBar, ChatProvider, ChatThread, useChatSource } from "@/components/nudge/chat/inline-chat"
-import { CompetitionTracker, competitionChips } from "@/components/competition/michelle"
+import { AskBar, ChatProvider, ChatThread } from "@/components/nudge/chat/inline-chat"
+import { MichelleChat } from "@/components/nudge/chat/home-chats"
+import { CompetitionTracker } from "@/components/competition/michelle"
 import { StepBar } from "@/components/competition/step-bar"
 import { useCompetition } from "@/components/competition/state"
 import { OPEN_ITEM_EVENT } from "@/components/nudge/chat/open-item"
@@ -20,19 +20,7 @@ import { OpsBatchList, inboxRows, useOpsLevel } from "@/components/nudge/ops/ops
 import type { InboxFilter } from "@/components/nudge/ops/ops-batch-list"
 import { OpsBatchDetail } from "@/components/nudge/ops/ops-batch-detail"
 import { OpsDelivered } from "@/components/nudge/ops/ops-delivered"
-import { MICHELLE_QUESTIONS, michelleAnswer } from "@/components/nudge/ask-ally-personas"
-import { PromoAnswer, SAVE_ASK, SaveDashboardAnswer } from "@/components/nudge/promo/answers"
-import { PROMO_QUESTIONS, PROMO_WIDGETS } from "@/components/nudge/promo/data"
-import type { PromoWidget } from "@/components/nudge/promo/data"
-import type { Chip } from "@/components/nudge/chat/inline-chat"
-import { PREP_CHIP, RUN_BY_NAME_CHIP } from "@/components/nudge/skill/answers"
-import { LESSON_CHIP } from "@/components/nudge/ops/gap-training"
-import { GIFT_QUESTION } from "@/components/nudge/alerts/data"
-import { RETRO_TASK, StorylineAnswer } from "@/components/nudge/retro/storyline-answer"
 import { ResetDemoButton } from "@/components/nudge/reset-demo-button"
-import { useMvp } from "@/components/nudge/mvp"
-import { useHarness } from "@/components/competition/harness"
-import { LibraryMatch } from "@/components/nudge/library/match"
 import { opsBatches, opsSkus } from "@/components/nudge/data"
 import { useNudge } from "@/components/nudge/nudge-context"
 import type { OpsBatch } from "@/components/nudge/data"
@@ -42,61 +30,6 @@ import type { OpsBatch } from "@/components/nudge/data"
  * approval from live, the inbox grouped by Claire's buckets, the selected batch,
  * then what ops delivered this quarter.
  */
-/** The inbox's questions for the Ask Ally bar (gap-to-plan registers its own per node). */
-// Use case 3: three promo answers, each offering the others and "save these as a dashboard".
-const SAVE_CHIP: Chip = { q: SAVE_ASK, match: /dashboard/i, render: () => <SaveDashboardAnswer /> }
-/** The promo answers, each offering the others; with `save`, also "save these as a dashboard" (not in the borrow harness, where dashboards are built by an engineer). */
-function promoChips(save: boolean) {
-  const c = Object.fromEntries(PROMO_WIDGETS.map((w) => [w, { q: PROMO_QUESTIONS[w], render: () => <PromoAnswer id={w} /> } as Chip])) as Record<PromoWidget, Chip>
-  c["promo-month"].match = /promo(tion)?s?.*(doing|perform|month)/i
-  c["promo-badge"].match = /badge/i
-  c["promo-vs-brightwick"].match = /(compare|vs|versus).*brightwick|brightwick.*promo/i
-  const extra = save ? [SAVE_CHIP] : []
-  c["promo-month"].followUps = [c["promo-badge"], c["promo-vs-brightwick"], ...extra]
-  c["promo-badge"].followUps = [c["promo-vs-brightwick"], c["promo-month"], ...extra]
-  c["promo-vs-brightwick"].followUps = [c["promo-badge"], c["promo-month"], ...extra]
-  return c
-}
-const PROMO_WITH_SAVE = promoChips(true)
-const PROMO_NO_SAVE = promoChips(false)
-
-function InboxChat() {
-  const competition = useCompetition()
-  const mvp = useMvp()
-  // Borrow harness: nothing new is built in the product (dashboards, lessons); an engineer does that.
-  const borrow = useHarness() === "borrow"
-  const PROMO_CHIPS = borrow ? PROMO_NO_SAVE : PROMO_WITH_SAVE
-  useChatSource(
-    {
-      chips: [
-        // The competition demo's questions lead while it runs.
-        ...competitionChips(competition),
-        PROMO_CHIPS["promo-month"],
-        // An investigation that ends in actions and alerts: its own thread.
-        { q: GIFT_QUESTION, match: /gift.?sets?/i, task: "/michelle/c/gift-sets", render: () => null },
-        ...(borrow ? [] : [LESSON_CHIP]),
-        // Run-by-name first: "open my negotiation prep" means the saved skill, not a new prep.
-        // A new task, so a new thread: the negotiation opens in its own conversation.
-        { ...RUN_BY_NAME_CHIP, task: "/michelle/c/negotiation?run=1" },
-        // Not a starter: Ally has no negotiation playbook to offer until one is taught. Typed, it still opens the thread.
-        { ...PREP_CHIP, hidden: true, task: "/michelle/c/negotiation" },
-        // Answered when asked, not offered: the bar keeps five starters, one per job.
-        ...MICHELLE_QUESTIONS.map((q) => ({ q, hidden: true, render: () => <div className="max-w-[860px] rounded-2xl bg-white px-5 py-4 text-[15px] leading-relaxed text-slate-700 ring-1 ring-slate-200">{michelleAnswer(q)}</div> })),
-        // A task, not a question about the brief: it opens its own conversation. The MVP offers the library skill first.
-        mvp
-          ? { q: RETRO_TASK, match: /recap|prime day (deck|recap)/i, render: () => <LibraryMatch skillId="prime-day-deck" go="/michelle/retro?new=1" goLabel="Start the Prime Day deck" /> }
-          : { q: RETRO_TASK, task: "/michelle/retro?new=1", render: () => <StorylineAnswer /> },
-        { q: "Claire's Q4 business review", hidden: true, task: "/michelle/decks/qbr?new=1", match: /\b(qbr|business review)\b/i, render: () => null },
-        // Gap to plan has its own page; asking for it goes there.
-        { q: "Where are we against plan?", task: "/michelle/gap", match: /\b(gap to plan|against plan|behind plan|vs\.? plan|short of plan)\b/i, render: () => null },
-        launchStatusChip("michelle"),
-      ],
-    },
-    `inbox-${competition.on}-${competition.stage}-${mvp}-${borrow}`,
-  )
-  return null
-}
-
 export default function MichellePage() {
   return (
     <ChatProvider thread={{ where: "Daily brief", home: "/michelle" }}>
@@ -258,7 +191,7 @@ function Michelle() {
           )}
           </DetailCard>
         </div>
-        <InboxChat />
+        <MichelleChat />
         <OpsDelivered />
         {/* Page-level answers go last, so the conversation is the end of the page.  */}
         <ChatThread />
