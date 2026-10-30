@@ -106,6 +106,7 @@ One codebase with an MVP switch, not a copy. `/demo/mvp` turns the switch on; th
 ## Decided
 - Oct 29: no projections, measured results are in. Every dollar shown has already happened and says how it was measured.
 - Oct 29: Claire keeps the waterfall. Actions show High, Medium or Low impact instead of a dollar value (no "$4.7M of value").
+- Oct 30: the stacked bars stay below the plan line. The chart ranks the actions; it never shows them closing the gap.
 
 ## Open questions
 1. Claire: keep her as the closer, or end on Michelle?
