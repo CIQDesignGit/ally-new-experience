@@ -30,6 +30,18 @@ export interface LibrarySkill {
 const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-")
 const live = (id: string) => LIVE_SKILLS.find((s) => s.id === id)!
 
+/** On for everyone, scheduled: the runs every brand gets, gap to plan first. */
+export const CORE_SCHEDULED: LibrarySkill[] = [
+  { id: "gap-to-plan", name: "Gap to plan", does: "Sales against plan every day, with the causes, down to the SKU", gives: "Dashboard", core: true, output: { label: "Gap to plan", href: "/michelle/gap" } },
+  { id: "store-walk", name: "Store Walk", does: "Crawls every SKU's page 12 times a day in 6 cities: price, buy box, badges, stock", gives: "Alert", core: true },
+  { id: "monday-brief", name: "Monday brief", does: "Team status and what's one approval away, by email every Monday", gives: "Alert", core: true, output: { label: "Scheduled", href: "/michelle/alerts" } },
+]
+
+/** On for everyone: the dashboards every brand gets from day one. */
+export const CORE_DASHBOARDS: LibrarySkill[] = [
+  { id: "wbr", name: "Weekly business review", does: "Forecast against plan, last week and why, what shipped, what's due next week", gives: "Dashboard", core: true, output: { label: "Weekly business review", href: "/dashboards/wbr" } },
+]
+
 /** On for everyone: the alerts tuned across brands that every account should have. */
 export const CORE: LibrarySkill[] = BUILT_IN_ALERTS.map((a) => ({
   id: `alert-${slug(a.name)}`,

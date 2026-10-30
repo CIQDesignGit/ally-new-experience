@@ -110,6 +110,7 @@ const LATEST: Record<string, { label: string; href: string }> = {
  * workspace decks) stay plain text.
  */
 const CUSTOMER_OPEN: Record<string, string> = {
+  "jbp-wbr": "/dashboards/wbr",
   "jbp-pacing": "/james",
   "jbp-actions": "/james",
   "jbp-shipped": "/content-results?period=qtd",

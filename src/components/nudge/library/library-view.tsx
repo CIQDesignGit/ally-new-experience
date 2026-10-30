@@ -2,11 +2,11 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { ArrowRight, Check, Lock } from "lucide-react"
+import { ArrowRight, Check, ChevronRight, Lock } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { PRIMARY, SECONDARY } from "../mike/buttons"
 import { useCompetition } from "../../competition/state"
-import { AVAILABLE, COMPETITION_SKILL, CORE, LOCKED, type LibrarySkill } from "./data"
+import { AVAILABLE, COMPETITION_SKILL, CORE, CORE_DASHBOARDS, CORE_SCHEDULED, LOCKED, type LibrarySkill } from "./data"
 import { statusOf, turnOn, useLibrary } from "./state"
 
 const HEAD = "font-mono text-xs tracking-wide text-slate-500 uppercase"
@@ -25,15 +25,10 @@ export function LibraryView() {
       <section>
         <div className={HEAD}>On for everyone</div>
         <div className="mt-3 overflow-hidden rounded-xl border border-slate-200">
-          {CORE.map((s) => (
-            <div key={s.id} className="grid grid-cols-[minmax(0,240px)_minmax(0,1fr)_auto] items-baseline gap-6 border-t border-slate-100 px-5 py-3 first:border-t-0">
-              <span className="text-sm font-medium text-slate-950">{s.name}</span>
-              <span className="text-sm text-slate-500">{s.does}</span>
-              <span className="inline-flex items-center gap-1 text-sm text-success-700">
-                <Check className="size-3.5" aria-hidden /> On
-              </span>
-            </div>
-          ))}
+          {/* Three groups, each one row; the list behind it opens in place. */}
+          <CoreGroup title="Scheduled" skills={CORE_SCHEDULED} open />
+          <CoreGroup title="Alerts" skills={CORE} />
+          <CoreGroup title="Dashboards" skills={CORE_DASHBOARDS} open />
         </div>
       </section>
 
@@ -47,13 +42,48 @@ export function LibraryView() {
       </section>
 
       <section>
-        <div className={HEAD}>Not in your plan</div>
+        <div className={HEAD}>Not included</div>
         <div className="mt-3 grid gap-4 lg:grid-cols-3">
           {LOCKED.map((s) => (
             <SkillCard key={s.id} skill={s} />
           ))}
         </div>
       </section>
+    </div>
+  )
+}
+
+/** One group of what's on for everyone: a row with its count, opening to the skills in it. */
+function CoreGroup({ title, skills, open: startOpen = false }: { title: string; skills: LibrarySkill[]; open?: boolean }) {
+  const [open, setOpen] = useState(startOpen)
+  return (
+    <div className="border-t border-slate-100 first:border-t-0">
+      <button type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open} className="flex w-full items-center gap-2 px-5 py-3 text-left hover:bg-slate-50">
+        <ChevronRight className={cn("size-4 text-slate-400 transition-transform", open && "rotate-90")} aria-hidden />
+        <span className="flex-1 text-sm font-semibold text-slate-950">
+          {title} <span className="font-mono font-normal text-slate-500">{skills.length}</span>
+        </span>
+        <span className="inline-flex items-center gap-1 text-sm text-success-700">
+          <Check className="size-3.5" aria-hidden /> On
+        </span>
+      </button>
+      {open && (
+        <div className="pb-1">
+          {skills.map((s) => (
+            <div key={s.id} className="grid grid-cols-[minmax(0,240px)_minmax(0,1fr)_auto] items-baseline gap-6 px-5 py-2.5 pl-11">
+              <span className="text-sm font-medium text-slate-950">{s.name}</span>
+              <span className="text-sm text-slate-500">{s.does}</span>
+              {s.output ? (
+                <Link href={s.output.href} className="inline-flex items-center gap-1 text-sm font-medium text-brand-700 hover:underline">
+                  Open <ArrowRight className="size-3.5" aria-hidden />
+                </Link>
+              ) : (
+                <span />
+              )}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

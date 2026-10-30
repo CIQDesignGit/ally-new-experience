@@ -21,7 +21,7 @@ import { tierSales } from "./sales"
  */
 /** The demo's "today" and the one seasonal deadline in flight. Days to deadline are computed, never typed. */
 export const AS_OF = "2026-10-08"
-const HALLOWEEN_PUBLISH_BY = "2026-10-26"
+export const HALLOWEEN_PUBLISH_BY = "2026-10-26"
 /** Halloween's last day: seasonal sales stop landing after it. */
 const HALLOWEEN = "2026-10-31"
 /** Q4 FY26 runs Oct–Dec; FY26 ends with it. */

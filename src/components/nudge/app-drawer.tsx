@@ -133,6 +133,8 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
       icon: LayoutDashboard,
       fresh: fresh || dashboards.some((d) => !d.seen),
       items: [
+        // On for every brand from day one (the library's core dashboard).
+        { label: "Weekly business review", sub: "Dashboard · every Monday", href: "/dashboards/wbr", on: path === "/dashboards/wbr" },
         // What a skill turned on from the library produces, unless it's already listed by its own story below.
         ...libraryOutputs.filter((o) => !(retro.dashboard && o.href === "/michelle/dashboards/prime-day")),
         ...(retro.dashboard ? [{ label: RETRO.name, sub: "Dashboard · refreshes daily", href: "/michelle/dashboards/prime-day", on: path === "/michelle/dashboards/prime-day", fresh }] : []),
@@ -344,7 +346,7 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
           {groups[0].map((x) => {
             const Icon = LIST_ICON[x.title] ?? x.icon
             return (
-              <button key={x.title} type="button" onClick={() => toggle(true)} aria-label={x.title} title={x.title} className={iconBtn(x.title === "My dashboards" && (path.startsWith("/michelle/dashboards") || path.startsWith("/michelle/decks") || path === "/michelle/retro"))}>
+              <button key={x.title} type="button" onClick={() => toggle(true)} aria-label={x.title} title={x.title} className={iconBtn(x.title === "My dashboards" && (path.startsWith("/dashboards") || path.startsWith("/michelle/dashboards") || path.startsWith("/michelle/decks") || path === "/michelle/retro"))}>
                 <Icon className="size-4" />
                 {x.fresh && <span aria-hidden className="absolute top-2 right-2 size-2 rounded-full bg-ally-500 ring-2 ring-brand-950" />}
               </button>
