@@ -8,6 +8,7 @@ import { AS_OF } from "./data"
 import { useNudge } from "./nudge-context"
 import { BRANDS } from "./policy"
 import { PRIMARY, SECONDARY } from "./mike/buttons"
+import { useMvp } from "./mvp"
 
 const DATE = new Date(`${AS_OF}T12:00:00`).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
 
@@ -48,6 +49,7 @@ interface EditFeedbackProps {
 export function EditFeedback({ id, label, value, reasons, limit, multiline, subject, author, applies, placeholder, className }: EditFeedbackProps) {
   const { feedback, setFeedback, knowledge, saveKnowledge } = useNudge()
   const locked = useLockedEdit(id)
+  const mvp = useMvp()
   const [open, setOpen] = useState(false)
   const [draft, setDraft] = useState(value)
   const [picked, setPicked] = useState<string[]>([])
@@ -59,10 +61,16 @@ export function EditFeedback({ id, label, value, reasons, limit, multiline, subj
       <div className={cn("flex items-start gap-1.5 text-sm text-slate-500", className)}>
         <Check className="mt-0.5 size-4 shrink-0 text-success-600" aria-hidden />
         <span>
-          Locked by {author.split(" ")[0]} · {locked.reasons?.join(", ")} · {applies} ·{" "}
-          <Link href="/settings?tab=knowledge" className="text-brand-700 hover:underline">
-            See in Knowledge
-          </Link>
+          Locked by {author.split(" ")[0]} · {locked.reasons?.join(", ")} · {applies}
+          {/* Knowledge lives in settings, our side, in the MVP: no link for the customer. */}
+          {!mvp && (
+            <>
+              {" · "}
+              <Link href="/settings?tab=knowledge" className="text-brand-700 hover:underline">
+                See in Knowledge
+              </Link>
+            </>
+          )}
         </span>
       </div>
     )

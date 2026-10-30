@@ -8,6 +8,7 @@ import { AS_OF } from "./data"
 import { useNudge } from "./nudge-context"
 import { BRANDS } from "./policy"
 import { PRIMARY } from "./mike/buttons"
+import { useMvp } from "./mvp"
 
 const THUMB = "flex size-10 items-center justify-center rounded-lg border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-300"
 const DATE = new Date(`${AS_OF}T12:00:00`).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
@@ -19,6 +20,7 @@ const DATE = new Date(`${AS_OF}T12:00:00`).toLocaleDateString("en-US", { month: 
  */
 export function AllyFeedback({ id, sku, author, className }: { id: string; sku: string; author: string; className?: string }) {
   const { feedback, setFeedback, knowledge, saveKnowledge } = useNudge()
+  const mvp = useMvp()
   const f = feedback[id]
   const [draft, setDraft] = useState("")
   const [open, setOpen] = useState(false)
@@ -84,10 +86,16 @@ export function AllyFeedback({ id, sku, author, className }: { id: string; sku: 
             <Check className="size-4 text-success-600" />
             {f.vote === "down" ? (
               <>
-                Sent · Ally applies this to similar SKUs ·{" "}
-                <Link href="/settings?tab=knowledge" className="text-brand-700 hover:underline">
-                  See in Knowledge
-                </Link>
+                Sent · Ally applies this to similar SKUs
+                {/* Knowledge lives in settings, our side, in the MVP: no link for the customer. */}
+                {!mvp && (
+                  <>
+                    {" · "}
+                    <Link href="/settings?tab=knowledge" className="text-brand-700 hover:underline">
+                      See in Knowledge
+                    </Link>
+                  </>
+                )}
               </>
             ) : (
               "Sent · Ally will do more of it"

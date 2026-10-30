@@ -259,14 +259,10 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
             {/* What's waiting on one approval: owners' rows for Claire, items in the queue for Mike and Michelle. */}
             {waiting > 0 && <span className="rounded-full bg-ally-500 px-1.5 text-[11px] font-semibold text-white">{waiting}</span>}
           </Link>
-          {/* Sarah's standing objects: the plan agreed with Claire, and what Ally knows about the account. */}
-          {home === "/sarah" && (
-            <>
-              <Link href="/plan" className={row(path === "/plan")}>
-                <ClipboardList className="size-4" /> <span className="flex-1">Joint plan</span>
-              </Link>
-            </>
-          )}
+          {/* The plan agreed between the brand and CommerceIQ, for everyone on the account (Sarah's view for CS). */}
+          <Link href="/plan" className={row(path === "/plan")}>
+            <ClipboardList className="size-4" /> <span className="flex-1">Joint plan</span>
+          </Link>
           <Link href="/michelle/gap" className={row(path === "/michelle/gap")}>
             <TrendingDown className="size-4" /> <span className="flex-1">Gap to plan</span>
             {gap > 0 && <span className="rounded bg-error-600/25 px-1.5 font-mono text-[11px] text-error-200">−{fmtBiz(gap)}</span>}
@@ -279,10 +275,12 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
           {/* What Ally made for you. */}
           {groups[0].map((x) => listBlock(x))}
           {divider}
-          {/* The two Ally verbs, together: teach it (what ships, skills, knowledge), then ask it. */}
-          <Link href="/settings" className={row(path === "/settings")}>
-            <GraduationCap className="size-4" /> <span className="flex-1">Teach Ally</span>
-          </Link>
+          {/* The two Ally verbs, together: teach it (what ships, skills, knowledge), then ask it. The MVP keeps teaching on our side (settings, for FDEs), not in the customer's nav. */}
+          {!live.mvp && (
+            <Link href="/settings" className={row(path === "/settings")}>
+              <GraduationCap className="size-4" /> <span className="flex-1">Teach Ally</span>
+            </Link>
+          )}
           {/* Ask Ally: folded like the other lists; "+ New" starts a question without opening it. */}
           <div className="flex items-center rounded-lg text-sm text-brand-100 hover:bg-white/10">
             <button type="button" onClick={() => setOpenList(openList === "Ask Ally" ? null : "Ask Ally")} aria-expanded={openList === "Ask Ally"} className="flex flex-1 items-center gap-2.5 px-2.5 py-2 text-left hover:text-white">
@@ -317,13 +315,9 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
             <Home className="size-4" />
             {waiting > 0 && <span aria-hidden className="absolute top-2 right-2 size-2 rounded-full bg-ally-500 ring-2 ring-brand-950" />}
           </Link>
-          {home === "/sarah" && (
-            <>
-              <Link href="/plan" aria-label="Joint plan" title="Joint plan" className={iconBtn(path === "/plan")}>
-                <ClipboardList className="size-4" />
-              </Link>
-            </>
-          )}
+          <Link href="/plan" aria-label="Joint plan" title="Joint plan" className={iconBtn(path === "/plan")}>
+            <ClipboardList className="size-4" />
+          </Link>
           <Link href="/michelle/gap" aria-label="Gap to plan" title={gap > 0 ? `Gap to plan · −${fmtBiz(gap)}` : "Gap to plan"} className={iconBtn(path === "/michelle/gap")}>
             <TrendingDown className="size-4" />
             {gap > 0 && <span aria-hidden className="absolute top-2 right-2 size-2 rounded-full bg-error-500 ring-2 ring-brand-950" />}
@@ -342,9 +336,11 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
             )
           })}
           <span className="h-3" aria-hidden />
-          <Link href="/settings" aria-label="Teach Ally" title="Teach Ally" className={iconBtn(path === "/settings")}>
-            <GraduationCap className="size-4" />
-          </Link>
+          {!live.mvp && (
+            <Link href="/settings" aria-label="Teach Ally" title="Teach Ally" className={iconBtn(path === "/settings")}>
+              <GraduationCap className="size-4" />
+            </Link>
+          )}
           <button type="button" onClick={() => toggle(true)} aria-label="Ask Ally" title="Ask Ally" className={iconBtn(path.startsWith("/michelle/c/") || path.startsWith("/c/") || path === "/michelle/retro")}>
             <MessageSquare className="size-4" />
           </button>
@@ -357,7 +353,7 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
 
 /** Ally's work in flight, at the foot of the rail: what's on autopilot. Real numbers, from the waterfall. */
 function AllyWorking() {
-  const { stages } = useLive()
+  const { stages, mvp } = useLive()
   const auto = stages.find((s) => s.id === "autopilot")
   if (!auto || auto.value <= 0) return null
   return (
@@ -365,18 +361,21 @@ function AllyWorking() {
       <div className="flex items-center gap-2 text-[13px] font-semibold text-white">
         <span className="size-2 animate-pulse rounded-full bg-success-500" aria-hidden /> Ally is working
       </div>
-      <div className="mt-1 text-xs text-brand-200">
-        <span className="font-mono text-white">{fmtValue(auto.value)}</span> on autopilot
-      </div>
+      {/* The MVP doesn't put a dollar value on autopilot work. */}
+      {!mvp && (
+        <div className="mt-1 text-xs text-brand-200">
+          <span className="font-mono text-white">{fmtValue(auto.value)}</span> on autopilot
+        </div>
+      )}
     </div>
   )
 }
 
 /** The collapsed rail's version: a green dot that says the same thing on hover. */
 function AllyWorkingDot() {
-  const { stages } = useLive()
+  const { stages, mvp } = useLive()
   const auto = stages.find((x) => x.id === "autopilot")
   if (!auto || auto.value <= 0) return null
-  const say = `Ally is working · ${fmtValue(auto.value)} on autopilot`
+  const say = mvp ? "Ally is working" : `Ally is working · ${fmtValue(auto.value)} on autopilot`
   return <span title={say} aria-label={say} className="mt-auto size-2.5 animate-pulse rounded-full bg-success-500" />
 }

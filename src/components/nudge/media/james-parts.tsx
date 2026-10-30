@@ -189,7 +189,7 @@ function waits(b: MediaBatch, approved: Record<string, boolean>) {
 
 export function MediaList({ selectedId, filter, onFilter, onSelect }: { selectedId: string; filter: InboxFilter; onFilter: (f: InboxFilter) => void; onSelect: (id: string) => void }) {
   const { approved } = useNudge()
-  const { mvp, actionImpact } = useLive()
+  const { mvp } = useLive()
   return (
     <div className="bg-white">
       <InboxFilters filter={filter} onFilter={onFilter} />
@@ -230,15 +230,8 @@ export function MediaList({ selectedId, filter, onFilter, onSelect }: { selected
                 </span>
               </span>
               <span className="text-right">
-                {mvp ? (
-                  // The MVP: impact on the gap to plan, not the incremental sales it projects.
-                  <span className={cn("block text-[14px] font-semibold", b.tier === "autopilot" ? "text-slate-500" : "text-slate-950")}>
-                    {actionImpact(b.value)}
-                    <span className="text-xs font-normal text-slate-500"> impact</span>
-                  </span>
-                ) : (
-                  <span className={cn("block font-mono text-[14px] font-semibold tabular-nums", done ? "text-success-700" : b.tier === "autopilot" ? "text-slate-500" : "text-slate-950")}>{fmtValue(b.value)}</span>
-                )}
+                {/* The MVP shows no value here: the order (by gap to plan) says what matters most. */}
+                {!mvp && <span className={cn("block font-mono text-[14px] font-semibold tabular-nums", done ? "text-success-700" : b.tier === "autopilot" ? "text-slate-500" : "text-slate-950")}>{fmtValue(b.value)}</span>}
                 {status && <span className="mt-0.5 block text-xs font-medium whitespace-nowrap">{status}</span>}
               </span>
             </button>

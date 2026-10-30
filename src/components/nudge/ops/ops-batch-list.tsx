@@ -12,6 +12,8 @@ import { SkuFillList } from "../sku-fill-list"
 import type { OpsBatch } from "../data"
 import { useLive } from "../live-model"
 import { IMPACT_RANK, type Impact } from "../mvp"
+import { SortMenu } from "../ui/sort-menu"
+import { queueSortNow, useQueueSort } from "../queue-sort"
 
 export type InboxFilter = "all" | "autopilot" | "approval" | "input"
 
@@ -55,19 +57,21 @@ const DOT = Object.fromEntries(GROUPS.map((g) => [g.tier, g.dot])) as Record<Ops
  */
 /**
  * The inbox's order, shared with the page so a filter can open its top row. With
- * `level` (the MVP), after the deadline: impact on the gap to plan, then effort
- * (one approval before your input), instead of money lost a day and value.
+ * `level` (the MVP), after the deadline: the sort setting. Gap to plan (the
+ * default) is impact on the gap, then effort (one approval before your input);
+ * SKU sales is what the SKUs normally sell a day.
  */
 export function inboxRows(all: OpsBatch[], approved: Record<string, boolean>, filter: InboxFilter, level?: (b: OpsBatch) => Impact) {
   const rank = (b: OpsBatch) => (b.tier === "autopilot" ? 2 : approved[b.id] ? 1 : 0)
   const effort = (b: OpsBatch) => (b.tier === "approval" ? 0 : 1)
+  const byGap = level && queueSortNow() === "gap"
   return all
     .filter((b) => filter === "all" || b.tier === filter)
     .sort(
       (x, y) =>
         rank(x) - rank(y) ||
         dueRank(dueOf(x)) - dueRank(dueOf(y)) ||
-        (level ? IMPACT_RANK[level(x)] - IMPACT_RANK[level(y)] || effort(x) - effort(y) : perDayOf(y) - perDayOf(x)) ||
+        (byGap ? IMPACT_RANK[level(x)] - IMPACT_RANK[level(y)] || effort(x) - effort(y) : perDayOf(y) - perDayOf(x)) ||
         money(y.value) - money(x.value),
     )
 }
@@ -82,13 +86,14 @@ export function OpsBatchList({ selectedId, selectedSku, expandedId, checked, fil
   const { approved, policy } = useNudge()
   const { notedIn } = useNote()
   const level = useOpsLevel()
+  // Re-sorts when the setting changes.
+  useQueueSort()
   const all = opsBatches(policy)
   const rows = inboxRows(all, approved, filter, level)
 
   return (
     <div className="bg-white">
-      <InboxFilters filter={filter} onFilter={onFilter} />
-      {level && <div className="px-10 pt-1 pb-2 text-xs text-slate-500">Sorted by deadline, then impact on the gap to plan (High 5% of it or more, Medium 1.5%), then one approval before your input</div>}
+      <InboxFilters filter={filter} onFilter={onFilter} sortable={!!level} />
 
       <div className="flex flex-col">
         {rows.map((b) => {
@@ -156,15 +161,8 @@ export function OpsBatchList({ selectedId, selectedSku, expandedId, checked, fil
                 </span>
                 {/* The money column: value, and under it the status or urgency. */}
                 <span className="text-right">
-                  {level ? (
-                    // The MVP: its impact on the gap to plan, not what it's projected to recover.
-                    <span className={cn("block text-[14px] font-semibold", b.tier === "autopilot" ? "text-slate-500" : "text-slate-950")}>
-                      {level(b)}
-                      <span className="text-xs font-normal text-slate-500"> impact</span>
-                    </span>
-                  ) : (
-                    <span className={cn("block font-mono text-[14px] font-semibold tabular-nums", done ? "text-success-700" : b.tier === "autopilot" ? "text-slate-500" : "text-slate-950")}>{b.value}</span>
-                  )}
+                  {/* The MVP shows no value here: the order says what matters most. */}
+                  {!level && <span className={cn("block font-mono text-[14px] font-semibold tabular-nums", done ? "text-success-700" : b.tier === "autopilot" ? "text-slate-500" : "text-slate-950")}>{b.value}</span>}
                   {status && <span className="mt-0.5 block text-xs font-medium whitespace-nowrap tabular-nums">{status}</span>}
                 </span>
               </div>
@@ -185,10 +183,10 @@ export function OpsBatchList({ selectedId, selectedSku, expandedId, checked, fil
 }
 
 /** The inbox filters, shared by Mike's and Michelle's pages: the page's switch style, each part sized to its label. */
-export function InboxFilters({ filter, onFilter }: { filter: InboxFilter; onFilter: (f: InboxFilter) => void }) {
+export function InboxFilters({ filter, onFilter, sortable }: { filter: InboxFilter; onFilter: (f: InboxFilter) => void; /** The MVP's sort setting (gap to plan or SKU sales), behind an icon. */ sortable?: boolean }) {
   return (
-      <div className="border-b border-slate-200 py-2.5 pr-4 pl-10">
-        <div className="flex h-9 rounded-lg border border-slate-200 bg-slate-25 p-0.5">
+      <div className="flex items-center gap-1 border-b border-slate-200 py-2.5 pr-4 pl-10">
+        <div className="flex h-9 flex-1 rounded-lg border border-slate-200 bg-slate-25 p-0.5">
           {FILTERS.map((f) => (
             <button
               key={f.id}
@@ -205,6 +203,7 @@ export function InboxFilters({ filter, onFilter }: { filter: InboxFilter; onFilt
             </button>
           ))}
         </div>
+        {sortable && <SortMenu />}
       </div>
   )
 }

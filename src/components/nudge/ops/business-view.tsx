@@ -46,13 +46,24 @@ export function BusinessHero() {
       <h1 className="mt-1 text-[28px] leading-tight font-bold tracking-tight text-slate-950">
         {plan > pace ? (
           <>
-            That&apos;s <span className="font-mono">{fmtBiz(plan - pace)}</span> short of your <span className="font-mono">{fmtBiz(plan)}</span> plan.{" "}
-            <span className="font-mono text-brand-600">{l.open.totalLabel}</span> of work is in flight to close it.
+            That&apos;s <span className="font-mono">{fmtBiz(plan - pace)}</span> short of your <span className="font-mono">{fmtBiz(plan)}</span> plan.
+            {/* The MVP doesn't say what the open work is worth. */}
+            {!l.mvp && (
+              <>
+                {" "}
+                <span className="font-mono text-brand-600">{l.open.totalLabel}</span> of work is in flight to close it.
+              </>
+            )}
           </>
         ) : (
           <>
-            That&apos;s <span className="font-mono text-success-700">{fmtBiz(pace - plan)}</span> ahead of your <span className="font-mono">{fmtBiz(plan)}</span> plan.{" "}
-            <span className="font-mono text-brand-600">{l.open.totalLabel}</span> more is in flight.
+            That&apos;s <span className="font-mono text-success-700">{fmtBiz(pace - plan)}</span> ahead of your <span className="font-mono">{fmtBiz(plan)}</span> plan.
+            {!l.mvp && (
+              <>
+                {" "}
+                <span className="font-mono text-brand-600">{l.open.totalLabel}</span> more is in flight.
+              </>
+            )}
           </>
         )}
       </h1>

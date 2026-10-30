@@ -14,7 +14,8 @@ import { SkuFillList } from "../sku-fill-list"
 import { candleThumbnail } from "@/lib/candle-thumbnails"
 import type { Batch } from "../types"
 import { mvpNow, useMvp } from "../mvp"
-import { batchSales, fmtSales } from "../sales"
+import { batchSales } from "../sales"
+import { queueSortNow, useQueueSort } from "../queue-sort"
 
 interface BatchListProps {
   selectedId: Batch["id"]
@@ -34,12 +35,12 @@ const DOT = Object.fromEntries(GROUPS.map((g) => [g.tier, g.dot])) as Record<Bat
 
 /**
  * The inbox's order, shared with the page so a filter can open its top row: open
- * work by deadline then value (the MVP: then what the SKUs sold), done after,
- * autopilot last.
+ * work by deadline then value (the MVP: then the sort setting, gap to plan by
+ * default or what the SKUs sold), done after, autopilot last.
  */
 export function mikeRows(all: Batch[], approved: Record<string, boolean>, filter: InboxFilter) {
   const rank = (b: Batch) => (b.tier === "autopilot" ? 2 : approved[b.id] ? 1 : 0)
-  const weight = mvpNow() ? batchSales : (b: Batch) => money(b.value)
+  const weight = mvpNow() && queueSortNow() === "sales" ? batchSales : (b: Batch) => money(b.value)
   return all
     .filter((b) => filter === "all" || b.tier === filter)
     .sort((x, y) => rank(x) - rank(y) || (x.deadline ?? "9999").localeCompare(y.deadline ?? "9999") || weight(y) - weight(x))
@@ -57,13 +58,14 @@ export function BatchList({ selectedId, selectedSkuId, expandedBatchId, filter, 
   const allyShipped = autoShipped["approval-content"] ?? []
   const bgs = useBackgrounds()
   const all = contentBatches(policy, launchedIds(approved), launchReady)
-  const rows = mikeRows(all, approved, filter)
   const mvp = useMvp()
+  // Re-sorts when the setting changes.
+  useQueueSort()
+  const rows = mikeRows(all, approved, filter)
 
   return (
     <div className="border-r border-slate-200 bg-white">
-      <InboxFilters filter={filter} onFilter={onFilter} />
-      {mvp && <div className="px-10 pt-1 pb-2 text-xs text-slate-500">Sorted by deadline, then 4-week sales</div>}
+      <InboxFilters filter={filter} onFilter={onFilter} sortable={mvp} />
       <div className="flex flex-col">
         {rows.map((b) => {
           const active = selectedId === b.id
@@ -133,14 +135,8 @@ export function BatchList({ selectedId, selectedSkuId, expandedBatchId, filter, 
                 </span>
                 {/* The money column: value (the MVP: what the SKUs sold in 4 weeks), and under it the status or deadline. */}
                 <span className="text-right">
-                  {mvp ? (
-                    <span className={cn("block font-mono text-[14px] font-semibold tabular-nums", b.tier === "autopilot" ? "text-slate-500" : "text-slate-950")} title="What these SKUs sold in the last 4 weeks">
-                      {fmtSales(batchSales(b))}
-                      <span className="font-sans text-xs font-normal text-slate-500"> sales</span>
-                    </span>
-                  ) : (
-                    <span className={cn("block font-mono text-[14px] font-semibold tabular-nums", done ? "text-success-700" : b.tier === "autopilot" ? "text-slate-500" : "text-slate-950")}>{value}</span>
-                  )}
+                  {/* The MVP shows no value here: the order says what matters most. */}
+                  {!mvp && <span className={cn("block font-mono text-[14px] font-semibold tabular-nums", done ? "text-success-700" : b.tier === "autopilot" ? "text-slate-500" : "text-slate-950")}>{value}</span>}
                   {status && <span className="mt-0.5 block text-xs font-medium whitespace-nowrap tabular-nums">{status}</span>}
                 </span>
               </div>

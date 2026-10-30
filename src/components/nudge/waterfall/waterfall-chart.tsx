@@ -5,6 +5,7 @@ import { BUSINESS, fmtBiz, fmtM, fmtValue } from "../data"
 import type { WaterfallStage } from "../data"
 import { useLive } from "../live-model"
 import { IMPACT_HEIGHT, gapUnit, type Impact } from "../mvp"
+import { InfoIcon } from "../ui/info-icon"
 
 const CHART_HEIGHT = 300
 /** Fixed so every column is the same total height — otherwise items-end floats the bars to different baselines. */
@@ -178,9 +179,9 @@ export function WaterfallChart({ selectedId, onSelect }: WaterfallChartProps) {
           )
         })}
       </div>
-      <div className="mt-1 text-[11px] text-slate-400">
+      <div className="mt-1 flex items-center gap-1 text-[11px] text-slate-400">
         Axis starts at {fmtBiz(min)}
-        {mvp && " · Impact: High is a quarter of the gap or more, Medium a tenth or more, Low less"}
+        {mvp && <InfoIcon title="Impact" align="left" points={["High: a quarter of the gap or more", "Medium: a tenth or more", "Low: less", "Bars show the level, not dollars; they stop below the plan line"]} />}
       </div>
     </div>
   )
