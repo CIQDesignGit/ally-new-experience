@@ -41,7 +41,7 @@ function RequestAnswer() {
           <li>
             · Deals: 20% off on {DEALS.length} of your {MATCHED} matched gift sets since Oct 5
           </li>
-          <li>· Tracking it every week takes a new match between {NAMES.competitor}&rsquo;s products and yours, so a person checks it</li>
+          <li>· Nothing in your library tracks a competitor every week yet: it needs a new match between {NAMES.competitor}&rsquo;s products and yours, so an engineer builds it</li>
         </ul>
       </AnswerCard>
 

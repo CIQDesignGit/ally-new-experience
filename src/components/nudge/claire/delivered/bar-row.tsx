@@ -105,23 +105,29 @@ export function QueueDelivered({ label, rows, footer }: { label: string; rows: {
   const promised = rows.reduce((s, r) => s + r.promised, 0)
   const delivered = rows.reduce((s, r) => s + r.delivered, 0)
   const delta = delivered - promised
-  const scale = Math.max(...rows.map((r) => Math.max(r.delivered, r.promised))) * 1.15
+  // The MVP shows what was delivered, measured: no projection to compare it against.
+  const mvp = useMvp()
+  const scale = Math.max(...rows.map((r) => Math.max(r.delivered, mvp ? 0 : r.promised))) * 1.15
   // Most delivered first, as on Claire's page.
   const sorted = [...rows].sort((a, b) => b.delivered - a.delivered)
   return (
     <section className="border-t border-slate-300 px-10 pt-9 pb-10">
       <div className="font-mono text-xs tracking-wide text-slate-500 uppercase">{label}</div>
       <div className="mt-2 flex flex-wrap items-baseline gap-x-6 gap-y-1">
-        <span className="text-2xl font-semibold tracking-tight text-slate-500">
-          Projected <span className="font-mono">{fmtValue(promised)}</span>
-        </span>
+        {!mvp && (
+          <span className="text-2xl font-semibold tracking-tight text-slate-500">
+            Projected <span className="font-mono">{fmtValue(promised)}</span>
+          </span>
+        )}
         <span className="text-2xl font-semibold tracking-tight text-slate-950">
           Delivered <span className="font-mono text-ally-600">{fmtValue(delivered)}</span>
         </span>
-        <span className={cn("font-mono text-sm font-semibold tabular-nums", delta >= 0 ? "text-success-700" : "text-error-600")}>
-          {delta >= 0 ? "+" : "−"}
-          {fmtValue(Math.abs(delta))}
-        </span>
+        {!mvp && (
+          <span className={cn("font-mono text-sm font-semibold tabular-nums", delta >= 0 ? "text-success-700" : "text-error-600")}>
+            {delta >= 0 ? "+" : "−"}
+            {fmtValue(Math.abs(delta))}
+          </span>
+        )}
       </div>
       <BarKey />
       <div className="mt-3 overflow-hidden rounded-xl border border-slate-200 bg-white">

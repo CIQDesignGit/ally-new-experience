@@ -108,6 +108,9 @@ One codebase with an MVP switch, not a copy. `/demo/mvp` turns the switch on; th
 - Oct 30: every recommendation takes feedback. Content: Edit opens the title box with reason chips (missing keywords, business knowledge not applied, inaccurate product info, brand voice, retailer guidelines, length), optional details, Approve & lock. Ops: thumbs up or down plus a box. Media: Edit on the budget move with reason chips.
 - Oct 30: the borrow harness shows one full create (competition watch). No full RCA edit walkthrough. The Agent Console lists all four live skills: Prime Day deck, gap analysis (why gift sets lag), vendor negotiation prep, competition watch.
 - Oct 30: negotiation prep can project (it's the customer's own negotiation model, not a forecast of Ally's impact).
+- Oct 30: Library tab. CommerceIQ's skills, three groups: on for everyone (the gap-to-plan alerts, no off switch), available (turn on in one click; same data model for every customer), not in your plan (locked by tier). A skill that needs the customer's data asks for it and is ready by tomorrow. Status order: core, then tier lock, then on, then pending.
+- Oct 30: any question in chat is matched to a library skill first ("we have this, turn it on?"); only a true gap goes to the engineer loop (competition watch), and a published skill joins the library.
+- Oct 30: Joint plan = the promise; My dashboards = the home for what it produces. MVP opens the latest copy; vision adds past copies.
 
 ## Open questions
 1. Claire: keep her as the closer, or end on Michelle?

@@ -30,6 +30,8 @@ import { LESSON_CHIP } from "@/components/nudge/ops/gap-training"
 import { GIFT_QUESTION } from "@/components/nudge/alerts/data"
 import { RETRO_TASK, StorylineAnswer } from "@/components/nudge/retro/storyline-answer"
 import { ResetDemoButton } from "@/components/nudge/reset-demo-button"
+import { useMvp } from "@/components/nudge/mvp"
+import { LibraryMatch } from "@/components/nudge/library/match"
 import { opsBatches, opsSkus } from "@/components/nudge/data"
 import { useNudge } from "@/components/nudge/nudge-context"
 import type { OpsBatch } from "@/components/nudge/data"
@@ -52,6 +54,7 @@ PROMO_CHIPS["promo-vs-brightwick"].followUps = [PROMO_CHIPS["promo-badge"], PROM
 
 function InboxChat() {
   const competition = useCompetition()
+  const mvp = useMvp()
   useChatSource(
     {
       chips: [
@@ -68,15 +71,17 @@ function InboxChat() {
         { ...PREP_CHIP, hidden: true, task: "/michelle/c/negotiation" },
         // Answered when asked, not offered: the bar keeps five starters, one per job.
         ...MICHELLE_QUESTIONS.map((q) => ({ q, hidden: true, render: () => <div className="max-w-[860px] rounded-2xl bg-white px-5 py-4 text-[15px] leading-relaxed text-slate-700 ring-1 ring-slate-200">{michelleAnswer(q)}</div> })),
-        // A task, not a question about the brief: it opens its own conversation.
-        { q: RETRO_TASK, task: "/michelle/retro?new=1", render: () => <StorylineAnswer /> },
+        // A task, not a question about the brief: it opens its own conversation. The MVP offers the library skill first.
+        mvp
+          ? { q: RETRO_TASK, match: /recap|prime day (deck|recap)/i, render: () => <LibraryMatch skillId="prime-day-deck" go="/michelle/retro?new=1" goLabel="Start the Prime Day deck" /> }
+          : { q: RETRO_TASK, task: "/michelle/retro?new=1", render: () => <StorylineAnswer /> },
         { q: "Claire's Q4 business review", hidden: true, task: "/michelle/decks/qbr?new=1", match: /\b(qbr|business review)\b/i, render: () => null },
         // Gap to plan has its own page; asking for it goes there.
         { q: "Where are we against plan?", task: "/michelle/gap", match: /\b(gap to plan|against plan|behind plan|vs\.? plan|short of plan)\b/i, render: () => null },
         launchStatusChip("michelle"),
       ],
     },
-    `inbox-${competition.on}-${competition.stage}`,
+    `inbox-${competition.on}-${competition.stage}-${mvp}`,
   )
   return null
 }

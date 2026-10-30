@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Bell, ClipboardList, Clock, GraduationCap, Home, LayoutDashboard, MessageSquare, PanelLeft, Pin, PinOff, Sparkles, TrendingDown, Wand2 } from "lucide-react"
+import { Bell, ClipboardList, Clock, GraduationCap, Home, LayoutDashboard, Library as LibraryIcon, MessageSquare, PanelLeft, Pin, PinOff, Sparkles, TrendingDown, Wand2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useNudge } from "./nudge-context"
 import { rememberHome, rememberedHome } from "./top-strip"
@@ -12,6 +12,8 @@ import { useLive } from "./live-model"
 import { RETRO } from "./retro/prime-day"
 import { MEDIA_BATCHES } from "./media/data"
 import { INBOX } from "./cs/data"
+import { AVAILABLE } from "./library/data"
+import { statusOf, useLibrary } from "./library/state"
 
 const OPEN_W = "264px"
 const SHUT_W = "64px"
@@ -73,6 +75,14 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
     if (next) setOpen(true)
   }
   const { retro, alerts, dashboards, decks, skills, conversations, approved, policy, launchReady, period, callItems } = useNudge()
+  // Skills turned on from the library that make a dashboard or deck show in My dashboards.
+  const library = useLibrary()
+  const libraryOutputs = AVAILABLE.filter((s) => (s.gives === "Dashboard" || s.gives === "Deck") && s.output && statusOf(s, library) === "On").map((s) => ({
+    label: s.output!.label,
+    sub: `${s.gives} · from the library`,
+    href: s.output!.href,
+    on: path === s.output!.href,
+  }))
   const qbr = decks.qbr
   // Being on the conversation counts as started, even before its state has loaded.
   const started = Object.keys(retro).length > 0 || path === "/michelle/retro"
@@ -123,6 +133,8 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
       icon: LayoutDashboard,
       fresh: fresh || dashboards.some((d) => !d.seen),
       items: [
+        // What a skill turned on from the library produces, unless it's already listed by its own story below.
+        ...libraryOutputs.filter((o) => !(retro.dashboard && o.href === "/michelle/dashboards/prime-day")),
         ...(retro.dashboard ? [{ label: RETRO.name, sub: "Dashboard · refreshes daily", href: "/michelle/dashboards/prime-day", on: path === "/michelle/dashboards/prime-day", fresh }] : []),
         ...dashboards.map((d) => ({ label: d.name, sub: `Dashboard · ${d.widgets.length} widgets, saved from chat`, href: `/michelle/dashboards/${d.id}`, on: path === `/michelle/dashboards/${d.id}`, fresh: !d.seen })),
         // Claire sees the decks Michelle sent her, the moment she sends them; Michelle sees what she built; Sarah her account's reads.
@@ -273,6 +285,10 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
           {divider}
           {/* What Ally made for you. */}
           {groups[0].map((x) => listBlock(x))}
+          {/* What CommerceIQ can turn on for you: the skills library. */}
+          <Link href="/library" className={row(path === "/library")}>
+            <LibraryIcon className="size-4" /> <span className="flex-1">Library</span>
+          </Link>
           {divider}
           {/* The two Ally verbs, together: teach it (what ships, skills, knowledge), then ask it. The MVP keeps teaching on our side (settings, for FDEs), not in the customer's nav. */}
           {!live.mvp && (
@@ -334,6 +350,9 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
               </button>
             )
           })}
+          <Link href="/library" aria-label="Library" title="Library" className={iconBtn(path === "/library")}>
+            <LibraryIcon className="size-4" />
+          </Link>
           <span className="h-3" aria-hidden />
           {!live.mvp && (
             <Link href="/settings" aria-label="Teach Ally" title="Teach Ally" className={iconBtn(path === "/settings")}>
