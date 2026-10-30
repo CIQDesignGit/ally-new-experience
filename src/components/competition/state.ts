@@ -5,8 +5,8 @@ import { useSyncExternalStore } from "react"
 /**
  * The competition demo's progress, shared by its four screens: Michelle's
  * page, Claude Code, the Agent Console and her dashboard. Kept in its own
- * localStorage key so it survives moving between pages; /demo/competition
- * starts it over.
+ * sessionStorage key so it survives moving between pages in this tab;
+ * /demo/competition starts it over.
  */
 export type Stage =
   | "idle" // nothing asked yet
@@ -40,11 +40,15 @@ let state: CompetitionState = INITIAL
 let loaded = false
 const listeners = new Set<() => void>()
 
+// Kept for this browser tab only (sessionStorage): the story carries across its four screens and a reload,
+// but a new tab starts clean, so the tracker shows only after Michelle asks for it.
 function load() {
   if (loaded || typeof window === "undefined") return
   loaded = true
   try {
-    const raw = window.localStorage.getItem(KEY)
+    // An earlier version kept it forever in localStorage; drop that copy.
+    window.localStorage.removeItem(KEY)
+    const raw = window.sessionStorage.getItem(KEY)
     if (raw) state = { ...INITIAL, ...JSON.parse(raw) }
   } catch {}
 }
@@ -53,7 +57,7 @@ export function setCompetition(patch: Partial<CompetitionState>) {
   load()
   state = { ...state, ...patch }
   try {
-    window.localStorage.setItem(KEY, JSON.stringify(state))
+    window.sessionStorage.setItem(KEY, JSON.stringify(state))
   } catch {}
   listeners.forEach((l) => l())
 }
