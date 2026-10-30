@@ -26,7 +26,7 @@ const TONE: Record<string, string> = {
 
 const LINK = "text-[13px] font-medium text-brand-700 hover:underline"
 
-export function ClaireRow({ row, grid, showAction }: { row: TierRow; grid: string; /** The table has a button column (some row has a move). */ showAction: boolean }) {
+export function ClaireRow({ row, grid, showAction, impact }: { row: TierRow; grid: string; /** The table has a button column (some row has a move). */ showAction: boolean; /** The MVP shows the row's impact level in place of its value. */ impact?: string }) {
   const { statusOf, assignFor, askFor, approveMyself, autopilotSeasonal, day, s } = useClaireActions()
   const { retailer } = useNudge()
   const st = statusOf(row)
@@ -117,7 +117,11 @@ export function ClaireRow({ row, grid, showAction }: { row: TierRow; grid: strin
           {deadline && <span className="mt-0.5 block text-[13px] font-medium text-warning-700">{deadline}</span>}
         </div>
       </div>
-      <div className="text-right font-mono text-[15px] leading-5 font-semibold text-slate-950 tabular-nums">{row.value}</div>
+      {impact ? (
+        <div className="text-right text-[15px] leading-5 font-semibold text-slate-950">{impact}</div>
+      ) : (
+        <div className="text-right font-mono text-[15px] leading-5 font-semibold text-slate-950 tabular-nums">{row.value}</div>
+      )}
       {/* The button centers on the row's first line, level with the status and value (a 40px button on a 20px line). */}
       {showAction && <div className="-mt-2.5 self-start justify-self-end">{action}</div>}
     </div>

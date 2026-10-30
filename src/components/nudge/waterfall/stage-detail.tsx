@@ -10,6 +10,8 @@ import { AutopilotDetail } from "./autopilot-detail"
 const gridFor = (moves: boolean) => `grid ${moves ? "grid-cols-[minmax(0,1fr)_100px_204px]" : "grid-cols-[minmax(0,1fr)_100px]"} items-center gap-4`
 import { fmtM } from "../data"
 import type { WaterfallStage } from "../data"
+import { useLive } from "../live-model"
+import { toM } from "../mvp"
 
 /** The drill-down for a selected waterfall stage: its line items, with a nudge on each row whose owner hasn't started. */
 export function StageDetail({ stage }: { stage: WaterfallStage }) {
@@ -19,6 +21,9 @@ export function StageDetail({ stage }: { stage: WaterfallStage }) {
 
 function TierDetail({ stage }: { stage: WaterfallStage }) {
   const { s } = useClaireActions()
+  // The MVP shows impact levels, not what the work is worth.
+  const { mvp, impact } = useLive()
+  const levelOf = (value: string) => (mvp ? impact(toM(value)) : undefined)
   const moves = stage.rows.some((r) => rowAction(r, s))
   const TIER_GRID = gridFor(moves)
 
@@ -27,7 +32,11 @@ function TierDetail({ stage }: { stage: WaterfallStage }) {
       {/* Same grid as the rows below, so the total sits over the values. Nudges live on each row, for whoever hasn't started. */}
       <div className={`${TIER_GRID} border-b border-slate-100 bg-slate-25 px-6 py-4`}>
         <span className="text-lg font-semibold text-slate-950">{stage.label}</span>
-        <span className="text-right font-mono text-[15px] font-bold text-slate-950 tabular-nums">{fmtM(stage.value)}</span>
+        {mvp ? (
+          <span className="text-right text-[15px] font-bold text-slate-950">{impact(stage.value)}</span>
+        ) : (
+          <span className="text-right font-mono text-[15px] font-bold text-slate-950 tabular-nums">{fmtM(stage.value)}</span>
+        )}
         {moves && <div />}
       </div>
 
@@ -39,7 +48,7 @@ function TierDetail({ stage }: { stage: WaterfallStage }) {
             <span>Task</span>
             <span className="hidden lg:block">Status</span>
           </div>
-          <span className="text-right">Value</span>
+          <span className="text-right">{mvp ? "Impact" : "Value"}</span>
           {moves && <span />}
         </div>
       )}
@@ -47,7 +56,7 @@ function TierDetail({ stage }: { stage: WaterfallStage }) {
         <div className="px-6 pb-1.5">
           {stage.rows.map((row, i) => (
             // Each row says where it stands and offers Claire's move: ask by a date, or approve it herself once it's due.
-            <ClaireRow key={i} row={row} grid={TIER_GRID} showAction={moves} />
+            <ClaireRow key={i} row={row} grid={TIER_GRID} showAction={moves} impact={levelOf(row.value)} />
           ))}
         </div>
       ) : (

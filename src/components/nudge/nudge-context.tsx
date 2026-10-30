@@ -5,6 +5,7 @@ import { createContext, useCallback, useContext, useEffect, useState } from "rea
 import type { NudgeKey, Period } from "./types"
 import { usePathname } from "next/navigation"
 import { RETAILER_PAGES, setCurrentRetailer } from "./retailer"
+import { setCurrentMvp, useMvp } from "./mvp"
 import type { Retailer } from "./retailer"
 import { DEFAULT_KNOWLEDGE, DEFAULT_POLICY } from "./policy"
 import type { KnowledgeEntry, Policy } from "./policy"
@@ -132,6 +133,9 @@ export interface Feedback {
   vote: "up" | "down"
   text?: string
   sent?: boolean
+  /** An edit to Ally's recommendation, and why the person made it. */
+  edit?: string
+  reasons?: string[]
 }
 
 /** One SKU of one ops issue, added to the note on a day; sentOn once the note goes. */
@@ -249,6 +253,7 @@ export function NudgeProvider({ children }: { children: React.ReactNode }) {
   // Only the pages that follow the switch get another retailer's numbers; set before any child reads one.
   const retailer = RETAILER_PAGES.includes(path) ? retailerPick : "amazon"
   setCurrentRetailer(retailer)
+  setCurrentMvp(useMvp())
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time sync from localStorage (an external system) right after mount, not a response to a state change.

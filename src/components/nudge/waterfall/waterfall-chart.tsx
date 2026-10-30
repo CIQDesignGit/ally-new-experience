@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils"
 import { BUSINESS, fmtBiz, fmtM, fmtValue } from "../data"
 import type { WaterfallStage } from "../data"
 import { useLive } from "../live-model"
+import { IMPACT_HEIGHT, gapUnit, type Impact } from "../mvp"
 
 const CHART_HEIGHT = 300
 /** Fixed so every column is the same total height — otherwise items-end floats the bars to different baselines. */
@@ -58,6 +59,29 @@ export function buildColumns(stages: WaterfallStage[], pace: number, min: number
   ]
 }
 
+/**
+ * The MVP's bridge: the same run rate and plan line, but each bucket stands at
+ * its impact level instead of its dollars, and the total has no number. Heights are a
+ * share of the gap, so the stack always stops below the plan line: the chart
+ * ranks the work, it never claims to close the gap.
+ */
+export function buildImpactColumns(stages: WaterfallStage[], pace: number, plan: number, min: number, impact: (v: number) => Impact): Column[] {
+  const unit = gapUnit(plan, pace)
+  let acc = pace
+  const steps = stages.map((s) => {
+    const level = impact(s.value)
+    const col = { key: s.id, label: s.label, sub: s.caption ?? s.effort, valueLabel: level, start: acc, end: acc + unit * IMPACT_HEIGHT[level], selectable: true }
+    acc = col.end
+    return col
+  })
+  return [
+    { key: "pace", label: "Current run rate", sub: "", valueLabel: fmtBiz(pace), start: min, end: pace, selectable: false },
+    ...steps,
+    // Where the work stacks up to, with no number on it: its split by area would be dollars, so it doesn't open.
+    { key: "total", label: "Total opportunity", sub: "", valueLabel: "", start: min, end: acc, selectable: false },
+  ]
+}
+
 interface WaterfallChartProps {
   selectedId: WaterfallSelection
   onSelect: (id: WaterfallSelection) => void
@@ -69,11 +93,11 @@ interface WaterfallChartProps {
  * the detail panel below shows the line items or the split by area.
  */
 export function WaterfallChart({ selectedId, onSelect }: WaterfallChartProps) {
-  const { stages, pace, period } = useLive()
+  const { stages, pace, period, mvp, impact } = useLive()
   const { plan } = BUSINESS[period]
   const run = pace(period)
   const min = axisMin(run, plan)
-  const columns = buildColumns(stages, run, min)
+  const columns = mvp ? buildImpactColumns(stages, run, plan, min, impact) : buildColumns(stages, run, min)
   const max = Math.max(columns[columns.length - 1].end, plan) * 1.03
   const frac = (v: number) => (v - min) / (max - min)
   const planTop = PAD_TOP + (1 - frac(plan)) * CHART_HEIGHT
@@ -122,7 +146,7 @@ export function WaterfallChart({ selectedId, onSelect }: WaterfallChartProps) {
                       BAR[col.key],
                     )}
                   />
-                  <div className="absolute -top-6 left-1/2 -translate-x-1/2 font-mono text-sm font-bold whitespace-nowrap text-slate-950 tabular-nums">
+                  <div className={cn("absolute -top-6 left-1/2 -translate-x-1/2 text-sm font-bold whitespace-nowrap text-slate-950", col.key === "pace" || !mvp ? "font-mono tabular-nums" : "")}>
                     {col.valueLabel}
                   </div>
                 </div>
@@ -141,7 +165,7 @@ export function WaterfallChart({ selectedId, onSelect }: WaterfallChartProps) {
                   {col.label}
                 </span>
                 {col.sub && <span className="text-[11px] text-slate-400">{col.sub}</span>}
-                {col.key === "total" && (
+                {col.key === "total" && !mvp && (
                   <span className={cn("text-[11px] font-medium", landed >= 0 ? "text-success-700" : "text-error-600")}>
                     ${Math.abs(landed).toFixed(1)}M {landed >= 0 ? "over" : "short of"} plan
                   </span>
@@ -154,7 +178,10 @@ export function WaterfallChart({ selectedId, onSelect }: WaterfallChartProps) {
           )
         })}
       </div>
-      <div className="mt-1 text-[11px] text-slate-400">Axis starts at {fmtBiz(min)}</div>
+      <div className="mt-1 text-[11px] text-slate-400">
+        Axis starts at {fmtBiz(min)}
+        {mvp && " · Impact: High is a quarter of the gap or more, Medium a tenth or more, Low less"}
+      </div>
     </div>
   )
 }

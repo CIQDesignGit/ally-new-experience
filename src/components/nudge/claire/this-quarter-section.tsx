@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils"
 import { TEAM_TIER, fmtValue } from "../data"
 import { DELIVERED, leverDelivered } from "../delivered-periods"
 import { useNudge } from "../nudge-context"
+import { useMvp } from "../mvp"
 import { AGENT_LABEL } from "../types"
 import type { AgentId, TierRow } from "../types"
 import { BarKey, BarRow, WorkTypeBars } from "./delivered/bar-row"
@@ -30,6 +31,7 @@ export function ThisQuarterSection() {
   const [open, setOpen] = useState<AgentId | null>(null)
   const toggle = (id: AgentId) => setOpen((o) => (o === id ? null : id))
   const { period, retailer } = useNudge()
+  const mvp = useMvp()
   const d = DELIVERED[period]
   // Most delivered first: the list ranks by dollars, never a fixed lever order.
   const ORDER = [...LEVERS].sort((a, b) => leverDelivered(d, b).delivered - leverDelivered(d, a).delivered)
@@ -37,11 +39,19 @@ export function ThisQuarterSection() {
   const delivered = ORDER.reduce((s, a) => s + leverDelivered(d, a).delivered, 0)
   const delta = delivered - projected
   // One scale for every row, so a longer bar is more money.
-  const scale = Math.max(...ORDER.map((a) => Math.max(leverDelivered(d, a).delivered, leverDelivered(d, a).promised))) * 1.15
+  const scale = Math.max(...ORDER.map((a) => Math.max(leverDelivered(d, a).delivered, mvp ? 0 : leverDelivered(d, a).promised))) * 1.15
 
   return (
     <section className="px-12 pt-10 pb-4">
       <div className="font-mono text-xs tracking-wide text-slate-500 uppercase">{d.label}</div>
+      {mvp ? (
+        <div className="mt-2 flex flex-wrap items-baseline gap-x-4 gap-y-1">
+          <span className="text-2xl font-semibold tracking-tight text-slate-950">
+            Delivered <span className="font-mono text-ally-600">{fmtValue(delivered)}</span>
+          </span>
+          <span className="text-sm text-slate-500">Measured on the SKUs Ally changed, against their 4 weeks before</span>
+        </div>
+      ) : (
       <div className="mt-2 flex flex-wrap items-baseline gap-x-6 gap-y-1">
         <span className="text-2xl font-semibold tracking-tight text-slate-500">
           Projected <span className="font-mono">{fmtValue(projected)}</span>
@@ -54,6 +64,7 @@ export function ThisQuarterSection() {
           {fmtValue(Math.abs(delta))}
         </span>
       </div>
+      )}
 
       {/* Why the delivered number keeps rising: Ally learns from the team every day. */}
       <LearningLine href="/settings?tab=context&from=claire" />

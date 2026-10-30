@@ -5,6 +5,7 @@ import { ArrowRight, ChevronRight } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { fmtValue } from "../../data"
 import type { Bullet, ContentDelivered } from "../../delivered-content-data"
+import { useMvp } from "../../mvp"
 
 /** Name · bar · delivered of projected · the gap and why. One row per agent, on one scale. */
 const BAR_GRID = "grid grid-cols-[20px_200px_minmax(0,1fr)_128px_260px] items-center gap-4"
@@ -25,6 +26,8 @@ function topReason(data?: { bullets?: Bullet[] }) {
  */
 export function BarRow({ name, did, delivered, promised, scale, data, why: whyText, open, onToggle, children }: { name: string; did: string; delivered: number; promised: number; scale: number; data?: { bullets?: Bullet[] }; why?: string; open?: boolean; onToggle?: () => void; children?: React.ReactNode }) {
   const pct = (v: number) => `${(v / scale) * 100}%`
+  // The MVP shows what was delivered, measured; nothing against a projection.
+  const mvp = useMvp()
   const short = delivered < promised
   const delta = delivered - promised
   const why = whyText ?? (short ? topReason(data) : "Ahead of projection")
@@ -36,15 +39,22 @@ export function BarRow({ name, did, delivered, promised, scale, data, why: whyTe
         <div className="truncate text-[13px] text-slate-500">{did}</div>
       </div>
       <div className="relative h-3 rounded-sm bg-slate-100" aria-hidden>
-        <div className="absolute inset-y-0 left-0 rounded-l-sm bg-ally-500" style={{ width: pct(Math.min(delivered, promised)) }} />
-        <div className={cn("absolute inset-y-0", short ? "bg-error-100" : "bg-success-200")} style={{ left: pct(Math.min(delivered, promised)), width: pct(Math.abs(delta)) }} />
-        <div className="absolute -inset-y-1 w-0.5 bg-ink" style={{ left: pct(promised) }} />
+        {mvp ? (
+          <div className="absolute inset-y-0 left-0 rounded-l-sm bg-ally-500" style={{ width: pct(delivered) }} />
+        ) : (
+          <>
+            <div className="absolute inset-y-0 left-0 rounded-l-sm bg-ally-500" style={{ width: pct(Math.min(delivered, promised)) }} />
+            <div className={cn("absolute inset-y-0", short ? "bg-error-100" : "bg-success-200")} style={{ left: pct(Math.min(delivered, promised)), width: pct(Math.abs(delta)) }} />
+            <div className="absolute -inset-y-1 w-0.5 bg-ink" style={{ left: pct(promised) }} />
+          </>
+        )}
       </div>
       <div className="text-right font-mono text-sm tabular-nums">
-        <span className="font-semibold text-slate-950">{fmtValue(delivered)}</span> <span className="text-slate-500">of {fmtValue(promised)}</span>
+        <span className="font-semibold text-slate-950">{fmtValue(delivered)}</span>
+        {!mvp && <span className="text-slate-500"> of {fmtValue(promised)}</span>}
       </div>
       <div className="line-clamp-2 min-w-0 text-[13px] leading-snug">
-        {delta === 0 ? (
+        {mvp ? null : delta === 0 ? (
           <span className="text-slate-600">On projection</span>
         ) : (
           <>
@@ -74,6 +84,9 @@ export function BarRow({ name, did, delivered, promised, scale, data, why: whyTe
 
 /** The key, once: what the fill, the tick and the shading mean. */
 export function BarKey() {
+  // With no projection there's nothing to decode: the MVP's bars are delivered only.
+  const mvp = useMvp()
+  if (mvp) return null
   return (
     <div className="mt-4 flex flex-wrap gap-4 text-xs text-slate-500">
       <span className="flex items-center gap-1.5"><span className="h-2 w-3 rounded-sm bg-ally-500" /> Delivered</span>

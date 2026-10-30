@@ -8,6 +8,7 @@ import { TopStrip } from "../top-strip"
 import type { Crumb } from "../top-strip"
 import { EmailPdfButton } from "./email-pdf-button"
 import { TeamBell } from "./team-bell"
+import { AGENT_LABEL } from "../types"
 
 /**
  * The top of Claire's page, in her business terms: where she's landing against
@@ -22,6 +23,10 @@ export function BusinessHero({ topLineOnly = false, crumbs }: { topLineOnly?: bo
   const { period } = live
   const b = { ...BUSINESS[period], pace: live.pace(period) }
   const gap = b.plan - b.pace
+  // The MVP counts what's waiting and names whose deadline is first, instead of dollars.
+  const approvals = live.approval.rows.filter((r) => (r.valueM ?? 0) > 0).length
+  const firstDue = live.approval.rows.find((r) => r.deadline)
+  const dueLabel = firstDue ? `${firstDue.analystName}'s ${AGENT_LABEL[firstDue.agent].toLowerCase()} approval` : "1 approval"
 
   return (
     <>
@@ -48,7 +53,18 @@ export function BusinessHero({ topLineOnly = false, crumbs }: { topLineOnly?: bo
           <span className="font-mono">{fmtBiz(b.pace)}</span> forecast <span className="text-slate-500">(vs <span className="font-mono">{fmtBiz(b.plan)}</span> plan)</span>.
         </span>
         <span className="block">
-          {gap > 0 ? (
+          {live.mvp ? (
+            // The MVP names the gap and stops there: no pipeline dollars against it.
+            gap > 0 ? (
+              <>
+                <span className="font-mono text-error-600">{fmtBiz(gap)}</span> gap to close.
+              </>
+            ) : (
+              <>
+                <span className="font-mono text-success-700">{fmtBiz(-gap)}</span> ahead of plan.
+              </>
+            )
+          ) : gap > 0 ? (
             <>
               <span className="font-mono text-brand-500">{live.open.totalLabel}</span> in pipeline to close the <span className="font-mono text-error-600">{fmtBiz(gap)}</span> gap.
             </>
@@ -61,23 +77,23 @@ export function BusinessHero({ topLineOnly = false, crumbs }: { topLineOnly?: bo
         </span>
       </h1>
 
-      <div className="mt-2 text-base text-slate-500">
+      {!live.mvp && <div className="mt-2 text-base text-slate-500">
         {live.open.byArea.map((a, i) => (
           <span key={a.agent}>
             {i > 0 && <span className="text-slate-300"> · </span>}
             <span className="font-semibold text-slate-700">{a.value}</span> in {a.agent}
           </span>
         ))}
-      </div>
+      </div>}
       <div className="mt-3 text-xl font-semibold">
         <span className="text-brand-600">
-          {live.approval.effort} of your team&apos;s time unlocks {live.approval.value}
+          {live.approval.effort} of your team&apos;s time unlocks {live.mvp ? `${approvals} ${approvals === 1 ? "action" : "actions"}` : live.approval.value}
         </span>
         {live.deadline && (
           <>
             <span className="text-slate-300"> · </span>
             <span className="text-warning-600">
-              {live.deadline.expiring} expires in {live.deadline.days - day} days
+              {live.mvp ? dueLabel : live.deadline.expiring} expires in {live.deadline.days - day} days
             </span>
           </>
         )}

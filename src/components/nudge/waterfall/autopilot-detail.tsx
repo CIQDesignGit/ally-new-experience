@@ -8,6 +8,7 @@ import { AGENT_DOT } from "../agent-style"
 import { AUTOPILOT_BEST_IN_CLASS, OPEN_BY_AREA, fmtM } from "../data"
 import type { WaterfallStage } from "../data"
 import { AGENT_LABEL, type AgentId } from "../types"
+import { useLive } from "../live-model"
 
 // Workstream, share vs best in class, value, action. The action column fits "Increase autopilot"
 // so the button never runs into the value.
@@ -44,6 +45,8 @@ function ShareBar({ share, best }: { share: number; best: number }) {
  */
 export function AutopilotDetail({ stage }: { stage: WaterfallStage }) {
   const [raised, setRaised] = useState<Partial<Record<AgentId, boolean>>>({})
+  // The MVP shows impact levels, not what the work is worth.
+  const { mvp, impact } = useLive()
 
   const rows = stage.rows.map((r) => {
     const open = openOf(r.agent)
@@ -64,11 +67,15 @@ export function AutopilotDetail({ stage }: { stage: WaterfallStage }) {
         <div className="col-span-2 min-w-0">
           <div className="text-lg font-semibold text-slate-950">{stage.label}</div>
           <div className="mt-0.5 text-sm text-slate-500">
-            <span className="font-mono font-semibold text-slate-950">{share}%</span> of your open opportunity runs itself. Best-in-class brands run{" "}
+            <span className="font-mono font-semibold text-slate-950">{share}%</span> of your open {mvp ? "work" : "opportunity"} runs itself. Best-in-class brands run{" "}
             <span className="font-mono font-semibold text-slate-950">{best}%</span>.
           </div>
         </div>
-        <span className="text-right font-mono text-[15px] font-bold text-slate-950 tabular-nums">{fmtM(stage.value)}</span>
+        {mvp ? (
+          <span className="text-right text-[15px] font-bold text-slate-950">{impact(stage.value)}</span>
+        ) : (
+          <span className="text-right font-mono text-[15px] font-bold text-slate-950 tabular-nums">{fmtM(stage.value)}</span>
+        )}
         <div />
       </div>
 
@@ -78,7 +85,7 @@ export function AutopilotDetail({ stage }: { stage: WaterfallStage }) {
           <span className="hidden lg:block">What runs itself</span>
         </div>
         <span>On autopilot vs best in class</span>
-        <span className="text-right">Value</span>
+        <span className="text-right">{mvp ? "Impact" : "Value"}</span>
         <span />
       </div>
 
@@ -93,7 +100,11 @@ export function AutopilotDetail({ stage }: { stage: WaterfallStage }) {
               <p className="ml-4.5 text-sm leading-relaxed text-slate-500 lg:ml-0">{r.description}</p>
             </div>
             <ShareBar share={r.share} best={r.best} />
-            <span className="text-right font-mono text-[15px] font-semibold text-slate-950 tabular-nums">{r.value}</span>
+            {mvp ? (
+              <span className="text-right text-[15px] font-semibold text-slate-950">{impact(money(r.value))}</span>
+            ) : (
+              <span className="text-right font-mono text-[15px] font-semibold text-slate-950 tabular-nums">{r.value}</span>
+            )}
             <div className="justify-self-end">
               {raised[r.agent] ? (
                 <span className="inline-flex items-center gap-1.5 text-sm font-medium text-success-700">
