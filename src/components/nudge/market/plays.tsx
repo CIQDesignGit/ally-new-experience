@@ -5,8 +5,9 @@ import { Check, FileText } from "lucide-react"
 import { Points } from "../points"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
-import { fmtValue } from "../data"
+import { VISION_ONLY_LEVERS, fmtValue } from "../data"
 import { useNudge } from "../nudge-context"
+import { useMvp } from "../mvp"
 import type { Brief, Play } from "../market"
 
 const OWNER: Record<Play["owner"], string> = { content: "Ally for Content", media: "Ally for Media", ops: "Ally for Ops", human: "Your team" }
@@ -40,6 +41,8 @@ export function useLaunch() {
   return { isLaunched, launch }
 }
 
+/** The plays on offer: the MVP drops those for a vision-only lever. */
+export const offered = (plays: Play[], mvp: boolean) => (mvp ? plays.filter((p) => !VISION_ONLY_LEVERS.includes(p.owner)) : plays)
 export const agentPlays = (plays: Play[]) => plays.filter((p) => p.owner !== "human")
 export const humanPlays = (plays: Play[]) => plays.filter((p) => p.owner === "human")
 export const annual = (plays: Play[]) => plays.reduce((n, p) => n + p.annual, 0)
@@ -100,9 +103,10 @@ export function BriefDoc({ brief }: { brief: Brief }) {
 }
 
 /** The plays for a finding, each with its own action on its row: Launch for Ally's plays, Draft brief for your team's. */
-export function PlayList({ plays }: { plays: Play[] }) {
+export function PlayList({ plays: all }: { plays: Play[] }) {
   const { isLaunched, launch } = useLaunch()
   const [openBrief, setOpenBrief] = useState<string | null>(null)
+  const plays = offered(all, useMvp())
   if (!plays.length) return <div className="text-sm text-slate-500">No move needed here.</div>
   return (
     <div className="flex flex-col">

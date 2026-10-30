@@ -3,8 +3,10 @@
 import { useNudge } from "../nudge-context"
 import { cn } from "@/lib/utils"
 import { fmtBiz, fmtValue } from "../data"
-import { NEXT_EVENT, TOP_COMPETITOR, TOP_SEGMENT, segmentValue } from "../market"
+import { NEXT_EVENT, TOP_COMPETITOR, TOP_SEGMENT } from "../market"
 import type { Readiness } from "../market"
+import { useMvp } from "../mvp"
+import { annual, offered } from "./plays"
 import { Num, Points } from "../points"
 import { MarketMap } from "./market-map"
 
@@ -27,6 +29,7 @@ export function GrowCards({ onOpen }: { onOpen: (v: GrowView) => void }) {
   const ev = NEXT_EVENT
   // Market, competition and events are read from Amazon's search and share data: shown for Amazon, and named as Amazon in the total.
   const { retailer } = useNudge()
+  const mvp = useMvp()
   if (retailer === "walmart" || retailer === "target") return null
   return (
     <section className="px-12 pt-10 pb-4">
@@ -50,7 +53,7 @@ export function GrowCards({ onOpen }: { onOpen: (v: GrowView) => void }) {
           />
           <span className="mt-auto pt-4 text-[15px] font-semibold text-brand-700">Win share in {seg.name.toLowerCase()} →</span>
           <span className="mt-0.5 text-xs text-slate-500">
-            About <span className="font-mono">+{fmtValue(segmentValue(seg))}</span> a year
+            About <span className="font-mono">+{fmtValue(annual(offered(seg.plays, mvp)))}</span> a year
           </span>
         </button>
 

@@ -1010,6 +1010,11 @@ export const VISION_ONLY_PAGES = Object.values(SNAPSHOT.people)
   .filter((p) => p.visionOnly && p.page)
   .map((p) => p.page!)
 
+/** Levers whose owner is vision only: the MVP offers no plays for them. */
+export const VISION_ONLY_LEVERS: string[] = Object.values(SNAPSHOT.people)
+  .filter((p) => p.visionOnly && p.lever)
+  .map((p) => p.lever!)
+
 /**
  * The one read of the data. Swap this for a database call returning the same Snapshot.
  * With a review policy, content items are the policy's parts (see contentBatches);

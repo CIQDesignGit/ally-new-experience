@@ -6,7 +6,8 @@ import { cn } from "@/lib/utils"
 import { fmtValue } from "../data"
 import { COMPETITORS, MARKET, NEXT_EVENT, SEGMENTS } from "../market"
 import type { Play } from "../market"
-import { agentPlays, annual, humanPlays, useLaunch } from "./plays"
+import { agentPlays, annual, humanPlays, offered, useLaunch } from "./plays"
+import { mvpNow } from "../mvp"
 
 /** What the panel is about: a segment, a competitor, or the next event. */
 export type PanelContext = { kind: "segment"; id: string } | { kind: "competitor"; id: string } | { kind: "event" }
@@ -43,7 +44,8 @@ export function suggestions(c: PanelContext): string[] {
 export function answerFor(c: PanelContext, q: string): Answer {
   const i = Math.max(0, suggestions(c).indexOf(q))
   if (c.kind === "segment") {
-    const s = SEGMENTS.find((x) => x.id === c.id)!
+    const found = SEGMENTS.find((x) => x.id === c.id)!
+    const s = { ...found, plays: offered(found.plays, mvpNow()) }
     const agents = agentPlays(s.plays)
     const briefs = humanPlays(s.plays)
     const launch: Action[] = [
@@ -84,13 +86,14 @@ export function answerFor(c: PanelContext, q: string): Answer {
   }
   if (c.kind === "competitor") {
     const comp = COMPETITORS.find((x) => x.id === c.id)!
-    const agents = agentPlays(comp.plays)
-    const brief = humanPlays(comp.plays)[0]
+    const plays = offered(comp.plays, mvpNow())
+    const agents = agentPlays(plays)
+    const brief = humanPlays(plays)[0]
     if (i === 1)
       return {
         verdict: "Not across the range. Match only where you're losing the most, or hold and win on slots and content.",
         why: "A full match on 8 hero gift sets costs about $40K of margin this quarter to protect $180K of sales. Holding price and winning back sponsored slots recovers most of it without the margin hit. Ally won't change prices; this is your call.",
-        actions: [...(brief ? [{ label: "Draft the pricing brief", plays: [brief] }] : []), ...(agents.length ? [{ label: "Launch the slot and content plays", plays: agents }] : [])],
+        actions: [...(brief ? [{ label: "Draft the pricing brief", plays: [brief] }] : []), ...(agents.length ? [{ label: agents.length === 1 ? agents[0].what : "Launch the slot and content plays", plays: agents }] : [])],
         trust: "Margin estimate uses your cost file; competitor promo funding isn't visible.",
       }
     if (i === 2)
@@ -113,7 +116,7 @@ export function answerFor(c: PanelContext, q: string): Answer {
       trust: "Medium confidence: competitor sales and promo funding are estimated.",
     }
   }
-  const ev = NEXT_EVENT
+  const ev = { ...NEXT_EVENT, plays: offered(NEXT_EVENT.plays, mvpNow()) }
   const risks = ev.levers.filter((l) => l.state !== "ready")
   if (i === 1)
     return {
