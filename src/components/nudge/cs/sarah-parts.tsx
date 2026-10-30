@@ -8,6 +8,8 @@ import { RunList } from "../runs/run-list"
 import type { RunItem } from "../runs/data"
 import { ACCOUNT, ASKS, INBOX, LAST_CALL, PLAN, PLAN_DOES, SARAH, SARAH_NOW, WALMART_PACING, WBR_EDIT } from "./data"
 import type { InboxItem } from "./data"
+import { useMvp } from "../mvp"
+import { VISION_ONLY_PAGES } from "../data"
 
 const HEAD = "text-xs font-medium text-slate-500"
 
@@ -102,6 +104,21 @@ const LATEST: Record<string, { label: string; href: string }> = {
   "jbp-qbr": { label: "Open the QBR", href: "/michelle/decks/qbr?view=deck" },
 }
 
+/**
+ * What each plan item opens for the customer: the page or dashboard where it
+ * lives on their side. Items with no customer page (the session, Sarah's
+ * workspace decks) stay plain text.
+ */
+const CUSTOMER_OPEN: Record<string, string> = {
+  "jbp-pacing": "/james",
+  "jbp-actions": "/james",
+  "jbp-shipped": "/content-results?period=qtd",
+  "jbp-value": "/content-results?period=qtd",
+  "jbp-visibility": "/reports/ai-visibility",
+  "jbp-competitors": "/michelle/dashboards/competition",
+  "jbp-qbr": "/michelle/decks/qbr?view=deck",
+}
+
 /** The joint plan: one list per cadence, then what calls added. "What Ally does" is the rule: on autopilot, or drafted for Sarah. */
 export function JointPlan({ readOnly, customer }: { readOnly?: boolean; /** Read by the customer: "you asked", not their name. */ customer?: boolean }) {
   const { plan, added } = useWork()
@@ -128,6 +145,12 @@ export function JointPlan({ readOnly, customer }: { readOnly?: boolean; /** Read
 function PlanTable({ customer }: { customer?: boolean }) {
   const { runs } = useNudge()
   const { plan, added, planChanged } = useWork()
+  // A page that isn't in this version (the MVP has no media page) leaves the item as plain text.
+  const mvp = useMvp()
+  const openFor = (id: string) => {
+    const href = CUSTOMER_OPEN[id]
+    return href && !(mvp && VISION_ONLY_PAGES.some((p) => href.startsWith(p))) ? href : undefined
+  }
   const groups = [...plan, ...(added.length ? [{ title: "Added from calls", items: added }] : [])]
   const changes = planChanged ? ASKS.filter((a) => a.answeredBy === "a-plan") : []
   return (
@@ -160,7 +183,13 @@ function PlanTable({ customer }: { customer?: boolean }) {
               .map((i) => (
                 <div key={i.id} className="grid grid-cols-[minmax(0,1fr)_170px_170px_170px] items-baseline gap-4 border-t border-slate-100 py-3 text-sm first:border-t-0">
                   <span className="min-w-0">
-                    <span className="block font-medium text-slate-950">{i.name}</span>
+                    {openFor(i.id) ? (
+                      <Link href={openFor(i.id)!} className="inline-flex items-center gap-1 font-medium text-brand-700 hover:underline">
+                        {i.name} <ArrowRight className="size-3.5" />
+                      </Link>
+                    ) : (
+                      <span className="block font-medium text-slate-950">{i.name}</span>
+                    )}
                     <span className="block text-[13px] text-slate-500">{i.what}</span>
                   </span>
                   <span className="text-slate-700">{i.runs}</span>
