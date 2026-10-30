@@ -17,7 +17,7 @@ Only what the product will do at MVP. Content and ops. No media. No dollar proje
 ## Projected → measured, screen by screen
 | Screen | Today (a projection) | MVP (a measurement) | File |
 |---|---|---|---|
-| Claire · gap to plan | Waterfall: run rate + a dollar bar per bucket of actions = "Total opportunity $4.7M" against the plan line | The gap to plan as a number (actual to date vs plan to date). Under it, the actions to bridge it, grouped On autopilot / One approval away / Needs your input, with counts and deadlines. No dollar bar per bucket, no total. Each action carries a measured fact (lost the buy box 6 days, sold $X in the last 4 weeks) | `waterfall/waterfall-chart.tsx`, `area-detail.tsx`, `claire-waterfall/page.tsx` |
+| Claire · gap to plan | Waterfall: run rate + a dollar bar per bucket = "Total opportunity $52.7M" against the plan line; "$4.7M in pipeline" in the hero | Same waterfall and same layout. Each bucket's "+$1.5M" becomes an impact level: High, Medium or Low. Bar heights follow the level, so there's no dollar axis. The "Total opportunity" bar goes. Detail table: the Value column becomes Impact. Hero keeps "$48M forecast vs $52M plan, $4M gap" and drops "$4.7M in pipeline" | `waterfall/waterfall-chart.tsx`, `area-detail.tsx`, `stage-detail.tsx`, `claire/business-hero.tsx` |
 | Claire · this quarter | "Projected $X · Delivered $Y · −$Z" | "Delivered $Y" only, each lever with its method: content = sales on updated SKUs vs before; ops = sales restored on SKUs that got the buy box back | `claire/this-quarter-section.tsx`, `delivered-periods.ts` |
 | Claire · autopilot | "% of your open opportunity runs itself" | "% of last month's fixes ran without a person" | `waterfall/autopilot-detail.tsx` |
 | Claire · competition cards | "−$X at risk this quarter" | "Their share of voice rose 9 pts in 8 weeks; your sales on those terms fell $X" | `market/grow-cards.tsx` |
@@ -80,10 +80,10 @@ One codebase with an MVP switch, not a copy. `/demo/mvp` turns the switch on; th
 - Sees: the competition dashboard (PowerPoint export), the new alert in her inbox (Excel export)
 
 ### Claire (exec), optional closer
-- Top: "$X behind plan, quarter to date" (measured)
-- Then: actions to bridge the gap, in the three autonomy groups, counts and deadlines, no dollars promised
-- Then: content and ops delivered this quarter (measured, with the method), the chat bar
-- The waterfall chart goes in the MVP: without a dollar per step it has nothing to stack
+- Same page as today. Hero: "$48M forecast vs $52M plan, $4M gap"
+- Waterfall: run rate, then On autopilot / One approval away / Needs your team as High, Medium or Low impact, against the plan line
+- Impact level: High = 25% of the gap or more, Medium = 10 to 25%, Low = under 10%
+- Delivered this quarter: measured, with the method. Chat bar
 - Open question below: keep Claire in the MVP demo or end on Michelle
 
 ## What changes in the code
@@ -105,7 +105,7 @@ One codebase with an MVP switch, not a copy. `/demo/mvp` turns the switch on; th
 
 ## Decided
 - Oct 29: no projections, measured results are in. Every dollar shown has already happened and says how it was measured.
-- Oct 29: Claire sees the gap to plan, then the actions to bridge it. Actions carry no dollar value (no "$4.7M of value").
+- Oct 29: Claire keeps the waterfall. Actions show High, Medium or Low impact instead of a dollar value (no "$4.7M of value").
 
 ## Open questions
 1. Claire: keep her as the closer, or end on Michelle?
