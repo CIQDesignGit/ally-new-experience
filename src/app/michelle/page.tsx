@@ -31,6 +31,7 @@ import { GIFT_QUESTION } from "@/components/nudge/alerts/data"
 import { RETRO_TASK, StorylineAnswer } from "@/components/nudge/retro/storyline-answer"
 import { ResetDemoButton } from "@/components/nudge/reset-demo-button"
 import { useMvp } from "@/components/nudge/mvp"
+import { useHarness } from "@/components/competition/harness"
 import { LibraryMatch } from "@/components/nudge/library/match"
 import { opsBatches, opsSkus } from "@/components/nudge/data"
 import { useNudge } from "@/components/nudge/nudge-context"
@@ -44,17 +45,27 @@ import type { OpsBatch } from "@/components/nudge/data"
 /** The inbox's questions for the Ask Ally bar (gap-to-plan registers its own per node). */
 // Use case 3: three promo answers, each offering the others and "save these as a dashboard".
 const SAVE_CHIP: Chip = { q: SAVE_ASK, match: /dashboard/i, render: () => <SaveDashboardAnswer /> }
-const PROMO_CHIPS = Object.fromEntries(PROMO_WIDGETS.map((w) => [w, { q: PROMO_QUESTIONS[w], render: () => <PromoAnswer id={w} /> } as Chip])) as Record<PromoWidget, Chip>
-PROMO_CHIPS["promo-month"].match = /promo(tion)?s?.*(doing|perform|month)/i
-PROMO_CHIPS["promo-badge"].match = /badge/i
-PROMO_CHIPS["promo-vs-brightwick"].match = /(compare|vs|versus).*brightwick|brightwick.*promo/i
-PROMO_CHIPS["promo-month"].followUps = [PROMO_CHIPS["promo-badge"], PROMO_CHIPS["promo-vs-brightwick"], SAVE_CHIP]
-PROMO_CHIPS["promo-badge"].followUps = [PROMO_CHIPS["promo-vs-brightwick"], PROMO_CHIPS["promo-month"], SAVE_CHIP]
-PROMO_CHIPS["promo-vs-brightwick"].followUps = [PROMO_CHIPS["promo-badge"], PROMO_CHIPS["promo-month"], SAVE_CHIP]
+/** The promo answers, each offering the others; with `save`, also "save these as a dashboard" (not in the borrow harness, where dashboards are built by an engineer). */
+function promoChips(save: boolean) {
+  const c = Object.fromEntries(PROMO_WIDGETS.map((w) => [w, { q: PROMO_QUESTIONS[w], render: () => <PromoAnswer id={w} /> } as Chip])) as Record<PromoWidget, Chip>
+  c["promo-month"].match = /promo(tion)?s?.*(doing|perform|month)/i
+  c["promo-badge"].match = /badge/i
+  c["promo-vs-brightwick"].match = /(compare|vs|versus).*brightwick|brightwick.*promo/i
+  const extra = save ? [SAVE_CHIP] : []
+  c["promo-month"].followUps = [c["promo-badge"], c["promo-vs-brightwick"], ...extra]
+  c["promo-badge"].followUps = [c["promo-vs-brightwick"], c["promo-month"], ...extra]
+  c["promo-vs-brightwick"].followUps = [c["promo-badge"], c["promo-month"], ...extra]
+  return c
+}
+const PROMO_WITH_SAVE = promoChips(true)
+const PROMO_NO_SAVE = promoChips(false)
 
 function InboxChat() {
   const competition = useCompetition()
   const mvp = useMvp()
+  // Borrow harness: nothing new is built in the product (dashboards, lessons); an engineer does that.
+  const borrow = useHarness() === "borrow"
+  const PROMO_CHIPS = borrow ? PROMO_NO_SAVE : PROMO_WITH_SAVE
   useChatSource(
     {
       chips: [
@@ -63,7 +74,7 @@ function InboxChat() {
         PROMO_CHIPS["promo-month"],
         // An investigation that ends in actions and alerts: its own thread.
         { q: GIFT_QUESTION, match: /gift.?sets?/i, task: "/michelle/c/gift-sets", render: () => null },
-        LESSON_CHIP,
+        ...(borrow ? [] : [LESSON_CHIP]),
         // Run-by-name first: "open my negotiation prep" means the saved skill, not a new prep.
         // A new task, so a new thread: the negotiation opens in its own conversation.
         { ...RUN_BY_NAME_CHIP, task: "/michelle/c/negotiation?run=1" },
@@ -81,7 +92,7 @@ function InboxChat() {
         launchStatusChip("michelle"),
       ],
     },
-    `inbox-${competition.on}-${competition.stage}-${mvp}`,
+    `inbox-${competition.on}-${competition.stage}-${mvp}-${borrow}`,
   )
   return null
 }

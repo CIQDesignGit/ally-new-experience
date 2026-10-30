@@ -10,10 +10,12 @@ import { MichelleHeader } from "@/components/nudge/ops/michelle-header"
 import { BusinessHero, BusinessPane, BusinessRail } from "@/components/nudge/ops/business-view"
 import { retailerTree } from "@/components/nudge/ops/gap-retailers"
 import { useNudge } from "@/components/nudge/nudge-context"
+import { useHarness } from "@/components/competition/harness"
 
-/** Page-level Ask Ally: teaching in plain language works here too. */
+/** Page-level Ask Ally: teaching in plain language works here too (not in the borrow harness, where an engineer changes skills). */
 function GapChat() {
-  useChatSource({ chips: [LESSON_CHIP] }, "gap")
+  const borrow = useHarness() === "borrow"
+  useChatSource({ chips: borrow ? [] : [LESSON_CHIP] }, `gap-${borrow}`)
   return null
 }
 

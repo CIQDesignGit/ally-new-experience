@@ -6,6 +6,7 @@ import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { PRIMARY, SECONDARY } from "../mike/buttons"
 import { useNudge } from "../nudge-context"
+import { useHarness } from "../../competition/harness"
 import { DOES, DOES_LABEL, SCHEDULES, draftFromSentence, type RunItem } from "./data"
 
 /**
@@ -53,6 +54,7 @@ export function RunList({
   planned?: boolean
 }) {
   const { runs, setRuns } = useNudge()
+  const borrow = useHarness() === "borrow"
   const [open, setOpen] = useState<string | null>(null)
   const [composing, setComposing] = useState(false)
   const [text, setText] = useState("")
@@ -89,7 +91,8 @@ export function RunList({
         <span className="text-[15px] font-semibold text-slate-950">
           {title} <span className="ml-1 font-mono text-[13px] font-medium text-slate-400 tabular-nums">{shown.length}</span>
         </span>
-        {!composing && (
+        {/* Borrow harness: customers don't make new alerts or briefs in the product (an engineer builds them); the joint plan is CommerceIQ's own list. */}
+        {!composing && (planned || !borrow) && (
           <button type="button" onClick={() => setComposing(true)} className={cn(SECONDARY, "h-9 gap-1 px-3")}>
             <Plus className="size-4" /> New
           </button>

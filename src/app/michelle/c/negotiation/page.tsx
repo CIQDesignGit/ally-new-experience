@@ -7,6 +7,12 @@ import { AppDrawer } from "@/components/nudge/app-drawer"
 import { AskBar, ChatProvider, ChatThread, hasThread, useChat, useChatSource } from "@/components/nudge/chat/inline-chat"
 import { PREP_CHIP, RUN_BY_NAME_CHIP } from "@/components/nudge/skill/answers"
 import { PREP_FILES } from "@/components/nudge/skill/data"
+import { useHarness } from "@/components/competition/harness"
+import { LibraryMatch } from "@/components/nudge/library/match"
+import type { Chip } from "@/components/nudge/chat/inline-chat"
+
+/** The borrow harness's answer to "prep me for the negotiation": the library skill, not a new one. */
+const LIBRARY_PREP: Chip = { q: PREP_CHIP.q, match: PREP_CHIP.match, render: () => <LibraryMatch skillId="negotiation-prep" go="/michelle/c/negotiation?run=1" goLabel="Open my negotiation prep" /> }
 
 /**
  * The Amazon vendor negotiation, its own conversation: a new task opens a new
@@ -27,7 +33,10 @@ function Thread() {
   // Michelle's skill; Sarah opens it from her page too.
   const { viewer, home } = useViewer("michelle")
   const started = useRef(false)
-  useChatSource({ chips: [RUN_BY_NAME_CHIP, PREP_CHIP], files: PREP_FILES }, "negotiation")
+  // Borrow harness: Ally doesn't learn a new skill in the product; it offers the library's negotiation prep instead.
+  const borrow = useHarness() === "borrow"
+  const prep = borrow ? LIBRARY_PREP : PREP_CHIP
+  useChatSource({ chips: [RUN_BY_NAME_CHIP, prep], files: PREP_FILES }, `negotiation-${borrow}`)
   // The task it was opened for, asked once on arrival.
   useEffect(() => {
     if (started.current) return
@@ -35,7 +44,7 @@ function Thread() {
     const run = new URLSearchParams(window.location.search).get("run")
     // Reopened from history: it's already there. Otherwise start the task it was opened for.
     if (run) window.setTimeout(() => ask(RUN_BY_NAME_CHIP), 200)
-    else if (!hasThread("negotiation")) window.setTimeout(() => ask(PREP_CHIP), 200)
+    else if (!hasThread("negotiation")) window.setTimeout(() => ask(prep), 200)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   return (

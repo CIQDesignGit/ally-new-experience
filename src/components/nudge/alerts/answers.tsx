@@ -13,6 +13,7 @@ import type { CustomAlert } from "./data"
 import { AlertCard, draftOf, editFromText, isCrossed, modeLabel } from "./alert-card"
 import type { Draft } from "./alert-card"
 import { TYPED_EVENT } from "../chat/inline-chat"
+import { useHarness } from "../../competition/harness"
 
 /**
  * The gift-sets drill, as the orchestrator works it: what happened, the one
@@ -282,8 +283,11 @@ function MediaTaskAnswer({ cap, viaJames }: { cap: number; viaJames?: boolean })
   const [pick, setPick] = useState<Record<CustomAlert["id"], boolean>>({ "brand-terms": true, "gift-terms": true })
   const [drafts, setDrafts] = useState<Record<CustomAlert["id"], Draft>>(() => ({ "brand-terms": draftOf("brand-terms"), "gift-terms": draftOf("gift-terms") }))
   const [flash, setFlash] = useState<CustomAlert["id"][]>([])
-  const decided = turns.find((t) => t.chip.startsWith("Create") || t.chip === "Not now")
+  const decided = turns.find((t) => t.chip.startsWith("Create") || t.chip.startsWith("Request") || t.chip === "Not now")
   const chosen = (Object.keys(pick) as CustomAlert["id"][]).filter((id) => pick[id])
+  // Borrow harness: a new alert is built by our engineer, not made in chat, so the offer to set them is left out.
+  const borrow = useHarness() === "borrow"
+  const n = chosen.length === 1 ? "alert" : `${chosen.length} alerts`
   const set = (id: CustomAlert["id"], patch: Partial<Draft>) => setDrafts((d) => ({ ...d, [id]: { ...d[id], ...patch } }))
 
   // Typed changes ("make the brand one 25%", "send them to Slack") land on the sentences in place.
@@ -326,6 +330,9 @@ function MediaTaskAnswer({ cap, viaJames }: { cap: number; viaJames?: boolean })
         <dd className="text-slate-950">{viaJames ? `James (above your ${k$(MICHELLE_LIMIT)} a week limit)` : `Michelle, within her ${k$(MICHELLE_LIMIT)} a week limit`}</dd>
       </dl>
 
+      {/* Borrow harness: new alerts aren't made in chat (an engineer builds them), so the offer isn't shown. */}
+      {!borrow && (
+        <>
       <p className="pt-1">Want me to watch this going forward? I&apos;d set two alerts, on the same two lines the task is working to.</p>
       <div className="flex flex-col gap-2">
         {(Object.keys(ALERT_RULES) as CustomAlert["id"][]).map((id) => (
@@ -350,12 +357,14 @@ function MediaTaskAnswer({ cap, viaJames }: { cap: number; viaJames?: boolean })
             onClick={() => ask({ q: `Create ${chosen.length === 1 ? "the alert" : `${chosen.length} alerts`}`, render: () => <AlertsCreatedAnswer ids={chosen} drafts={drafts} cap={cap} /> })}
             className={cn(PRIMARY, !chosen.length && "pointer-events-none opacity-50")}
           >
-            Create {chosen.length === 1 ? "alert" : `${chosen.length} alerts`}
+            Create {n}
           </button>
           <button type="button" onClick={() => ask({ q: "Not now", render: () => <p className="text-[15px] text-slate-700">OK, no alerts. The media agent still reports back tomorrow at 9 AM.</p> })} className={SECONDARY}>
             Not now
           </button>
         </div>
+      )}
+        </>
       )}
     </div>
   )
