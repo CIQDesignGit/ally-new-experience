@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils"
 import { PeriodSwitch, RetailerSwitch } from "./period-switch"
 import { dayLabel } from "./claire/claire-actions"
 import { useNudge } from "./nudge-context"
+import { useMvp } from "./mvp"
 
 /** Ally's mark, redrawn as a vector from the brand file (public/ally-logo.png): hair and ring, two sparks and a streak. */
 export function AllyLogo({ className }: { className?: string }) {
@@ -76,6 +77,7 @@ const ROLES: Record<Person, string> = { claire: "VP Ecommerce", michelle: "Sales
 function AccountMenu({ person }: { person: Person }) {
   const [email, setEmail] = useState<string | null>(null)
   const router = useRouter()
+  const mvp = useMvp()
   return (
     <DropdownMenu
       onOpenChange={(open) => {
@@ -97,7 +99,8 @@ function AccountMenu({ person }: { person: Person }) {
         </div>
         <DropdownMenuSeparator />
         <div className="px-2.5 pt-1.5 pb-1 text-xs font-medium text-slate-500">View as</div>
-        {(["claire", "michelle", "mike", "james", "sarah"] as const).map((p) => (
+        {/* The MVP shows the customer's people only; Sarah is CommerceIQ's own (internal) persona. */}
+        {(["claire", "michelle", "mike", "james", "sarah"] as const).filter((p) => !(mvp && p === "sarah")).map((p) => (
           <DropdownMenuItem key={p} onClick={() => router.push(HOMES[p])} className="gap-2.5 px-2.5 py-2 text-sm">
             <Avatar person={p} className="size-7" />
             <span className="flex-1">
