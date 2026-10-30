@@ -154,3 +154,5 @@ You asked me to finish everything and push to live. Rollback point if any of thi
 - Oct 9 · locked: Context tab without charts (Learning now, buckets, learned → unlocks); "Getting better every day" link on Claire's page; recap's Add context; one shape for every "against plan" statement (VsPlan), rule in DESIGN.md.
 
 - **Oct 15 · Launch Winter Hearth typed on Claire/Michelle does nothing** — locked Oct 16. Launch status answer added to Claire, Michelle (and Sarah, shared chip); unrecognized questions now reply "I can't answer that here yet" with the page's starters; fuzzy match ignores filler words ("what", "should") so off-topic questions no longer get a wrong answer.
+
+- **Oct 29 · Competition demo: tracker steps on Michelle's page can't be clicked** — built Oct 29. The step in progress now opens the screen where that work happens (Being built → Claude Code, Tests passed/In review → Agent Console, Live → dashboard), with an arrow on it.
