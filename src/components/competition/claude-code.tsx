@@ -1,0 +1,276 @@
+"use client"
+
+import { useEffect, useRef, useState } from "react"
+import Link from "next/link"
+import { cn } from "@/lib/utils"
+import { useCompetition, setCompetition, reached } from "./state"
+import { NAMES, SQL, SKILL, DEALS, SOV } from "./data"
+
+type Line = { kind: "you" | "think" | "tool" | "out" | "write" | "say"; text: string; file?: FileId }
+type FileId = "promotions" | "priceGap" | "sov" | "skill" | "tests"
+
+const FILES: { id: FileId; path: string }[] = [
+  { id: "promotions", path: "skills/competition-watch/promotions.sql" },
+  { id: "priceGap", path: "skills/competition-watch/price_gap.sql" },
+  { id: "sov", path: "skills/competition-watch/sov_gift_terms.sql" },
+  { id: "skill", path: "skills/competition-watch/SKILL.md" },
+  { id: "tests", path: "skills/competition-watch/tests.yaml" },
+]
+
+const last = SOV.theirs.length - 1
+
+/** What Nora types, turn by turn, and what Claude does in reply. */
+const TURNS: { prompt: string; reply: Line[]; pause?: boolean }[] = [
+  {
+    prompt: `Request ${NAMES.request} for Aurelle: build a weekly competition skill against ${NAMES.competitor}. Promotions, price gap vs our matched SKUs, share of voice on the gift terms. Draft the SQL and the skill. Don't publish.`,
+    reply: [
+      { kind: "think", text: "Reading the request and Aurelle's account context" },
+      { kind: "tool", text: 'datamcp.discover_fields("competitor offers, deals, prices, search slots")' },
+      { kind: "out", text: "competitor_offers · offer_prices · search_slots · competitor_sku_map" },
+      { kind: "tool", text: `datamcp.discover_values("brand", "${NAMES.competitor}")` },
+      { kind: "out", text: `${NAMES.competitor} · 38 listings on Amazon US` },
+      { kind: "write", text: "promotions.sql", file: "promotions" },
+      { kind: "write", text: "price_gap.sql", file: "priceGap" },
+      { kind: "write", text: "sov_gift_terms.sql", file: "sov" },
+      { kind: "write", text: "SKILL.md", file: "skill" },
+      { kind: "say", text: "Drafted three queries and the skill. Review price_gap.sql before I run anything: I matched products by type in the title, since I didn't find a mapping I was sure of." },
+    ],
+    pause: true,
+  },
+  {
+    prompt: "I changed price_gap.sql to join through competitor_sku_map. Title matching pairs every gift set with every gift set. Run all three on the last 8 weeks and write tests from known weeks.",
+    reply: [
+      { kind: "tool", text: "datamcp.execute_sql(price_gap.sql, last 8 weeks)" },
+      { kind: "out", text: `${DEALS.length} matched gift sets priced below yours · gaps from −$3.60 to −$4.80` },
+      { kind: "tool", text: "datamcp.execute_sql(promotions.sql, last 8 weeks)" },
+      { kind: "out", text: `20% off on ${DEALS.length} gift sets since Oct 5 · 30% off during Prime Day` },
+      { kind: "tool", text: "datamcp.execute_sql(sov_gift_terms.sql, week of Oct 4)" },
+      { kind: "out", text: `${NAMES.competitor} ${SOV.theirs[last]}% · Aurelle ${SOV.ours[last]}%` },
+      { kind: "write", text: "tests.yaml · 12 cases", file: "tests" },
+      { kind: "tool", text: "run tests (sample data)" },
+      { kind: "out", text: "12 of 12 pass on sample data" },
+      { kind: "say", text: "Ready for review. The full test run happens on production data in the Agent Console." },
+    ],
+  },
+  {
+    prompt: "Submit for review.",
+    reply: [
+      { kind: "tool", text: `console.submit(skill: "${NAMES.skill}", account: Aurelle)` },
+      { kind: "out", text: `Version 1 · waiting for review by ${NAMES.reviewer}` },
+    ],
+  },
+]
+
+/** The fix Lena sends back: the skill names Brightwick. */
+const FIX_TURN = {
+  prompt: `Lena's run failed for Juniper Home: the skill compares against ${NAMES.competitor}. Read the competitor from each account's competitor list instead.`,
+  reply: [
+    { kind: "think", text: "Reading the failed test from the Agent Console" },
+    { kind: "write", text: "SKILL.md · step 4", file: "skill" },
+    { kind: "tool", text: "run tests (Juniper Home, Larkspur Pet)" },
+    { kind: "out", text: "2 of 2 pass" },
+    { kind: "tool", text: "console.submit(version 3)" },
+    { kind: "out", text: `Version 3 · back with ${NAMES.reviewer}` },
+  ] as Line[],
+}
+
+const PACE: Record<Line["kind"], number> = { you: 0, think: 700, tool: 800, out: 450, write: 550, say: 700 }
+
+export function ClaudeCode() {
+  const c = useCompetition()
+  const fixing = c.stage === "tested" && c.sovFixed && !c.competitorFixed
+  const fixed = c.competitorFixed
+  // Where the session is: which turn is waiting to be sent.
+  const startTurn = reached(c, "submitted") ? TURNS.length : reached(c, "built") ? 2 : 0
+  const [turn, setTurn] = useState(startTurn)
+  const [lines, setLines] = useState<Line[]>(() => (reached(c, "submitted") ? TURNS.flatMap((t) => [{ kind: "you" as const, text: t.prompt }, ...t.reply]) : []))
+  const [queue, setQueue] = useState<Line[]>([])
+  const [open, setOpen] = useState<FileId>(reached(c, "submitted") ? "skill" : "priceGap")
+  const [written, setWritten] = useState<FileId[]>(reached(c, "submitted") ? FILES.map((f) => f.id) : [])
+  const [fixSent, setFixSent] = useState(fixed)
+  const end = useRef<HTMLDivElement>(null)
+  const busy = queue.length > 0
+
+  // Play Claude's reply one line at a time.
+  useEffect(() => {
+    if (!queue.length) return
+    const [next, ...rest] = queue
+    const t = window.setTimeout(() => {
+      setLines((l) => [...l, next])
+      if (next.file) {
+        setWritten((w) => (w.includes(next.file!) ? w : [...w, next.file!]))
+        setOpen(next.file)
+      }
+      setQueue(rest)
+    }, PACE[next.kind])
+    return () => window.clearTimeout(t)
+  }, [queue])
+
+  useEffect(() => {
+    end.current?.scrollIntoView({ block: "end" })
+  }, [lines])
+
+  // When a reply finishes, record what it changed for the other screens.
+  useEffect(() => {
+    if (busy) return
+    if (turn === 2 && !reached(c, "built")) setCompetition({ stage: "built" })
+    if (turn === 3 && !reached(c, "submitted")) setCompetition({ stage: "submitted" })
+    if (fixSent && !c.competitorFixed && lines.some((l) => l.text.startsWith("Version 3"))) setCompetition({ competitorFixed: true })
+  }, [busy, turn, fixSent, lines, c])
+
+  const waiting = TURNS[turn]
+  const blocked = turn === 1 && !c.sqlEdited
+  const prompt = fixing && !fixSent ? FIX_TURN.prompt : waiting && !blocked ? waiting.prompt : ""
+
+  const send = () => {
+    if (!prompt || busy) return
+    if (fixing && !fixSent) {
+      setFixSent(true)
+      setLines((l) => [...l, { kind: "you", text: FIX_TURN.prompt }])
+      setQueue(FIX_TURN.reply)
+      return
+    }
+    setLines((l) => [...l, { kind: "you", text: waiting.prompt }])
+    setQueue(waiting.reply)
+    setTurn((t) => t + 1)
+  }
+
+  return (
+    <div className="grid h-[calc(100vh-40px)] grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] bg-[#1a1a1a] text-[13px] max-lg:h-auto max-lg:grid-cols-1">
+      {/* The conversation */}
+      <div className="flex min-h-0 flex-col border-r border-white/10">
+        <div className="flex h-9 shrink-0 items-center gap-2 border-b border-white/10 px-4 font-mono text-[12px] text-slate-400">
+          <span className="text-[#d97757]">✻</span> Claude Code · ~/aurelle-candles · {NAMES.fde}
+        </div>
+        <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4 font-mono leading-relaxed">
+          <div className="text-slate-500">✻ Connected: CommerceIQ data MCP · Aurelle Candles · Amazon US</div>
+          {lines.map((l, i) => (
+            <Row key={i} l={l} />
+          ))}
+          {busy && <div className="mt-2 text-[#d97757]">✻ Working…</div>}
+          <div ref={end} />
+        </div>
+        <div className="shrink-0 border-t border-white/10 p-3">
+          {blocked && !busy ? (
+            <div className="px-2 py-2 font-mono text-[12px] text-slate-400">Review price_gap.sql on the right before going on.</div>
+          ) : reached(c, "submitted") && !fixing && !fixSent ? (
+            <div className="px-2 py-2 font-mono text-[12px] text-slate-400">
+              Version 1 is with {NAMES.reviewer}.{" "}
+              <Link href="/console/skills/competition-watch" className="text-white underline">
+                Agent Console
+              </Link>
+            </div>
+          ) : fixed && !busy ? (
+            <div className="px-2 py-2 font-mono text-[12px] text-slate-400">
+              Version 3 is with {NAMES.reviewer}.{" "}
+              <Link href="/console/skills/competition-watch" className="text-white underline">
+                Agent Console
+              </Link>
+            </div>
+          ) : (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault()
+                send()
+              }}
+              className="flex items-start gap-2 rounded-lg border border-white/15 bg-black/30 px-3 py-2.5"
+            >
+              <span className="font-mono text-slate-400">&gt;</span>
+              <textarea readOnly value={busy ? "" : prompt} rows={3} className="flex-1 resize-none bg-transparent font-mono text-[13px] leading-relaxed text-white outline-none" aria-label="Nora's message" />
+              <button type="submit" disabled={busy || !prompt} className="rounded-md bg-white/10 px-2.5 py-1 font-mono text-[12px] text-white hover:bg-white/20 disabled:opacity-30">
+                Send ⏎
+              </button>
+            </form>
+          )}
+        </div>
+      </div>
+
+      {/* The editor: the files Claude writes, which Nora reads and edits */}
+      <div className="flex min-h-0 flex-col bg-[#1e1e1e]">
+        <div className="flex h-9 shrink-0 overflow-x-auto border-b border-white/10">
+          {FILES.filter((f) => written.includes(f.id)).map((f) => (
+            <button key={f.id} type="button" onClick={() => setOpen(f.id)} className={cn("shrink-0 border-r border-white/10 px-3 font-mono text-[12px]", open === f.id ? "bg-[#1a1a1a] text-white" : "text-slate-400 hover:text-white")}>
+              {f.path.split("/").pop()}
+              {f.id === "priceGap" && c.sqlEdited && <span className="ml-1.5 text-[#e2c08d]">M</span>}
+              {f.id === "skill" && fixed && <span className="ml-1.5 text-[#e2c08d]">M</span>}
+            </button>
+          ))}
+        </div>
+        <div className="min-h-0 flex-1 overflow-auto py-3 font-mono text-[12.5px] leading-[1.7]">
+          {written.length === 0 ? <div className="px-5 text-slate-500">No files yet</div> : <Editor file={open} edited={c.sqlEdited} skillFixed={fixed} canEdit={turn === 1 && !c.sqlEdited && !busy} />}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function Row({ l }: { l: Line }) {
+  if (l.kind === "you")
+    return (
+      <div className="mt-4 flex gap-2 rounded-md bg-white/5 px-3 py-2 text-white">
+        <span className="text-slate-400">&gt;</span>
+        <span>{l.text}</span>
+      </div>
+    )
+  const style = { think: "text-slate-400 italic", tool: "text-[#9cdcfe]", out: "pl-4 text-slate-400", write: "text-[#b5cea8]", say: "mt-2 text-slate-100" }[l.kind]
+  const mark = { think: "✻", tool: "●", out: "⎿", write: "●", say: "" }[l.kind]
+  return (
+    <div className={cn("mt-1.5 flex gap-2", style)}>
+      {mark && <span className="shrink-0">{mark}</span>}
+      <span>{l.kind === "write" ? `Write(${l.text})` : l.text}</span>
+    </div>
+  )
+}
+
+/** One file, with line numbers. price_gap.sql's title match is the line Nora edits. */
+function Editor({ file, edited, skillFixed, canEdit }: { file: FileId; edited: boolean; skillFixed: boolean; canEdit: boolean }) {
+  const plain = (text: string) => text.split("\n").map((t) => ({ t, kind: "plain" as const }))
+  const diff = (head: string, wrong: string, right: string, tail: string | undefined, changed: boolean) => [
+    ...plain(head),
+    ...(changed ? [...wrong.split("\n").map((t) => ({ t, kind: "del" as const })), ...right.split("\n").map((t) => ({ t, kind: "add" as const }))] : wrong.split("\n").map((t) => ({ t, kind: "suspect" as const }))),
+    ...(tail ? plain(tail) : []),
+  ]
+  const rows =
+    file === "promotions"
+      ? plain(SQL.promotions)
+      : file === "priceGap"
+        ? diff(SQL.priceGap.head, SQL.priceGap.wrong, SQL.priceGap.right, undefined, edited)
+        : file === "sov"
+          ? plain(`${SQL.sov.head}\n${SQL.sov.wrong}\n${SQL.sov.tail}`)
+          : file === "skill"
+            ? skillFixed
+              ? diff(SKILL.head, SKILL.wrong, SKILL.right, SKILL.tail, true)
+              : plain(`${SKILL.head}\n${SKILL.wrong}\n${SKILL.tail}`)
+            : plain(TESTS_YAML)
+  return (
+    <div>
+      {rows.map((r, i) => (
+        <div
+          key={i}
+          className={cn("flex", r.kind === "del" && "bg-[#4b1818]/60 text-[#f8b4b4] line-through decoration-[#f8b4b4]/50", r.kind === "add" && "bg-[#1f3d1f]/70 text-[#b6f0b6]", r.kind === "suspect" && canEdit && "cursor-text bg-white/5")}
+          onClick={() => r.kind === "suspect" && canEdit && setCompetition({ sqlEdited: true })}
+          title={r.kind === "suspect" && canEdit ? "Edit this line" : undefined}
+        >
+          <span className="w-12 shrink-0 pr-4 text-right text-slate-600 select-none">{i + 1}</span>
+          <span className={cn("pr-5 whitespace-pre", r.kind === "plain" && "text-slate-300", r.kind === "suspect" && "text-slate-300")}>{r.t || " "}</span>
+          {r.kind === "suspect" && canEdit && <span className="ml-auto shrink-0 pr-4 text-[11px] text-slate-500">click to edit</span>}
+        </div>
+      ))}
+      {file === "priceGap" && edited && <div className="mt-3 px-5 text-[12px] text-slate-500">Edited by {NAMES.fde}</div>}
+    </div>
+  )
+}
+
+const TESTS_YAML = `# 12 cases from known weeks, plus two other customers
+- name: Deals, week of Oct 4
+  expect: 4 deals, 20% off
+- name: Deals, Prime Day week
+  expect: 30% off on gift sets
+- name: Price gap, Amber & Fig gift set
+  expect: -4.80
+- name: Brightwick share of voice, Prime Day week
+  expect: 22%
+- name: Alert fires at 5 pts
+- name: Weekly run, Juniper Home
+- name: Weekly run, Larkspur Pet
+# …5 more`

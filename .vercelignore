@@ -5,3 +5,9 @@
 .env.production
 node_modules
 .next
+# Never deployed: local-only AI Commerce mocks, and anything with real customer data or working notes
+src/app/ai-commerce
+src/app/ai-commerce-v2
+harness
+docs
+html-exports

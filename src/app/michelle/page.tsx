@@ -6,6 +6,9 @@ import { AppDrawer } from "@/components/nudge/app-drawer"
 import { useEffect, useRef, useState } from "react"
 import { toast } from "sonner"
 import { AskBar, ChatProvider, ChatThread, useChatSource } from "@/components/nudge/chat/inline-chat"
+import { CompetitionTracker, competitionChips } from "@/components/competition/michelle"
+import { StepBar } from "@/components/competition/step-bar"
+import { useCompetition } from "@/components/competition/state"
 import { OPEN_ITEM_EVENT } from "@/components/nudge/chat/open-item"
 import type { OpenItemDetail } from "@/components/nudge/chat/open-item"
 import { OpsSkuPane } from "@/components/nudge/ops/ops-sku-pane"
@@ -48,9 +51,12 @@ PROMO_CHIPS["promo-badge"].followUps = [PROMO_CHIPS["promo-vs-brightwick"], PROM
 PROMO_CHIPS["promo-vs-brightwick"].followUps = [PROMO_CHIPS["promo-badge"], PROMO_CHIPS["promo-month"], SAVE_CHIP]
 
 function InboxChat() {
+  const competition = useCompetition()
   useChatSource(
     {
       chips: [
+        // The competition demo's questions lead while it runs.
+        ...competitionChips(competition),
         PROMO_CHIPS["promo-month"],
         // An investigation that ends in actions and alerts: its own thread.
         { q: GIFT_QUESTION, match: /gift.?sets?/i, task: "/michelle/c/gift-sets", render: () => null },
@@ -70,7 +76,7 @@ function InboxChat() {
         launchStatusChip("michelle"),
       ],
     },
-    "inbox",
+    `inbox-${competition.on}-${competition.stage}`,
   )
   return null
 }
@@ -85,6 +91,7 @@ export default function MichellePage() {
 
 function Michelle() {
   const { approve, approved, policy, note, addToNote } = useNudge()
+  const competition = useCompetition()
   const OPS_BATCHES = opsBatches(policy)
   // Open on the top of the inbox (same order as the list).
   const [selectedId, setSelectedId] = useState<OpsBatch["id"]>(() => inboxRows(OPS_BATCHES, approved, "all")[0].id)
@@ -198,8 +205,10 @@ function Michelle() {
 
   return (
     <PageShell className="bg-slate-50 xl:bg-white">
+      <StepBar step={competition.stage === "live" ? 4 : 1} />
       <div className="mx-auto max-w-[1280px] overflow-clip bg-white shadow-pane-lg sm:my-6 sm:rounded-2xl sm:ring-1 sm:ring-slate-900/6 xl:my-0 xl:rounded-none xl:shadow-none xl:ring-0">
         <MichelleHeader />
+        <CompetitionTracker />
         <OpsProgress celebrate={celebrate} stage={filter === "all" ? undefined : filter} onStage={(st) => pickFilter(st, true)} />
         <NoteBar
           onSent={(c) => {
