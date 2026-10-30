@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Bell, ClipboardList, Clock, GraduationCap, Home, LayoutDashboard, MessageSquare, PanelLeft, Pin, PinOff, Presentation, Sparkles, TrendingDown, Wand2 } from "lucide-react"
+import { Bell, ClipboardList, Clock, GraduationCap, Home, LayoutDashboard, MessageSquare, PanelLeft, Pin, PinOff, Sparkles, TrendingDown, Wand2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useNudge } from "./nudge-context"
 import { rememberHome, rememberedHome } from "./top-strip"
@@ -118,32 +118,31 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
       empty: "Ask Ally a new task to start one",
     },
     {
-      title: "Reports and decks",
-      icon: Presentation,
-      // Claire sees what Michelle has sent her, the moment she sends it; Michelle sees what she built.
-      items: home === "/sarah" ? [
-        { label: "Recap · Oct 2 call", sub: "Saved to context", href: "/sarah/recap", on: path === "/sarah/recap" },
-        { label: "Aurelle weekly session", sub: "Prep for Thu, 2:00 PM", href: "/sarah/prep", on: path === "/sarah/prep" },
-        { label: "AI visibility", sub: "Readout · Oct 5", href: "/reports/ai-visibility", on: path === "/reports/ai-visibility" },
-      ] : home === "/claire-waterfall" ? [
-        // The plan with CommerceIQ is its own tab (Joint plan), not a report.
-        ...(retro.sentToClaire ? [{ label: RETRO.name, sub: "From Michelle", href: "/michelle/retro?view=deck" }] : []),
-        ...(qbr?.sentToClaire ? [{ label: "Q4 business review", sub: qbr.repeat ? "From Michelle · every Monday" : "From Michelle", href: "/michelle/decks/qbr?view=deck" }] : []),
-      ] : [
-        ...(retro.deck ? [{ label: RETRO.name, sub: retro.theme === "aurelle" ? "Aurelle Brand 2026" : "CommerceIQ default", href: "/michelle/retro?view=deck" }] : []),
-        ...(qbr?.deck ? [{ label: "Q4 business review", sub: qbr.repeat ? "Every Monday · On autopilot" : qbr.theme === "aurelle" ? "Aurelle Brand 2026" : "CommerceIQ default", href: "/michelle/decks/qbr?view=deck" }] : []),
-      ],
-      empty: "Decks you build show here",
-    },
-    {
-      title: "Dashboards",
+      // One place for what was made for you to read: live dashboards first, then decks, each saying which it is.
+      title: "My dashboards",
       icon: LayoutDashboard,
       fresh: fresh || dashboards.some((d) => !d.seen),
       items: [
-        ...(retro.dashboard ? [{ label: RETRO.name, sub: "Live · refreshes daily", href: "/michelle/dashboards/prime-day", on: path === "/michelle/dashboards/prime-day", fresh }] : []),
-        ...dashboards.map((d) => ({ label: d.name, sub: `${d.widgets.length} widgets · saved from chat`, href: `/michelle/dashboards/${d.id}`, on: path === `/michelle/dashboards/${d.id}`, fresh: !d.seen })),
+        ...(retro.dashboard ? [{ label: RETRO.name, sub: "Dashboard · refreshes daily", href: "/michelle/dashboards/prime-day", on: path === "/michelle/dashboards/prime-day", fresh }] : []),
+        ...dashboards.map((d) => ({ label: d.name, sub: `Dashboard · ${d.widgets.length} widgets, saved from chat`, href: `/michelle/dashboards/${d.id}`, on: path === `/michelle/dashboards/${d.id}`, fresh: !d.seen })),
+        // Claire sees the decks Michelle sent her, the moment she sends them; Michelle sees what she built; Sarah her account's reads.
+        ...(home === "/sarah"
+          ? [
+              { label: "Recap · Oct 2 call", sub: "Saved to context", href: "/sarah/recap", on: path === "/sarah/recap" },
+              { label: "Aurelle weekly session", sub: "Prep for Thu, 2:00 PM", href: "/sarah/prep", on: path === "/sarah/prep" },
+              { label: "AI visibility", sub: "Readout · Oct 5", href: "/reports/ai-visibility", on: path === "/reports/ai-visibility" },
+            ]
+          : home === "/claire-waterfall"
+            ? [
+                ...(retro.sentToClaire ? [{ label: RETRO.name, sub: "Deck · from Michelle", href: "/michelle/retro?view=deck" }] : []),
+                ...(qbr?.sentToClaire ? [{ label: "Q4 business review", sub: qbr.repeat ? "Deck · from Michelle, every Monday" : "Deck · from Michelle", href: "/michelle/decks/qbr?view=deck" }] : []),
+              ]
+            : [
+                ...(retro.deck ? [{ label: RETRO.name, sub: "Deck", href: "/michelle/retro?view=deck" }] : []),
+                ...(qbr?.deck ? [{ label: "Q4 business review", sub: qbr.repeat ? "Deck · every Monday" : "Deck", href: "/michelle/decks/qbr?view=deck" }] : []),
+              ]),
       ],
-      empty: "Publish a deck or answers as a dashboard",
+      empty: "Dashboards and decks made for you show here",
     },
     { title: "Skills", icon: Wand2, items: skills.map((k) => ({ label: k.name, sub: `Say "open my negotiation prep" · ${k.shared === "me" ? "only you" : k.shared === "team" ? "your team" : "everyone"}`, href: "/michelle" })), empty: "Skills you teach Ally show here" },
     { title: "Alerts", icon: Bell, fresh: alerts.some((a) => !a.seen), items: alerts.map((a) => ({ label: a.name, sub: a.firing ? "Fired today" : "Watching", href: "/michelle/alerts", on: path === "/michelle/alerts", fresh: !a.seen })), empty: "No custom alerts yet" },
@@ -171,8 +170,8 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
   const [allChats, setAllChats] = useState(false)
   const lists = sections.filter((x) => x.title !== "Conversations")
   const chats = sections.find((x) => x.title === "Conversations")!
-  const LIST_ICON: Record<string, typeof Home> = { "Reports and decks": Presentation, Dashboards: LayoutDashboard, Skills: Wand2, Scheduled: Clock }
-  const groups = [[lists[0], lists[1]]]
+  const LIST_ICON: Record<string, typeof Home> = { "My dashboards": LayoutDashboard, Skills: Wand2, Scheduled: Clock }
+  const groups = [[lists[0]]]
   const newChat = () => document.querySelector<HTMLInputElement>('input[placeholder="What can I take off your plate?"]')?.focus()
   // Groups are separated by space, not lines.
   const divider = <div className="h-4" aria-hidden />
@@ -191,7 +190,7 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
         {isOpen && (
           <div className="mb-1 pl-7">
             {sec.items.map((it) => (
-              <Link key={it.label} href={it.href} className={cn("block rounded-lg px-2.5 py-1.5", it.on ? "bg-brand-400" : "hover:bg-white/10")}>
+              <Link key={it.href + it.label} href={it.href} className={cn("block rounded-lg px-2.5 py-1.5", it.on ? "bg-brand-400" : "hover:bg-white/10")}>
                 <span className="block truncate text-[13px] text-white">{it.label}</span>
                 {it.sub && <span className="block truncate text-xs text-brand-200">{it.sub}</span>}
               </Link>
@@ -329,7 +328,7 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
           {groups[0].map((x) => {
             const Icon = LIST_ICON[x.title] ?? x.icon
             return (
-              <button key={x.title} type="button" onClick={() => toggle(true)} aria-label={x.title} title={x.title} className={iconBtn(x.title === "Dashboards" && path.startsWith("/michelle/dashboards"))}>
+              <button key={x.title} type="button" onClick={() => toggle(true)} aria-label={x.title} title={x.title} className={iconBtn(x.title === "My dashboards" && (path.startsWith("/michelle/dashboards") || path.startsWith("/michelle/decks") || path === "/michelle/retro"))}>
                 <Icon className="size-4" />
                 {x.fresh && <span aria-hidden className="absolute top-2 right-2 size-2 rounded-full bg-ally-500 ring-2 ring-brand-950" />}
               </button>
