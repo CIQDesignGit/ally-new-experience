@@ -2,7 +2,7 @@
 
 Published copy: https://claude.ai/artifact/MHhNXkzMgz5eXJFnmmUx14 (this file is the master).
 
-Demo: open any page with `?demo` at the end of the URL (or press Shift + D outside a text box) to show the **Vision / MVP** switch in the bottom-right corner, and again to hide it before a customer demo. Vision is everything we plan, with projections; MVP is this list. A second switch picks the harness: Borrow (the engineer builds the skill in Claude Code) or Build (the same step in our own Skill Builder); only that step changes. The demo opens in MVP with Borrow; `/demo/vision` switches to the vision.
+Demo: press Shift + D on any page (outside a text box) to show the **Vision / MVP** switch in the bottom-right corner, and Shift + D again to hide it; a reload always starts hidden. Vision is everything we plan, with projections; MVP is this list. A second switch picks the harness: Borrow (the engineer builds the skill in Claude Code) or Build (the same step in our own Skill Builder); only that step changes. The demo opens in MVP with Borrow; `/demo/vision` switches to the vision.
 
 ## Two rules
 - **Measure, never project.** Every dollar on an MVP screen already happened and says how it was measured (vs the 4 weeks before, or vs an A/B control). Open work shows High, Medium or Low impact, not a dollar value. Exceptions: the grow cards and vendor negotiation prep, which are market and customer models, not forecasts of Ally's impact.

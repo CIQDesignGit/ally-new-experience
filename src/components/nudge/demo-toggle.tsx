@@ -9,34 +9,21 @@ import { setHarness, useHarness, type Harness } from "../competition/harness"
 /** Pages outside the Ally demo (other prototypes in this repo) don't get the switch. */
 const HIDDEN = ["/ai-commerce", "/login", "/mock", "/title-optimization", "/workbench"]
 
-// Whether the switch is showing: hidden by default, so a customer demo never sees it.
-const KEY = "ally-demo-toggle"
+// Whether the switches are showing: in memory only, so every reload starts hidden and a customer demo never sees them.
 const listeners = new Set<() => void>()
-let shown: boolean | null = null
-function read() {
-  if (shown === null) {
-    try {
-      shown = window.localStorage.getItem(KEY) === "1"
-    } catch {
-      shown = false
-    }
-  }
-  return shown
-}
+let shown = false
+const read = () => shown
 function setShown(on: boolean) {
   shown = on
-  try {
-    if (on) window.localStorage.setItem(KEY, "1")
-    else window.localStorage.removeItem(KEY)
-  } catch {}
   listeners.forEach((l) => l())
 }
 
 /**
  * Demo-only switches: the vision (everything we plan, with projections) or the
- * MVP (what ships first, measured only); and the harness a skill is built on,
- * borrowed (Claude Code) or built (our Skill Builder). Hidden until the presenter
- * presses Shift+D (or `), then small in the bottom-right corner; again hides them.
+ * MVP (what ships first, measured only, the default); and the harness a skill is
+ * built on, borrowed (Claude Code, the default) or built (our Skill Builder).
+ * Hidden until the presenter presses Shift+D, then small in the bottom-right
+ * corner, across pages; Shift+D again (or a reload) hides them.
  */
 export function DemoToggle() {
   const mvp = useMvp()
@@ -52,13 +39,10 @@ export function DemoToggle() {
   )
 
   useEffect(() => {
-    // ?demo on any page shows them too, no keys needed (it sticks until hidden).
-    if (new URLSearchParams(window.location.search).has("demo")) setShown(true)
     const onKey = (e: KeyboardEvent) => {
-      // Shift+D (D for demo), or ` (backtick).
-      const hit = e.key === "`" || (e.shiftKey && e.code === "KeyD")
-      if (!hit || e.metaKey || e.ctrlKey || e.altKey) return
-      // Typing a backtick in a field is just typing.
+      // Shift+D (D for demo).
+      if (!(e.shiftKey && e.code === "KeyD") || e.metaKey || e.ctrlKey || e.altKey) return
+      // Typing a capital D in a field is just typing.
       const t = e.target as HTMLElement | null
       if (t && (t.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(t.tagName))) return
       setShown(!read())
