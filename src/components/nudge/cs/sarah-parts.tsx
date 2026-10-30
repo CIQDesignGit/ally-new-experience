@@ -99,7 +99,7 @@ const LATEST: Record<string, { label: string; href: string }> = {
   "jbp-walmart-pacing": { label: "Open Walmart pacing", href: "/claire-waterfall" },
   "jbp-shipped": { label: "Open what shipped", href: "/content-results?period=qtd" },
   "jbp-session": { label: "Open meeting prep", href: "/sarah/prep" },
-  "jbp-visibility": { label: "Open the readout", href: "/reports/ai-visibility" },
+  "jbp-visibility": { label: "Open the readout", href: "/dashboards/ai-visibility" },
   "jbp-value": { label: "Open the value report", href: "/content-results?period=qtd" },
   "jbp-qbr": { label: "Open the QBR", href: "/michelle/decks/qbr?view=deck" },
 }
@@ -115,7 +115,7 @@ const CUSTOMER_OPEN: Record<string, string> = {
   "jbp-actions": "/james",
   "jbp-shipped": "/content-results?period=qtd",
   "jbp-value": "/content-results?period=qtd",
-  "jbp-visibility": "/reports/ai-visibility",
+  "jbp-visibility": "/dashboards/ai-visibility",
   "jbp-competitors": "/michelle/dashboards/competition",
   "jbp-qbr": "/michelle/decks/qbr?view=deck",
 }

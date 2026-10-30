@@ -57,6 +57,7 @@ export const AVAILABLE: LibrarySkill[] = [
   { id: "prime-day-deck", name: live("prime-day-deck").name, does: live("prime-day-deck").does, gives: "Deck", output: { label: "Prime Day recap", href: "/michelle/dashboards/prime-day" } },
   { id: "gap-analysis", name: live("gap-analysis").name, does: live("gap-analysis").does, gives: "Answer", output: { label: "Why are gift sets lagging?", href: "/michelle/c/gift-sets" } },
   { id: "negotiation-prep", name: live("negotiation-prep").name, does: live("negotiation-prep").does, gives: "Deck", needs: "Your brand margin by product (Excel)", output: { label: "Amazon vendor negotiation", href: "/michelle/c/negotiation" } },
+  { id: "ai-visibility", name: "AI visibility", does: "How often Alexa recommends you, by topic and shopper question, against the top 10 brands", gives: "Dashboard", output: { label: "AI visibility", href: "/dashboards/ai-visibility" } },
 ]
 
 /** Published by an engineer from a customer's request: it joins the library once live. */
