@@ -7,7 +7,7 @@ import { StepBar } from "@/components/competition/step-bar"
 export default function ClaudeCodePage() {
   return (
     <div className="min-h-screen bg-[#1a1a1a]">
-      <StepBar step={2} dark />
+      <StepBar step={2} dark harness="borrow" />
       <ClaudeCode />
     </div>
   )

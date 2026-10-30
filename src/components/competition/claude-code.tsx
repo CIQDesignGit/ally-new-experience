@@ -5,6 +5,7 @@ import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { useCompetition, setCompetition, reached } from "./state"
 import { NAMES, SQL, SKILL, DEALS, SOV } from "./data"
+import type { Harness } from "./harness"
 
 type Line = { kind: "you" | "think" | "tool" | "out" | "write" | "say"; text: string; file?: FileId }
 type FileId = "promotions" | "priceGap" | "sov" | "skill" | "tests"
@@ -76,7 +77,63 @@ const FIX_TURN = {
 
 const PACE: Record<Line["kind"], number> = { you: 0, think: 700, tool: 800, out: 450, write: 550, say: 700 }
 
-export function ClaudeCode() {
+/**
+ * The two skins of the build step. Borrow: Claude Code, a dark terminal beside
+ * an editor. Build: CommerceIQ's own Skill Builder, inside the Agent Console,
+ * where Ally does what Claude does. Same session, same files, same fix.
+ */
+const SKIN = {
+  borrow: {
+    root: "h-[calc(100vh-40px)] bg-[#1a1a1a]",
+    divide: "border-white/10",
+    head: "font-mono text-slate-400",
+    title: (
+      <>
+        <span className="text-[#d97757]">✻</span> Claude Code · ~/aurelle-candles · {NAMES.fde}
+      </>
+    ),
+    body: "font-mono",
+    connected: "✻ Connected: CommerceIQ data MCP · Aurelle Candles · Amazon US",
+    muted: "text-slate-500",
+    working: <div className="mt-2 text-[#d97757]">✻ Working…</div>,
+    note: "font-mono text-slate-400",
+    link: "text-white underline",
+    form: "border-white/15 bg-black/30",
+    prompt: "font-mono text-white",
+    caret: "font-mono text-slate-400",
+    send: "bg-white/10 font-mono text-white hover:bg-white/20",
+    editor: "bg-[#1e1e1e]",
+    tab: (on: boolean) => cn("font-mono", on ? "bg-[#1a1a1a] text-white" : "text-slate-400 hover:text-white"),
+    modified: "text-[#e2c08d]",
+  },
+  build: {
+    root: "h-[calc(100vh-88px)] bg-white",
+    divide: "border-slate-200",
+    head: "text-slate-500",
+    title: (
+      <>
+        <span className="font-semibold text-slate-950">Skill Builder</span> · {NAMES.skill} · Aurelle Candles · {NAMES.fde}
+      </>
+    ),
+    body: "",
+    connected: "Ally builds, you review · connected to Aurelle Candles' data · Amazon US",
+    muted: "text-slate-500",
+    working: <div className="mt-2 font-medium text-ally-600">Ally is working…</div>,
+    note: "text-slate-500",
+    link: "font-medium text-brand-700 hover:underline",
+    form: "border-slate-200 bg-white focus-within:border-brand-300",
+    prompt: "text-slate-950",
+    caret: "text-slate-400",
+    send: "bg-brand-500 font-medium text-white hover:bg-brand-600",
+    editor: "bg-slate-25",
+    tab: (on: boolean) => cn("font-mono", on ? "bg-white text-slate-950" : "text-slate-500 hover:text-slate-950"),
+    modified: "text-warning-600",
+  },
+}
+
+export function ClaudeCode({ harness = "borrow" }: { harness?: Harness }) {
+  const s = SKIN[harness]
+  const dark = harness === "borrow"
   const c = useCompetition()
   const fixing = c.stage === "tested" && c.sovFixed && !c.competitorFixed
   const fixed = c.competitorFixed
@@ -136,34 +193,25 @@ export function ClaudeCode() {
   }
 
   return (
-    <div className="grid h-[calc(100vh-40px)] grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] bg-[#1a1a1a] text-[13px] max-lg:h-auto max-lg:grid-cols-1">
+    <div className={cn("grid grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] text-[13px] max-lg:h-auto max-lg:grid-cols-1", s.root)}>
       {/* The conversation */}
-      <div className="flex min-h-0 flex-col border-r border-white/10">
-        <div className="flex h-9 shrink-0 items-center gap-2 border-b border-white/10 px-4 font-mono text-[12px] text-slate-400">
-          <span className="text-[#d97757]">✻</span> Claude Code · ~/aurelle-candles · {NAMES.fde}
-        </div>
-        <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4 font-mono leading-relaxed">
-          <div className="text-slate-500">✻ Connected: CommerceIQ data MCP · Aurelle Candles · Amazon US</div>
+      <div className={cn("flex min-h-0 flex-col border-r", s.divide)}>
+        <div className={cn("flex h-9 shrink-0 items-center gap-2 border-b px-4 text-[12px]", s.divide, s.head)}>{s.title}</div>
+        <div className={cn("min-h-0 flex-1 overflow-y-auto px-5 py-4 leading-relaxed", s.body)}>
+          <div className={s.muted}>{s.connected}</div>
           {lines.map((l, i) => (
-            <Row key={i} l={l} />
+            <Row key={i} l={l} dark={dark} />
           ))}
-          {busy && <div className="mt-2 text-[#d97757]">✻ Working…</div>}
+          {busy && s.working}
           <div ref={end} />
         </div>
-        <div className="shrink-0 border-t border-white/10 p-3">
+        <div className={cn("shrink-0 border-t p-3", s.divide)}>
           {blocked && !busy ? (
-            <div className="px-2 py-2 font-mono text-[12px] text-slate-400">Review price_gap.sql on the right before going on.</div>
-          ) : reached(c, "submitted") && !fixing && !fixSent ? (
-            <div className="px-2 py-2 font-mono text-[12px] text-slate-400">
-              Version 1 is with {NAMES.reviewer}.{" "}
-              <Link href="/console/skills/competition-watch" className="text-white underline">
-                Agent Console
-              </Link>
-            </div>
-          ) : fixed && !busy ? (
-            <div className="px-2 py-2 font-mono text-[12px] text-slate-400">
-              Version 3 is with {NAMES.reviewer}.{" "}
-              <Link href="/console/skills/competition-watch" className="text-white underline">
+            <div className={cn("px-2 py-2 text-[12px]", s.note)}>Review price_gap.sql on the right before going on.</div>
+          ) : (reached(c, "submitted") && !fixing && !fixSent) || (fixed && !busy) ? (
+            <div className={cn("px-2 py-2 text-[12px]", s.note)}>
+              Version {fixed ? 3 : 1} is with {NAMES.reviewer}.{" "}
+              <Link href="/console/skills/competition-watch" className={s.link}>
                 Agent Console
               </Link>
             </div>
@@ -173,11 +221,11 @@ export function ClaudeCode() {
                 e.preventDefault()
                 send()
               }}
-              className="flex items-start gap-2 rounded-lg border border-white/15 bg-black/30 px-3 py-2.5"
+              className={cn("flex items-start gap-2 rounded-lg border px-3 py-2.5", s.form)}
             >
-              <span className="font-mono text-slate-400">&gt;</span>
-              <textarea readOnly value={busy ? "" : prompt} rows={3} className="flex-1 resize-none bg-transparent font-mono text-[13px] leading-relaxed text-white outline-none" aria-label="Nora's message" />
-              <button type="submit" disabled={busy || !prompt} className="rounded-md bg-white/10 px-2.5 py-1 font-mono text-[12px] text-white hover:bg-white/20 disabled:opacity-30">
+              <span className={s.caret}>&gt;</span>
+              <textarea readOnly value={busy ? "" : prompt} rows={3} className={cn("flex-1 resize-none bg-transparent text-[13px] leading-relaxed outline-none", s.prompt)} aria-label="Nora's message" />
+              <button type="submit" disabled={busy || !prompt} className={cn("rounded-md px-2.5 py-1 text-[12px] disabled:opacity-30", s.send)}>
                 Send ⏎
               </button>
             </form>
@@ -185,35 +233,36 @@ export function ClaudeCode() {
         </div>
       </div>
 
-      {/* The editor: the files Claude writes, which Nora reads and edits */}
-      <div className="flex min-h-0 flex-col bg-[#1e1e1e]">
-        <div className="flex h-9 shrink-0 overflow-x-auto border-b border-white/10">
+      {/* The editor: the files Claude (or Ally) writes, which Nora reads and edits */}
+      <div className={cn("flex min-h-0 flex-col", s.editor)}>
+        <div className={cn("flex h-9 shrink-0 overflow-x-auto border-b", s.divide)}>
           {FILES.filter((f) => written.includes(f.id)).map((f) => (
-            <button key={f.id} type="button" onClick={() => setOpen(f.id)} className={cn("shrink-0 border-r border-white/10 px-3 font-mono text-[12px]", open === f.id ? "bg-[#1a1a1a] text-white" : "text-slate-400 hover:text-white")}>
+            <button key={f.id} type="button" onClick={() => setOpen(f.id)} className={cn("shrink-0 border-r px-3 text-[12px]", s.divide, s.tab(open === f.id))}>
               {f.path.split("/").pop()}
-              {f.id === "priceGap" && c.sqlEdited && <span className="ml-1.5 text-[#e2c08d]">M</span>}
-              {f.id === "skill" && fixed && <span className="ml-1.5 text-[#e2c08d]">M</span>}
+              {((f.id === "priceGap" && c.sqlEdited) || (f.id === "skill" && fixed)) && <span className={cn("ml-1.5", s.modified)}>M</span>}
             </button>
           ))}
         </div>
         <div className="min-h-0 flex-1 overflow-auto py-3 font-mono text-[12.5px] leading-[1.7]">
-          {written.length === 0 ? <div className="px-5 text-slate-500">No files yet</div> : <Editor file={open} edited={c.sqlEdited} skillFixed={fixed} canEdit={turn === 1 && !c.sqlEdited && !busy} />}
+          {written.length === 0 ? <div className="px-5 text-slate-500">No files yet</div> : <Editor file={open} edited={c.sqlEdited} skillFixed={fixed} canEdit={turn === 1 && !c.sqlEdited && !busy} dark={dark} />}
         </div>
       </div>
     </div>
   )
 }
 
-function Row({ l }: { l: Line }) {
+function Row({ l, dark }: { l: Line; dark: boolean }) {
   if (l.kind === "you")
     return (
-      <div className="mt-4 flex gap-2 rounded-md bg-white/5 px-3 py-2 text-white">
+      <div className={cn("mt-4 flex gap-2 rounded-md px-3 py-2", dark ? "bg-white/5 text-white" : "bg-slate-100 text-slate-950")}>
         <span className="text-slate-400">&gt;</span>
         <span>{l.text}</span>
       </div>
     )
-  const style = { think: "text-slate-400 italic", tool: "text-[#9cdcfe]", out: "pl-4 text-slate-400", write: "text-[#b5cea8]", say: "mt-2 text-slate-100" }[l.kind]
-  const mark = { think: "✻", tool: "●", out: "⎿", write: "●", say: "" }[l.kind]
+  const style = dark
+    ? { think: "text-slate-400 italic", tool: "text-[#9cdcfe]", out: "pl-4 text-slate-400", write: "text-[#b5cea8]", say: "mt-2 text-slate-100" }[l.kind]
+    : { think: "text-slate-500 italic", tool: "font-mono text-[12px] text-brand-700", out: "pl-4 font-mono text-[12px] text-slate-500", write: "font-mono text-[12px] text-success-700", say: "mt-2 text-slate-950" }[l.kind]
+  const mark = { think: dark ? "✻" : "", tool: "●", out: "⎿", write: "●", say: "" }[l.kind]
   return (
     <div className={cn("mt-1.5 flex gap-2", style)}>
       {mark && <span className="shrink-0">{mark}</span>}
@@ -223,7 +272,7 @@ function Row({ l }: { l: Line }) {
 }
 
 /** One file, with line numbers. price_gap.sql's title match is the line Nora edits. */
-function Editor({ file, edited, skillFixed, canEdit }: { file: FileId; edited: boolean; skillFixed: boolean; canEdit: boolean }) {
+function Editor({ file, edited, skillFixed, canEdit, dark }: { file: FileId; edited: boolean; skillFixed: boolean; canEdit: boolean; dark: boolean }) {
   const plain = (text: string) => text.split("\n").map((t) => ({ t, kind: "plain" as const }))
   const diff = (head: string, wrong: string, right: string, tail: string | undefined, changed: boolean) => [
     ...plain(head),
@@ -247,12 +296,17 @@ function Editor({ file, edited, skillFixed, canEdit }: { file: FileId; edited: b
       {rows.map((r, i) => (
         <div
           key={i}
-          className={cn("flex", r.kind === "del" && "bg-[#4b1818]/60 text-[#f8b4b4] line-through decoration-[#f8b4b4]/50", r.kind === "add" && "bg-[#1f3d1f]/70 text-[#b6f0b6]", r.kind === "suspect" && canEdit && "cursor-text bg-white/5")}
+          className={cn(
+            "flex",
+            r.kind === "del" && (dark ? "bg-[#4b1818]/60 text-[#f8b4b4] line-through decoration-[#f8b4b4]/50" : "bg-error-50 text-error-700 line-through"),
+            r.kind === "add" && (dark ? "bg-[#1f3d1f]/70 text-[#b6f0b6]" : "bg-success-50 text-success-800"),
+            r.kind === "suspect" && canEdit && (dark ? "cursor-text bg-white/5" : "cursor-text bg-brand-50"),
+          )}
           onClick={() => r.kind === "suspect" && canEdit && setCompetition({ sqlEdited: true })}
           title={r.kind === "suspect" && canEdit ? "Edit this line" : undefined}
         >
-          <span className="w-12 shrink-0 pr-4 text-right text-slate-600 select-none">{i + 1}</span>
-          <span className={cn("pr-5 whitespace-pre", r.kind === "plain" && "text-slate-300", r.kind === "suspect" && "text-slate-300")}>{r.t || " "}</span>
+          <span className={cn("w-12 shrink-0 pr-4 text-right select-none", dark ? "text-slate-600" : "text-slate-400")}>{i + 1}</span>
+          <span className={cn("pr-5 whitespace-pre", (r.kind === "plain" || r.kind === "suspect") && (dark ? "text-slate-300" : "text-slate-700"))}>{r.t || " "}</span>
           {r.kind === "suspect" && canEdit && <span className="ml-auto shrink-0 pr-4 text-[11px] text-slate-500">click to edit</span>}
         </div>
       ))}

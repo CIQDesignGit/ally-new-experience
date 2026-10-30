@@ -4,6 +4,7 @@ import "@ciq-dev/ciq-design-system/styles";
 import "./globals.css";
 import { ProfileProvider } from "@/components/home/profile-context";
 import { NudgeProvider } from "@/components/nudge/nudge-context";
+import { DemoToggle } from "@/components/nudge/demo-toggle";
 import { Toaster } from "@/components/ui/sonner";
 
 // Inter: used for all body text, UI labels, and headings (--font-sans / --font-heading)
@@ -37,6 +38,7 @@ export default function RootLayout({
         <ProfileProvider>
           <NudgeProvider>
             {children}
+            <DemoToggle />
             <Toaster position="bottom-left" />
           </NudgeProvider>
         </ProfileProvider>

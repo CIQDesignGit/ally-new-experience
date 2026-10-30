@@ -8,6 +8,7 @@ import { PRIMARY } from "../nudge/mike/buttons"
 import { GIFT_TERMS } from "../nudge/alerts/data"
 import { useCompetition, setCompetition, reached, type CompetitionState } from "./state"
 import { DEEP_ASK, DEALS, FINDING, MATCHED, NAMES, QUICK, SOV, TIMES } from "./data"
+import { BUILD_STEP, useHarness } from "./harness"
 
 function Quick({ q }: { q: keyof typeof QUICK }) {
   const a = QUICK[q]
@@ -117,10 +118,10 @@ export function competitionChips(c: CompetitionState): Chip[] {
 }
 
 const TRACK = ["Requested", "Being built", "Tests passed", "In review", "Live"] as const
-/** Where each step's work happens, for the demo: the engineer's Claude Code, then the reviewer's console. */
+/** Where each step's work happens, for the demo: the engineer's build step (by harness), then the reviewer's console. */
 const STAGE_HREF: Record<(typeof TRACK)[number], string | undefined> = {
   Requested: undefined,
-  "Being built": "/fde/claude-code",
+  "Being built": undefined,
   "Tests passed": "/console/skills/competition-watch",
   "In review": "/console/skills/competition-watch",
   Live: "/michelle/dashboards/competition",
@@ -138,6 +139,7 @@ function done(c: CompetitionState): number {
 /** On Michelle's Today page: the request's progress, then the delivery. */
 export function CompetitionTracker() {
   const c = useCompetition()
+  const build = BUILD_STEP[useHarness()]
   if (!reached(c, "requested")) return null
   const n = done(c)
   const live = c.stage === "live"
@@ -169,7 +171,7 @@ export function CompetitionTracker() {
             </>
           )
           // While the demo runs, the step in progress opens the screen where that work happens.
-          const href = c.on && i === n ? STAGE_HREF[t] : undefined
+          const href = c.on && i === n ? (t === "Being built" ? build.href : STAGE_HREF[t]) : undefined
           return (
             <li key={t}>
               {href ? (

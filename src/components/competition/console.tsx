@@ -6,6 +6,7 @@ import { Check, Loader2, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { PRIMARY, SECONDARY } from "../nudge/mike/buttons"
 import { useCompetition, setCompetition, reached } from "./state"
+import { BUILD_STEP, useHarness } from "./harness"
 import { NAMES, SQL, SKILL, TESTS, TIMES } from "./data"
 
 type Tab = "skill" | "sql" | "tests" | "publish"
@@ -17,6 +18,7 @@ type Tab = "skill" | "sql" | "tests" | "publish"
  */
 export function AgentConsole() {
   const c = useCompetition()
+  const build = BUILD_STEP[useHarness()]
   const [tab, setTab] = useState<Tab>("tests")
   const [running, setRunning] = useState(false)
   const [runs, setRuns] = useState(reached(c, "tested") ? 1 : 0)
@@ -33,7 +35,7 @@ export function AgentConsole() {
   const live = c.stage === "live"
 
   if (!reached(c, "submitted")) {
-    return <div className="px-10 py-16 text-[15px] text-slate-500">No version waiting for review. {NAMES.fde} submits from Claude Code.</div>
+    return <div className="px-10 py-16 text-[15px] text-slate-500">No version waiting for review. {NAMES.fde} submits from {build.where}.</div>
   }
 
   const run = () => {
@@ -171,7 +173,7 @@ export function AgentConsole() {
                               <Check className="size-4" aria-hidden /> Fixed by {NAMES.fde} in version 3
                             </span>
                           ) : (
-                            <Link href="/fde/claude-code" className={PRIMARY}>
+                            <Link href={build.href} className={PRIMARY}>
                               Send to {NAMES.fde}
                             </Link>
                           )}
