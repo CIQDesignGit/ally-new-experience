@@ -110,14 +110,21 @@ function Pick<T extends string | number>({ value, options, format, onChange, dis
  */
 export function competitionChips(c: CompetitionState): Chip[] {
   const hidden = !c.on || reached(c, "requested")
-  return [
-    { q: QUICK.sov.q, hidden, match: /share of voice.*gift|gift terms/i, think: { ms: 900, label: "Checking this week's search results" }, render: () => <Quick q="sov" /> },
-    { q: QUICK.deals.q, hidden, match: /brightwick.*(deal|discount|sale)/i, think: { ms: 900, label: `Checking ${NAMES.competitor}'s offers` }, render: () => <Quick q="deals" /> },
-    { q: DEEP_ASK, hidden, match: /track.*brightwick|brightwick.*every week/i, think: { ms: 1600, label: "Checking what I can answer today" }, render: () => <RequestAnswer /> },
-  ]
+  const deep: Chip = { q: DEEP_ASK, hidden, match: /track.*brightwick|brightwick.*every week/i, think: { ms: 1600, label: "Checking what I can answer today" }, render: () => <RequestAnswer /> }
+  const deals: Chip = { q: QUICK.deals.q, hidden, match: /brightwick.*(deal|discount|sale)/i, think: { ms: 900, label: `Checking ${NAMES.competitor}'s offers` }, render: () => <Quick q="deals" />, followUps: [deep] }
+  const sov: Chip = { q: QUICK.sov.q, hidden, match: /share of voice.*gift|gift terms/i, think: { ms: 900, label: "Checking this week's search results" }, render: () => <Quick q="sov" />, followUps: [deals, deep] }
+  return [sov, deals, deep]
 }
 
 const TRACK = ["Requested", "Being built", "Tests passed", "In review", "Live"] as const
+/** Where each step's work happens, for the demo: the engineer's Claude Code, then the reviewer's console. */
+const STAGE_HREF: Record<(typeof TRACK)[number], string | undefined> = {
+  Requested: undefined,
+  "Being built": "/fde/claude-code",
+  "Tests passed": "/console/skills/competition-watch",
+  "In review": "/console/skills/competition-watch",
+  Live: "/michelle/dashboards/competition",
+}
 
 /** Where the request is, from what has actually happened on the other screens. */
 function done(c: CompetitionState): number {
@@ -150,15 +157,31 @@ export function CompetitionTracker() {
         )}
       </div>
       <ol className="mt-4 grid grid-cols-5 gap-2">
-        {TRACK.map((t, i) => (
-          <li key={t} className="flex flex-col gap-1.5">
-            <span className={cn("h-1 rounded-full", i < n ? "bg-success-500" : "bg-slate-200")} aria-hidden />
-            <span className={cn("flex items-center gap-1 text-[13px]", i < n ? "text-slate-950" : "text-slate-400")}>
-              {i < n && <Check className="size-3.5 text-success-700" aria-hidden />}
-              {t}
-            </span>
-          </li>
-        ))}
+        {TRACK.map((t, i) => {
+          const body = (
+            <>
+              <span className={cn("h-1 rounded-full", i < n ? "bg-success-500" : "bg-slate-200")} aria-hidden />
+              <span className={cn("flex items-center gap-1 text-[13px]", i < n ? "text-slate-950" : i === n ? "font-medium text-brand-700" : "text-slate-400")}>
+                {i < n && <Check className="size-3.5 text-success-700" aria-hidden />}
+                {t}
+                {i === n && c.on && <ArrowRight className="size-3.5" aria-hidden />}
+              </span>
+            </>
+          )
+          // While the demo runs, the step in progress opens the screen where that work happens.
+          const href = c.on && i === n ? STAGE_HREF[t] : undefined
+          return (
+            <li key={t}>
+              {href ? (
+                <Link href={href} className="flex flex-col gap-1.5 hover:opacity-80">
+                  {body}
+                </Link>
+              ) : (
+                <div className="flex flex-col gap-1.5">{body}</div>
+              )}
+            </li>
+          )
+        })}
       </ol>
       {live && (
         <p className="mt-3 text-[13px] text-slate-500">
