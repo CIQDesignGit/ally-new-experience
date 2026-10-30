@@ -13,11 +13,11 @@ import { AlertCard, isCrossed } from "@/components/nudge/alerts/alert-card"
 import { RunList } from "@/components/nudge/runs/run-list"
 import { PROMO_ALERT } from "@/components/nudge/cs/data"
 import { MONDAY_BRIEF, doesFromMode, type RunItem } from "@/components/nudge/runs/data"
-import { PRIMARY } from "@/components/nudge/mike/buttons"
 import { useCompetition } from "@/components/competition/state"
 import { NAMES as COMPETITION } from "@/components/competition/data"
 import { exportXlsx } from "@/components/competition/exports"
 import { useLive } from "@/components/nudge/live-model"
+import { ExportButton } from "@/components/nudge/ui/export-button"
 
 /**
  * Michelle's alerts in one list and one format: the ones she wrote in chat and
@@ -107,9 +107,7 @@ function Alerts() {
           {/* Everything Ally runs on its own clock. Each opens in place to edit; "New" turns a sentence into a draft. */}
           <div className="flex items-end justify-between gap-6">
             <h1 className="text-[28px] leading-tight font-semibold tracking-tight text-slate-950">Scheduled</h1>
-            <button type="button" onClick={exportAlerts} className={PRIMARY}>
-              Export alerts to Excel
-            </button>
+            <ExportButton onExport={exportAlerts} />
           </div>
           <RunList title="Briefs" items={briefs} kind="scheduled" placeholder="Send me a promo recap every Friday" />
           <RunList title="Alerts" items={alertItems} kind="scheduled" placeholder="Tell me when gift-set share of voice drops below 20%" editor={editor} />

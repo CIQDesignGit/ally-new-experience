@@ -4,6 +4,7 @@ import Link from "next/link"
 import { ArrowUpRight } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { ownerPage } from "./data"
+import { useMvp } from "./mvp"
 import type { AgentId } from "./types"
 
 /**
@@ -12,7 +13,8 @@ import type { AgentId } from "./types"
  * underneath, so a row that expands on click still does.
  */
 export function OwnerName({ lever, name, className }: { lever: AgentId; name: string; className?: string }) {
-  const page = ownerPage(lever)
+  // The MVP shows every lever's work, but only opens the pages it ships.
+  const page = ownerPage(lever, useMvp())
   if (!page) return <span className={cn("font-medium", className)}>{name}</span>
   return (
     <Link

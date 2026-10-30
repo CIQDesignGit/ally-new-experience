@@ -8,6 +8,8 @@ import { AGENT_LABEL, type TierRow } from "../types"
 import { PRIMARY } from "../mike/buttons"
 import { countdown, dueFor, rowAction, useClaireActions } from "./claire-actions"
 import { useNudge } from "../nudge-context"
+import { ownerPage } from "../data"
+import { useMvp } from "../mvp"
 
 /**
  * One row of "One approval away" on Claire's page: who, what, where it stands
@@ -29,8 +31,10 @@ const LINK = "text-[13px] font-medium text-brand-700 hover:underline"
 export function ClaireRow({ row, grid, showAction, impact }: { row: TierRow; grid: string; /** The table has a button column (some row has a move). */ showAction: boolean; /** The MVP shows the row's impact level in place of its value. */ impact?: string }) {
   const { statusOf, assignFor, askFor, approveMyself, autopilotSeasonal, day, s } = useClaireActions()
   const { retailer } = useNudge()
+  const mvp = useMvp()
   const st = statusOf(row)
-  const move = rowAction(row, s)
+  // An owner with no page in this version (the MVP's media) has nowhere to act: the row shows, without a move.
+  const move = ownerPage(row.agent, mvp) ? rowAction(row, s) : undefined
   const content = row.nudgeKey === "approval-content"
   const ask = row.nudgeKey ? s.asks[row.nudgeKey] : undefined
   const deadline = st.kind === "shipped" || st.kind === "held" ? undefined : countdown(row.deadline, day)

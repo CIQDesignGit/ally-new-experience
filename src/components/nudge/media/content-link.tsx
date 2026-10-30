@@ -7,6 +7,8 @@ import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { useNudge } from "../nudge-context"
 import { LEDGER } from "./data"
+import { ownerPage } from "../data"
+import { useMvp } from "../mvp"
 
 /** A content batch's id stands for its parts too ("halloween", "halloween-auto"): approved when any part is. */
 export const contentApproved = (approved: Record<string, boolean>, batch: string) => Object.keys(approved).some((k) => approved[k] && (k === batch || k.startsWith(`${batch}-`)))
@@ -44,6 +46,7 @@ export function MediaLink({ batchId }: { batchId: string }) {
   const base = Object.keys(LINKS).find((k) => batchId === k || batchId.startsWith(`${k}-`))
   const a = base ? AGENT[base] : undefined
   const [open, setOpen] = useState(false)
+  const jamesPage = ownerPage("media", useMvp())
   // Wakes up each time a job opens: calling, then the line it settles into.
   const [waking, setWaking] = useState(true)
   const funded = base ? !!approved[LINKS[base].play] : false
@@ -123,9 +126,12 @@ export function MediaLink({ batchId }: { batchId: string }) {
           {a.after && <span className="text-slate-700">{a.after}</span>}
           <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
             <span className={funded ? "text-success-700" : "text-slate-500"}>{funded ? "Bids rise when these pages go live" : "Waiting for James to approve · goes live with these pages"}</span>
-            <Link href="/james?from=mike" className="inline-flex items-center gap-0.5 font-medium text-brand-700 hover:underline">
-              See in James&apos;s queue <ArrowRight className="size-3.5" />
-            </Link>
+            {/* James's page is vision only: the MVP shows the handoff without a way into his queue. */}
+            {jamesPage && (
+              <Link href={`${jamesPage}?from=mike`} className="inline-flex items-center gap-0.5 font-medium text-brand-700 hover:underline">
+                See in James&apos;s queue <ArrowRight className="size-3.5" />
+              </Link>
+            )}
           </span>
         </div>
       )}

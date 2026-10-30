@@ -1,11 +1,9 @@
 "use client"
 
-import { useState } from "react"
-import { Loader2 } from "lucide-react"
 import { PageShell } from "@/components/layout/page-shell"
 import { TopStrip } from "@/components/nudge/top-strip"
 import { AppDrawer } from "@/components/nudge/app-drawer"
-import { PRIMARY } from "@/components/nudge/mike/buttons"
+import { ExportButton } from "@/components/nudge/ui/export-button"
 import { AnswerCard, AskBar, ChatProvider, ChatThread, StarterChips, type Chip } from "@/components/nudge/chat/inline-chat"
 import { StepBar } from "@/components/competition/step-bar"
 import { useCompetition } from "@/components/competition/state"
@@ -47,7 +45,6 @@ export default function CompetitionDashboard() {
 
 function Dashboard() {
   const c = useCompetition()
-  const [exporting, setExporting] = useState(false)
   const kpis = [
     { figure: `${SOV.theirs[last]}%`, label: `${NAMES.competitor} share of voice, up ${SOV.theirs[last] - THEIR_SOV_PRIME_DAY} pts since Prime Day` },
     { figure: `${SOV.ours[last]}%`, label: `Your share of voice, down ${SOV.ours[0] - SOV.ours[last]} pts in 8 weeks` },
@@ -70,19 +67,7 @@ function Dashboard() {
               Live since {TIMES.live} · refreshes every {c.day} · week of Oct 4
             </div>
           </div>
-          <button
-            type="button"
-            disabled={exporting}
-            onClick={async () => {
-              setExporting(true)
-              await exportCompetitionPptx()
-              setExporting(false)
-            }}
-            className={PRIMARY}
-          >
-            {exporting && <Loader2 className="size-4 animate-spin" aria-hidden />}
-            Export to PowerPoint
-          </button>
+          <ExportButton onExport={exportCompetitionPptx} />
         </div>
 
         <div className="flex flex-col gap-6 px-10 pt-6 pb-24">

@@ -932,7 +932,7 @@ const SNAPSHOT: Snapshot = {
     claire: { name: "Claire" },
     mike: { name: "Mike", lever: "content", page: "/mike" },
     michelle: { name: "Michelle", lever: "ops", page: "/michelle" },
-    james: { name: "James", lever: "media", page: "/james" },
+    james: { name: "James", lever: "media", page: "/james", visionOnly: true },
   },
   items: [
     ...BATCHES.map((b) => contentItem(b)),
@@ -999,9 +999,16 @@ function shareIn(item: WorkItem, period: Period) {
 }
 
 /** The page of the person who owns a lever, if they have one. */
-export function ownerPage(lever: AgentId): string | undefined {
-  return Object.values(SNAPSHOT.people).find((p) => p.lever === lever)?.page
+/** The lever owner's page; in the MVP, none for an owner whose page is vision only. */
+export function ownerPage(lever: AgentId, mvp = false): string | undefined {
+  const p = Object.values(SNAPSHOT.people).find((x) => x.lever === lever)
+  return mvp && p?.visionOnly ? undefined : p?.page
 }
+
+/** Pages that are vision only: the MVP hides them from the person menu and sends a visit home. */
+export const VISION_ONLY_PAGES = Object.values(SNAPSHOT.people)
+  .filter((p) => p.visionOnly && p.page)
+  .map((p) => p.page!)
 
 /**
  * The one read of the data. Swap this for a database call returning the same Snapshot.

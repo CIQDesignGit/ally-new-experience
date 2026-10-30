@@ -1,7 +1,9 @@
 "use client"
 
 import { DetailCard } from "@/components/nudge/ui/detail-card"
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
+import { useRouter } from "next/navigation"
+import { useMvp } from "@/components/nudge/mvp"
 import { AppDrawer } from "@/components/nudge/app-drawer"
 import { PageShell } from "@/components/layout/page-shell"
 import { AskBar, ChatProvider, ChatThread, useChatSource } from "@/components/nudge/chat/inline-chat"
@@ -33,6 +35,12 @@ export default function JamesPage() {
 
 function James() {
   const { approve, approved } = useNudge()
+  // James's page is vision only: in the MVP a visit goes to Claire's page, where media shows as a bucket.
+  const mvp = useMvp()
+  const router = useRouter()
+  useEffect(() => {
+    if (mvp) router.replace("/claire-waterfall")
+  }, [mvp, router])
   const [filter, setFilter] = useState<InboxFilter>("all")
   const [selectedId, setSelectedId] = useState(() => mediaRows(approved, "all")[0].id)
   const [celebrate, setCelebrate] = useState<{ value: number; label: string } | null>(null)

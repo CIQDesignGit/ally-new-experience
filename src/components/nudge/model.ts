@@ -34,6 +34,8 @@ export interface Person {
   lever?: AgentId
   /** Their page in Ally, when they have one (James doesn't yet). */
   page?: string
+  /** Their page is vision only: the MVP shows their lever's numbers but has no page to open. */
+  visionOnly?: boolean
 }
 
 /** What an owner has done on their slice this week, before this session. */

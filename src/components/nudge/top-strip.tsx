@@ -11,6 +11,7 @@ import { PeriodSwitch, RetailerSwitch } from "./period-switch"
 import { dayLabel } from "./claire/claire-actions"
 import { useNudge } from "./nudge-context"
 import { useMvp } from "./mvp"
+import { VISION_ONLY_PAGES } from "./data"
 
 /** Ally's mark, redrawn as a vector from the brand file (public/ally-logo.png): hair and ring, two sparks and a streak. */
 export function AllyLogo({ className }: { className?: string }) {
@@ -99,8 +100,8 @@ function AccountMenu({ person }: { person: Person }) {
         </div>
         <DropdownMenuSeparator />
         <div className="px-2.5 pt-1.5 pb-1 text-xs font-medium text-slate-500">View as</div>
-        {/* The MVP shows the customer's people only; Sarah is CommerceIQ's own (internal) persona. */}
-        {(["claire", "michelle", "mike", "james", "sarah"] as const).filter((p) => !(mvp && p === "sarah")).map((p) => (
+        {/* The MVP shows the customer's people who have a page in it: not Sarah (CommerceIQ's own persona), not a vision-only page. */}
+        {(["claire", "michelle", "mike", "james", "sarah"] as const).filter((p) => !(mvp && (p === "sarah" || VISION_ONLY_PAGES.includes(HOMES[p])))).map((p) => (
           <DropdownMenuItem key={p} onClick={() => router.push(HOMES[p])} className="gap-2.5 px-2.5 py-2 text-sm">
             <Avatar person={p} className="size-7" />
             <span className="flex-1">

@@ -126,7 +126,7 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
         { label: "Aurelle weekly session", sub: "Prep for Thu, 2:00 PM", href: "/sarah/prep", on: path === "/sarah/prep" },
         { label: "AI visibility", sub: "Readout · Oct 5", href: "/reports/ai-visibility", on: path === "/reports/ai-visibility" },
       ] : home === "/claire-waterfall" ? [
-        { label: "Your plan with CommerceIQ", sub: "From Sarah Kim", href: "/plan", on: path === "/plan" },
+        // The plan with CommerceIQ is its own tab (Joint plan), not a report.
         ...(retro.sentToClaire ? [{ label: RETRO.name, sub: "From Michelle", href: "/michelle/retro?view=deck" }] : []),
         ...(qbr?.sentToClaire ? [{ label: "Q4 business review", sub: qbr.repeat ? "From Michelle · every Monday" : "From Michelle", href: "/michelle/decks/qbr?view=deck" }] : []),
       ] : [

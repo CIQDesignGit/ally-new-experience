@@ -3,21 +3,26 @@
 import Link from "next/link"
 import type { Chip } from "../chat/inline-chat"
 import { LAUNCH, NEW_SKUS } from "./data"
+import { ownerPage } from "../data"
+import { useMvp } from "../mvp"
 
 const CARD = "flex max-w-[860px] flex-col gap-4 rounded-2xl bg-white px-5 py-4 text-[15px] leading-relaxed text-slate-700 ring-1 ring-slate-200"
 
 /** The Winter Hearth launch, across the three agents, with the context each one used. */
 function LaunchStatus({ from }: { from: string }) {
+  // Each row opens its owner's page where this version has one (the MVP has no media page).
+  const mvp = useMvp()
   const rows = [
-    { agent: "Content agent", did: `${NEW_SKUS.length} new pages drafted, tagline "${LAUNCH.tagline}", no "non-toxic" claims`, status: `Waiting for Mike · due ${LAUNCH.due}`, href: "/mike" },
-    { agent: "Media agent", did: "$30K launch: a $12K DSP awareness campaign and the 3 SKUs in 4 search campaigns", status: "Waiting for James", href: "/james" },
+    { agent: "Content agent", did: `${NEW_SKUS.length} new pages drafted, tagline "${LAUNCH.tagline}", no "non-toxic" claims`, status: `Waiting for Mike · due ${LAUNCH.due}`, href: ownerPage("content", mvp) },
+    { agent: "Media agent", did: "$30K launch: a $12K DSP awareness campaign and the 3 SKUs in 4 search campaigns", status: "Waiting for James", href: ownerPage("media", mvp) },
     { agent: "Ops agent", did: "Checked inbound: all 3 SKUs land at the DC by Nov 4", status: "Done", href: undefined },
   ]
   return (
     <div className={CARD}>
       <p>
         <span className="font-semibold text-slate-950">
-          The {LAUNCH.name} launches {LAUNCH.launch}, {LAUNCH.value} in sales at stake.
+          The {LAUNCH.name} launches {LAUNCH.launch}
+          {mvp ? "." : `, ${LAUNCH.value} in sales at stake.`}
         </span>{" "}
         Ally has the pages and the campaigns built; two approvals stand between it and launch.
       </p>
