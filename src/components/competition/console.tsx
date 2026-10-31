@@ -57,13 +57,10 @@ export function AgentConsole() {
 
   return (
     <div className="flex flex-col">
-      <header className="flex items-start justify-between gap-6 px-10 pt-6">
+      <header className="flex items-start justify-between gap-6 px-10 pt-4">
         <div>
           <div className="text-[13px] text-slate-500">
-            <Link href="/console/skills" className="hover:text-slate-900">
-              Skills
-            </Link>{" "}
-            · Aurelle Candles · request {NAMES.request}
+            {NAMES.account} · request {NAMES.request}
           </div>
           <h1 className="mt-1 text-[28px] leading-tight font-semibold tracking-tight text-slate-950">{NAMES.skill}</h1>
           <div className="mt-1 flex items-center gap-2 text-[14px] text-slate-500">

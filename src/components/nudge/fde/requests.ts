@@ -71,7 +71,8 @@ export function useRequests(): { open: OpenRequest[]; done: DoneRequest[] } {
       ? { label: `Build in ${build.where}`, href: build.href }
       : step === 2
         ? { label: reached(c, "tested") ? "Fix the failing tests" : "Run the tests", href: STAGE_HREF.Test! }
-        : { label: "Review and publish", href: STAGE_HREF.Review! }
+        : // The reviewer publishes, not the author: Nora follows it there.
+          { label: "Open the review", href: STAGE_HREF.Review! }
   // Failing tests lead (and go red); a clean run reads as a plain fact.
   const failing = reached(c, "tested") && step < 4 ? 2 : 0
   const status =
@@ -83,7 +84,7 @@ export function useRequests(): { open: OpenRequest[]; done: DoneRequest[] } {
           ? `v${version} · tests not run`
           : failing
             ? `${failing} of ${TESTS.length} tests failing · v${version}`
-            : `${TESTS.length} of ${TESTS.length} tests passed · v${version}`
+            : `${TESTS.length} of ${TESTS.length} tests passed · v${version} · with ${NAMES.reviewer}`
 
   const competition: OpenRequest[] =
     reached(c, "requested") && c.stage !== "live"

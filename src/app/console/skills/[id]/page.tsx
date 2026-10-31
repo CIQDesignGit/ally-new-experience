@@ -31,14 +31,9 @@ export default function LiveSkillPage() {
   }
 
   return (
-    <ConsoleShell>
-      <header className="px-10 pt-6">
-        <div className="text-[13px] text-slate-500">
-          <Link href="/console/skills" className="hover:text-slate-900">
-            Skills
-          </Link>{" "}
-          · Aurelle Candles
-        </div>
+    <ConsoleShell crumbs={[{ label: "Skills", href: "/console/skills" }, { label: s.name }]}>
+      <header className="px-10 pt-4">
+        <div className="text-[13px] text-slate-500">{NAMES.account}</div>
         <h1 className="mt-1 text-[28px] leading-tight font-semibold tracking-tight text-slate-950">{s.name}</h1>
         <div className="mt-1 flex items-center gap-2 text-[14px] text-slate-500">
           <span className="size-1.5 rounded-full bg-success-500" aria-hidden />
