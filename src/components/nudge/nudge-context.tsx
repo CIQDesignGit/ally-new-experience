@@ -26,12 +26,13 @@ export interface Conversation {
   at: string
 }
 
-/** Claire's account isn't new: two questions she asked last week. Each reopens by asking it again on her page. */
-const ask = (q: string) => `/claire-waterfall?ask=${encodeURIComponent(q)}`
+/** Claire's account isn't new: two questions she asked last week, each on its own chat page (titles are her starters' wording, so Ally answers them). */
 const SEED_CONVERSATIONS: Conversation[] = [
-  { id: "seed-plan", title: "How am I doing compared to plan?", where: "Today", home: "/claire-waterfall", href: ask("How am I doing compared to plan?"), at: "Oct 2, 4:12 PM" },
-  { id: "seed-invest", title: "Where should I invest an additional $1M?", where: "Today", home: "/claire-waterfall", href: ask("Where should I invest an additional $1M?"), at: "Sep 30, 9:20 AM" },
+  { id: "seed-plan", title: "How am I doing compared to plan?", where: "Today", home: "/claire-waterfall", href: "/c/seed-plan", at: "Oct 2, 4:12 PM" },
+  { id: "seed-invest", title: "Where should I invest an additional $500K?", where: "Today", home: "/claire-waterfall", href: "/c/seed-invest", at: "Sep 30, 9:20 AM" },
 ]
+/** A seed saved by an older version of the demo reads as today's. */
+const currentSeed = (c: Conversation) => SEED_CONVERSATIONS.find((s) => s.id === c.id) ?? c
 
 /** The two nudges that page Mike for real — the rest just flip local UI state. */
 const MIKE_NUDGE_KEYS: NudgeKey[] = ["approval-content", "team-content"]
@@ -366,7 +367,7 @@ export function NudgeProvider({ children }: { children: React.ReactNode }) {
         launchReady: !!state.launchReady,
         decks: state.decks ?? {},
         skills: state.skills ?? [],
-        conversations: state.conversations ?? SEED_CONVERSATIONS,
+        conversations: (state.conversations ?? SEED_CONVERSATIONS).map(currentSeed),
         asks: state.asks ?? {},
         askBy: (key, due, dueDay, by, ship) => update((prev) => ({ ...prev, nudged: { ...prev.nudged, [key]: true }, asks: { ...(prev.asks ?? {}), [key]: { due, dueDay, by, ...(ship ? { ship } : {}) } } })),
         autoShipped: state.autoShipped ?? {},

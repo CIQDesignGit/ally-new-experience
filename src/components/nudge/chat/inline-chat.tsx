@@ -85,8 +85,8 @@ interface ChatValue {
   source: ChatSource
   setSource: (s: ChatSource) => void
   turns: Turn[]
-  /** Ask; the answer goes under `anchor` (defaults to what's on screen). */
-  ask: (chip: Chip, anchor?: string, said?: string, attach?: Attachment[]) => void
+  /** Ask; the answer goes under `anchor` (defaults to what's on screen). `restored` shows it as already answered (a chat reopened after a refresh). */
+  ask: (chip: Chip, anchor?: string, said?: string, attach?: Attachment[], restored?: boolean) => void
   clear: () => void
 }
 
@@ -114,13 +114,15 @@ export function ChatProvider({ children, thread }: { children: React.ReactNode; 
   useEffect(() => {
     if (!thread || !turns.length || turns.length <= reopened) return
     THREADS.set(id, turns)
+    // A chat replayed after a refresh is already in history, with its original time.
+    if (turns.every((t) => t.restored)) return
     recordConversation({ id, title: turns[0].q, where: thread.where, home: thread.home, href: thread.href ?? `/c/${id}`, at })
     // Recorded when the conversation changes, not when the callback's identity does.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [turns.length, id])
   const ask = useCallback(
-    (chip: Chip, anchor?: string, said?: string, attach?: Attachment[]) =>
-      setTurns((t) => [...t, { id: next.current++, q: said ?? chip.q, chip: chip.q, followUps: chip.needsFiles && !attach?.length ? undefined : chip.followUps, attach, think: chip.think && { ms: chip.think.ms, label: attach?.length ? (chip.think.filesLabel ?? chip.think.label) : chip.think.label }, about: source.about, anchor: anchor ?? source.anchor, render: chip.render }]),
+    (chip: Chip, anchor?: string, said?: string, attach?: Attachment[], restored?: boolean) =>
+      setTurns((t) => [...t, { id: next.current++, q: said ?? chip.q, chip: chip.q, followUps: chip.needsFiles && !attach?.length ? undefined : chip.followUps, attach, think: chip.think && { ms: chip.think.ms, label: attach?.length ? (chip.think.filesLabel ?? chip.think.label) : chip.think.label }, about: source.about, anchor: anchor ?? source.anchor, render: chip.render, restored }]),
     [source.about, source.anchor],
   )
   return <Ctx.Provider value={{ source, setSource, turns, ask, clear: () => setTurns([]) }}>{children}</Ctx.Provider>
