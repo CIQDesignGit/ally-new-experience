@@ -115,10 +115,11 @@ function Pick<T extends string | number>({ value, options, format, onChange, dis
 
 /**
  * Her questions in this demo: two answered at once, one that becomes a request.
- * Offered first while the demo runs (until she's asked for the tracker); typed, they work either way.
+ * Offered as starters in a new chat until she's asked for the tracker (a new
+ * ask starts there, not on her Today page); typed, they work anywhere.
  */
-export function competitionChips(c: CompetitionState): Chip[] {
-  const hidden = !c.on || reached(c, "requested")
+export function competitionChips(c: CompetitionState, offer: boolean): Chip[] {
+  const hidden = !offer || reached(c, "requested")
   const deep: Chip = { q: DEEP_ASK, hidden, match: /track.*brightwick|brightwick.*every week/i, think: { ms: 1600, label: "Checking what I can answer today" }, render: () => <RequestAnswer /> }
   const deals: Chip = { q: QUICK.deals.q, hidden, match: /brightwick.*(deal|discount|sale)/i, think: { ms: 900, label: `Checking ${NAMES.competitor}'s offers` }, render: () => <Quick q="deals" />, followUps: [deep] }
   const sov: Chip = { q: QUICK.sov.q, hidden, match: /share of voice.*gift|gift terms/i, think: { ms: 900, label: "Checking this week's search results" }, render: () => <Quick q="sov" />, followUps: [deals, deep] }

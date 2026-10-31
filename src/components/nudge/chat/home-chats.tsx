@@ -82,8 +82,8 @@ function promoChips(save: boolean) {
 const PROMO_WITH_SAVE = promoChips(true)
 const PROMO_NO_SAVE = promoChips(false)
 
-/** Michelle's questions (gap to plan registers its own per node). */
-export function MichelleChat() {
+/** Michelle's questions (gap to plan registers its own per node). In a new chat, the competition ask leads. */
+export function MichelleChat({ newChat = false }: ChatProps) {
   const competition = useCompetition()
   const mvp = useMvp()
   // Borrow harness: nothing new is built in the product (dashboards, lessons); an engineer does that.
@@ -93,7 +93,7 @@ export function MichelleChat() {
     {
       chips: [
         // The competition demo's questions lead while it runs.
-        ...competitionChips(competition),
+        ...competitionChips(competition, newChat),
         PROMO_CHIPS["promo-month"],
         // An investigation that ends in actions and alerts: its own thread.
         { q: GIFT_QUESTION, match: /gift.?sets?/i, task: "/michelle/c/gift-sets", render: () => null },
@@ -115,7 +115,7 @@ export function MichelleChat() {
         launchStatusChip("michelle"),
       ],
     },
-    `inbox-${competition.on}-${competition.stage}-${mvp}-${borrow}`,
+    `inbox-${competition.on}-${competition.stage}-${mvp}-${borrow}-${newChat}`,
   )
   return null
 }
@@ -228,5 +228,10 @@ export function NoraChat() {
   return null
 }
 
+/** Where a question set is registered: a new chat offers new asks as starters. */
+interface ChatProps {
+  newChat?: boolean
+}
+
 /** Each person's question set; anyone without one (a vision-only page) gets Michelle's. */
-export const HOME_CHAT: Partial<Record<Person, () => null>> = { claire: ClaireChat, michelle: MichelleChat, mike: MikeChat, sarah: SarahChat, nora: NoraChat }
+export const HOME_CHAT: Partial<Record<Person, (p: ChatProps) => null>> ={ claire: ClaireChat, michelle: MichelleChat, mike: MikeChat, sarah: SarahChat, nora: NoraChat }
