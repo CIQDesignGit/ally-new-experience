@@ -7,6 +7,7 @@
 import { GIFT_TERMS } from "../nudge/alerts/data"
 
 export const NAMES = {
+  account: "Aurelle Candles",
   customer: "Michelle Ortiz",
   fde: "Nora Diaz",
   fdeTitle: "Nora Diaz, your CommerceIQ engineer",

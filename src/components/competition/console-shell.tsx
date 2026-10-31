@@ -3,6 +3,7 @@
 import type { ReactNode } from "react"
 import Link from "next/link"
 import { StepBar } from "./step-bar"
+import { AppDrawer } from "../nudge/app-drawer"
 
 const NAV = ["Skills", "Templates", "Dataspaces", "Runs"] as const
 
@@ -29,6 +30,8 @@ export function ConsoleShell({ step, children }: { step?: 2 | 3; children: React
         <span className="ml-auto text-[13px] text-slate-500">Lena Brooks · FDE lead</span>
       </div>
       <main className="mx-auto max-w-[1280px] bg-white">{children}</main>
+      {/* The engineer's nav: the console is where her skills live. */}
+      <AppDrawer home="/fde" />
     </div>
   )
 }

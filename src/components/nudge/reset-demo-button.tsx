@@ -2,13 +2,16 @@
 
 import { RotateCcw } from "lucide-react"
 import { useNudge } from "./nudge-context"
+import { resetCompetition } from "../competition/state"
 
-/** Wipes all nudge/approve state and reloads, so the demo can be replayed from a clean slate. */
+/** Wipes all nudge/approve state (and the competition request) and reloads, so the demo can be replayed from a clean slate. */
 export function ResetDemoButton() {
   const { resetDemo } = useNudge()
 
   function handleReset() {
     resetDemo()
+    // The competition request too, so the next run starts from Michelle asking.
+    resetCompetition()
     window.location.reload()
   }
 

@@ -6,7 +6,8 @@ import { toast } from "sonner"
 interface SlackNudgePreview {
   batchName: string
   description: string
-  value: string
+  /** The dollar figure, when there is one (a nudge has it; a request or a release doesn't). */
+  value?: string
   skus?: number
   deadlineDays?: number
   /** Where "Open in Ally" and the desktop notification deep-link. */
@@ -14,6 +15,8 @@ interface SlackNudgePreview {
   /** The first line and the due chip, when it isn't a plain "Claire nudged you". */
   headline?: string
   chip?: string
+  /** How long it stays, ms (8s; a hand-off the presenter talks through stays longer). */
+  duration?: number
 }
 
 /**
@@ -48,10 +51,12 @@ function SlackToastCard({ preview, onOpen }: { preview: SlackNudgePreview; onOpe
         )}
         <div className="text-sm font-semibold text-slate-950">{preview.batchName}</div>
         <div className="mt-0.5 text-xs leading-snug text-slate-600">{preview.description}</div>
-        <div className="mt-1.5 flex items-baseline gap-2">
-          <span className="font-mono text-[15px] font-bold text-slate-950">{preview.value}</span>
-          {preview.skus ? <span className="text-xs text-slate-400">{preview.skus} SKUs</span> : null}
-        </div>
+        {(preview.value || preview.skus) && (
+          <div className="mt-1.5 flex items-baseline gap-2">
+            {preview.value && <span className="font-mono text-[15px] font-bold text-slate-950">{preview.value}</span>}
+            {preview.skus ? <span className="text-xs text-slate-400">{preview.skus} SKUs</span> : null}
+          </div>
+        )}
         <button
           type="button"
           onClick={onOpen}
@@ -78,7 +83,7 @@ export function useSlackNudgeToast() {
           }}
         />
       ),
-      { position: "bottom-right", duration: 8000 },
+      { position: "bottom-right", duration: preview.duration ?? 8000 },
     )
   }
 }

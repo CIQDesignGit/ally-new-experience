@@ -66,6 +66,11 @@ export function startCompetition() {
   setCompetition({ ...INITIAL, on: true })
 }
 
+/** Back to before Michelle asked: the page's Reset clears this run too. */
+export function resetCompetition() {
+  setCompetition(INITIAL)
+}
+
 function subscribe(l: () => void) {
   listeners.add(l)
   return () => listeners.delete(l)

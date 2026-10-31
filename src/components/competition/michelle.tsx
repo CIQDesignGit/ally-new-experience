@@ -9,6 +9,7 @@ import { GIFT_TERMS } from "../nudge/alerts/data"
 import { useCompetition, setCompetition, reached, type CompetitionState } from "./state"
 import { DEEP_ASK, DEALS, FINDING, MATCHED, NAMES, QUICK, SOV, TIMES } from "./data"
 import { BUILD_STEP, useHarness } from "./harness"
+import { useSlackNudgeToast } from "../nudge/slack-toast"
 
 function Quick({ q }: { q: keyof typeof QUICK }) {
   const a = QUICK[q]
@@ -31,6 +32,13 @@ function Quick({ q }: { q: keyof typeof QUICK }) {
 function RequestAnswer() {
   const c = useCompetition()
   const sent = reached(c, "requested")
+  const notify = useSlackNudgeToast()
+  // Sending it lands in the engineer's queue: she's told at once, and the card opens her view.
+  const request = () => {
+    // Asking is what starts the demo: no special link needed.
+    setCompetition({ on: true, stage: "requested" })
+    notify({ headline: `${NAMES.customer} asked for a new skill · ${NAMES.request}`, batchName: NAMES.skill, description: `${NAMES.competitor} every week: promotions, price gaps, share of voice`, chip: `Due ${TIMES.promised}`, queuePath: "/fde", duration: 15000 })
+  }
   const last = SOV.theirs.length - 1
   return (
     <div className="flex max-w-[860px] flex-col gap-3">
@@ -76,7 +84,7 @@ function RequestAnswer() {
               <Check className="size-4" aria-hidden /> Requested · {NAMES.request}
             </span>
           ) : (
-            <button type="button" onClick={() => setCompetition({ stage: "requested" })} className={PRIMARY}>
+            <button type="button" onClick={request} className={PRIMARY}>
               Request it
             </button>
           )}
@@ -117,18 +125,20 @@ export function competitionChips(c: CompetitionState): Chip[] {
   return [sov, deals, deep]
 }
 
-const TRACK = ["Requested", "Being built", "Tests passed", "In review", "Live"] as const
+/** A request's steps, the same on the customer's tracker and the engineer's queue. */
+// Stage nouns, not states: the step in progress reads as "in Build", never as "Tests passed" while two fail.
+export const TRACK = ["Request", "Build", "Test", "Review", "Live"] as const
 /** Where each step's work happens, for the demo: the engineer's build step (by harness), then the reviewer's console. */
-const STAGE_HREF: Record<(typeof TRACK)[number], string | undefined> = {
-  Requested: undefined,
-  "Being built": undefined,
-  "Tests passed": "/console/skills/competition-watch",
-  "In review": "/console/skills/competition-watch",
+export const STAGE_HREF: Record<(typeof TRACK)[number], string | undefined> = {
+  Request: undefined,
+  Build: undefined,
+  Test: "/console/skills/competition-watch",
+  Review: "/console/skills/competition-watch",
   Live: "/michelle/dashboards/competition",
 }
 
-/** Where the request is, from what has actually happened on the other screens. */
-function done(c: CompetitionState): number {
+/** Where the request is (steps done), from what has actually happened on the other screens. */
+export function requestStep(c: CompetitionState): number {
   if (c.stage === "live") return 5
   if (c.sovFixed && c.competitorFixed) return 4
   if (reached(c, "submitted")) return 2
@@ -141,7 +151,7 @@ export function CompetitionTracker() {
   const c = useCompetition()
   const build = BUILD_STEP[useHarness()]
   if (!reached(c, "requested")) return null
-  const n = done(c)
+  const n = requestStep(c)
   const live = c.stage === "live"
   return (
     <section className="mx-10 mt-4 rounded-xl border border-slate-200 px-5 py-4 max-sm:mx-4">
@@ -171,7 +181,7 @@ export function CompetitionTracker() {
             </>
           )
           // While the demo runs, the step in progress opens the screen where that work happens.
-          const href = c.on && i === n ? (t === "Being built" ? build.href : STAGE_HREF[t]) : undefined
+          const href = c.on && i === n ? (t === "Build" ? build.href : STAGE_HREF[t]) : undefined
           return (
             <li key={t}>
               {href ? (

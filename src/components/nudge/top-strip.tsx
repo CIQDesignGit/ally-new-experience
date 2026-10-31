@@ -38,7 +38,7 @@ export function AllyLogo({ className }: { className?: string }) {
   )
 }
 
-export type Person = "claire" | "mike" | "michelle" | "james" | "sarah"
+export type Person = "claire" | "mike" | "michelle" | "james" | "sarah" | "nora"
 
 /** Illustrated people in the logo's style: no real faces. Each is a skin tone, a hair shape and a backdrop. */
 const PEOPLE: Record<Person, { name: string; bg: string; skin: string; hair: string; style: "bob" | "short" | "long" }> = {
@@ -47,7 +47,10 @@ const PEOPLE: Record<Person, { name: string; bg: string; skin: string; hair: str
   michelle: { name: "Michelle Ortiz", bg: "#FCE7F3", skin: "#C98E68", hair: "#2B1B14", style: "long" },
   james: { name: "James Okafor", bg: "#DCFCE7", skin: "#8D5A3B", hair: "#1A1110", style: "short" },
   sarah: { name: "Sarah Kim", bg: "#FEF3C7", skin: "#EBC29E", hair: "#3B2416", style: "long" },
+  nora: { name: "Nora Diaz", bg: "#E0F2FE", skin: "#D9A07A", hair: "#3B2416", style: "bob" },
 }
+/** Each person's shirt. */
+const SHIRT: Record<Person, string> = { claire: "#6D28D9", mike: "#1E3A8A", michelle: "#9D174D", james: "#166534", sarah: "#B45309", nora: "#0369A1" }
 
 export function Avatar({ person, className }: { person: Person; className?: string }) {
   const p = PEOPLE[person]
@@ -57,7 +60,7 @@ export function Avatar({ person, className }: { person: Person; className?: stri
       <circle cx="18" cy="18" r="18" fill={p.bg} />
       {p.style === "long" && <path d="M8.5 17c0-6.8 4.2-10.8 9.5-10.8s9.5 4 9.5 10.8v10.5h-19z" fill={p.hair} />}
       {/* Shoulders */}
-      <path d="M5 36c.8-6.6 6.2-10.4 13-10.4S30.2 29.4 31 36z" fill={person === "mike" ? "#1E3A8A" : person === "claire" ? "#6D28D9" : person === "james" ? "#166534" : person === "sarah" ? "#B45309" : "#9D174D"} />
+      <path d="M5 36c.8-6.6 6.2-10.4 13-10.4S30.2 29.4 31 36z" fill={SHIRT[person]} />
       {/* Neck and head */}
       <rect x="15.2" y="20" width="5.6" height="6.4" rx="2.4" fill={p.skin} />
       <ellipse cx="18" cy="15.6" rx="6.3" ry="7" fill={p.skin} />
@@ -73,7 +76,7 @@ export function Avatar({ person, className }: { person: Person; className?: stri
  * Ally's emails) and Sign out, which returns to the sign-in page.
  */
 /** The demo's people, as the account menu switches between them. */
-const ROLES: Record<Person, string> = { claire: "VP Ecommerce", michelle: "Sales analyst", mike: "Content lead", james: "Media lead", sarah: "Retail expert · CommerceIQ" }
+const ROLES: Record<Person, string> = { claire: "VP Ecommerce", michelle: "Sales analyst", mike: "Content lead", james: "Media lead", sarah: "Retail expert · CommerceIQ", nora: "Engineer · CommerceIQ" }
 
 function AccountMenu({ person }: { person: Person }) {
   const [email, setEmail] = useState<string | null>(null)
@@ -100,8 +103,8 @@ function AccountMenu({ person }: { person: Person }) {
         </div>
         <DropdownMenuSeparator />
         <div className="px-2.5 pt-1.5 pb-1 text-xs font-medium text-slate-500">View as</div>
-        {/* The MVP shows the customer's people who have a page in it: not Sarah (CommerceIQ's own persona), not a vision-only page. */}
-        {(["claire", "michelle", "mike", "james", "sarah"] as const).filter((p) => !(mvp && (p === "sarah" || VISION_ONLY_PAGES.includes(HOMES[p])))).map((p) => (
+        {/* The MVP shows the customer's people who have a page in it (not Sarah, not a vision-only page), and Nora, the engineer who builds what they ask for. */}
+        {(["claire", "michelle", "mike", "james", "sarah", "nora"] as const).filter((p) => !(mvp && (p === "sarah" || VISION_ONLY_PAGES.includes(HOMES[p])))).map((p) => (
           <DropdownMenuItem key={p} onClick={() => router.push(HOMES[p])} className="gap-2.5 px-2.5 py-2 text-sm">
             <Avatar person={p} className="size-7" />
             <span className="flex-1">
@@ -127,7 +130,9 @@ function AccountMenu({ person }: { person: Person }) {
   )
 }
 
-const HOMES: Record<Person, string> = { claire: "/claire-waterfall", mike: "/mike", michelle: "/michelle", james: "/james", sarah: "/sarah" }
+const HOMES: Record<Person, string> = { claire: "/claire-waterfall", mike: "/mike", michelle: "/michelle", james: "/james", sarah: "/sarah", nora: "/fde" }
+/** Every person's home page. */
+export const HOME_PAGES = Object.values(HOMES)
 const VIEWER_KEY = "ally-viewer-home"
 
 /**
@@ -140,9 +145,15 @@ export function rememberHome(path: string) {
     window.sessionStorage.setItem(VIEWER_KEY, path)
   } catch {}
 }
-export function rememberedHome(): string | null {
+/** People whose view carries only across their own pages: the engineer's never lands on a customer's dashboard. */
+const SCOPED: Partial<Record<Person, string[]>> = { nora: ["/fde", "/console", "/settings"] }
+
+export function rememberedHome(path = window.location.pathname): string | null {
   try {
-    return window.sessionStorage.getItem(VIEWER_KEY)
+    const home = window.sessionStorage.getItem(VIEWER_KEY)
+    const who = (Object.keys(HOMES) as Person[]).find((p) => HOMES[p] === home)
+    const scope = who && SCOPED[who]
+    return scope && !scope.some((p) => path.startsWith(p)) ? null : home
   } catch {
     return null
   }

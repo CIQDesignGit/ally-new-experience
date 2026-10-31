@@ -7,7 +7,8 @@ import { cn } from "@/lib/utils"
 import { PRIMARY, SECONDARY } from "../nudge/mike/buttons"
 import { useCompetition, setCompetition, reached } from "./state"
 import { BUILD_STEP, useHarness } from "./harness"
-import { NAMES, SQL, SKILL, TESTS, TIMES } from "./data"
+import { FINDING, NAMES, SQL, SKILL, TESTS, TIMES } from "./data"
+import { useSlackNudgeToast } from "../nudge/slack-toast"
 
 type Tab = "skill" | "sql" | "tests" | "publish"
 
@@ -25,6 +26,7 @@ export function AgentConsole() {
   const [editing, setEditing] = useState(false)
   const [confirm, setConfirm] = useState(false)
   const [scope, setScope] = useState<"aurelle" | "all">("aurelle")
+  const notify = useSlackNudgeToast()
 
   const version = c.competitorFixed ? 3 : c.sovFixed ? 2 : 1
   const bothFixed = c.sovFixed && c.competitorFixed
@@ -36,6 +38,12 @@ export function AgentConsole() {
 
   if (!reached(c, "submitted")) {
     return <div className="px-10 py-16 text-[15px] text-slate-500">No version waiting for review. {NAMES.fde} submits from {build.where}.</div>
+  }
+
+  // Publishing closes the loop: the customer who asked is told it's live, and the card opens her dashboard.
+  const publish = () => {
+    setCompetition({ stage: "live", scope })
+    notify({ headline: `${NAMES.skill} is live · ${TIMES.early}`, batchName: "Competition dashboard", description: FINDING, queuePath: "/michelle/dashboards/competition", duration: 15000 })
   }
 
   const run = () => {
@@ -225,7 +233,7 @@ export function AgentConsole() {
                 <div className="flex flex-col gap-3 rounded-lg bg-slate-50 p-3">
                   <p className="text-slate-700">{scope === "all" ? "Version 3 goes live for every account. Each sees its own competitors." : `Version 3 goes live for Aurelle. ${NAMES.customer} gets the dashboard and the weekly alert.`}</p>
                   <div className="flex gap-2">
-                    <button type="button" onClick={() => setCompetition({ stage: "live", scope })} className={PRIMARY}>
+                    <button type="button" onClick={publish} className={PRIMARY}>
                       Publish
                     </button>
                     <button type="button" onClick={() => setConfirm(false)} className={SECONDARY}>

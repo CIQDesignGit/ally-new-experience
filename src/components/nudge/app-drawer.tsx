@@ -3,10 +3,11 @@
 import { useEffect, useRef, useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Bell, ChevronDown, ClipboardList, Clock, GraduationCap, Home, LayoutDashboard, Library as LibraryIcon, MessageSquare, PanelLeft, Pin, PinOff, Sparkles, TrendingDown, Wand2 } from "lucide-react"
+import { Bell, ChevronDown, ClipboardList, Clock, GraduationCap, Home, Inbox, LayoutDashboard, MessageSquare, PanelLeft, Pin, PinOff, Plus, Sparkles, TrendingDown, Wand2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useNudge } from "./nudge-context"
-import { rememberHome, rememberedHome } from "./top-strip"
+import { HOME_PAGES, rememberHome, rememberedHome } from "./top-strip"
+import { useRequests } from "./fde/requests"
 import { BUSINESS, contentBatches, fmtBiz, fmtValue, launchedIds, opsBatches } from "./data"
 import { useLive } from "./live-model"
 import { RETRO } from "./retro/prime-day"
@@ -32,8 +33,11 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
     const t = window.setTimeout(() => setSaved(rememberedHome()), 0)
     return () => window.clearTimeout(t)
   }, [path])
-  const home = ["/claire-waterfall", "/mike", "/michelle", "/james", "/sarah"].includes(path) ? path : (homeProp ?? saved ?? "/michelle")
+  const home = HOME_PAGES.includes(path) ? path : (homeProp ?? saved ?? "/michelle")
   const kind = path === home ? "brief" : "conversation"
+  // The engineer's own nav, on her pages and the ones she works in.
+  const fde = home === "/fde"
+  const openRequests = useRequests().open.length
   // Pinned stays open everywhere; unpinned closes on its own a few seconds after the pointer leaves it.
   const [pinned, setPinned] = useState(false)
   const [open, setOpen] = useState(defaultOpen ?? kind === "conversation")
@@ -114,7 +118,7 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
   // Something just made (a published dashboard) is flagged until it's opened, even with the sidebar collapsed.
   const fresh = !!retro.dashboard && !retro.dashboardSeen
 
-  const sections: { title: string; icon: typeof Home; items: { label: string; sub?: string; href: string; on?: boolean; fresh?: boolean }[]; empty: string; fresh?: boolean }[] = [
+  const sections: { title: string; icon: typeof Home; items: { label: string; sub?: string; href: string; on?: boolean; fresh?: boolean }[]; empty: string; fresh?: boolean; /** A link at the end of the list to get more of it. */ add?: { label: string; href: string } }[] = [
     {
       title: "Conversations",
       icon: MessageSquare,
@@ -157,6 +161,8 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
               ]),
       ],
       empty: "Dashboards and decks made for you show here",
+      // More dashboards and decks come from the library.
+      add: { label: "Add from library", href: "/library" },
     },
     { title: "Skills", icon: Wand2, items: skills.map((k) => ({ label: k.name, sub: `Say "open my negotiation prep" · ${k.shared === "me" ? "only you" : k.shared === "team" ? "your team" : "everyone"}`, href: "/michelle" })), empty: "Skills you teach Ally show here" },
     { title: "Alerts", icon: Bell, fresh: alerts.some((a) => !a.seen), items: alerts.map((a) => ({ label: a.name, sub: a.firing ? "Fired today" : "Watching", href: "/michelle/alerts", on: path === "/michelle/alerts", fresh: !a.seen })), empty: "No custom alerts yet" },
@@ -180,7 +186,7 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
           : live.approval.rows.filter((r) => (r.valueM ?? 0) > 0).length
 
   // Lists open in place; each page has its own drawer, so the list holding the page you're on opens with it.
-  const here = sections.find((x) => x.title !== "Conversations" && x.items.some((i) => "on" in i && i.on))?.title
+  const here = sections.find((x) => x.title !== "Conversations" && (x.items.some((i) => i.on) || x.add?.href === path))?.title
   const [openList, setOpenList] = useState<string | null>(path.startsWith("/c/") ? "Ask Ally" : (here ?? null))
   const [allChats, setAllChats] = useState(false)
   const lists = sections.filter((x) => x.title !== "Conversations")
@@ -195,12 +201,25 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
     const isOpen = openList === label
     return (
       <div key={label}>
-        <button type="button" onClick={() => setOpenList(isOpen ? null : label)} aria-expanded={isOpen} className={cn(row(), "w-full")}>
-          <Icon className="size-4" />
-          <span className="flex-1 text-left">{label}</span>
-          {sec.fresh && <span className="size-2 rounded-full bg-ally-500" aria-label="New" />}
-          {sec.items.length > 0 && <span className="font-mono text-xs text-brand-300">{sec.items.length}</span>}
-        </button>
+        {/* The row folds the list; its + (on hover, like Slack's channels) adds more from the library. */}
+        <div className="group flex items-center rounded-lg hover:bg-white/10">
+          <button type="button" onClick={() => setOpenList(isOpen ? null : label)} aria-expanded={isOpen} className={cn(row(), "flex-1 hover:bg-transparent")}>
+            <Icon className="size-4" />
+            <span className="flex-1 text-left">{label}</span>
+            {sec.fresh && <span className="size-2 rounded-full bg-ally-500" aria-label="New" />}
+            {sec.items.length > 0 && <span className="font-mono text-xs text-brand-300">{sec.items.length}</span>}
+          </button>
+          {sec.add && (
+            <Link
+              href={sec.add.href}
+              aria-label={sec.add.label}
+              title={sec.add.label}
+              className={cn("mr-1 flex size-6 items-center justify-center rounded-md text-brand-200 hover:bg-white/15 hover:text-white focus-visible:opacity-100", path === sec.add.href ? "bg-white/15 text-white" : "opacity-0 group-hover:opacity-100")}
+            >
+              <Plus className="size-3.5" />
+            </Link>
+          )}
+        </div>
         {isOpen && (
           <div className="mb-1 pl-7">
             {sec.items.map((it) => (
@@ -266,6 +285,23 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
 
       {open ? (
         <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-2 pb-2">
+          {fde ? (
+            <>
+              {/* The engineer's work: what customers asked for, the skills that answer them, and what Ally knows about each account. */}
+              <Link href="/fde" className={row(path === "/fde")}>
+                <Inbox className="size-4" /> <span className="flex-1">Requests</span>
+                {openRequests > 0 && <span className="rounded-full bg-ally-500 px-1.5 text-[11px] font-semibold text-white">{openRequests}</span>}
+              </Link>
+              <Link href="/console/skills" className={row(path.startsWith("/console"))}>
+                <Wand2 className="size-4" /> <span className="flex-1">Skills</span>
+              </Link>
+              <Link href="/settings" className={row(path === "/settings")}>
+                <GraduationCap className="size-4" /> <span className="flex-1">Teach Ally</span>
+              </Link>
+              {divider}
+            </>
+          ) : (
+            <>
           {/* The work: what needs you today. */}
           <Link href={home} className={row(path === home)}>
             <Home className="size-4" /> <span className="flex-1">Today</span>
@@ -285,19 +321,12 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
             <Clock className="size-4" /> <span className="flex-1">Scheduled</span>
           </Link>
           {divider}
-          {/* What Ally made for you. */}
+          {/* What Ally made for you; the library is reached from here and from Scheduled, where you'd want more. */}
           {groups[0].map((x) => listBlock(x))}
-          {/* What CommerceIQ can turn on for you: the skills library. */}
-          <Link href="/library" className={row(path === "/library")}>
-            <LibraryIcon className="size-4" /> <span className="flex-1">Library</span>
-          </Link>
           {divider}
-          {/* The two Ally verbs, together: teach it (what ships, skills, knowledge), then ask it. The MVP keeps teaching on our side (settings, for FDEs), not in the customer's nav. */}
-          {!live.mvp && (
-            <Link href="/settings" className={row(path === "/settings")}>
-              <GraduationCap className="size-4" /> <span className="flex-1">Teach Ally</span>
-            </Link>
+            </>
           )}
+          {/* Teaching Ally is the engineer's job (Nora's nav), so customers only ask. */}
           {/* Ask Ally opens a new chat, like Claude; the count beside it folds out the recent ones. */}
           <div className={cn("flex items-center rounded-lg text-sm", path === "/c/new" ? "bg-brand-400 font-semibold text-white" : "text-brand-100 hover:bg-white/10")}>
             <Link href="/c/new" className="flex flex-1 items-center gap-2.5 px-2.5 py-2 hover:text-white">
@@ -324,12 +353,31 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
               )}
             </div>
           )}
-          <div className="mt-auto pt-4">
-            <AllyWorking />
-          </div>
+          {/* What Ally runs for the account: the customer's to watch, not the engineer's. */}
+          {!fde && (
+            <div className="mt-auto pt-4">
+              <AllyWorking />
+            </div>
+          )}
         </div>
       ) : (
         <nav className="flex flex-1 flex-col items-center gap-1 pb-3">
+          {fde ? (
+            <>
+              <Link href="/fde" aria-label={`Requests · ${openRequests} open`} title={`Requests · ${openRequests} open`} className={iconBtn(path === "/fde")}>
+                <Inbox className="size-4" />
+                {openRequests > 0 && <span aria-hidden className="absolute top-2 right-2 size-2 rounded-full bg-ally-500 ring-2 ring-brand-950" />}
+              </Link>
+              <Link href="/console/skills" aria-label="Skills" title="Skills" className={iconBtn(path.startsWith("/console"))}>
+                <Wand2 className="size-4" />
+              </Link>
+              <Link href="/settings" aria-label="Teach Ally" title="Teach Ally" className={iconBtn(path === "/settings")}>
+                <GraduationCap className="size-4" />
+              </Link>
+              <span className="h-3" aria-hidden />
+            </>
+          ) : (
+            <>
           <Link href={home} aria-label={`Today · ${waiting} waiting`} title={`Today · ${waiting} waiting`} className={iconBtn(path === home)}>
             <Home className="size-4" />
             {waiting > 0 && <span aria-hidden className="absolute top-2 right-2 size-2 rounded-full bg-ally-500 ring-2 ring-brand-950" />}
@@ -354,19 +402,13 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
               </button>
             )
           })}
-          <Link href="/library" aria-label="Library" title="Library" className={iconBtn(path === "/library")}>
-            <LibraryIcon className="size-4" />
-          </Link>
           <span className="h-3" aria-hidden />
-          {!live.mvp && (
-            <Link href="/settings" aria-label="Teach Ally" title="Teach Ally" className={iconBtn(path === "/settings")}>
-              <GraduationCap className="size-4" />
-            </Link>
+            </>
           )}
           <Link href="/c/new" aria-label="Ask Ally" title="Ask Ally" className={iconBtn(path.startsWith("/michelle/c/") || path.startsWith("/c/") || path === "/michelle/retro")}>
             <MessageSquare className="size-4" />
           </Link>
-          <AllyWorkingDot />
+          {!fde && <AllyWorkingDot />}
         </nav>
       )}
     </aside>

@@ -28,6 +28,7 @@ import { LAUNCH_CHIP } from "../launch/answers"
 import { LAUNCH_FILES } from "../launch/data"
 import { ASKS, LAST_CALL, PLAN } from "../cs/data"
 import { SARAH_TYPED } from "../cs/sarah-asks"
+import { TRACK, useRequests } from "../fde/requests"
 
 /**
  * What each person can ask Ally from their home: the starters on their bar,
@@ -177,5 +178,55 @@ export function SarahChat() {
   return null
 }
 
+/** What's open in Nora's queue, from the same requests her page shows. */
+function OpenAnswer() {
+  const { open } = useRequests()
+  return (
+    <AnswerCard>
+      {open.length ? (
+        <ul className="flex flex-col gap-1 text-[14px]">
+          {open.map((r) => (
+            <li key={r.id}>
+              · <b className="font-semibold text-slate-950">{r.skill}</b> for {r.from} · due {r.due} · {TRACK[r.step]}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p>Nothing open. Every request so far is published.</p>
+      )}
+    </AnswerCard>
+  )
+}
+
+/** What Nora has published, newest first. */
+function PublishedAnswer() {
+  const { done } = useRequests()
+  return (
+    <AnswerCard>
+      <ul className="flex flex-col gap-1 text-[14px]">
+        {done.map((r) => (
+          <li key={r.id}>
+            · <b className="font-semibold text-slate-950">{r.skill}</b> · v{r.version} · published {r.published} · used in {r.usedIn}
+          </li>
+        ))}
+      </ul>
+    </AnswerCard>
+  )
+}
+
+/** Nora's questions: her queue and what she's shipped. */
+export function NoraChat() {
+  useChatSource(
+    {
+      chips: [
+        { q: "What's due next?", match: /due|open|next|queue/i, render: () => <OpenAnswer /> },
+        { q: "What have I published?", match: /publish|shipped|live|skills/i, render: () => <PublishedAnswer /> },
+      ],
+    },
+    "nora",
+  )
+  return null
+}
+
 /** Each person's question set; anyone without one (a vision-only page) gets Michelle's. */
-export const HOME_CHAT: Partial<Record<Person, () => null>> = { claire: ClaireChat, michelle: MichelleChat, mike: MikeChat, sarah: SarahChat }
+export const HOME_CHAT: Partial<Record<Person, () => null>> = { claire: ClaireChat, michelle: MichelleChat, mike: MikeChat, sarah: SarahChat, nora: NoraChat }
