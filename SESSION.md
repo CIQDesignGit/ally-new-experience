@@ -1,6 +1,49 @@
 # Session log
 
-## Latest: Sep 24–25, 2026
+## Latest: Oct 30, 2026
+
+**Where things stand:** the MVP demo is live (580ac8a) and pushed. It now shows the whole request loop:
+1. Michelle asks Ally for something no skill answers.
+2. Nora, the CommerceIQ engineer, builds, tests and gets it published.
+3. Michelle is told it's live.
+
+### Done this session
+- **AI visibility dashboard:**
+  - In the Library under Available; turning it on adds it to My dashboards.
+  - Built on the Oct 5 readout, so it ties.
+  - The joint plan links to it.
+- **MVP, no media:** media plays are off the Grow cards, their views and Ally's answers. The Market total re-adds to +$245K. The rule comes from James being vision-only.
+- **Nav:**
+  - The section holding your page stays open.
+  - Library is no longer a tab. It's reached from a + on My dashboards and "Add from library" on Scheduled.
+  - Teach Ally moved to Nora.
+- **Ask Ally:**
+  - Opens a new chat (`/c/new`) with a greeting and the person's starters.
+  - Each home's question set lives in `chat/home-chats.tsx`.
+  - History opens each chat on its own page and replays it after a refresh.
+  - The competition starters show only in Michelle's new chat.
+- **Nora (FDE persona):**
+  - She's in the persona menu. Her home is `/fde`, showing open requests (ask, due date, Request/Build/Test/Review/Live, one next step) and done ones.
+  - Two improvement requests are open by default.
+  - Her nav: Requests, Skills (Agent Console), Teach Ally.
+  - Her view never carries onto a customer page.
+- **Hand-off notifications:**
+  - Michelle's request pops a bottom-right card that opens Nora's view.
+  - Publishing pops one that opens Michelle's dashboard.
+  - Asking starts the demo; Reset clears it.
+- **Agent Console:** uses the standard top strip. The dead tabs and Lena-as-signed-in are gone; Lena is named on the Review step.
+
+### Open questions
+- Claire's "$500K" chat answer ends in "Send to James", a media action, while MVP hides media elsewhere.
+- The Brightwick pricing brief recommends an option that relies on Ally for Media.
+- Build mode (Skill Builder) still shows Nora and the tracker; earlier direction was that Build happens in-product, with no FDE. The storyboard is pending.
+
+### Next steps
+- Decide the two media questions above.
+- Storyboard Build mode without an FDE.
+- See `PLAN.md` for the rest.
+
+## Earlier: Sep 24–25, 2026
 
 **Where things stand:** the demo tells one story end to end.
 1. **Claire** sees the gap to plan and what closes it, and nudges her team.

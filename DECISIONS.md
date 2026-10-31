@@ -2,6 +2,29 @@
 
 Newest first. Each entry records the decision, why, and what was rejected.
 
+**Oct 30, 2026: an FDE persona (Nora) owns the internal tools.**
+- Requests, the Agent Console and Teach Ally live in her nav, not the customer's.
+- She shows in the persona menu for everyone. *Rejected:* hiding her behind Shift+D, because the menu is already the presenter's control.
+
+**Oct 30, 2026: a request is one record with two views.**
+- Michelle's tracker and Nora's queue read the same state and the same five stages.
+- *Why:* the customer and the engineer can't disagree.
+- Steps are named as stages (Test), not outcomes (Tests passed). *Why:* "Tests passed" would show while two tests fail.
+
+**Oct 30, 2026: hand-offs are notifications, not URLs.**
+- Reuse the bottom-right Slack-style card, with "Open in Ally" switching persona.
+- Asking starts the demo, and Reset clears it. *Rejected:* `/demo/competition` as the only way in.
+
+**Oct 30, 2026: Nora's queue starts with improvement requests.** Event recap deck v5 and negotiation prep v3 keep both skills live. *Rejected:* making them unbuilt, which would contradict the Library and the console.
+
+**Oct 30, 2026: MVP scope is derived, not hand-edited.** A lever whose owner is vision-only (media, via James) offers no plays, and totals re-add from what's offered.
+
+**Oct 30, 2026: Ask Ally opens a new chat, like Claude.**
+- One question set per person, shared by their home and the new chat.
+- New asks (the competition request) are offered only in the new chat.
+
+**Oct 30, 2026: Library is reached where you'd want more.** It's a + on My dashboards and a button on Scheduled, not a nav tab. *Why:* it overlapped Scheduled, and chat is the main way skills are found.
+
 **Sep 2026: one table of work items drives everything.**
 - Each item has a lever, bucket, value, deadline and urgency. Tier rows, totals, the bridge, deadlines, statuses and nudges are all derived from the items plus this session's actions.
 - A nudge shows only for an owner who hasn't started.
