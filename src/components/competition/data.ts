@@ -58,7 +58,9 @@ export const QUICK = {
   },
 }
 
-export const DEEP_ASK = `Can you track ${NAMES.competitor} every week, with their promotions, price gaps against our SKUs and share of voice, and tell me when it matters?`
+// As short as the other starters; what it tracks is on the request card (and Nora's).
+export const DEEP_ASK = `Can you track ${NAMES.competitor} every week?`
+export const DEEP_SCOPE = "Promotions, price gaps, share of voice"
 
 /** The SQL Claude drafts. price_gap has the title match Nora catches; sov_gift_terms counts sponsored only, which the tests catch. */
 export const SQL = {

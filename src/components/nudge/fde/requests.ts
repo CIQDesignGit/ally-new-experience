@@ -7,7 +7,7 @@
  * test count ties to the Agent Console.
  */
 import { useCompetition, reached } from "../../competition/state"
-import { NAMES, TESTS, TIMES, DEEP_ASK } from "../../competition/data"
+import { NAMES, TESTS, TIMES, DEEP_ASK, DEEP_SCOPE } from "../../competition/data"
 import { LIVE_SKILLS } from "../../competition/skills"
 import { BUILD_STEP, useHarness } from "../../competition/harness"
 import { STAGE_HREF, TRACK, requestStep } from "../../competition/michelle"
@@ -87,7 +87,7 @@ export function useRequests(): { open: OpenRequest[]; done: DoneRequest[] } {
 
   const competition: OpenRequest[] =
     reached(c, "requested") && c.stage !== "live"
-      ? [{ id: NAMES.request, skill: NAMES.skill, account: NAMES.account, from: NAMES.customer, asked: TIMES.requested, ask: DEEP_ASK, terms: `${c.day}s · alert above a ${c.threshold} pt move`, due: TIMES.promised, dueAt: TIMES.promisedAbs, soon: true, dueDay: "Oct 9", step, status, failing: failing > 0, next }]
+      ? [{ id: NAMES.request, skill: NAMES.skill, account: NAMES.account, from: NAMES.customer, asked: TIMES.requested, ask: DEEP_ASK, terms: `${DEEP_SCOPE} · ${c.day}s · alert above a ${c.threshold} pt move`, due: TIMES.promised, dueAt: TIMES.promisedAbs, soon: true, dueDay: "Oct 9", step, status, failing: failing > 0, next }]
       : []
   // Live skills Michelle wants more from: the current version stays live while the next one is built.
   const improvements: OpenRequest[] = IMPROVEMENTS.map((r) => {
