@@ -2,6 +2,7 @@
 
 import { useEffect } from "react"
 import Link from "next/link"
+import { Plus } from "lucide-react"
 import { PageShell } from "@/components/layout/page-shell"
 import { TopStrip } from "@/components/nudge/top-strip"
 import { AppDrawer } from "@/components/nudge/app-drawer"
@@ -107,7 +108,13 @@ function Alerts() {
           {/* Everything Ally runs on its own clock. Each opens in place to edit; "New" turns a sentence into a draft. */}
           <div className="flex items-end justify-between gap-6">
             <h1 className="text-[28px] leading-tight font-semibold tracking-tight text-slate-950">Scheduled</h1>
-            <ExportButton onExport={exportAlerts} />
+            {/* More briefs and alerts come from the library. */}
+            <div className="flex items-center gap-2">
+              <Link href="/library" className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-800 hover:bg-slate-50">
+                <Plus className="size-4" /> Add from library
+              </Link>
+              <ExportButton onExport={exportAlerts} />
+            </div>
           </div>
           <RunList title="Briefs" items={briefs} kind="scheduled" placeholder="Send me a promo recap every Friday" />
           <RunList title="Alerts" items={alertItems} kind="scheduled" placeholder="Tell me when gift-set share of voice drops below 20%" editor={editor} />
