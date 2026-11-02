@@ -33,15 +33,19 @@
   - Asking starts the demo; Reset clears it.
 - **Agent Console:** uses the standard top strip. The dead tabs and Lena-as-signed-in are gone; Lena is named on the Review step.
 
+### Nov 2 follow-up
+- MVP has no media left in Claire's answers:
+  - The $500K starter and seeded chat are swapped.
+  - Typed, the budget question says media isn't in this version.
+  - The adoption answer has no Nudge James.
+- The Brightwick brief recommends matching on the 8 hero gift sets when media is off.
+
 ### Open questions
-- Claire's "$500K" chat answer ends in "Send to James", a media action, while MVP hides media elsewhere.
-- The Brightwick pricing brief recommends an option that relies on Ally for Media.
 - Build mode (Skill Builder) still shows Nora and the tracker; earlier direction was that Build happens in-product, with no FDE. The storyboard is pending.
 
 ### Next steps
-- Decide the two media questions above.
 - Storyboard Build mode without an FDE.
-- See `PLAN.md` for the rest.
+- Refresh `PLAN.md`: it dates from Sep 24, and several items are done or no longer fit the MVP.
 
 ## Earlier: Sep 24–25, 2026
 
