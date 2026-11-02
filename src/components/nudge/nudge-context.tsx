@@ -26,13 +26,22 @@ export interface Conversation {
   at: string
 }
 
-/** Claire's account isn't new: two questions she asked last week, each on its own chat page (titles are her starters' wording, so Ally answers them). */
-const SEED_CONVERSATIONS: Conversation[] = [
+/**
+ * Claire's account isn't new: two questions she asked last week, each on its own
+ * chat page (titles are her starters' wording, so Ally answers them). The MVP has
+ * no media lever, so the budget question there is one it can answer.
+ */
+const SEED_CONVERSATIONS: (Conversation & { mvp?: Pick<Conversation, "title"> })[] = [
   { id: "seed-plan", title: "How am I doing compared to plan?", where: "Today", home: "/claire-waterfall", href: "/c/seed-plan", at: "Oct 2, 4:12 PM" },
-  { id: "seed-invest", title: "Where should I invest an additional $500K?", where: "Today", home: "/claire-waterfall", href: "/c/seed-invest", at: "Sep 30, 9:20 AM" },
+  { id: "seed-invest", title: "Where should I invest an additional $500K?", mvp: { title: "Show me autopilot adoption by team" }, where: "Today", home: "/claire-waterfall", href: "/c/seed-invest", at: "Sep 30, 9:20 AM" },
 ]
-/** A seed saved by an older version of the demo reads as today's. */
-const currentSeed = (c: Conversation) => SEED_CONVERSATIONS.find((s) => s.id === c.id) ?? c
+/** A seed reads as today's (whatever an older version of the demo saved), in this version's wording. */
+function currentSeed(c: Conversation, mvp: boolean): Conversation {
+  const seed = SEED_CONVERSATIONS.find((s) => s.id === c.id)
+  if (!seed) return c
+  const { mvp: inMvp, ...base } = seed
+  return mvp && inMvp ? { ...base, ...inMvp } : base
+}
 
 /** The two nudges that page Mike for real — the rest just flip local UI state. */
 const MIKE_NUDGE_KEYS: NudgeKey[] = ["approval-content", "team-content"]
@@ -254,7 +263,8 @@ export function NudgeProvider({ children }: { children: React.ReactNode }) {
   // Only the pages that follow the switch get another retailer's numbers; set before any child reads one.
   const retailer = RETAILER_PAGES.includes(path) ? retailerPick : "amazon"
   setCurrentRetailer(retailer)
-  setCurrentMvp(useMvp())
+  const mvp = useMvp()
+  setCurrentMvp(mvp)
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time sync from localStorage (an external system) right after mount, not a response to a state change.
@@ -367,7 +377,7 @@ export function NudgeProvider({ children }: { children: React.ReactNode }) {
         launchReady: !!state.launchReady,
         decks: state.decks ?? {},
         skills: state.skills ?? [],
-        conversations: (state.conversations ?? SEED_CONVERSATIONS).map(currentSeed),
+        conversations: (state.conversations ?? SEED_CONVERSATIONS).map((c) => currentSeed(c, mvp)),
         asks: state.asks ?? {},
         askBy: (key, due, dueDay, by, ship) => update((prev) => ({ ...prev, nudged: { ...prev.nudged, [key]: true }, asks: { ...(prev.asks ?? {}), [key]: { due, dueDay, by, ...(ship ? { ship } : {}) } } })),
         autoShipped: state.autoShipped ?? {},

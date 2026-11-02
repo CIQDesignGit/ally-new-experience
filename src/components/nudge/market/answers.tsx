@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils"
 import { fmtValue } from "../data"
 import { COMPETITORS, MARKET, NEXT_EVENT, SEGMENTS } from "../market"
 import type { Play } from "../market"
-import { agentPlays, annual, humanPlays, offered, useLaunch } from "./plays"
+import { agentPlays, humanPlays, offered, useLaunch } from "./plays"
 import { mvpNow } from "../mvp"
 
 /** What the panel is about: a segment, a competitor, or the next event. */
@@ -90,10 +90,13 @@ export function answerFor(c: PanelContext, q: string): Answer {
     const agents = agentPlays(plays)
     const brief = humanPlays(plays)[0]
     if (i === 1)
+      // Without media, holding price can't win back the slots, so the recommendation matches the MVP brief.
       return {
-        verdict: "Not across the range. Match only where you're losing the most, or hold and win on slots and content.",
-        why: "A full match on 8 hero gift sets costs about $40K of margin this quarter to protect $180K of sales. Holding price and winning back sponsored slots recovers most of it without the margin hit. Ally won't change prices; this is your call.",
-        actions: [...(brief ? [{ label: "Draft the pricing brief", plays: [brief] }] : []), ...(agents.length ? [{ label: agents.length === 1 ? agents[0].what : "Launch the slot and content plays", plays: agents }] : [])],
+        verdict: mvpNow() ? "Yes, on the 8 hero gift sets, not across the range." : "Not across the range. Match only where you're losing the most, or hold and win on slots and content.",
+        why: mvpNow()
+          ? "A match on 8 hero gift sets costs about $40K of margin this quarter to protect most of the $180K. Holding price recovers only the $40K that content adds. Ally won't change prices; this is your call."
+          : "A full match on 8 hero gift sets costs about $40K of margin this quarter to protect $180K of sales. Holding price and winning back sponsored slots recovers most of it without the margin hit. Ally won't change prices; this is your call.",
+        actions: [...(brief ? [{ label: "Draft the pricing brief", plays: [brief] }] : []), ...(agents.length ? [{ label: agents.length === 1 ? `Launch: ${agents[0].what.charAt(0).toLowerCase()}${agents[0].what.slice(1)}` : "Launch the slot and content plays", plays: agents }] : [])],
         trust: "Margin estimate uses your cost file; competitor promo funding isn't visible.",
       }
     if (i === 2)

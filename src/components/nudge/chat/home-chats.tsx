@@ -42,14 +42,21 @@ export function ClaireChat() {
   const router = useRouter()
   // "How am I doing compared to plan?" is forward-looking: where the week lands and what closes it.
   const planChip: Chip = { q: "How am I doing compared to plan?", match: /\b(make|making|against|compared to|vs\.?|versus|behind|short of|gap to) plan\b/i, render: () => <ForwardAnalysis node={GAP_TREE} onInbox={(id) => router.push(`/michelle?open=${id}`)} /> }
+  // The MVP has no media lever: the budget question steps aside for "why is content behind", and asked anyway, Ally says so.
+  const mvp = useMvp()
+  const answer = (q: (typeof QUESTIONS)[number], hidden: boolean): Chip => ({ q, hidden, render: () => <div className="max-w-[860px] rounded-2xl bg-white px-5 py-4 text-[15px] leading-relaxed text-slate-700 ring-1 ring-slate-200"><Answer q={q} /></div> })
+  const contentChip = answer(QUESTIONS[2], !mvp)
+  const budget: Chip = mvp
+    ? { ...budgetChip("claire"), q: QUESTIONS[0], hidden: true, think: undefined, followUps: [contentChip], render: () => <AnswerCard>Media budgets aren&apos;t in this version of Ally yet, so I can&apos;t split the $500K. Today Ally runs content and ops.</AnswerCard> }
+    : { ...budgetChip("claire"), q: QUESTIONS[0] }
   const chips: Chip[] = [
-    ...QUESTIONS.map((q, i) => (i === 4 ? planChip : i === 0 ? { ...budgetChip("claire"), q } : { q, hidden: i === 2 || i === 5, render: () => <div className="max-w-[860px] rounded-2xl bg-white px-5 py-4 text-[15px] leading-relaxed text-slate-700 ring-1 ring-slate-200"><Answer q={q} /></div> })),
+    ...QUESTIONS.map((q, i) => (i === 4 ? planChip : i === 0 ? budget : i === 2 ? contentChip : answer(q, i === 5))),
     // The monthly AI visibility readout: answered when asked, not one of the four starters.
     { ...aeoChip, hidden: true },
     { ...togetherChip, hidden: true },
     launchStatusChip("claire"),
   ]
-  useChatSource({ chips }, "home")
+  useChatSource({ chips }, `home-${mvp}`)
   // A question reopened from Ask Ally's history ("?ask=…") is asked again, once.
   const { ask } = useChat()
   useEffect(() => {

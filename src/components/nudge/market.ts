@@ -24,6 +24,8 @@ export interface Play {
   tier: "approval" | "input"
   /** For a person's decision: the brief Ally drafts (bullets, one decision at the end). */
   brief?: Brief
+  /** The brief without a vision-only lever's moves, where that changes what Ally recommends. */
+  mvpBrief?: Brief
 }
 
 export interface Brief {
@@ -181,6 +183,19 @@ export const COMPETITORS: Competitor[] = [
             { heading: "Option C: do nothing", points: ["About −$180K this quarter, most of it in gift-giving weeks"] },
           ],
           decision: { ask: "Which option?", options: ["Option B: hold and win back slots", "Option A: match on 8 hero gift sets", "Not now"] },
+        },
+        // Without media, holding price wins back only what content adds ($40K of $180K), so matching on the 8 hero sets leads.
+        mvpBrief: {
+          kind: "Pricing brief",
+          title: "Brightwick's 20% gift-set cut: match on 8 hero gift sets, or hold",
+          to: "Claire and your pricing lead",
+          sections: [
+            { heading: "What happened", points: ["Brightwick cut 14 gift sets 20% on Oct 1", "They took 4 more sponsored slots on gift terms", "Your gift-set share −0.6 pts; about $180K at risk this quarter"] },
+            { heading: "Option A: match on 8 hero gift sets (recommended)", points: ["Protects most of the $180K", "Costs about $40K of margin this quarter", "Ally for Content adds a gift-with-purchase angle to the same 8 (+$40K)"] },
+            { heading: "Option B: hold price, content only", points: ["Ally for Content adds a gift-with-purchase angle (+$40K)", "About −$140K still at risk this quarter"] },
+            { heading: "Option C: do nothing", points: ["About −$180K this quarter, most of it in gift-giving weeks"] },
+          ],
+          decision: { ask: "Which option?", options: ["Option A: match on 8 hero gift sets", "Option B: hold, content only", "Not now"] },
         },
       },
     ],

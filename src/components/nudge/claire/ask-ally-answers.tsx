@@ -6,7 +6,8 @@ import { ArrowRight, Check } from "lucide-react"
 import { toast } from "sonner"
 import { downloadExecSummary, execSummaryForEmail } from "../exec-pdf"
 import { emailMe } from "../email-me"
-import { APPROVAL_TIER, BATCHES, BUSINESS, COMPARE, fmtBiz, fmtValue } from "../data"
+import { APPROVAL_TIER, BATCHES, BUSINESS, COMPARE, VISION_ONLY_LEVERS, fmtBiz, fmtValue } from "../data"
+import { useMvp } from "../mvp"
 import { useLive } from "../live-model"
 import { shortDate } from "../model"
 import { useNudge } from "../nudge-context"
@@ -79,6 +80,9 @@ const ADOPTION = [
 function AdoptionAnswer() {
   const { nudged } = useNudge()
   const { fire } = useFireNudge()
+  // The table stays whole (its rows add to the expired total); the MVP offers no action on a vision-only lever.
+  const mvp = useMvp()
+  const actions = APPROVAL_TIER.rows.filter((r) => !(mvp && VISION_ONLY_LEVERS.includes(r.agent)))
   return (
     <div className="flex flex-col gap-4">
       <p>
@@ -115,7 +119,7 @@ function AdoptionAnswer() {
       </table>
       <div>
         <div className="mb-1 text-xs font-medium text-slate-500">This week&apos;s actions, emailed Monday 8:00 AM</div>
-        {APPROVAL_TIER.rows.map((r) => {
+        {actions.map((r) => {
           const done = r.nudgeKey && nudged[r.nudgeKey]
           return (
             <div key={r.nudgeKey} className="flex items-center gap-3 border-t border-slate-100 py-2.5 text-sm first:border-t-0">

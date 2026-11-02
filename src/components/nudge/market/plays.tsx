@@ -41,13 +41,16 @@ export function useLaunch() {
   return { isLaunched, launch }
 }
 
-/** The plays on offer: the MVP drops those for a vision-only lever. */
-export const offered = (plays: Play[], mvp: boolean) => (mvp ? plays.filter((p) => !VISION_ONLY_LEVERS.includes(p.owner)) : plays)
+/** The plays on offer: the MVP drops those for a vision-only lever, and a brief that counted on one reads its MVP version. */
+export const offered = (plays: Play[], mvp: boolean) => (mvp ? plays.filter((p) => !VISION_ONLY_LEVERS.includes(p.owner)).map((p) => (p.mvpBrief ? { ...p, brief: p.mvpBrief } : p)) : plays)
 export const agentPlays = (plays: Play[]) => plays.filter((p) => p.owner !== "human")
 export const humanPlays = (plays: Play[]) => plays.filter((p) => p.owner === "human")
 export const annual = (plays: Play[]) => plays.reduce((n, p) => n + p.annual, 0)
 /** Event plays land inside the quarter; the rest are yearly run-rate gains. */
 export const unit = (plays: Play[]) => (plays.every((p) => p.annual === p.quarter) ? "this quarter" : "a year")
+
+/** "Your product team" reads "your product team" mid-sentence; a name ("Claire and…") keeps its capital. */
+const midSentence = (to: string) => (/^Your\b/.test(to) ? `y${to.slice(1)}` : to)
 
 /** A brief Ally drafted for a person's decision: sections as bullets, then the decision. */
 export function BriefDoc({ brief }: { brief: Brief }) {
@@ -58,7 +61,7 @@ export function BriefDoc({ brief }: { brief: Brief }) {
         <span className="flex items-center gap-2 font-semibold text-slate-950">
           <FileText className="size-4 text-brand-600" /> Drafted by Ally · {brief.kind}
         </span>
-        <span className="text-slate-500">For {brief.to.charAt(0).toLowerCase() + brief.to.slice(1)}</span>
+        <span className="text-slate-500">For {midSentence(brief.to)}</span>
       </div>
       <div className="px-5 py-4">
         <div className="text-base font-semibold text-slate-950">{brief.title}</div>
@@ -73,7 +76,7 @@ export function BriefDoc({ brief }: { brief: Brief }) {
         <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-slate-100 pt-4">
           {decided ? (
             <span className="inline-flex items-center gap-1.5 text-sm font-medium text-success-700">
-              <Check className="size-4" /> {decided === "Not now" ? "Parked for now" : `${decided === "Approve" ? "Approved" : decided} · sent to ${brief.to.charAt(0).toLowerCase() + brief.to.slice(1)}`}
+              <Check className="size-4" /> {decided === "Not now" ? "Parked for now" : `${decided === "Approve" ? "Approved" : decided} · sent to ${midSentence(brief.to)}`}
             </span>
           ) : (
             <>
@@ -84,7 +87,7 @@ export function BriefDoc({ brief }: { brief: Brief }) {
                   type="button"
                   onClick={() => {
                     setDecided(o)
-                    if (o !== "Not now") toast.success(`${brief.kind} sent to ${brief.to.toLowerCase()}`, { position: "top-right" })
+                    if (o !== "Not now") toast.success(`${brief.kind} sent to ${midSentence(brief.to)}`, { position: "top-right" })
                   }}
                   className={cn(
                     "rounded-lg px-3.5 py-2 text-sm font-semibold transition-colors",
