@@ -72,6 +72,8 @@ export function statusOf(skill: LibrarySkill, s: LibraryState): SkillStatus {
   // The first match decides: core is always on; a tier lock beats the switch, so no one gets a paid skill by accident.
   if (skill.core) return "On"
   if (skill.tier) return "Locked"
+  // Built in the account's own chat: it was turned on there.
+  if (skill.builtFor) return "On"
   if (s.on.includes(skill.id)) return "On"
   if (s.pending.includes(skill.id)) return "Ready by tomorrow"
   return "Available"

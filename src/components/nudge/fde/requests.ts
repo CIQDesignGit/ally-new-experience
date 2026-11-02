@@ -100,7 +100,8 @@ export function useRequests(): { open: OpenRequest[]; done: DoneRequest[] } {
 
   // Every published skill began as one of Michelle's asks (each skill's trigger names her). Newest first.
   const done: DoneRequest[] = [
-    ...(c.stage === "live" ? [{ id: "competition-watch", skill: NAMES.skill, does: COMPETITION_DOES, from: NAMES.customer, published: TIMES.live.split(",")[0], version, usedIn: "Competition dashboard", href: "/console/skills/competition-watch" }] : []),
+    // Built by Ally in Michelle's chat (Build), it never reached Nora.
+    ...(c.stage === "live" && !c.selfBuilt ? [{ id: "competition-watch", skill: NAMES.skill, does: COMPETITION_DOES, from: NAMES.customer, published: TIMES.live.split(",")[0], version, usedIn: "Competition dashboard", href: "/console/skills/competition-watch" }] : []),
     ...LIVE_SKILLS.map((s) => ({ id: s.id, skill: s.name, does: s.does, from: NAMES.customer, published: s.published, version: s.version, usedIn: s.usedBy.label, href: `/console/skills/${s.id}` })),
   ].sort((a, b) => dayOf(b.published) - dayOf(a.published))
   return { open, done }

@@ -13,7 +13,8 @@ import { useLive } from "./live-model"
 import { RETRO } from "./retro/prime-day"
 import { MEDIA_BATCHES } from "./media/data"
 import { INBOX } from "./cs/data"
-import { AVAILABLE } from "./library/data"
+import { availableFor } from "./library/data"
+import { useCompetition } from "../competition/state"
 import { statusOf, useLibrary } from "./library/state"
 
 const OPEN_W = "264px"
@@ -81,9 +82,9 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
   const { retro, alerts, dashboards, decks, skills, conversations, approved, policy, launchReady, period, callItems } = useNudge()
   // Skills turned on from the library that make a dashboard or deck show in My dashboards.
   const library = useLibrary()
-  const libraryOutputs = AVAILABLE.filter((s) => (s.gives === "Dashboard" || s.gives === "Deck") && s.output && statusOf(s, library) === "On").map((s) => ({
+  const libraryOutputs = availableFor(useCompetition()).filter((s) => (s.gives === "Dashboard" || s.gives === "Deck") && s.output && statusOf(s, library) === "On").map((s) => ({
     label: s.output!.label,
-    sub: `${s.gives} · from the library`,
+    sub: s.builtFor ? `${s.gives} · built in chat` : `${s.gives} · from the library`,
     href: s.output!.href,
     on: path === s.output!.href,
   }))

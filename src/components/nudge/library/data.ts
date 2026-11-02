@@ -25,6 +25,8 @@ export interface LibrarySkill {
   needs?: string
   /** Where its output lives once it's on. */
   output?: { label: string; href: string }
+  /** Built by Ally in this account's chat: on, and private to the account. */
+  builtFor?: string
 }
 
 const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-")
@@ -67,6 +69,16 @@ export const COMPETITION_SKILL: LibrarySkill = {
   does: "Weekly read of a competitor: promotions, price gaps on matched products, share of voice",
   gives: "Dashboard",
   output: { label: "Competition dashboard", href: "/michelle/dashboards/competition" },
+}
+
+/**
+ * What this account can see beyond the core: the published skills, plus
+ * competition watch once it's live, either published by an engineer (Borrow)
+ * or built by Ally in the customer's chat (Build), which makes it theirs.
+ */
+export function availableFor(c: { stage: string; selfBuilt: boolean }): LibrarySkill[] {
+  if (c.stage !== "live") return AVAILABLE
+  return [...AVAILABLE, c.selfBuilt ? { ...COMPETITION_SKILL, builtFor: COMPETITION.account } : COMPETITION_SKILL]
 }
 
 export const LOCKED: LibrarySkill[] = [

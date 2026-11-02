@@ -15,7 +15,7 @@ import { RunList } from "@/components/nudge/runs/run-list"
 import { PROMO_ALERT } from "@/components/nudge/cs/data"
 import { MONDAY_BRIEF, doesFromMode, type RunItem } from "@/components/nudge/runs/data"
 import { useCompetition } from "@/components/competition/state"
-import { NAMES as COMPETITION } from "@/components/competition/data"
+import { NAMES as COMPETITION, TIMES as COMPETITION_TIMES } from "@/components/competition/data"
 import { exportXlsx } from "@/components/competition/exports"
 import { useLive } from "@/components/nudge/live-model"
 import { ExportButton } from "@/components/nudge/ui/export-button"
@@ -72,7 +72,7 @@ function Alerts() {
   }))
   // Alerts Ally set up from a customer call (Sarah's account) show here unless she undid them.
   const fromCalls = callItems["a-alert"] === "dismissed" ? [] : [PROMO_ALERT]
-  // The competition skill's alert, once an FDE built and published it for her (request #412).
+  // The competition skill's alert, once it's live: published by an engineer from request #412 (Borrow), or built by Ally in her chat (Build).
   const competition = useCompetition()
   const tracker: RunItem[] =
     competition.stage === "live"
@@ -86,7 +86,7 @@ function Alerts() {
             does: "tell",
             owner: "yours",
             last: "4 deals · fired Oct 8",
-            by: `Built by ${COMPETITION.fde} · request ${COMPETITION.request}`,
+            by: competition.selfBuilt ? `Built in chat · ${COMPETITION_TIMES.built}` : `Built by ${COMPETITION.fde} · request ${COMPETITION.request}`,
           },
         ]
       : []

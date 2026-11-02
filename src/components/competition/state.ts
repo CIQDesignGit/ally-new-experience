@@ -31,10 +31,14 @@ export interface CompetitionState {
   competitorFixed: boolean
   /** Who it went live for. */
   scope?: "aurelle" | "all"
+  /** Build harness: where Ally is in building it in Michelle's chat. */
+  self?: "building" | "check" | "testing" | "tested"
+  /** Built by Ally in her chat (Build), not by an engineer (Borrow): private to her account, no request, no review. */
+  selfBuilt: boolean
 }
 
 const KEY = "ally-competition-demo"
-export const INITIAL: CompetitionState = { on: false, stage: "idle", threshold: 5, day: "Monday", sqlEdited: false, sovFixed: false, competitorFixed: false }
+export const INITIAL: CompetitionState = { on: false, stage: "idle", threshold: 5, day: "Monday", sqlEdited: false, sovFixed: false, competitorFixed: false, selfBuilt: false }
 
 let state: CompetitionState = INITIAL
 let loaded = false

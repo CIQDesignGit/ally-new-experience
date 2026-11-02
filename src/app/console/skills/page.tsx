@@ -27,8 +27,8 @@ export default function ConsoleSkillsPage() {
   }
   const rows = [
     ...LIVE_SKILLS.map((s) => ({ id: s.id, name: s.name, does: s.does, trigger: s.trigger, version: s.version, status: "Live", lastRun: s.lastRun, tests: `${s.tests.length} of ${s.tests.length}`, href: `/console/skills/${s.id}` })),
-    // Competition watch exists once Michelle has asked for it.
-    ...(reached(c, "requested") ? [competition] : []),
+    // Competition watch exists once Michelle has asked an engineer for it; built in her chat, it's private to her account.
+    ...(reached(c, "requested") && !c.selfBuilt ? [competition] : []),
   ]
   const liveCount = rows.filter((r) => r.status === "Live").length
 

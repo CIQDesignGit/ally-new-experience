@@ -1,6 +1,8 @@
 "use client"
 
+import type { ReactNode } from "react"
 import Link from "next/link"
+import { BuildAnswer } from "./build-in-chat"
 import { ArrowRight, Check } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { AnswerCard, type Chip } from "../nudge/chat/inline-chat"
@@ -25,9 +27,32 @@ function Quick({ q }: { q: keyof typeof QUICK }) {
   )
 }
 
+/** The deep ask: who builds the tracker is the harness, an engineer (Borrow) or Ally in this chat (Build). */
+function CompetitionAsk() {
+  return useHarness() === "build" ? <BuildAnswer /> : <RequestAnswer />
+}
+
+/** Where Brightwick stands today, then whether the library can track it: the same opening whoever builds it. */
+export function StandsToday({ verdict }: { verdict: ReactNode }) {
+  const last = SOV.theirs.length - 1
+  return (
+    <AnswerCard>
+      <p className="font-semibold text-slate-950">Here&rsquo;s where {NAMES.competitor} stands today.</p>
+      <ul className="mt-2 flex flex-col gap-1 text-[14px]">
+        <li>· Share of voice on your gift terms: {NAMES.competitor} {SOV.theirs[last]}%, you {SOV.ours[last]}%</li>
+        <li>
+          · Deals: 20% off on {DEALS.length} of your {MATCHED} matched gift sets since Oct 5
+        </li>
+        <li>· {verdict}</li>
+      </ul>
+    </AnswerCard>
+  )
+}
+
 /**
- * The deep ask: what Ally can say now, then the tracker it will build, in her
- * words, with the two choices she'd want to make, a named engineer and a time.
+ * The deep ask on the borrow harness: what Ally can say now, then the tracker
+ * it will build, in her words, with the two choices she'd want to make, a named
+ * engineer and a time.
  */
 function RequestAnswer() {
   const c = useCompetition()
@@ -39,20 +64,37 @@ function RequestAnswer() {
     setCompetition({ on: true, stage: "requested" })
     notify({ headline: `${NAMES.customer} asked for a new skill · ${NAMES.request}`, batchName: NAMES.skill, description: `${NAMES.competitor} every week: promotions, price gaps, share of voice`, chip: `Due ${TIMES.promised}`, queuePath: "/fde", duration: 15000 })
   }
-  const last = SOV.theirs.length - 1
   return (
     <div className="flex max-w-[860px] flex-col gap-3">
-      <AnswerCard>
-        <p className="font-semibold text-slate-950">Here&rsquo;s where {NAMES.competitor} stands today.</p>
-        <ul className="mt-2 flex flex-col gap-1 text-[14px]">
-          <li>· Share of voice on your gift terms: {NAMES.competitor} {SOV.theirs[last]}%, you {SOV.ours[last]}%</li>
-          <li>
-            · Deals: 20% off on {DEALS.length} of your {MATCHED} matched gift sets since Oct 5
-          </li>
-          <li>· Nothing in your library tracks a competitor every week yet: it needs a new match between {NAMES.competitor}&rsquo;s products and yours, so an engineer builds it</li>
-        </ul>
-      </AnswerCard>
+      <StandsToday verdict={<>Nothing in your library tracks a competitor every week yet: it needs a new match between {NAMES.competitor}&rsquo;s products and yours, so an engineer builds it</>} />
+      <TrackerSpec
+        locked={sent}
+        footer={
+          <>
+            <div className="text-[14px] text-slate-700">
+              Ready by {TIMES.promised} · built and checked by {NAMES.fdeTitle}
+            </div>
+            {sent ? (
+              <span className="flex items-center gap-1.5 text-[14px] text-success-700">
+                <Check className="size-4" aria-hidden /> Requested · {NAMES.request}
+              </span>
+            ) : (
+              <button type="button" onClick={request} className={PRIMARY}>
+                Request it
+              </button>
+            )}
+          </>
+        }
+      />
+      {sent && <AnswerCard>Requested. I&rsquo;ll tell you here and by email when it&rsquo;s live. You can follow it on your Today page.</AnswerCard>}
+    </div>
+  )
+}
 
+/** The tracker she'd get, with her two choices (fixed once it's on its way), and a footer saying who builds it. */
+export function TrackerSpec({ locked, footer }: { locked: boolean; footer: ReactNode }) {
+  const c = useCompetition()
+  return (
       <section className="rounded-2xl bg-white ring-1 ring-slate-200">
         <div className="border-b border-slate-200 px-5 py-3">
           <div className="text-[15px] font-semibold text-slate-950">Competition tracker for Aurelle</div>
@@ -67,32 +109,16 @@ function RequestAnswer() {
           <dt className="text-slate-500">Alert</dt>
           <dd className="flex items-center gap-2 text-slate-950">
             When {NAMES.competitor} moves more than
-            <Pick value={c.threshold} options={[3, 5, 10]} format={(v) => `${v} pts`} disabled={sent} onChange={(v) => setCompetition({ threshold: v })} />
+            <Pick value={c.threshold} options={[3, 5, 10]} format={(v) => `${v} pts`} disabled={locked} onChange={(v) => setCompetition({ threshold: v })} />
           </dd>
           <dt className="text-slate-500">Delivered</dt>
           <dd className="flex items-center gap-2 text-slate-950">
             Every
-            <Pick value={c.day} options={["Monday", "Friday"] as const} format={(v) => v} disabled={sent} onChange={(v) => setCompetition({ day: v })} />
+            <Pick value={c.day} options={["Monday", "Friday"] as const} format={(v) => v} disabled={locked} onChange={(v) => setCompetition({ day: v })} />
           </dd>
         </dl>
-        <div className="flex items-center justify-between gap-4 border-t border-slate-200 px-5 py-3.5">
-          <div className="text-[14px] text-slate-700">
-            Ready by {TIMES.promised} · built and checked by {NAMES.fdeTitle}
-          </div>
-          {sent ? (
-            <span className="flex items-center gap-1.5 text-[14px] text-success-700">
-              <Check className="size-4" aria-hidden /> Requested · {NAMES.request}
-            </span>
-          ) : (
-            <button type="button" onClick={request} className={PRIMARY}>
-              Request it
-            </button>
-          )}
-        </div>
+        <div className="flex items-center justify-between gap-4 border-t border-slate-200 px-5 py-3.5">{footer}</div>
       </section>
-
-      {sent && <AnswerCard>Requested. I&rsquo;ll tell you here and by email when it&rsquo;s live. You can follow it on your Today page.</AnswerCard>}
-    </div>
   )
 }
 
@@ -120,7 +146,7 @@ function Pick<T extends string | number>({ value, options, format, onChange, dis
  */
 export function competitionChips(c: CompetitionState, offer: boolean): Chip[] {
   const hidden = !offer || reached(c, "requested")
-  const deep: Chip = { q: DEEP_ASK, hidden, match: /track.*brightwick|brightwick.*every week/i, think: { ms: 1600, label: "Checking what I can answer today" }, render: () => <RequestAnswer /> }
+  const deep: Chip = { q: DEEP_ASK, hidden, match: /track.*brightwick|brightwick.*every week/i, think: { ms: 1600, label: "Checking what I can answer today" }, render: () => <CompetitionAsk /> }
   const deals: Chip = { q: QUICK.deals.q, hidden, match: /brightwick.*(deal|discount|sale)/i, think: { ms: 900, label: `Checking ${NAMES.competitor}'s offers` }, render: () => <Quick q="deals" />, followUps: [deep] }
   const sov: Chip = { q: QUICK.sov.q, hidden, match: /share of voice.*gift|gift terms/i, think: { ms: 900, label: "Checking this week's search results" }, render: () => <Quick q="sov" />, followUps: [deals, deep] }
   return [sov, deals, deep]
@@ -151,7 +177,8 @@ export function requestStep(c: CompetitionState): number {
 export function CompetitionTracker() {
   const c = useCompetition()
   const build = BUILD_STEP[useHarness()]
-  if (!reached(c, "requested")) return null
+  // Nothing to follow when Ally built it in her chat (Build): no request, no engineer.
+  if (!reached(c, "requested") || c.selfBuilt) return null
   const n = requestStep(c)
   const live = c.stage === "live"
   return (

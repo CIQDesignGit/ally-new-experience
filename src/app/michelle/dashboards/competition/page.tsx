@@ -64,7 +64,7 @@ function Dashboard() {
             <h1 className="text-[28px] leading-tight font-semibold tracking-tight text-slate-950">{NAMES.competitor} vs Aurelle</h1>
             <div className="mt-1 flex items-center gap-2 text-sm text-slate-500">
               <span className="size-1.5 rounded-full bg-success-500" aria-hidden />
-              Live since {TIMES.live} · refreshes every {c.day} · week of Oct 4
+              Live since {c.selfBuilt ? TIMES.built : TIMES.live} · refreshes every {c.day} · week of Oct 4
             </div>
           </div>
           <ExportButton onExport={exportCompetitionPptx} />

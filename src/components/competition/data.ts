@@ -23,6 +23,8 @@ export const TIMES = {
   promised: "tomorrow, 10 AM",
   promisedAbs: "Fri, Oct 9, 10 AM",
   live: "Oct 8, 5:00 PM",
+  /** Built harness: Ally builds it in Michelle's chat, minutes after she asks. */
+  built: "Oct 8, 9:46 AM",
   early: "17 hours early",
 }
 
@@ -42,7 +44,13 @@ export const DEALS = [
   { theirs: "Brightwick Votive Sampler, 6 pack", ours: "Aurelle Votive Gift Set, 6 pack", deal: "20% off", since: "Oct 5", gap: -4.2 },
   { theirs: "Brightwick Spa Gift Box", ours: "Aurelle Lavender Spa Gift Set", deal: "20% off", since: "Oct 5", gap: -3.8 },
 ] as const
-export const MATCHED = 6
+/** Every Brightwick product matched to one of Aurelle's gift sets: the four on deal, then two that aren't. One pairs different jar sizes, so it's priced per ounce. */
+export const MATCHES: { theirs: string; ours: string; note?: string }[] = [
+  ...DEALS.map((d) => ({ theirs: d.theirs, ours: d.ours })),
+  { theirs: "Brightwick 3-Wick Holiday Candle", ours: "Aurelle 3-Wick Holiday Gift Set" },
+  { theirs: "Brightwick Mini Candle Trio, 3 x 3 oz", ours: "Aurelle Mini Jar Trio, 3 x 4 oz", note: "Sizes differ, so I compare price per ounce" },
+]
+export const MATCHED = MATCHES.length
 
 /** The quick questions Michelle asks first, and what Ally says at once. */
 export const QUICK = {

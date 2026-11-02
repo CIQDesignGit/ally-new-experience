@@ -6,7 +6,7 @@ import { ArrowRight, Check, ChevronRight, Lock } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { PRIMARY, SECONDARY } from "../mike/buttons"
 import { useCompetition } from "../../competition/state"
-import { AVAILABLE, COMPETITION_SKILL, CORE, CORE_DASHBOARDS, CORE_SCHEDULED, LOCKED, type LibrarySkill } from "./data"
+import { CORE, CORE_DASHBOARDS, CORE_SCHEDULED, LOCKED, availableFor, type LibrarySkill } from "./data"
 import { statusOf, turnOn, useLibrary } from "./state"
 
 const HEAD = "font-mono text-xs tracking-wide text-slate-500 uppercase"
@@ -17,9 +17,8 @@ const HEAD = "font-mono text-xs tracking-wide text-slate-500 uppercase"
  * tier doesn't include yet.
  */
 export function LibraryView() {
-  const c = useCompetition()
-  // Competition watch joins the library once an engineer publishes it.
-  const available = [...AVAILABLE, ...(c.stage === "live" ? [COMPETITION_SKILL] : [])]
+  // Competition watch joins once it's live: published by an engineer, or built in this account's chat.
+  const available = availableFor(useCompetition())
   return (
     <div className="flex flex-col gap-10">
       <section>
@@ -100,6 +99,7 @@ function SkillCard({ skill }: { skill: LibrarySkill }) {
         <span className="shrink-0 rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">{skill.gives}</span>
       </div>
       <p className="mt-1.5 text-sm leading-snug text-slate-500">{skill.does}</p>
+      {skill.builtFor && <p className="mt-1.5 text-[13px] font-medium text-slate-700">Built in chat for {skill.builtFor} · private</p>}
       <div className="mt-auto pt-4">
         {status === "On" ? (
           <div className="flex items-center justify-between gap-3 text-sm">
