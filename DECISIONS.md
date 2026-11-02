@@ -2,6 +2,16 @@
 
 Newest first. Each entry records the decision, why, and what was rejected.
 
+**Nov 2, 2026: in Build, Ally builds the skill in the customer's chat.**
+- No request, engineer or review.
+- The human check moves to the customer, as a business question (are these the right 6 products?) instead of SQL.
+- A skill she builds is private to her account. *Rejected:* publishing customer-built skills to every brand without CommerceIQ review.
+- She can't untick a match. *Why:* that would break "4 of 6 gift sets facing a deal" downstream. A flagged pair (priced per ounce) keeps it a real check.
+
+**Nov 2, 2026: without media, Ally recommends matching price.** In MVP the Brightwick brief and answer lead with Option A (match on 8 hero gift sets, plus the content angle). Holding price only recovers what content adds.
+
+**Nov 2, 2026: MVP never offers a media question it can't act on.** Claire's $500K starter and seeded chat are swapped for answerable ones; asked anyway, Ally says media isn't in this version.
+
 **Oct 30, 2026: an FDE persona (Nora) owns the internal tools.**
 - Requests, the Agent Console and Teach Ally live in her nav, not the customer's.
 - She shows in the persona menu for everyone. *Rejected:* hiding her behind Shift+D, because the menu is already the presenter's control.

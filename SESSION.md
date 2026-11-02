@@ -40,11 +40,16 @@
   - The adoption answer has no Nudge James.
 - The Brightwick brief recommends matching on the 8 hero gift sets when media is off.
 
+- Build mode is built as storyboarded (B1–B6): Ally builds the competition tracker in Michelle's chat.
+  - Her one check: 6 matched products.
+  - 12 of 12 checks pass.
+  - She turns it on. It's private to Aurelle, with no Nora, tracker or console.
+- Borrow is unchanged.
+
 ### Open questions
-- Build mode (Skill Builder) still shows Nora and the tracker; earlier direction was that Build happens in-product, with no FDE. The storyboard is pending.
+- The Skill Builder page (`/fde/skill-builder`) is no longer reached in Build. Retire it, or keep it for the vision?
 
 ### Next steps
-- Storyboard Build mode without an FDE.
 - Refresh `PLAN.md`: it dates from Sep 24, and several items are done or no longer fit the MVP.
 
 ## Earlier: Sep 24–25, 2026
