@@ -5,10 +5,10 @@ import Link from "next/link"
 import { Bell, Check } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useNudge } from "../nudge-context"
-import { useChat } from "../chat/inline-chat"
+import { useChat, useTurn } from "../chat/inline-chat"
 import { PRIMARY, SECONDARY } from "../mike/buttons"
 import { ActionCard, ActionRow } from "../ui/action"
-import { ALERT_RULES, BID_CAPS, BRAND_TERM_SOV, BRAND_TERMS, GIFT_DRILL, GIFT_PRICES, GIFT_TERM_SOV, GIFT_TERMS, IROAS, MICHELLE_LIMIT } from "./data"
+import { ALERT_ASK, ALERT_RULES, BID_CAPS, BRAND_TERM_SOV, BRAND_TERMS, GIFT_DRILL, GIFT_PRICES, GIFT_TERM_SOV, GIFT_TERMS, IROAS, MICHELLE_LIMIT } from "./data"
 import type { CustomAlert } from "./data"
 import { AlertCard, draftOf, editFromText, isCrossed, modeLabel } from "./alert-card"
 import type { Draft } from "./alert-card"
@@ -370,19 +370,69 @@ function MediaTaskAnswer({ cap, viaJames }: { cap: number; viaJames?: boolean })
   )
 }
 
+const avg = (xs: number[]) => Math.round(xs.reduce((a, b) => a + b, 0) / xs.length)
+
+/**
+ * "Alert me if…": a line on a number Ally already tracks, so she sets it herself,
+ * in either harness and in the MVP. It only tells her; acting on it is its own ask.
+ */
+export function GiftAlertAnswer() {
+  const { turns, ask } = useChat()
+  const said = useTurn()?.q ?? ""
+  // Starts from what she asked ("below 20%", "on Slack"), else the starter's line.
+  const [draft, setDraft] = useState<Draft>(() => ({ ...draftOf("gift-terms"), threshold: ALERT_ASK.threshold, ...editFromText(said)?.patch, mode: "input" }))
+  const [flash, setFlash] = useState(false)
+  const decided = turns.find((t) => t.chip === "Create the alert" || t.chip === "No alert for now")
+  const set = (patch: Partial<Draft>) => setDraft((d) => ({ ...d, ...patch, mode: "input" }))
+
+  // Typed changes ("make it 20%", "send it to Slack") land on the sentence in place.
+  useEffect(() => {
+    if (decided) return
+    const onTyped = (e: Event) => {
+      const hit = editFromText((e as CustomEvent<string>).detail)
+      if (!hit || !hit.ids.includes("gift-terms")) return
+      e.preventDefault()
+      set(hit.patch)
+      setFlash(true)
+      window.setTimeout(() => setFlash(false), 1200)
+    }
+    window.addEventListener(TYPED_EVENT, onTyped)
+    return () => window.removeEventListener(TYPED_EVENT, onTyped)
+  }, [decided])
+
+  return (
+    <div className="flex max-w-[760px] flex-col gap-4 text-[15px] leading-relaxed text-slate-700">
+      <p>
+        You&apos;re at <span className="font-semibold text-slate-950">{avg(GIFT_TERM_SOV.map((t) => t.us))}%</span> today, down from {avg(GIFT_TERM_SOV.map((t) => t.was.us))}% four weeks ago. Here&apos;s the alert:
+      </p>
+      <AlertCard id="gift-terms" draft={draft} onChange={set} locked={!!decided} flash={flash} tells />
+      {!decided && (
+        <div className="flex items-center gap-3">
+          <button type="button" onClick={() => ask({ q: "Create the alert", render: () => <AlertsCreatedAnswer ids={["gift-terms"]} drafts={{ "brand-terms": draftOf("brand-terms"), "gift-terms": draft }} cap={4} tells /> })} className={PRIMARY}>
+            Create alert
+          </button>
+          <button type="button" onClick={() => ask({ q: "No alert for now", render: () => <p className="text-[15px] text-slate-700">OK, no alert set.</p> })} className={SECONDARY}>
+            Not now
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+
 // One save per alert per page load, even when React mounts the answer twice in development.
 const saved = new Set<string>()
 
 /** Saved, and quiet for now: both lines are already crossed, but the media agent is on them, so Ally waits a week before alerting. */
-function AlertsCreatedAnswer({ ids, drafts, cap }: { ids: CustomAlert["id"][]; drafts: Record<CustomAlert["id"], Draft>; cap: number }) {
+function AlertsCreatedAnswer({ ids, drafts, cap, tells }: { ids: CustomAlert["id"][]; drafts: Record<CustomAlert["id"], Draft>; cap: number; tells?: boolean }) {
   const { addAlert } = useNudge()
   useEffect(() => {
     for (const id of ids) {
       if (saved.has(id)) continue
       saved.add(id)
-      addAlert({ ...ALERT_RULES[id], ...drafts[id], created: new Date().toISOString(), seen: false })
+      addAlert({ ...ALERT_RULES[id], ...drafts[id], created: new Date().toISOString(), seen: false, tells })
     }
-  }, [ids, drafts, addAlert])
+  }, [ids, drafts, addAlert, tells])
   // What each rule reads today, so a rule that's already true says so in its row.
   const today: Record<CustomAlert["id"], string> = { "brand-terms": "Brightwick is at 27%", "gift-terms": "our share is 18%" }
   const short = (id: CustomAlert["id"], t: number) => (id === "brand-terms" ? `Any competitor above ${t}% share on ${BRAND_TERMS.length} brand terms` : `Our share below ${t}% on ${GIFT_TERMS.length} gift terms`)
@@ -410,7 +460,7 @@ function AlertsCreatedAnswer({ ids, drafts, cap }: { ids: CustomAlert["id"][]; d
               {hot && <div className="mt-1 text-[13px] font-medium text-warning-700">True now: {today[id]}</div>}
             </div>
             <div className="text-right">
-              <div className="text-[13px] font-medium text-slate-950">{modeLabel(d.mode, cap)}</div>
+              <div className="text-[13px] font-medium text-slate-950">{tells ? "Tells you" : modeLabel(d.mode, cap)}</div>
               <div className="mt-0.5 text-[13px] text-slate-500">
                 {cap1(d.frequency)} · {d.channel.replace("your ", "")}
               </div>

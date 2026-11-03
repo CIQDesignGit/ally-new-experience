@@ -35,6 +35,10 @@ export default function AlertsPage() {
 
 const NOW: Record<CustomAlert["id"], string> = { "brand-terms": "27%", "gift-terms": "18%" }
 
+/** When she made it, on the demo's calendar (Oct 8) like the chat's own timestamps; older saves kept a label. */
+const madeAt = (created: string) =>
+  Number.isNaN(Date.parse(created)) ? created : new Date(`2026-10-08T${new Date(created).toTimeString().slice(0, 8)}`).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })
+
 function Alerts() {
   const { alerts: saved, addAlert, markAlertsSeen, runs, callItems } = useNudge()
   // Alerts saved by an older version of the demo get today's fields.
@@ -55,10 +59,10 @@ function Alerts() {
     name: a.name,
     what: alertTrigger(a),
     runs: a.frequency.charAt(0).toUpperCase() + a.frequency.slice(1),
-    does: doesFromMode(a.mode),
+    does: a.tells ? "tell" : doesFromMode(a.mode),
     owner: "yours",
     last: NOW[a.id] + (isCrossed(a.id, a.threshold) ? " · fired" : ""),
-    by: `From chat · ${a.created}`,
+    by: `From chat · ${madeAt(a.created)}`,
   }))
   const builtIn: RunItem[] = BUILT_IN_ALERTS.map((b) => ({
     id: `builtin-${b.name.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
@@ -96,7 +100,7 @@ function Alerts() {
   // Michelle's own alerts keep their full card (terms, threshold, cap); the rest use the shared editor.
   const editor = (i: RunItem) => {
     const a = alerts.find((x) => `alert-${x.id}` === i.id)
-    return a ? <AlertCard id={a.id} draft={a} onChange={(patch) => addAlert({ ...a, ...patch })} /> : null
+    return a ? <AlertCard id={a.id} draft={a} tells={a.tells} onChange={(patch) => addAlert({ ...a, ...patch })} /> : null
   }
 
   return (

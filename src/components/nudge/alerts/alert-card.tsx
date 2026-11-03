@@ -35,6 +35,7 @@ export function AlertCard({
   onInclude,
   locked,
   flash,
+  tells,
 }: {
   id: CustomAlert["id"]
   draft: Draft
@@ -47,6 +48,8 @@ export function AlertCard({
   onInclude?: (on: boolean) => void
   locked?: boolean
   flash?: boolean
+  /** Only tells her: no agent acts, so no action line and no autonomy track. */
+  tells?: boolean
 }) {
   const rule = ALERT_RULES[id]
   const now = NOW[id]
@@ -56,7 +59,7 @@ export function AlertCard({
     <div className={cn("rounded-xl border bg-white px-5 py-4 transition-shadow", include === false ? "border-slate-200 opacity-60" : "border-slate-200", flash && "ring-4 ring-brand-100")}>
       <div className="flex items-baseline justify-between gap-4">
         <span className="text-[15px] font-semibold text-slate-950">{rule.name}</span>
-        <span className="text-[13px] text-slate-500">{status ?? (crossed ? "Already true · the media agent is on it" : "Not crossed today")}</span>
+        <span className="text-[13px] text-slate-500">{status ?? (!crossed ? "Not crossed today" : tells ? `Already true · ${now.value}% today` : "Already true · the media agent is on it")}</span>
       </div>
 
       <div className="mt-3 flex items-center gap-6">
@@ -77,9 +80,10 @@ export function AlertCard({
             When our share of voice on <Terms list={GIFT_TERMS} label={`${GIFT_TERMS.length} gift terms`} /> drops below <Editable value={`${draft.threshold}%`} options={THRESHOLDS.map((t) => `${t}%`)} onPick={(v) => onChange?.({ threshold: parseInt(v) })} disabled={off} />
           </>
         )}
-        , the media agent raises our bids, up to ${cap}K a week.
+        {tells ? ", Ally tells you why and what to do." : `, the media agent raises our bids, up to $${cap}K a week.`}
       </p>
 
+      {!tells && (
       <div role="radiogroup" aria-label="When it fires" className="mt-3 grid grid-cols-3 overflow-hidden rounded-lg border border-slate-200 text-[13px]">
         {MODES.map((m, i) => (
           <button
@@ -95,6 +99,7 @@ export function AlertCard({
           </button>
         ))}
       </div>
+      )}
 
       <div className="mt-3 flex items-center justify-between gap-4 text-[13px] text-slate-500">
         <span>

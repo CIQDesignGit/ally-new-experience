@@ -20,7 +20,8 @@ import { PROMO_QUESTIONS, PROMO_WIDGETS } from "../promo/data"
 import type { PromoWidget } from "../promo/data"
 import { PREP_CHIP, RUN_BY_NAME_CHIP } from "../skill/answers"
 import { LESSON_CHIP } from "../ops/gap-training"
-import { GIFT_QUESTION } from "../alerts/data"
+import { ALERT_ASK, GIFT_QUESTION } from "../alerts/data"
+import { GiftAlertAnswer } from "../alerts/answers"
 import { RETRO_TASK, StorylineAnswer } from "../retro/storyline-answer"
 import { useMvp } from "../mvp"
 import { LibraryMatch } from "../library/match"
@@ -101,6 +102,8 @@ export function MichelleChat({ newChat = false }: ChatProps) {
       chips: [
         // The competition demo's questions lead while it runs.
         ...competitionChips(competition, newChat),
+        // A line on a number Ally already tracks: she sets it herself, in any harness.
+        { q: ALERT_ASK.q, match: /\b(alert|tell|notify|let) me\b.*(gift|share)/i, think: { ms: 900, label: "Checking your gift-term share" }, render: () => <GiftAlertAnswer /> },
         PROMO_CHIPS["promo-month"],
         // An investigation that ends in actions and alerts: its own thread.
         { q: GIFT_QUESTION, match: /gift.?sets?/i, task: "/michelle/c/gift-sets", render: () => null },

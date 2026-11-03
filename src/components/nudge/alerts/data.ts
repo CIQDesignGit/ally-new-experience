@@ -25,6 +25,8 @@ export interface CustomAlert {
   created: string
   /** Opened on the alerts page since it was made (the sidebar stops flagging it). */
   seen?: boolean
+  /** Set by asking ("Alert me if…"): it only tells her, no agent acts on it. */
+  tells?: boolean
 }
 
 export const BRAND_TERMS = ["aurelle candles", "aurelle candle", "aurelle soy candles", "aurelle jar candle", "aurelle amber floral", "aurelle gift set"]
@@ -73,6 +75,9 @@ export const BUILT_IN_ALERTS: { name: string; when: string; now: string; trend: 
 ]
 
 export const GIFT_QUESTION = "Why are gift sets lagging?"
+
+/** An alert on a number Ally already tracks: a setting she makes herself, in any harness. Today's share (18%) sits above the line. */
+export const ALERT_ASK = { q: "Alert me if our gift-term share drops below 15%", threshold: 15 }
 
 /**
  * The gift-sets drill (use case 1), last 4 weeks vs last year. Sales = traffic ×
