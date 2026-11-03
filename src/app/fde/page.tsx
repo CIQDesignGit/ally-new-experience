@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { ArrowRight, Check, Inbox, RotateCcw } from "lucide-react"
+import { ArrowRight, Check, Inbox } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { PageShell } from "@/components/layout/page-shell"
 import { Avatar, TopStrip } from "@/components/nudge/top-strip"
@@ -10,7 +10,7 @@ import { AppDrawer } from "@/components/nudge/app-drawer"
 import { AskBar, ChatProvider, ChatThread } from "@/components/nudge/chat/inline-chat"
 import { NoraChat } from "@/components/nudge/chat/home-chats"
 import { TRACK, useRequests, type DoneRequest, type OpenRequest } from "@/components/nudge/fde/requests"
-import { reached, reopenRequest, useCompetition } from "@/components/competition/state"
+import { ResetDemoButton } from "@/components/nudge/reset-demo-button"
 
 /**
  * Nora's home: what customers asked Ally for that no skill answered yet. Each
@@ -26,27 +26,15 @@ export default function RequestsPage() {
           <TopStrip person="nora" greeting="Hi Nora" />
           <Requests />
           <ChatThread />
-          <ReopenRequest />
+          {/* Demo-only, the same Reset as Michelle's: the next run starts from her asking. Room below for the Ask Ally bar. */}
+          <div className="flex justify-end px-10 pb-24 opacity-50 hover:opacity-100">
+            <ResetDemoButton />
+          </div>
         </div>
         <AppDrawer />
         <AskBar />
       </PageShell>
     </ChatProvider>
-  )
-}
-
-/** Demo-only, like Michelle's Reset: puts her request back to just asked, so Nora's part can be shown again. Room below for the Ask Ally bar. */
-function ReopenRequest() {
-  const c = useCompetition()
-  return (
-    <div className="flex justify-end px-10 pb-24 opacity-50 hover:opacity-100">
-      {reached(c, "requested") && !c.selfBuilt && (
-        <button type="button" onClick={reopenRequest} title="Reset" className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-700">
-          <RotateCcw className="size-3" />
-          Reset
-        </button>
-      )}
-    </div>
   )
 }
 

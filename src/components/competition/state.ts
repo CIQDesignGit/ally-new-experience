@@ -75,11 +75,6 @@ export function resetCompetition() {
   setCompetition(INITIAL)
 }
 
-/** Back to just requested, keeping Michelle's choices: Nora's demo restarts at "Build in Claude Code". */
-export function reopenRequest() {
-  setCompetition({ ...INITIAL, on: true, stage: "requested", threshold: state.threshold, day: state.day })
-}
-
 function subscribe(l: () => void) {
   listeners.add(l)
   return () => listeners.delete(l)
