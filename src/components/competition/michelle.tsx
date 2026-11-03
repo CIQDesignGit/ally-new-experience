@@ -142,13 +142,13 @@ function Pick<T extends string | number>({ value, options, format, onChange, dis
 /**
  * Her questions in this demo: two answered at once, one that becomes a request.
  * Offered as starters in a new chat until she's asked for the tracker (a new
- * ask starts there, not on her Today page); typed, they work anywhere. Deals is
- * a follow-up, not a starter, so the bar keeps a slot for setting an alert.
+ * ask starts there, not on her Today page); typed, they work anywhere. On Build,
+ * deals is a follow-up, not a starter, so the bar keeps a slot for setting an alert.
  */
-export function competitionChips(c: CompetitionState, offer: boolean): Chip[] {
+export function competitionChips(c: CompetitionState, offer: boolean, dealsAsFollowUp = false): Chip[] {
   const hidden = !offer || reached(c, "requested")
   const deep: Chip = { q: DEEP_ASK, hidden, match: /track.*brightwick|brightwick.*every week/i, think: { ms: 1600, label: "Checking what I can answer today" }, render: () => <CompetitionAsk /> }
-  const deals: Chip = { q: QUICK.deals.q, hidden: true, match: /brightwick.*(deal|discount|sale)/i, think: { ms: 900, label: `Checking ${NAMES.competitor}'s offers` }, render: () => <Quick q="deals" />, followUps: [deep] }
+  const deals: Chip = { q: QUICK.deals.q, hidden: hidden || dealsAsFollowUp, match: /brightwick.*(deal|discount|sale)/i, think: { ms: 900, label: `Checking ${NAMES.competitor}'s offers` }, render: () => <Quick q="deals" />, followUps: [deep] }
   // "Alert me when our share of voice on gift terms drops…" sets an alert; it isn't this question.
   const sov: Chip = { q: QUICK.sov.q, hidden, match: /^(?!.*\b(alert|notify|tell|let) me\b).*(share of voice.*gift|gift terms)/i, think: { ms: 900, label: "Checking this week's search results" }, render: () => <Quick q="sov" />, followUps: [deals, deep] }
   return [sov, deals, deep]

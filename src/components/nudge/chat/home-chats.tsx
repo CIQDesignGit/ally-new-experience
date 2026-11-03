@@ -101,9 +101,9 @@ export function MichelleChat({ newChat = false }: ChatProps) {
     {
       chips: [
         // The competition demo's questions lead while it runs.
-        ...competitionChips(competition, newChat),
-        // A line on a number Ally already tracks: she sets it herself, in any harness.
-        { q: ALERT_ASK.q, match: /\b(alert|tell|notify|let) me\b.*(gift|share)/i, think: { ms: 900, label: "Checking your gift-term share" }, render: () => <GiftAlertAnswer /> },
+        ...competitionChips(competition, newChat, !borrow),
+        // Build harness only: she sets the alert herself. On Borrow, alerts are built by the FDE (the tracker request carries its own).
+        ...(borrow ? [] : [{ q: ALERT_ASK.q, match: /\b(alert|tell|notify|let) me\b.*(gift|share)/i, think: { ms: 900, label: "Checking your gift-term share" }, render: () => <GiftAlertAnswer /> }]),
         PROMO_CHIPS["promo-month"],
         // An investigation that ends in actions and alerts: its own thread.
         { q: GIFT_QUESTION, match: /gift.?sets?/i, task: "/michelle/c/gift-sets", render: () => null },
