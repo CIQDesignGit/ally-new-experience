@@ -146,7 +146,8 @@ function Pick<T extends string | number>({ value, options, format, onChange, dis
  * deals is a follow-up, not a starter, so the bar keeps a slot for setting an alert.
  */
 export function competitionChips(c: CompetitionState, offer: boolean, dealsAsFollowUp = false): Chip[] {
-  const hidden = !offer || reached(c, "requested")
+  // Offered in every new chat, at every stage, so the demo is clicked, not typed. Asked again, the request shows where it stands.
+  const hidden = !offer
   const deep: Chip = { q: DEEP_ASK, hidden, match: /track.*brightwick|brightwick.*every week/i, think: { ms: 1600, label: "Checking what I can answer today" }, render: () => <CompetitionAsk /> }
   const deals: Chip = { q: QUICK.deals.q, hidden: hidden || dealsAsFollowUp, match: /brightwick.*(deal|discount|sale)/i, think: { ms: 900, label: `Checking ${NAMES.competitor}'s offers` }, render: () => <Quick q="deals" />, followUps: [deep] }
   // "Alert me when our share of voice on gift terms drops…" sets an alert; it isn't this question.
