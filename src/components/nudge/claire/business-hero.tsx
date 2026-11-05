@@ -1,6 +1,6 @@
 "use client"
 
-import { cn } from "@/lib/utils"
+import { Fig, PageHeader, Signal } from "@/components/layout/page-header"
 import { BUSINESS, fmtBiz } from "../data"
 import { useLive } from "../live-model"
 import { useNudge } from "../nudge-context"
@@ -33,7 +33,7 @@ export function BusinessHero({ topLineOnly = false, crumbs }: { topLineOnly?: bo
       <TopStrip
         person="claire"
         home="/claire-waterfall"
-        className="px-12"
+        className="px-10"
         greeting={crumbs ? undefined : "Hi Claire"}
         crumbs={crumbs}
         period
@@ -44,62 +44,57 @@ export function BusinessHero({ topLineOnly = false, crumbs }: { topLineOnly?: bo
           </>
         }
       />
-    <section className={topLineOnly ? "" : "px-12 pt-2 pb-7"}>
-      {!topLineOnly && (<>
-      {/* Two lines: forecast against plan, then the pipeline against the gap. It only says "closes" when it does. */}
-      <h1 className="text-[44px] leading-[1.15] font-bold tracking-tight text-ink">
-        {/* Two lines, one size: where the period lands against plan, then what's in the pipeline against the gap. */}
-        <span className="block">
-          <span className="font-mono">{fmtBiz(b.pace)}</span> forecast <span className="text-slate-500">(vs <span className="font-mono">{fmtBiz(b.plan)}</span> plan)</span>.
-        </span>
-        <span className="block">
-          {live.mvp ? (
-            // The MVP names the gap and stops there: no pipeline dollars against it.
+    {!topLineOnly && (
+      <PageHeader
+        eyebrow={
+          <>
+            <Fig>{fmtBiz(b.pace)}</Fig> forecast vs <Fig>{fmtBiz(b.plan)}</Fig> plan
+            {/* Where the open work sits, by lever; the MVP shows no pipeline dollars. */}
+            {!live.mvp &&
+              live.open.byArea.map((a) => (
+                <span key={a.agent}>
+                  <span className="text-slate-300"> · </span>
+                  <Fig>{a.value}</Fig> in {a.agent}
+                </span>
+              ))}
+          </>
+        }
+        title={
+          // It only says "closes" when it does; ahead of plan, the pipeline grows the lead.
+          live.mvp ? (
             gap > 0 ? (
               <>
-                <span className="font-mono text-error-600">{fmtBiz(gap)}</span> gap to close.
+                <span className="text-error-600">{fmtBiz(gap)}</span> gap to close.
               </>
             ) : (
               <>
-                <span className="font-mono text-success-700">{fmtBiz(-gap)}</span> ahead of plan.
+                <span className="text-success-700">{fmtBiz(-gap)}</span> ahead of plan.
               </>
             )
           ) : gap > 0 ? (
             <>
-              <span className="font-mono text-brand-500">{live.open.totalLabel}</span> in pipeline to close the <span className="font-mono text-error-600">{fmtBiz(gap)}</span> gap.
+              {live.open.totalLabel} in pipeline to close the <span className="text-error-600">{fmtBiz(gap)}</span> gap.
             </>
           ) : (
-            // Ahead of plan: the pipeline grows the lead instead of closing a gap.
             <>
-              <span className="font-mono text-success-700">{fmtBiz(-gap)}</span> ahead, <span className="font-mono text-brand-500">{live.open.totalLabel}</span> more in pipeline.
+              <span className="text-success-700">{fmtBiz(-gap)}</span> ahead, {live.open.totalLabel} more in pipeline.
             </>
-          )}
-        </span>
-      </h1>
-
-      {!live.mvp && <div className="mt-2 text-base text-slate-500">
-        {live.open.byArea.map((a, i) => (
-          <span key={a.agent}>
-            {i > 0 && <span className="text-slate-300"> · </span>}
-            <span className="font-semibold text-slate-700">{a.value}</span> in {a.agent}
-          </span>
-        ))}
-      </div>}
-      <div className="mt-3 text-xl font-semibold">
-        <span className="text-brand-600">
-          {live.approval.effort} of your team&apos;s time unlocks {live.mvp ? `${approvals} ${approvals === 1 ? "action" : "actions"}` : live.approval.value}
-        </span>
-        {live.deadline && (
+          )
+        }
+        signals={
           <>
-            <span className="text-slate-300"> · </span>
-            <span className="text-warning-600">
-              {live.mvp ? dueLabel : live.deadline.expiring} expires in {live.deadline.days - day} days
-            </span>
+            <Signal tone="brand">
+              {live.approval.effort} of your team&apos;s time unlocks {live.mvp ? `${approvals} ${approvals === 1 ? "action" : "actions"}` : live.approval.value}
+            </Signal>
+            {live.deadline && (
+              <Signal tone="warning">
+                {live.mvp ? dueLabel : live.deadline.expiring} expires in {live.deadline.days - day} days
+              </Signal>
+            )}
           </>
-        )}
-      </div>
-      </>)}
-    </section>
+        }
+      />
+    )}
     </>
   )
 }

@@ -56,7 +56,7 @@ export default function BorrowPage() {
       <PageFrame>
         <header className="px-10 pt-8 max-sm:px-4">
           <div className="text-[13px] text-slate-500">FDE workflow · Aurelle Candles · Amazon US</div>
-          <h1 className="mt-1 text-[28px] leading-tight font-semibold tracking-tight text-slate-950">{uc.label}</h1>
+          <h1 className="mt-1 text-3xl leading-tight font-semibold tracking-tight text-slate-950">{uc.label}</h1>
         </header>
 
         <div className="mt-3 px-10 py-2.5 max-sm:px-4">

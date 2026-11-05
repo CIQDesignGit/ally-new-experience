@@ -59,10 +59,10 @@ function Page() {
         <WidgetStack>
           <Stand done={done} />
           <Widget>
-            <div className="px-12 pt-8 pb-3">
+            <div className="px-10 pt-8 pb-3">
               <div className="font-mono text-xs tracking-wide text-slate-500 uppercase">Where the gaps are</div>
             </div>
-            <div className="px-12 pb-10">
+            <div className="px-10 pb-10">
               <Bridge done={done} selected={filter} onSelect={setFilter} />
               <div id="actions-table" className="scroll-mt-4">
                 <ActionsTable done={done} onFix={fix} filter={filter} onClear={() => setFilter("all")} />
@@ -77,7 +77,7 @@ function Page() {
         <div id="ai-commerce-thread" className="scroll-mt-4">
           <ChatThread />
         </div>
-        <div className="flex items-center justify-between px-12 pt-6 text-xs text-slate-400">
+        <div className="flex items-center justify-between px-10 pt-6 text-xs text-slate-400">
           <span>Illustrative data. Questions come from retailer search terms and the prompts shoppers put to each agent, asked about 10 times a week; a brand counts as top 3 when it lands there in most runs.</span>
         </div>
       </PageFrame>

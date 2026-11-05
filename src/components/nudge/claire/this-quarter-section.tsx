@@ -42,7 +42,7 @@ export function ThisQuarterSection() {
   const scale = Math.max(...ORDER.map((a) => Math.max(leverDelivered(d, a).delivered, mvp ? 0 : leverDelivered(d, a).promised))) * 1.15
 
   return (
-    <section className="px-12 pt-8 pb-6">
+    <section className="px-10 pt-8 pb-6">
       <div className="font-mono text-xs tracking-wide text-slate-500 uppercase">{d.label}</div>
       {mvp ? (
         <div className="mt-2 flex flex-wrap items-baseline gap-x-4 gap-y-1">

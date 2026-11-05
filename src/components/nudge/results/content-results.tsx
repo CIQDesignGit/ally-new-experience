@@ -107,7 +107,7 @@ export function ContentResults() {
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
-            <h1 className="mt-1 text-[32px] leading-tight font-bold tracking-tight text-slate-950">
+            <h1 className="mt-1 text-3xl leading-tight font-semibold tracking-tight text-slate-950">
               <span className="font-mono text-brand-600">{fmtValue(totals.incremental)}</span> delivered of <span className="font-mono">{fmtValue(totals.promised)}</span> projected
             </h1>
             <div className="mt-1 text-base text-slate-500">

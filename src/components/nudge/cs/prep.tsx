@@ -92,7 +92,7 @@ export function MeetingPrep() {
           <div className="inline-flex items-center gap-1.5 text-sm text-slate-500">
             <CalendarDays className="size-3.5" /> From {NEXT_MEETING.source}
           </div>
-          <h1 className="mt-1 text-[28px] leading-tight font-bold tracking-tight text-slate-950">{NEXT_MEETING.title}</h1>
+          <h1 className="mt-1 text-3xl leading-tight font-semibold tracking-tight text-slate-950">{NEXT_MEETING.title}</h1>
           <div className="mt-1 text-[15px] text-slate-700">
             {NEXT_MEETING.when} · {NEXT_MEETING.length} · {attendees.join(", ")}
           </div>

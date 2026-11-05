@@ -45,7 +45,7 @@ function Requests() {
   return (
     <>
       <div className="flex flex-wrap items-end justify-between gap-4 px-10 pt-4 pb-8">
-        <h1 className="text-[28px] leading-tight font-semibold tracking-tight text-slate-950">Requests</h1>
+        <h1 className="text-3xl leading-tight font-semibold tracking-tight text-slate-950">Requests</h1>
         <div role="tablist" className="flex rounded-lg border border-slate-200 bg-white p-1">
           {(["open", "done"] as const).map((t) => (
             <button

@@ -18,7 +18,7 @@ export function SoFar({ done }: { done: Done }) {
   const dShare = share(done) - share(BASE)
 
   return (
-    <section className="px-12 pt-8 pb-6">
+    <section className="px-10 pt-8 pb-6">
       <div className="font-mono text-xs tracking-wide text-slate-500 uppercase">{META.asOf} so far</div>
       <div className="mt-2 flex flex-wrap items-baseline gap-x-6 gap-y-1">
         <span className="text-2xl font-semibold tracking-tight text-slate-950">

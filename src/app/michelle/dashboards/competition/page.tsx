@@ -62,7 +62,7 @@ function Dashboard() {
 
         <div className="flex items-end justify-between gap-6 px-10 pt-4">
           <div>
-            <h1 className="text-[28px] leading-tight font-semibold tracking-tight text-slate-950">{NAMES.competitor} vs Aurelle</h1>
+            <h1 className="text-3xl leading-tight font-semibold tracking-tight text-slate-950">{NAMES.competitor} vs Aurelle</h1>
             <div className="mt-1 flex items-center gap-2 text-sm text-slate-500">
               <span className="size-1.5 rounded-full bg-success-500" aria-hidden />
               Live since {c.selfBuilt ? TIMES.built : TIMES.live} · refreshes every {c.day} · week of Oct 4

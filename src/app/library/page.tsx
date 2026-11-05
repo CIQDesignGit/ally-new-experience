@@ -16,7 +16,7 @@ export default function LibraryPage() {
         <PageFrame>
           <TopStrip person={viewer} home={home} crumbs={[{ label: "Home", href: home }, { label: "Library" }]} />
           <div className="px-10 pt-2 pb-6">
-            <h1 className="text-[28px] leading-tight font-bold tracking-tight text-slate-950">Library</h1>
+            <h1 className="text-3xl leading-tight font-semibold tracking-tight text-slate-950">Library</h1>
           </div>
           <LibraryView />
           <ChatThread />

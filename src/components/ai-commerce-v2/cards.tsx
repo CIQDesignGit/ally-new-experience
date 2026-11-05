@@ -20,7 +20,7 @@ export function Cards({ done, onAsk }: { done: Done; onAsk: (q: string) => void 
 
   return (
     <section className="pt-4">
-      <div className="px-12 font-mono text-xs tracking-wide text-slate-500 uppercase">Beyond the gap</div>
+      <div className="px-10 font-mono text-xs tracking-wide text-slate-500 uppercase">Beyond the gap</div>
       <div className="mt-4 grid gap-4 lg:grid-cols-3">
         <button type="button" onClick={() => onAsk("What's rising this month?")} className={CARD}>
           <div className="text-xs font-medium text-slate-500">Rising this month</div>

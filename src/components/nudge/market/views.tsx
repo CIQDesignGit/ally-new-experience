@@ -57,9 +57,9 @@ function Shell({ eyebrow, title, sub, context, onBack, children }: { eyebrow: st
   )
   return (
     // The way back is "Home" in the top strip's breadcrumb, so the view starts with its own content.
-    <div className="px-12 pt-4 pb-10">
+    <div className="px-10 pt-4 pb-10">
       <div className="font-mono text-xs tracking-wide text-slate-500 uppercase">{eyebrow}</div>
-      <h1 className="mt-2 text-[28px] leading-tight font-bold tracking-tight text-slate-950">{title}</h1>
+      <h1 className="mt-2 text-3xl leading-tight font-semibold tracking-tight text-slate-950">{title}</h1>
       <p className="mt-2 text-base text-slate-500">{sub}</p>
       <div className="mt-6">{children}</div>
     </div>

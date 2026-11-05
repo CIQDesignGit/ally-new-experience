@@ -48,7 +48,7 @@ export function Recap() {
           <div className="inline-flex items-center gap-1.5 text-sm text-slate-500">
             <Mic className="size-3.5" /> {LAST_CALL.title} · {LAST_CALL.date} · {LAST_CALL.length} · from {LAST_CALL.source}
           </div>
-          <h1 className="mt-1 text-[28px] leading-tight font-bold tracking-tight text-slate-950">Recap of the {LAST_CALL.short} call</h1>
+          <h1 className="mt-1 text-3xl leading-tight font-semibold tracking-tight text-slate-950">Recap of the {LAST_CALL.short} call</h1>
           <div className={cn("mt-1 text-[15px] font-medium", saved ? "text-success-700" : "text-warning-700")}>
             {saved ? `${total - added} things saved to Aurelle's context on their own, ${LAST_CALL.savedOn}, 72 hours after the call${added ? ` · ${added} added by you` : ""} · edit anytime` : ""}
           </div>

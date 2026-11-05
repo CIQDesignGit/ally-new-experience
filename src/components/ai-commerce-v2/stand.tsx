@@ -21,7 +21,7 @@ export function Stand({ done }: { done: Done }) {
   const cur = open ? SOURCES.find((s) => s.id === open)! : null
   return (
     <section>
-      <div className="flex items-baseline gap-3 px-12">
+      <div className="flex items-baseline gap-3 px-10">
         <div className="font-mono text-xs tracking-wide text-slate-500 uppercase">Where you stand</div>
         <div className="text-xs text-slate-500">AI visibility by source · AI rank · coverage</div>
       </div>
@@ -132,7 +132,7 @@ export function Stand({ done }: { done: Done }) {
           </div>
         </div>
       )}
-      <div className="mt-3 px-12 text-[11px] text-slate-400">AI visibility: each product in an answer weighted 1 ÷ its position (1st = 1, 2nd = ½, 3rd = ⅓ …); your share of that weight. AI rank: your place among brands by AI visibility. Coverage: the answers you appear in, out of all tracked; prompts on agents, keywords on retail search (page one). Dollars: questions × click rate at your position × conversion at the retailer; a band where volume isn&apos;t measured.</div>
+      <div className="mt-3 px-10 text-[11px] text-slate-400">AI visibility: each product in an answer weighted 1 ÷ its position (1st = 1, 2nd = ½, 3rd = ⅓ …); your share of that weight. AI rank: your place among brands by AI visibility. Coverage: the answers you appear in, out of all tracked; prompts on agents, keywords on retail search (page one). Dollars: questions × click rate at your position × conversion at the retailer; a band where volume isn&apos;t measured.</div>
     </section>
   )
 }

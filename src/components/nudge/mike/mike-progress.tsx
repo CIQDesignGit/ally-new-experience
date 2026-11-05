@@ -1,5 +1,6 @@
 "use client"
 
+import { Fig, PageHeader, Signal } from "@/components/layout/page-header"
 import { PublishConfetti } from "@/components/home/publish-confetti"
 import { AS_OF, contentBatches, launchedIds } from "../data"
 import { daysUntil } from "../model"
@@ -62,65 +63,60 @@ export function MikeProgress({ celebrate, stage, onStage }: { celebrate: Celebra
     const oneApproval = waiting.filter((b) => b.tier === "approval")
     const expiring = dated.filter((b) => b.deadline === soonest)
     return (
-      <div className="flex items-end justify-between gap-8 px-10 pt-2 pb-8">
-        <div className="min-w-0">
-          <div className="text-2xl font-semibold tracking-tight text-slate-700">
-            <span className="font-mono text-slate-950">{waiting.length}</span> batches · <span className="font-mono text-slate-950">{waiting.reduce((s, b) => s + (b.inputSkus ?? b.skus), 0)}</span> SKUs waiting on you.
-          </div>
-          <h1 className="mt-1 text-[28px] leading-tight font-bold tracking-tight text-slate-950">
-            {oneApproval.length ? (
-              <>
-                <span className="font-mono">{oneApproval.length}</span> {oneApproval.length === 1 ? "is" : "are"} one approval from live.
-              </>
-            ) : (
-              "Everything one approval away is live."
-            )}
-          </h1>
-          {expiry && expiring.length > 0 && (
-            <div className="mt-2 text-lg font-semibold text-warning-600">
+      <PageHeader
+        eyebrow={
+          <>
+            <Fig>{waiting.length}</Fig> batches · <Fig>{waiting.reduce((s, b) => s + (b.inputSkus ?? b.skus), 0)}</Fig> SKUs waiting on you
+          </>
+        }
+        title={oneApproval.length ? `${oneApproval.length} ${oneApproval.length === 1 ? "is" : "are"} one approval from live.` : "Everything one approval away is live."}
+        signals={
+          expiry &&
+          expiring.length > 0 && (
+            <Signal tone="warning">
               {expiry.all ? "All of them" : `${expiring.length} ${expiring.length === 1 ? "batch" : "batches"}`} {expiry.all || expiring.length > 1 ? "expire" : "expires"} in {expiry.days} days
+            </Signal>
+          )
+        }
+        aside={
+          celebrate && (
+            <div className="relative text-sm font-semibold text-success-700">
+              {celebrate.skus} SKUs live
+              <div className="absolute -top-1 left-0 size-16">
+                <PublishConfetti />
+              </div>
             </div>
-          )}
-        </div>
-        {celebrate && (
-          <div className="relative text-sm font-semibold text-success-700">
-            {celebrate.skus} SKUs live
-            <div className="absolute -top-1 left-0 size-16">
-              <PublishConfetti />
-            </div>
-          </div>
-        )}
-      </div>
+          )
+        }
+      />
     )
   }
 
   return (
     <>
       {/* The headline beside the open work as a waterfall; a bar filters the inbox. */}
-      <div className="grid grid-cols-[minmax(0,1fr)_340px] items-end gap-8 px-10 pt-2 pb-6">
-        <div className="min-w-0">
-        <div className="text-2xl font-semibold tracking-tight text-slate-700">
-          <span className="font-mono text-slate-950">{fmt(open)}</span> of content opportunity is {actedValue > 0 ? "still " : ""}open this quarter.
-        </div>
-        <h1 className="mt-1 text-[28px] leading-tight font-bold tracking-tight text-slate-950">
-          {left > 0.005 ? (
-            <>
-              <span className="font-mono">{fmt(left)}</span> {doneValue > 0 ? "still" : "is"} one approval from live.
-            </>
-          ) : (
-            "Everything one approval away is live."
-          )}
-        </h1>
-        {/* The urgency on its own line, as on Claire's page: a deadline, in amber. */}
-        {left > 0.005 && expiry && (
-          <div className="mt-2 text-lg font-semibold text-warning-600">
-            {expiry.all ? "All of it" : <span className="font-mono">{fmt(expiry.value)}</span>}
-            {expiry.all ? "" : " of it"} expires in {expiry.days} days
+      <PageHeader
+        eyebrow={
+          <>
+            <Fig>{fmt(open)}</Fig> of content opportunity is {actedValue > 0 ? "still " : ""}open this quarter
+          </>
+        }
+        title={left > 0.005 ? `${fmt(left)} ${doneValue > 0 ? "still" : "is"} one approval from live.` : "Everything one approval away is live."}
+        signals={
+          left > 0.005 &&
+          expiry && (
+            <Signal tone="warning">
+              {expiry.all ? "All of it" : fmt(expiry.value)}
+              {expiry.all ? "" : " of it"} expires in {expiry.days} days
+            </Signal>
+          )
+        }
+        aside={
+          <div className="w-[340px]">
+            <MiniWaterfall values={stages} highlight={stage ?? "approval"} onSelect={(s) => s !== "banked" && onStage?.(s)} />
           </div>
-        )}
-        </div>
-        <MiniWaterfall values={stages} highlight={stage ?? "approval"} onSelect={(s) => s !== "banked" && onStage?.(s)} />
-      </div>
+        }
+      />
       <div className="relative border-y border-slate-200 bg-brand-25 px-10 py-4">
         <SplitBar
           banked={BANKED}

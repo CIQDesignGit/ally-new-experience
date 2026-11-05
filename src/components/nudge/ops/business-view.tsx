@@ -1,5 +1,6 @@
 "use client"
 
+import { Fig, PageHeader, Signal } from "@/components/layout/page-header"
 import { VsPlan } from "./vs-plan"
 import { Fragment, useEffect, useRef, useState } from "react"
 import { ChevronRight } from "lucide-react"
@@ -38,36 +39,26 @@ export function BusinessHero() {
   const pace = l.pace(l.period)
   const who = RETAILERS.find((r) => r.id === retailer)?.label ?? "Amazon"
   return (
-    <div className="px-10 pt-2 pb-7">
-      <div className="text-2xl font-semibold tracking-tight text-slate-700">
-        {retailer === "all" ? "Your business" : who} is projected to land at <span className="font-mono text-slate-950">{fmtBiz(pace)}</span> {PERIOD_WORDS[l.period]}.
-      </div>
-      {/* One line, the same size as Mike's and Michelle's headlines. Ahead of plan, the work grows the lead. */}
-      <h1 className="mt-1 text-[28px] leading-tight font-bold tracking-tight text-slate-950">
-        {plan > pace ? (
+    <PageHeader
+      eyebrow={
+        <>
+          {retailer === "all" ? "Your business" : who} is projected to land at <Fig>{fmtBiz(pace)}</Fig> {PERIOD_WORDS[l.period]}
+        </>
+      }
+      title={
+        plan > pace ? (
           <>
-            That&apos;s <span className="font-mono">{fmtBiz(plan - pace)}</span> short of your <span className="font-mono">{fmtBiz(plan)}</span> plan.
-            {/* The MVP doesn't say what the open work is worth. */}
-            {!l.mvp && (
-              <>
-                {" "}
-                <span className="font-mono text-brand-600">{l.open.totalLabel}</span> of work is in flight to close it.
-              </>
-            )}
+            That&apos;s {fmtBiz(plan - pace)} short of your {fmtBiz(plan)} plan.
           </>
         ) : (
           <>
-            That&apos;s <span className="font-mono text-success-700">{fmtBiz(pace - plan)}</span> ahead of your <span className="font-mono">{fmtBiz(plan)}</span> plan.
-            {!l.mvp && (
-              <>
-                {" "}
-                <span className="font-mono text-brand-600">{l.open.totalLabel}</span> more is in flight.
-              </>
-            )}
+            That&apos;s <span className="text-success-700">{fmtBiz(pace - plan)}</span> ahead of your {fmtBiz(plan)} plan.
           </>
-        )}
-      </h1>
-    </div>
+        )
+      }
+      // The MVP doesn't say what the open work is worth.
+      signals={!l.mvp && <Signal tone="brand">{l.open.totalLabel} {plan > pace ? "of work is in flight to close it" : "more is in flight"}</Signal>}
+    />
   )
 }
 

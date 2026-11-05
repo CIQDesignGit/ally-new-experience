@@ -147,7 +147,7 @@ function Wbr() {
     <>
       <div className="flex items-end justify-between gap-6 px-10 pt-4 pb-6">
         <div>
-          <h1 className="text-[28px] leading-tight font-semibold tracking-tight text-slate-950">Weekly business review</h1>
+          <h1 className="text-3xl leading-tight font-semibold tracking-tight text-slate-950">Weekly business review</h1>
           <div className="mt-1 flex items-center gap-2 text-sm text-slate-500">
             <span className="size-1.5 rounded-full bg-success-500" aria-hidden />
             Week of {GAP_WEEK.last} · updated Mon, 9:00 AM

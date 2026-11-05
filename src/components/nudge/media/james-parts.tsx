@@ -1,5 +1,6 @@
 "use client"
 
+import { Fig, PageHeader, Signal } from "@/components/layout/page-header"
 import Link from "next/link"
 import { ArrowRight, Check } from "lucide-react"
 import { toast } from "sonner"
@@ -100,59 +101,48 @@ export function MediaProgress({ celebrate, stage, onStage }: { celebrate: { valu
     const waiting = MEDIA_BATCHES.filter((b) => b.tier !== "autopilot" && !approved[b.id])
     const oneApproval = waiting.filter((b) => b.tier === "approval")
     return (
-      <div className="flex items-end justify-between gap-8 px-10 pt-2 pb-8">
-        <div className="min-w-0">
-          <div className="text-2xl font-semibold tracking-tight text-slate-700">
+      <PageHeader
+        eyebrow={
+          <>
             {gap > 0 && (
               <>
-                <span className="font-mono text-slate-950">{fmtBiz(gap)}</span> gap to plan ·{" "}
+                <Fig>{fmtBiz(gap)}</Fig> gap to plan ·{" "}
               </>
             )}
-            <span className="font-mono text-slate-950">{waiting.length}</span> plays waiting on you.
-          </div>
-          <h1 className="mt-1 text-[28px] leading-tight font-bold tracking-tight text-slate-950">
-            {oneApproval.length ? (
-              <>
-                <span className="font-mono">{oneApproval.length}</span> {oneApproval.length === 1 ? "is" : "are"} one approval away.
-              </>
-            ) : (
-              "Everything one approval away is approved."
-            )}
-          </h1>
-          {!approved["media-build"] && <div className="mt-2 text-lg font-semibold text-warning-700">14 keywords from content are waiting for budget</div>}
-        </div>
-        {celebrate && (
-          <div className="relative text-sm font-semibold text-success-700">
-            {celebrate.label}
-            <div className="absolute -top-1 left-0 size-16">
-              <PublishConfetti />
+            <Fig>{waiting.length}</Fig> plays waiting on you
+          </>
+        }
+        title={oneApproval.length ? `${oneApproval.length} ${oneApproval.length === 1 ? "is" : "are"} one approval away.` : "Everything one approval away is approved."}
+        signals={!approved["media-build"] && <Signal tone="warning">14 keywords from content are waiting for budget</Signal>}
+        aside={
+          celebrate && (
+            <div className="relative text-sm font-semibold text-success-700">
+              {celebrate.label}
+              <div className="absolute -top-1 left-0 size-16">
+                <PublishConfetti />
+              </div>
             </div>
-          </div>
-        )}
-      </div>
+          )
+        }
+      />
     )
   }
   return (
     <>
-      <div className="grid grid-cols-[minmax(0,1fr)_340px] items-end gap-8 px-10 pt-2 pb-6">
-        <div className="min-w-0">
-          <div className="text-2xl font-semibold tracking-tight text-slate-700">
-            <span className="font-mono text-slate-950">{money(total)}</span> of media opportunity is {acted > 0 ? "still " : ""}open this quarter.
+      <PageHeader
+        eyebrow={
+          <>
+            <Fig>{money(total)}</Fig> of media opportunity is {acted > 0 ? "still " : ""}open this quarter
+          </>
+        }
+        title={left > 0.005 ? `${money(left)} ${anyDone ? "still" : "is"} one approval from live.` : "Everything one approval away is approved."}
+        signals={!approved["media-build"] && <Signal tone="warning">14 keywords from content are waiting for budget</Signal>}
+        aside={
+          <div className="w-[340px]">
+            <MiniWaterfall values={{ autopilot: open("autopilot"), approval: left, input: open("input") }} highlight={stage ?? "approval"} onSelect={jump} />
           </div>
-          <h1 className="mt-1 text-[28px] leading-tight font-bold tracking-tight text-slate-950">
-            {left > 0.005 ? (
-              <>
-                <span className="font-mono">{money(left)}</span> {anyDone ? "still" : "is"} one approval from live.
-              </>
-            ) : (
-              "Everything one approval away is approved."
-            )}
-          </h1>
-          {/* What makes media different this week: the content it's waiting to fund. */}
-          {!approved["media-build"] && <div className="mt-2 text-lg font-semibold text-warning-700">14 keywords from content are waiting for budget</div>}
-        </div>
-        <MiniWaterfall values={{ autopilot: open("autopilot"), approval: left, input: open("input") }} highlight={stage ?? "approval"} onSelect={jump} />
-      </div>
+        }
+      />
       <div className="relative border-y border-slate-200 bg-brand-25 px-10 py-4">
         <SplitBar
           banked={DELIVERED.quarter.media.delivered}

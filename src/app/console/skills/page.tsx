@@ -36,7 +36,7 @@ export default function ConsoleSkillsPage() {
     <ConsoleShell>
       <header className="px-10 pt-4">
         <div className="text-[13px] text-slate-500">{NAMES.account}</div>
-        <h1 className="mt-1 text-[28px] leading-tight font-semibold tracking-tight text-slate-950">Skills</h1>
+        <h1 className="mt-1 text-3xl leading-tight font-semibold tracking-tight text-slate-950">Skills</h1>
         <div className="mt-1 text-[14px] text-slate-500">
           {liveCount} live{rows.length > liveCount ? ` · ${rows.length - liveCount} in progress` : ""}
         </div>

@@ -1,5 +1,6 @@
 "use client"
 
+import { Fig, PageHeader, Signal } from "@/components/layout/page-header"
 import { TopStrip } from "@/components/nudge/top-strip"
 import { META, QUESTIONS, TO_WIN, brandRank, isFixed, isLeader, score, sov, visibility, type Done } from "./data"
 
@@ -18,7 +19,7 @@ export function Hero({ done }: { done: Done }) {
       <TopStrip
         person="claire"
         home="/claire-waterfall"
-        className="px-12"
+        className="px-10"
         greeting="Hi Claire"
         facts={
           <span className="flex items-center gap-x-2 text-sm text-slate-500">
@@ -34,29 +35,30 @@ export function Hero({ done }: { done: Done }) {
           </span>
         }
       />
-      <section className="px-12 pt-2 pb-7">
-        <h1 className="text-[44px] leading-[1.15] font-bold tracking-tight text-ink">
-          <span className="block">
-            Your AI visibility in {META.category.toLowerCase()} is <span className="font-mono text-brand-500">{sov(done)}%</span>.
-          </span>
-        </h1>
-        <div className="mt-2 text-base text-slate-500">
-          AI rank <span className="font-mono font-semibold text-slate-700">#{r.rank}</span> of {r.of} brands · Coverage <span className="font-mono font-semibold text-slate-700">{v.in}</span> of {v.of} answers
-        </div>
-        <div className="mt-3 text-xl font-semibold">
-          <span className="text-brand-600">
-            {open.length} actions one approval from live · {Math.max(open.length * 5, 5)}{" "}min of your team&apos;s time
-          </span>
-          {rising && (
-            <>
-              <span className="text-slate-300"> · </span>
-              <span className="text-warning-600">
+      <PageHeader
+        eyebrow={
+          <>
+            AI rank <Fig>#{r.rank}</Fig> of {r.of} brands · Coverage <Fig>{v.in}</Fig> of {v.of} answers
+          </>
+        }
+        title={
+          <>
+            Your AI visibility in {META.category.toLowerCase()} is <span className="text-brand-600">{sov(done)}%</span>.
+          </>
+        }
+        signals={
+          <>
+            <Signal tone="brand">
+              {open.length} actions one approval from live · {Math.max(open.length * 5, 5)} min of your team&apos;s time
+            </Signal>
+            {rising && (
+              <Signal tone="warning">
                 “{rising.text.replace(/\.$/, "")}” {rising.trend!.toLowerCase()}
-              </span>
-            </>
-          )}
-        </div>
-      </section>
+              </Signal>
+            )}
+          </>
+        }
+      />
     </>
   )
 }

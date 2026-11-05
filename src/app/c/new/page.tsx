@@ -40,7 +40,7 @@ function NewChat({ viewer, home }: { viewer: Person; home: string }) {
         ) : (
           <div className="flex min-h-[calc(100vh-160px)] flex-col items-center justify-center px-6 pb-24">
             <Sparkles className="size-8 text-ally-500" aria-hidden />
-            <h1 className="mt-4 mb-8 text-[28px] leading-tight font-semibold tracking-tight text-slate-950">Good morning, {name}</h1>
+            <h1 className="mt-4 mb-8 text-3xl leading-tight font-semibold tracking-tight text-slate-950">Good morning, {name}</h1>
             <AskBar centered />
           </div>
         )}

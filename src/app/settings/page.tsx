@@ -55,7 +55,7 @@ function Settings() {
     <>
     <TopStrip person={viewer} home={home} crumbs={[{ label: "Home", onClick: back }, { label: "Teach Ally" }]} />
       <div className="flex flex-wrap items-end justify-between gap-4 px-10 pt-4 pb-8">
-        <h1 className="text-[28px] font-semibold tracking-tight text-slate-950">Teach Ally</h1>
+        <h1 className="text-3xl leading-tight font-semibold tracking-tight text-slate-950">Teach Ally</h1>
         <div className="flex rounded-lg border border-slate-200 bg-white p-1">
           {TABS.map((t) => (
             <button

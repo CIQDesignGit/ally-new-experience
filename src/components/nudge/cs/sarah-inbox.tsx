@@ -38,7 +38,7 @@ export function SarahHero() {
       <div className="text-2xl font-semibold tracking-tight text-slate-700">
         {call.past ? "Your Aurelle call was Thursday." : <>Your Aurelle call is in <span className="text-slate-950">{call.long}</span>.</>}
       </div>
-      <h1 className="mt-1 text-[28px] leading-tight font-bold tracking-tight text-slate-950">
+      <h1 className="mt-1 text-3xl leading-tight font-semibold tracking-tight text-slate-950">
         {waiting.length ? `${waiting.length} ${waiting.length === 1 ? "needs" : "need"} your approval before it.` : "Nothing is waiting for you."}
       </h1>
       <div className="mt-2 inline-flex items-center gap-1.5 text-sm text-slate-500">

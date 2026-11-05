@@ -99,10 +99,10 @@ function ClaireWaterfall() {
           <>
             <WidgetStack>
               <Widget>
-                <div className="px-12 pt-8 pb-3">
+                <div className="px-10 pt-8 pb-3">
                   <div className="font-mono text-xs tracking-wide text-slate-500 uppercase">Where it sits today</div>
                 </div>
-                <div className="px-12 pb-10">
+                <div className="px-10 pb-10">
                   <WaterfallChart selectedId={selectedId} onSelect={setSelectedId} />
                   <div id="stage-detail" className="scroll-mt-4">
                     {selectedId === "total" ? <AreaDetail /> : <StageDetail stage={selected} />}
@@ -118,7 +118,7 @@ function ClaireWaterfall() {
             <ClaireChat />
             <ChatThread />
             {/* Demo-only control, kept out of the product chrome. */}
-            <div className="flex justify-end gap-6 px-12 pt-6">
+            <div className="flex justify-end gap-6 px-10 pt-6">
               <DemoControls />
               <ResetDemoButton />
             </div>

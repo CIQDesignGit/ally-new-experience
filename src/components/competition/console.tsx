@@ -62,7 +62,7 @@ export function AgentConsole() {
           <div className="text-[13px] text-slate-500">
             {NAMES.account} · request {NAMES.request}
           </div>
-          <h1 className="mt-1 text-[28px] leading-tight font-semibold tracking-tight text-slate-950">{NAMES.skill}</h1>
+          <h1 className="mt-1 text-3xl leading-tight font-semibold tracking-tight text-slate-950">{NAMES.skill}</h1>
           <div className="mt-1 flex items-center gap-2 text-[14px] text-slate-500">
             <span className={cn("size-1.5 rounded-full", live ? "bg-success-500" : "bg-slate-400")} aria-hidden />
             {live ? `Live · version ${version}` : `Version ${version} · in review`} · author {NAMES.fde} · reviewer {NAMES.reviewer}

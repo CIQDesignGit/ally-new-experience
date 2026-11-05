@@ -111,7 +111,7 @@ function Alerts() {
         <TopStrip person="michelle" crumbs={[{ label: "Today", href: "/michelle" }, { label: "Scheduled" }]} />
         {/* Everything Ally runs on its own clock. Each opens in place to edit; "New" turns a sentence into a draft. */}
         <div className="flex items-end justify-between gap-6 px-10 pt-4 pb-8">
-          <h1 className="text-[28px] leading-tight font-semibold tracking-tight text-slate-950">Scheduled</h1>
+          <h1 className="text-3xl leading-tight font-semibold tracking-tight text-slate-950">Scheduled</h1>
           {/* More briefs and alerts come from the library. */}
           <div className="flex items-center gap-2">
             <Link href="/library" className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-800 hover:bg-slate-50">

@@ -12,7 +12,7 @@ export function ReportsReady() {
   const kept = LESSONS.filter((l) => retro.saved?.includes(l.id))
   return (
     <section aria-label="Reports ready" className="flex flex-col gap-3">
-      <div className="px-12 pt-2 font-mono text-xs tracking-wide text-slate-500 uppercase">Reports ready</div>
+      <div className="px-10 pt-2 font-mono text-xs tracking-wide text-slate-500 uppercase">Reports ready</div>
       {qbr?.sentToClaire && (
         <div className="flex flex-col gap-2.5 rounded-2xl bg-white px-6 py-5 shadow-xs ring-1 ring-slate-200">
           <div className="flex items-baseline justify-between gap-4">

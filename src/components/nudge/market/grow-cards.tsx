@@ -33,7 +33,7 @@ export function GrowCards({ onOpen }: { onOpen: (v: GrowView) => void }) {
   if (retailer === "walmart" || retailer === "target") return null
   return (
     <section className="pt-4">
-      <div className="px-12 font-mono text-xs tracking-wide text-slate-500 uppercase">Grow beyond plan{retailer === "all" ? " · Amazon" : ""}</div>
+      <div className="px-10 font-mono text-xs tracking-wide text-slate-500 uppercase">Grow beyond plan{retailer === "all" ? " · Amazon" : ""}</div>
       <div className="mt-4 grid gap-4 lg:grid-cols-3">
         <button type="button" onClick={() => onOpen("market")} className={CARD}>
           <div className="text-xs font-medium text-slate-500">Market</div>
