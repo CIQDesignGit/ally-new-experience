@@ -15,12 +15,16 @@ const usd = (v: number) => `$${v.toFixed(2)}`
 export function BuyBoxVisual({ sku }: { sku: SellerSku }) {
   const yours = 12 - sku.sellers.reduce((n, s) => n + s.wins, 0)
   return (
-    <div className="px-5 py-4">
-      <div className="text-sm font-semibold text-slate-950">
-        Offers vs MAP <span className="font-normal text-slate-500">· {sku.name}</span>
+    <div className="flex min-w-0 flex-col">
+      <div className="border-b border-slate-100 bg-slate-50 px-5 py-3">
+        <div className="text-sm font-semibold text-slate-950">
+          Offers vs MAP <span className="font-normal text-slate-500">· {sku.name}</span>
+        </div>
       </div>
-      <PriceLadder sku={sku} />
-      <div className="mt-3 border-t border-slate-100 pt-3 text-sm text-slate-500 tabular-nums">
+      <div className="px-5 py-4">
+        <PriceLadder sku={sku} />
+      </div>
+      <div className="border-t border-slate-100 bg-slate-25 px-5 py-3 text-sm text-slate-600 tabular-nums">
         You won <span className="font-semibold text-slate-950">{yours} of the last 12</span> crawls
         {sku.sellers.map((s) => (
           <span key={s.name}>

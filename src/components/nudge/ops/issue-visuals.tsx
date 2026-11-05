@@ -1,4 +1,5 @@
 /* eslint-disable @next/next/no-img-element -- local demo thumbnails */
+import { ArrowRight } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { candleThumbnail } from "@/lib/candle-thumbnails"
 import type { OpsBatch } from "../data"
@@ -12,13 +13,15 @@ import type { OpsBatch } from "../data"
 
 function Frame({ title, sub, line, children }: { title: string; sub?: string; line?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <div className="px-6 py-5">
-      <div className="text-sm font-semibold text-slate-950">
-        {title}
-        {sub && <span className="font-normal text-slate-500"> · {sub}</span>}
+    <div className="flex min-w-0 flex-col">
+      <div className="border-b border-slate-100 bg-slate-50 px-5 py-3">
+        <div className="text-sm font-semibold text-slate-950">
+          {title}
+          {sub && <span className="font-normal text-slate-500"> · {sub}</span>}
+        </div>
       </div>
-      <div className="mt-3">{children}</div>
-      {line && <div className="mt-3 border-t border-slate-100 pt-3 text-sm text-slate-500 tabular-nums">{line}</div>}
+      <div className="px-5 py-4">{children}</div>
+      {line && <div className="border-t border-slate-100 bg-slate-25 px-5 py-3 text-sm leading-snug text-slate-600 tabular-nums">{line}</div>}
     </div>
   )
 }
@@ -53,22 +56,52 @@ export function IssueVisual({ batch, asin }: { batch: OpsBatch; asin?: string })
   }
 }
 
+type TileTone = "problem" | "goal"
+
 /** One Amazon price tile: without the deal showing, or with it. */
-function Tile({ asin, label, deal, badge, price, list }: { asin: string; label: string; deal: boolean; badge: boolean; price: number; list: number }) {
+function Tile({
+  asin,
+  label,
+  labelTone,
+  deal,
+  badge,
+  price,
+  list,
+  tone,
+}: {
+  asin: string
+  label: string
+  labelTone?: TileTone
+  deal: boolean
+  badge: boolean
+  price: number
+  list: number
+  tone: TileTone
+}) {
+  const showPromoBadge = deal || badge
   return (
     <div className="min-w-0">
-      <div className="text-xs font-medium text-slate-500">{label}</div>
-      <div className="mt-1.5 flex items-center gap-3 rounded-lg bg-slate-50 p-3">
+      <div className={cn("text-xs font-semibold", labelTone === "problem" ? "text-warning-800" : labelTone === "goal" ? "text-slate-950" : "text-slate-500")}>{label}</div>
+      <div
+        className={cn(
+          "mt-2 flex items-center gap-3 rounded-lg p-3",
+          tone === "problem" ? "border border-warning-200 bg-warning-50/50" : "border border-slate-200 bg-white shadow-xs",
+        )}
+      >
         <img src={candleThumbnail(asin)} alt="" className="size-14 shrink-0 rounded-md object-cover ring-1 ring-slate-200" />
         <div className="min-w-0">
-          {deal || badge ? (
+          {showPromoBadge ? (
             <span className="inline-block rounded bg-slate-900 px-1.5 py-0.5 text-[11px] font-semibold whitespace-nowrap text-white">Halloween deal · 20% off</span>
           ) : (
-            <span className="inline-block rounded border border-dashed border-slate-300 bg-white px-1.5 py-0.5 text-[11px] text-slate-500">No badge</span>
+            <span className="inline-block rounded border border-dashed border-warning-300 bg-white px-1.5 py-0.5 text-[11px] font-medium whitespace-nowrap text-warning-800">No badge</span>
           )}
-          <div className="mt-1 flex flex-wrap items-baseline gap-x-2 tabular-nums">
-            <span className="text-[17px] font-semibold whitespace-nowrap text-slate-950">${price.toFixed(2)}</span>
-            {deal ? <span className="text-xs whitespace-nowrap text-slate-500 line-through">List ${list.toFixed(2)}</span> : <span className="text-xs whitespace-nowrap text-slate-400">no list price shown</span>}
+          <div className="mt-1.5 flex flex-wrap items-baseline gap-x-2 tabular-nums">
+            <span className="text-lg font-semibold whitespace-nowrap text-slate-950">${price.toFixed(2)}</span>
+            {deal ? (
+              <span className="text-xs whitespace-nowrap text-slate-500 line-through">List ${list.toFixed(2)}</span>
+            ) : (
+              <span className="text-xs whitespace-nowrap text-slate-500">no list price shown</span>
+            )}
           </div>
         </div>
       </div>
@@ -93,9 +126,10 @@ function BadgeVisual({ batch, asin }: { batch: OpsBatch; asin?: string }) {
       line={asin ? <>Deal live Oct 1–31 · {badgeShows ? "strike-through missing" : "badge and strike-through missing"}</> : <>Deal live Oct 1–31 · badge and strike-through missing on <span className="font-semibold whitespace-nowrap text-slate-950">{batch.skus} SKUs</span></>}
     >
       <div className="@container">
-        <div className="grid grid-cols-1 gap-4 @md:grid-cols-2">
-          <Tile asin={sku.asin} label="Now" deal={false} badge={badgeShows} price={price} list={list} />
-          <Tile asin={sku.asin} label="With the deal showing" deal badge price={price} list={list} />
+        <div className="grid grid-cols-1 items-stretch gap-4 @md:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] @md:items-center @md:gap-3">
+          <Tile asin={sku.asin} label="Now" labelTone="problem" tone="problem" deal={false} badge={badgeShows} price={price} list={list} />
+          <ArrowRight className="mx-auto hidden size-5 shrink-0 text-slate-300 @md:block" aria-hidden />
+          <Tile asin={sku.asin} label="With the deal showing" labelTone="goal" tone="goal" deal badge price={price} list={list} />
         </div>
       </div>
     </Frame>

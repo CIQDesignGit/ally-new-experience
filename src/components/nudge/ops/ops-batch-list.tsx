@@ -35,7 +35,7 @@ const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "
 const dueOf = (b: OpsBatch) => b.chip?.match(/[A-Z][a-z]{2} \d{1,2}$/)?.[0]
 const dueRank = (d?: string) => (d ? MONTHS.indexOf(d.slice(0, 3)) * 100 + parseInt(d.slice(4)) : Infinity)
 /** Days left, from the chip's date: the same "Expires in N days" as Mike's queue. */
-const daysLeft = (b: OpsBatch) => {
+export const daysLeft = (b: OpsBatch) => {
   const d = dueOf(b)
   return d ? daysUntil(`${AS_OF.slice(0, 4)}-${String(MONTHS.indexOf(d.slice(0, 3)) + 1).padStart(2, "0")}-${d.slice(4).padStart(2, "0")}`, AS_OF) : undefined
 }

@@ -10,8 +10,9 @@ import type { OpsBatch } from "../data"
 import { BuyBoxVisual } from "./buybox-visual"
 import { IssueVisual, hasIssueVisual } from "./issue-visuals"
 import { VENDOR_MANAGER, useNote } from "./note-bar"
-import { useOpsLevel } from "./ops-batch-list"
-import { ImpactMeter } from "../ui/impact-meter"
+import { daysLeft, useOpsLevel } from "./ops-batch-list"
+import { cn } from "@/lib/utils"
+import { ImpactMeter, IMPACT_TONE } from "../ui/impact-meter"
 
 interface OpsBatchDetailProps {
   batch: OpsBatch
@@ -67,41 +68,49 @@ export function OpsBatchDetail({ batch, onAction, onReviewAll }: OpsBatchDetailP
   // Buy box issues get the picture: the lead SKU's offers and crawls.
   const lead = batch.sellerSkus?.find((x) => x.asin === batch.exampleSku) ?? batch.sellerSkus?.[0]
   const daily = fmtValue(batch.perDay ?? batch.approveValue / OPS_DAYS_SAVED)
+  const expiresIn = daysLeft(batch)
+  const impactLevel = level ? level(batch) : undefined
 
   return (
     <div className="@container flex min-w-0 flex-col px-10 py-8">
-      <div className="flex flex-col gap-3 @xl:flex-row @xl:items-start @xl:justify-between @xl:gap-8">
+      <div className="flex flex-col gap-4 @xl:flex-row @xl:items-start @xl:justify-between @xl:gap-8">
         <div className="min-w-0">
           <div className="text-sm font-medium text-slate-500">
             {batch.type}
             {batch.partLabel && ` · ${batch.partLabel}`}
           </div>
           <div className="mt-0.5 text-2xl font-semibold tracking-tight text-slate-950">{batch.name}</div>
+          {!done && (batch.chip || expiresIn !== undefined) && (
+            <div className="mt-1.5 text-sm text-slate-600">
+              {batch.chip}
+              {expiresIn !== undefined && <span className="font-medium whitespace-nowrap text-warning-700">{batch.chip ? " · " : ""}Expires in {expiresIn} days</span>}
+            </div>
+          )}
         </div>
-        {level ? (
+        {impactLevel ? (
           // The MVP: impact on the gap to plan; the daily figure is what the SKUs normally sell (measured), not a projection.
           <div className="shrink-0 @xl:text-right">
-            <div className="text-xs font-medium text-slate-500">{done ? "Sent · impact" : "Impact"} on the gap to plan</div>
-            <div className="mt-1.5 flex items-center gap-2 @xl:justify-end">
-              <ImpactMeter level={level(batch)} />
-              <span className="text-lg font-semibold text-slate-950">{level(batch)}</span>
+            <div className="text-xs font-medium text-slate-500">{done ? "Sent · impact on the gap to plan" : "Impact on the gap to plan"}</div>
+            <div className="mt-2 flex items-center gap-2 @xl:justify-end">
+              <ImpactMeter level={impactLevel} />
+              <span className={cn("text-base font-semibold tabular-nums", IMPACT_TONE[impactLevel].text)}>{impactLevel}</span>
             </div>
             {batch.urgent && !done && (
-              <div className="mt-1.5 text-sm text-slate-500">
-                These SKUs normally sell <span className="font-mono font-medium text-slate-950">{daily}</span> a day
+              <div className="mt-1.5 text-sm text-slate-600">
+                These SKUs normally sell <span className="font-mono font-semibold text-slate-950">{daily}</span> a day
               </div>
             )}
           </div>
         ) : (
           <div className="shrink-0 @xl:text-right">
-            <div className={`font-mono text-[28px] font-bold tracking-tight tabular-nums ${done ? "text-success-700" : "text-slate-950"}`}>+{batch.value}</div>
-            {(batch.tier === "autopilot" || done) && <div className="mt-0.5 text-sm text-slate-500">{batch.tier === "autopilot" ? "leakage prevented this quarter" : "sent"}</div>}
-            {batch.urgent && !done && <div className="mt-0.5 text-sm font-semibold text-error-600 tabular-nums">−{daily} a day</div>}
+            <div className={`font-mono text-[28px] font-bold leading-none tracking-tight tabular-nums ${done ? "text-success-700" : "text-slate-950"}`}>+{batch.value}</div>
+            {(batch.tier === "autopilot" || done) && <div className="mt-1.5 text-sm text-slate-500">{batch.tier === "autopilot" ? "leakage prevented this quarter" : "sent"}</div>}
+            {batch.urgent && !done && <div className="mt-1.5 text-sm font-semibold text-error-600 tabular-nums">−{daily} a day</div>}
           </div>
         )}
       </div>
 
-      <div className="mt-6 overflow-hidden rounded-xl border border-slate-200">
+      <div className="mt-8 overflow-hidden rounded-xl border border-slate-200">
         {/* A label only where it adds something: autopilot. A caught issue speaks for itself. */}
         {batch.tier === "autopilot" && (
         <div className="flex items-center gap-2 border-b border-slate-100 bg-slate-50 px-5 py-3 text-sm font-semibold text-slate-950">
