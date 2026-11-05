@@ -8,6 +8,7 @@ import { UploadDialog } from "./upload-dialog"
 import { CornerDownRight, Mail, Paperclip, Plus, Send, Sparkles, X } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
+import { PAGE_MAX } from "@/components/layout/page-frame"
 import { FadeAbove, MoreBelow } from "./more-below"
 
 /**
@@ -445,13 +446,13 @@ export function AskBar({ placeholder = "What can I take off your plate?", center
     {/* The dock, like Claude's: content fades out above it, the box is solid, and nothing shows beside or below it.
         It spans the page card's width, so on grey-backed pages it reads as the card's own bottom. */}
     <div ref={dockRef} className="pointer-events-none fixed inset-x-0 bottom-0 z-40 transition-[left] duration-200 ease-out md:left-[var(--sidebar-w,0px)]">
-      <div className="relative mx-auto max-w-[1280px]">
+      <div className={cn("relative mx-auto", PAGE_MAX)}>
         <FadeAbove />
         <div className="absolute inset-x-0 -top-8 flex justify-center">
           <MoreBelow />
         </div>
       </div>
-      <div className="pointer-events-auto mx-auto flex max-w-[1280px] flex-col items-center bg-white px-4 pb-2.5">
+      <div className={cn("pointer-events-auto mx-auto flex flex-col items-center bg-white px-4 pb-2.5", PAGE_MAX)}>
       {panel()}
       <p className="mt-2 text-center text-xs text-slate-400">Ally is AI and can make mistakes. Please double-check responses.</p>
       </div>

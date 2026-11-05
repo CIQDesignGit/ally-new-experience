@@ -16,7 +16,7 @@ export default function PlanPage() {
   return (
     <ChatProvider thread={{ where: "Joint plan", home }}>
       <PageShell className="bg-slate-50">
-        <PageFrame className="max-w-[1080px]">
+        <PageFrame>
           {/* Header text sits flush with the card edges, like SectionTitle. */}
           <TopStrip className={PAGE_EDGE} person={viewer} home={home} crumbs={[{ label: viewer === "sarah" ? "Today" : "Home", href: home }, { label: "Joint plan" }]} />
           <PageHeader

@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { PageShell } from "@/components/layout/page-shell"
+import { PAGE_MAX } from "@/components/layout/page-frame"
 import { ClaireHeader } from "@/components/nudge/claire/claire-header"
 import { StatusStrip } from "@/components/nudge/claire/status-strip"
 import { WeeklyBanner } from "@/components/nudge/claire/weekly-banner"
@@ -29,7 +30,7 @@ export default function ClairePage() {
 
   return (
     <PageShell className="bg-slate-50">
-      <div className="mx-auto max-w-[1280px] overflow-hidden bg-white shadow-pane-lg sm:my-6 sm:rounded-2xl sm:ring-1 sm:ring-slate-900/6">
+      <div className={cn("mx-auto overflow-hidden bg-white shadow-pane-lg sm:my-6 sm:rounded-2xl sm:ring-1 sm:ring-slate-900/6", PAGE_MAX)}>
         <ClaireHeader period={period} />
         <WeeklyBanner />
         <StatusStrip period={period} onPeriodChange={setPeriod} />

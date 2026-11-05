@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { ArrowLeft, ArrowRight, Info, Send, Sparkles, X } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { PAGE_MAX } from "@/components/layout/page-frame"
 import { PageShell } from "@/components/layout/page-shell"
 
 /**
@@ -409,7 +410,7 @@ export default function MockBrainPage() {
   const [view, setView] = useState<"home" | "market">("home")
   return (
     <PageShell className="bg-slate-50">
-      <div className="mx-auto max-w-[1280px] overflow-hidden bg-white shadow-pane-lg sm:my-6 sm:rounded-2xl sm:ring-1 sm:ring-slate-900/6">
+      <div className={cn("mx-auto overflow-hidden bg-white shadow-pane-lg sm:my-6 sm:rounded-2xl sm:ring-1 sm:ring-slate-900/6", PAGE_MAX)}>
         <div className="flex items-center justify-between border-b border-dashed border-slate-200 bg-warning-50 px-12 py-2 text-xs text-warning-800">
           <span>Mock for review · not wired to data</span>
           <span className="flex gap-3">

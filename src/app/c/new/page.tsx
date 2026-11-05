@@ -1,7 +1,9 @@
 "use client"
 
 import { Sparkles } from "lucide-react"
+import { PAGE_MAX } from "@/components/layout/page-frame"
 import { PageShell } from "@/components/layout/page-shell"
+import { cn } from "@/lib/utils"
 import { TopStrip, useViewer } from "@/components/nudge/top-strip"
 import type { Person } from "@/components/nudge/top-strip"
 import { AppDrawer } from "@/components/nudge/app-drawer"
@@ -31,7 +33,7 @@ function NewChat({ viewer, home }: { viewer: Person; home: string }) {
   return (
     <PageShell className="bg-slate-50">
       <Chips newChat />
-      <div className="mx-auto min-h-screen max-w-[1280px] bg-white">
+      <div className={cn("mx-auto min-h-screen bg-white", PAGE_MAX)}>
         <TopStrip person={viewer} home={home} crumbs={[{ label: "Home", href: home }, { label: turns[0]?.q ?? "New chat" }]} />
         {turns.length ? (
           <div className="pt-2">

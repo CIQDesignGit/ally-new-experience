@@ -64,7 +64,7 @@ export function BatchList({ selectedId, selectedSkuId, expandedBatchId, filter, 
   const rows = mikeRows(all, approved, filter)
 
   return (
-    <div className="border-r border-slate-200 bg-white">
+    <div className="min-w-0 border-r border-slate-200 bg-white">
       <InboxFilters filter={filter} onFilter={onFilter} sortable={mvp} />
       <div className="flex flex-col">
         {rows.map((b) => {

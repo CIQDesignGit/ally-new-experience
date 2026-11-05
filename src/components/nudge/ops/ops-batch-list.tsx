@@ -44,8 +44,8 @@ const perDayOf = (b: OpsBatch) => (b.urgent ? (b.perDay ?? b.approveValue / OPS_
 /** The waterfall's labels and colors, in the order of the work: what needs her first, autopilot last. */
 const FILTERS: { id: InboxFilter; label: string }[] = [
   { id: "all", label: "All" },
-  { id: "approval", label: "One approval" },
-  { id: "input", label: "Your input" },
+  { id: "approval", label: "Approval" },
+  { id: "input", label: "Input" },
   { id: "autopilot", label: "Autopilot" },
 ]
 const DOT = Object.fromEntries(GROUPS.map((g) => [g.tier, g.dot])) as Record<OpsBatch["tier"], string>
@@ -92,7 +92,7 @@ export function OpsBatchList({ selectedId, selectedSku, expandedId, checked, fil
   const rows = inboxRows(all, approved, filter, level)
 
   return (
-    <div className="bg-white">
+    <div className="min-w-0 bg-white">
       <InboxFilters filter={filter} onFilter={onFilter} sortable={!!level} />
 
       <div className="flex flex-col gap-0.5 px-4 py-3">
@@ -185,16 +185,17 @@ export function OpsBatchList({ selectedId, selectedSku, expandedId, checked, fil
 /** The inbox filters, shared by Mike's and Michelle's pages: the page's switch style, each part sized to its label. */
 export function InboxFilters({ filter, onFilter, sortable }: { filter: InboxFilter; onFilter: (f: InboxFilter) => void; /** The MVP's sort setting (gap to plan or SKU sales), behind an icon. */ sortable?: boolean }) {
   return (
-      <div className="flex items-center gap-1 border-b border-slate-200 py-2.5 pr-4 pl-10">
-        <div className="flex h-9 flex-1 rounded-lg border border-slate-200 bg-slate-25 p-0.5">
+      <div className="flex min-w-0 items-center justify-start gap-2 overflow-x-auto border-b border-slate-200 px-4 py-2.5">
+        <div className="inline-flex h-9 shrink-0 rounded-lg border border-slate-200 bg-slate-25 p-0.5">
           {FILTERS.map((f) => (
             <button
               key={f.id}
               type="button"
               onClick={() => onFilter(f.id)}
               aria-pressed={filter === f.id}
+              title={f.id === "approval" ? "One approval" : f.id === "input" ? "Your input" : undefined}
               className={cn(
-                "inline-flex flex-auto items-center justify-center gap-1.5 rounded-md px-2 text-[13px] font-medium whitespace-nowrap transition-colors",
+                "inline-flex shrink-0 items-center justify-center gap-1 rounded-md px-2 text-[13px] font-medium whitespace-nowrap transition-colors",
                 filter === f.id ? "bg-white text-slate-950 shadow-xs ring-1 ring-slate-200" : "text-slate-500 hover:text-slate-800",
               )}
             >

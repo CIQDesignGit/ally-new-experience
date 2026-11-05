@@ -15,6 +15,7 @@ import { MEDIA_BATCHES } from "@/components/nudge/media/data"
 import type { MediaBatch } from "@/components/nudge/media/data"
 import { JAMES_CHIPS } from "@/components/nudge/media/answers"
 import { JamesHeader, LedgerSection, MediaDelivered, MediaDetail, MediaList, MediaProgress, PacingSection, approvedToast, mediaRows } from "@/components/nudge/media/james-parts"
+import { QueueWidgetHeader } from "@/components/nudge/ui/queue-widget-header"
 
 /**
  * James's media queue, laid out like Michelle's: where media stands, the plays by
@@ -70,6 +71,7 @@ function James() {
         <MediaProgress celebrate={celebrate} stage={filter === "all" ? undefined : filter} onStage={(st) => pickFilter(st, true)} />
         <WidgetStack>
         <Widget>
+        <QueueWidgetHeader title="What needs you" description="Media plays ranked by what is due first." />
         <div ref={queueRef} className="grid grid-cols-1 lg:grid-cols-[400px_minmax(0,1fr)]">
           <div className="border-b border-slate-200 bg-white lg:border-r lg:border-b-0">
             <MediaList selectedId={selectedId} filter={filter} onFilter={(f) => pickFilter(f)} onSelect={setSelectedId} />

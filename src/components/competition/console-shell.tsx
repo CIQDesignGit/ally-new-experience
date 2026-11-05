@@ -1,6 +1,8 @@
 "use client"
 
 import type { ReactNode } from "react"
+import { PAGE_MAX } from "../layout/page-frame"
+import { cn } from "@/lib/utils"
 import { StepBar } from "./step-bar"
 import { AppDrawer } from "../nudge/app-drawer"
 import { TopStrip, type Crumb } from "../nudge/top-strip"
@@ -13,7 +15,7 @@ export function ConsoleShell({ step, crumbs = [{ label: "Skills" }], children }:
   return (
     <div className="min-h-screen bg-slate-50">
       {step && <StepBar step={step} harness={step === 2 ? "build" : undefined} />}
-      <main className="mx-auto min-h-screen max-w-[1280px] bg-white">
+      <main className={cn("mx-auto min-h-screen bg-white", PAGE_MAX)}>
         <TopStrip person="nora" crumbs={[{ label: "Home", href: "/fde" }, ...crumbs]} />
         {children}
       </main>

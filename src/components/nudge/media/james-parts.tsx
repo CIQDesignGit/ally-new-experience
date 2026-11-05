@@ -181,7 +181,7 @@ export function MediaList({ selectedId, filter, onFilter, onSelect }: { selected
   const { approved } = useNudge()
   const { mvp } = useLive()
   return (
-    <div className="bg-white">
+    <div className="min-w-0 bg-white">
       <InboxFilters filter={filter} onFilter={onFilter} />
       <div className="flex flex-col">
         {mediaRows(approved, filter).map((b) => {

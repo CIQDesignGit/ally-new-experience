@@ -2,6 +2,8 @@
 
 import { use, useEffect, useRef } from "react"
 import { PageShell } from "@/components/layout/page-shell"
+import { PAGE_MAX } from "@/components/layout/page-frame"
+import { cn } from "@/lib/utils"
 import { TopStrip } from "@/components/nudge/top-strip"
 import type { Person } from "@/components/nudge/top-strip"
 import { AppDrawer } from "@/components/nudge/app-drawer"
@@ -46,7 +48,7 @@ function Conversation({ person, home, title, meta }: { person: Person; home: str
   return (
     <PageShell className="bg-slate-50">
       <Chips />
-      <div className="mx-auto min-h-screen max-w-[1280px] bg-white">
+      <div className={cn("mx-auto min-h-screen bg-white", PAGE_MAX)}>
         <TopStrip person={person} home={home} crumbs={[{ label: "Home", href: home }, { label: title ?? "Conversation" }]} />
         {meta && <div className="px-12 pt-1 text-sm text-slate-500">{meta}</div>}
         {ended ? <p className="px-12 pt-6 text-[15px] text-slate-500">This conversation ended with the last refresh.</p> : <ChatThread />}

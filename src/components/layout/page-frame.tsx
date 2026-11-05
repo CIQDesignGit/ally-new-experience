@@ -1,11 +1,14 @@
 import { cn } from "@/lib/utils"
 
+/** Shared max width for page content and the Ask Ally dock so they stay aligned. */
+export const PAGE_MAX = "max-w-[1240px]"
+
 /**
  * The page layout: the top strip and headline sit on the page background,
  * and each block of work is its own Widget below them. Room at the bottom for the floating Ask Ally bar.
  */
 export function PageFrame({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <div className={cn("mx-auto flex max-w-[1280px] flex-col pb-24 sm:px-6", className)}>{children}</div>
+  return <div className={cn("mx-auto flex flex-col pb-24 sm:px-6", PAGE_MAX, className)}>{children}</div>
 }
 
 /**

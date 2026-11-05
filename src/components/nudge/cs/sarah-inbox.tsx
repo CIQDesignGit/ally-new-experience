@@ -73,7 +73,7 @@ export function SarahInbox() {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[400px_minmax(0,1fr)]">
-      <div className="border-b border-slate-200 bg-white lg:border-r lg:border-b-0">
+      <div className="min-w-0 border-b border-slate-200 bg-white lg:border-r lg:border-b-0">
         <InboxFilters filter={filter} onFilter={setFilter} />
         {show("approval") && ordered.map((i) => {
           const done = w.approved(i.id)

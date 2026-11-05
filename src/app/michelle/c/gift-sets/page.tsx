@@ -2,6 +2,8 @@
 
 import { useEffect, useRef } from "react"
 import { PageShell } from "@/components/layout/page-shell"
+import { PAGE_MAX } from "@/components/layout/page-frame"
+import { cn } from "@/lib/utils"
 import { TopStrip } from "@/components/nudge/top-strip"
 import { AppDrawer } from "@/components/nudge/app-drawer"
 import { AskBar, ChatProvider, ChatThread, hasThread, useChat, useChatSource } from "@/components/nudge/chat/inline-chat"
@@ -33,7 +35,7 @@ function Thread() {
   }, [])
   return (
     <PageShell className="bg-slate-50">
-      <div className="mx-auto min-h-screen max-w-[1280px] bg-white">
+      <div className={cn("mx-auto min-h-screen bg-white", PAGE_MAX)}>
         <TopStrip person="michelle" crumbs={[{ label: "Daily brief", href: "/michelle" }, { label: "Gift sets" }]} />
         <div className="pt-2">
           <ChatThread />

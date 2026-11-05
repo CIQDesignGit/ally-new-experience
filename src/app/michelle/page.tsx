@@ -21,6 +21,7 @@ import { OpsBatchList, inboxRows, useOpsLevel } from "@/components/nudge/ops/ops
 import type { InboxFilter } from "@/components/nudge/ops/ops-batch-list"
 import { OpsBatchDetail } from "@/components/nudge/ops/ops-batch-detail"
 import { OpsDelivered } from "@/components/nudge/ops/ops-delivered"
+import { QueueWidgetHeader } from "@/components/nudge/ui/queue-widget-header"
 import { ResetDemoButton } from "@/components/nudge/reset-demo-button"
 import { opsBatches, opsSkus } from "@/components/nudge/data"
 import { useNudge } from "@/components/nudge/nudge-context"
@@ -169,6 +170,10 @@ function Michelle() {
         />
         <WidgetStack>
         <Widget>
+        <QueueWidgetHeader
+          title="What needs you"
+          description="Ops fixes ranked by deadline and impact on the gap to plan."
+        />
         <div ref={queueRef} className="grid grid-cols-1 lg:grid-cols-[400px_minmax(0,1fr)]">
           <div className="border-b border-slate-200 bg-white lg:border-r lg:border-b-0">
             <OpsBatchList

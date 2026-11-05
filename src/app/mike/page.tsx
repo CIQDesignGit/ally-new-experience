@@ -17,6 +17,7 @@ import { BatchList, mikeRows } from "@/components/nudge/mike/batch-list"
 import type { InboxFilter } from "@/components/nudge/ops/ops-batch-list"
 import { BatchDetail } from "@/components/nudge/mike/batch-detail"
 import { SkuDetailPane } from "@/components/nudge/mike/sku-detail-pane"
+import { QueueWidgetHeader } from "@/components/nudge/ui/queue-widget-header"
 import { BackgroundProvider } from "@/components/nudge/mike/background-composer"
 import { contentBatches, launchedIds } from "@/components/nudge/data"
 import { useNudge } from "@/components/nudge/nudge-context"
@@ -130,6 +131,10 @@ export default function MikePage() {
         <MikeProgress celebrate={celebrate} stage={filter === "all" ? undefined : filter} onStage={(st) => pickFilter(st, true)} />
         <WidgetStack>
         <Widget>
+        <QueueWidgetHeader
+          title="What needs you"
+          description="Content work ranked by deadline and value."
+        />
         <div ref={queueRef} className="grid scroll-mt-4 grid-cols-1 lg:grid-cols-[400px_minmax(0,1fr)]">
           <BatchList
             selectedId={selectedId}

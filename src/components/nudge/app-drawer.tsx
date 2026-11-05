@@ -288,6 +288,7 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
       {open ? (
         <div className="flex min-h-0 flex-1 flex-col px-2 pb-2">
           <div className="min-h-0 flex-1 overflow-y-auto">
+          <div className="flex min-h-full flex-col">
           {fde ? (
             <>
               {/* The engineer's work: what customers asked for, the skills that answer them, and what Ally knows about each account. */}
@@ -356,12 +357,13 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
               )}
             </div>
           )}
-          {/* What Ally runs for the account: the customer's to watch, not the engineer's. */}
+          {/* What Ally runs for the account: pinned to the foot of the nav scroll area. */}
           {!fde && (
-            <div className="mt-4">
+            <div className="mt-auto shrink-0 pt-4">
               <AllyWorking />
             </div>
           )}
+          </div>
           </div>
           {!fde && <OldExperienceToggle />}
         </div>
