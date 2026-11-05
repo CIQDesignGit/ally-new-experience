@@ -9,7 +9,7 @@ export function VsPlan({ label, actual, plan, fmt, size = "lg" }: { label: strin
   const gap = actual - plan
   return (
     <div className="min-w-0">
-      <div className="text-xs text-slate-500">{label}</div>
+      <div className="text-sm text-slate-500">{label}</div>
       <div className="mt-0.5 flex flex-wrap items-baseline gap-x-2 tabular-nums">
         <span className={cn("font-semibold tracking-tight", size === "lg" ? "text-[26px]" : "text-[17px]", gap < 0 ? "text-error-600" : "text-success-700")}>{fmt(gap, true)}</span>
         <span className="text-sm whitespace-nowrap text-slate-500">
