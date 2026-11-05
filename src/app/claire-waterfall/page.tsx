@@ -20,6 +20,9 @@ import { AskBar, ChatProvider, ChatThread, useChat } from "@/components/nudge/ch
 import { ClaireChat } from "@/components/nudge/chat/home-chats"
 import { useLive } from "@/components/nudge/live-model"
 import { useNudge } from "@/components/nudge/nudge-context"
+import { useExperienceMode } from "@/lib/experience-mode"
+import { OldExperiencePlaceholder } from "@/components/layout/old-experience-placeholder"
+import { OldExperienceSidebar } from "@/components/layout/old-experience-sidebar"
 
 /** Module scope survives moves between pages, not a reload: so only a fresh load of this page resets the demo. */
 let resetThisLoad = false
@@ -39,6 +42,21 @@ export default function ClaireWaterfallPage() {
 }
 
 function ClaireWaterfall() {
+  const { isOld } = useExperienceMode()
+  if (isOld) {
+    return (
+      <PageShell className="overflow-hidden bg-slate-100">
+        <div className="flex h-screen overflow-hidden">
+          <OldExperienceSidebar />
+          <OldExperiencePlaceholder />
+        </div>
+      </PageShell>
+    )
+  }
+  return <ClaireWaterfallNew />
+}
+
+function ClaireWaterfallNew() {
   const { clear } = useChat()
   const [selectedId, setSelectedId] = useState<WaterfallSelection>("approval")
   // A "Grow beyond plan" view opens over the page; Back returns to the same spot.

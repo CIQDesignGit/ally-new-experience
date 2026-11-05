@@ -17,6 +17,7 @@ import { availableFor } from "./library/data"
 import { useCompetition } from "../competition/state"
 import { statusOf, useLibrary } from "./library/state"
 import { sidebarLayoutMinMediaQuery } from "@/lib/breakpoints"
+import { useExperienceMode } from "@/lib/experience-mode"
 
 const OPEN_W = "264px"
 const SHUT_W = "64px"
@@ -422,9 +423,8 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
   )
 }
 
-/** Preview only — wiring to /launchpad (Content Agent) comes later. */
 function OldExperienceToggle() {
-  const [on, setOn] = useState(false)
+  const { isOld, setMode } = useExperienceMode()
   return (
     <div className="mt-2 shrink-0 border-t border-white/10 pt-3">
       <div className="flex items-center justify-between gap-2 px-1">
@@ -432,20 +432,20 @@ function OldExperienceToggle() {
         <button
           type="button"
           role="switch"
-          aria-checked={on}
+          aria-checked={isOld}
           aria-label="Old experience"
-          title="Coming soon"
-          onClick={() => setOn((v) => !v)}
+          title="Switch to classic CommerceIQ"
+          onClick={() => setMode(isOld ? "new" : "old")}
           className={cn(
             "relative h-5 w-9 shrink-0 rounded-full transition-colors",
-            on ? "bg-ally-500" : "bg-white/20",
+            isOld ? "bg-ally-500" : "bg-white/20",
           )}
         >
           <span
             aria-hidden
             className={cn(
               "absolute top-0.5 left-0.5 size-4 rounded-full bg-white shadow-sm transition-transform",
-              on && "translate-x-4",
+              isOld && "translate-x-4",
             )}
           />
         </button>
