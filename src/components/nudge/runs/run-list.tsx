@@ -15,7 +15,7 @@ import { DOES, DOES_LABEL, SCHEDULES, draftFromSentence, type RunItem } from "./
  * to edit; "+ New" turns a sentence into a draft you check. Built-in items can be
  * paused or retuned, not deleted.
  */
-const GRID = "grid grid-cols-[16px_minmax(0,1fr)_160px_180px_140px_72px] items-center gap-4"
+const GRID = "grid grid-cols-[16px_minmax(10rem,2fr)_repeat(3,minmax(0,1fr))_72px] items-center gap-3 @4xl:grid-cols-[16px_minmax(0,1fr)_160px_180px_140px_72px] @4xl:gap-4"
 
 export function RunList({
   title,
@@ -86,7 +86,7 @@ export function RunList({
   }
 
   return (
-    <section className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+    <section className="@container overflow-hidden rounded-xl border border-slate-200 bg-white">
       <div className="flex items-center justify-between gap-4 border-b border-slate-100 px-6 py-3.5">
         <span className="text-[15px] font-semibold text-slate-950">
           {title} <span className="ml-1 font-mono text-[13px] font-medium text-slate-400 tabular-nums">{shown.length}</span>

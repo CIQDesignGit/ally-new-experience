@@ -156,7 +156,7 @@ function Wbr() {
         <ExportButton onExport={exportWbr} />
       </div>
 
-      <div className="flex flex-col gap-5 px-10 pt-6 pb-10">
+      <div className="@container flex flex-col gap-5 px-10 pt-6 pb-10">
         <section className="rounded-xl border border-slate-200 px-5 py-4">
           <div className="flex items-center gap-2 text-sm font-semibold text-ally-700">
             <Sparkles className="size-4" aria-hidden /> Ally&apos;s summary
@@ -180,7 +180,7 @@ function Wbr() {
         </div>
 
         {page === 1 ? (
-          <div className="grid grid-cols-3 gap-4 max-lg:grid-cols-1">
+          <div className="grid grid-cols-1 gap-4 @2xl:grid-cols-2 @5xl:grid-cols-3">
             <Tile title="Sales vs plan, last 8 weeks">
               <LineChart labels={WEEKS} format={(v) => `$${v.toFixed(2)}M`} series={[{ name: "Sales", values: SALES_8W, color: BRAND }, { name: "Plan", values: PLAN_8W, color: MUTED, dashed: true }]} />
             </Tile>
@@ -201,7 +201,7 @@ function Wbr() {
             </Tile>
           </div>
         ) : (
-          <div className="grid grid-cols-3 gap-4 max-lg:grid-cols-1">
+          <div className="grid grid-cols-1 gap-4 @2xl:grid-cols-2 @5xl:grid-cols-3">
             <Tile title="SKUs furthest below plan">
               <Table head={["SKU", "Sales", "Gap"]} rows={WORST_SKUS.map((s) => [s.name, fmtValue(s.sales), { text: signed(s.gap), bad: s.gap < 0 }])} />
             </Tile>

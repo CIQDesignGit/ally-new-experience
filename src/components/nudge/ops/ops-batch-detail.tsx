@@ -68,8 +68,8 @@ export function OpsBatchDetail({ batch, onAction, onReviewAll }: OpsBatchDetailP
   const daily = fmtValue(batch.perDay ?? batch.approveValue / OPS_DAYS_SAVED)
 
   return (
-    <div className="flex min-w-0 flex-col px-10 py-8">
-      <div className="flex items-start justify-between gap-8">
+    <div className="@container flex min-w-0 flex-col px-10 py-8">
+      <div className="flex flex-col gap-3 @xl:flex-row @xl:items-start @xl:justify-between @xl:gap-8">
         <div className="min-w-0">
           <div className="text-sm font-medium text-slate-500">
             {batch.type}
@@ -79,7 +79,7 @@ export function OpsBatchDetail({ batch, onAction, onReviewAll }: OpsBatchDetailP
         </div>
         {level ? (
           // The MVP: impact on the gap to plan; the daily figure is what the SKUs normally sell (measured), not a projection.
-          <div className="shrink-0 text-right">
+          <div className="shrink-0 @xl:text-right">
             <div className="text-[28px] font-bold tracking-tight text-slate-950">{level(batch)}</div>
             <div className="mt-0.5 text-sm text-slate-500">{done ? "sent · " : ""}impact on the gap to plan</div>
             {batch.urgent && !done && (
@@ -89,7 +89,7 @@ export function OpsBatchDetail({ batch, onAction, onReviewAll }: OpsBatchDetailP
             )}
           </div>
         ) : (
-          <div className="shrink-0 text-right">
+          <div className="shrink-0 @xl:text-right">
             <div className={`font-mono text-[28px] font-bold tracking-tight tabular-nums ${done ? "text-success-700" : "text-slate-950"}`}>+{batch.value}</div>
             {(batch.tier === "autopilot" || done) && <div className="mt-0.5 text-sm text-slate-500">{batch.tier === "autopilot" ? "leakage prevented this quarter" : "sent"}</div>}
             {batch.urgent && !done && <div className="mt-0.5 text-sm font-semibold text-error-600 tabular-nums">−{daily} a day</div>}

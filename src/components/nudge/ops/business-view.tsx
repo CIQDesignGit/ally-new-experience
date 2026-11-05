@@ -178,7 +178,7 @@ export function BusinessPane({ root, nodeId, onSelect, onOpenOps }: { root: GapN
   useChatSource({ about: n.id === root.id ? undefined : n.name, anchor: n.id, chips: [forward, backward] }, `business-${n.id}`)
 
   return (
-    <div className="flex min-w-0 flex-col px-10 py-7">
+    <div className="@container flex min-w-0 flex-col px-10 py-7">
       {found.trail.length > 0 && (
         <div className="mb-1 flex flex-wrap items-center gap-1 text-sm text-slate-500">
           {found.trail.map((t) => (
@@ -201,7 +201,7 @@ export function BusinessPane({ root, nodeId, onSelect, onOpenOps }: { root: GapN
 
       {/* Two directions, two cards: where this week lands (and what closes it), and what happened last week (and why).
           Each card has its own numbers, its own reason and its own button, in the same place. Nothing runs until asked. */}
-      <div className="mt-5 grid gap-4 md:grid-cols-2">
+      <div className="mt-5 grid gap-4 @xl:grid-cols-2">
         <div className="flex flex-col rounded-xl border border-slate-200 px-5 py-4">
           <div className="text-[13px] font-semibold text-slate-950">This week</div>
           {/* Two statements, one shape: where the week lands, and where it stands now. */}
@@ -210,7 +210,7 @@ export function BusinessPane({ root, nodeId, onSelect, onOpenOps }: { root: GapN
             <VsPlan label={`So far · ${Math.round(GAP_WEEK.elapsed * 100)}% of the week gone`} actual={n.wtd} plan={toDate} fmt={m} />
           </div>
           <div className="mt-auto pt-4">
-            <button type="button" onClick={() => ask(forward, n.id)} className={cn(PRIMARY, "w-[200px]")}>
+            <button type="button" onClick={() => ask(forward, n.id)} className={cn(PRIMARY, "w-full @xl:w-[200px]")}>
               Close this week&apos;s gap
             </button>
           </div>
@@ -221,7 +221,7 @@ export function BusinessPane({ root, nodeId, onSelect, onOpenOps }: { root: GapN
             <VsPlan label="Actual" actual={n.lastWeek.sales} plan={n.lastWeek.plan} fmt={m} />
           </div>
           <div className="mt-auto pt-4">
-            <button type="button" onClick={() => ask(backward, n.id)} className={cn(PRIMARY, "w-[200px]")}>
+            <button type="button" onClick={() => ask(backward, n.id)} className={cn(PRIMARY, "w-full @xl:w-[200px]")}>
               Why did we miss?
             </button>
           </div>

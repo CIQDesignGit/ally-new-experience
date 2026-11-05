@@ -120,8 +120,8 @@ export function BatchDetail({ batch, onApprove, onReviewAll, onSelect, onSelectS
   const changes = ad ? [...batch.changes, { text: `Added "${ad.keyword}", a search term that converts in ads`, detail: `$${ad.iroas.toFixed(2)} return in ads · wasn't on these pages`, skus: batch.skus }] : batch.changes
 
   return (
-    <div className="flex min-w-0 flex-col px-10 py-8">
-      <div className="flex items-start justify-between gap-8">
+    <div className="@container flex min-w-0 flex-col px-10 py-8">
+      <div className="flex flex-col gap-3 @xl:flex-row @xl:items-start @xl:justify-between @xl:gap-8">
         <div className="min-w-0">
           <div className="text-sm font-medium text-slate-500">
             {batch.type}
@@ -135,18 +135,18 @@ export function BatchDetail({ batch, onApprove, onReviewAll, onSelect, onSelectS
           <div className="mt-1.5 text-sm">
             <span className={ask || shipped.length ? "font-medium text-slate-950" : "text-slate-500"}>{source}</span>
             {batch.deadline && !done && !shipped.length && (
-              <span className="font-medium text-warning-700"> · Expires in {daysUntil(batch.deadline, AS_OF) - day} days</span>
+              <span className="font-medium whitespace-nowrap text-warning-700"> · Expires in {daysUntil(batch.deadline, AS_OF) - day} days</span>
             )}
           </div>
         </div>
         {mvp ? (
           // The MVP: what these SKUs sell today, not what Ally projects the work adds.
-          <div className="shrink-0 text-right">
+          <div className="shrink-0 @xl:text-right">
             <div className="font-mono text-[28px] font-bold tracking-tight text-slate-950 tabular-nums">{fmtSales(batchSales(batch))}</div>
             <div className="mt-0.5 text-sm text-slate-500">{done ? "approved · " : ""}these SKUs&apos; sales, last 4 weeks</div>
           </div>
         ) : (
-          <div className="shrink-0 text-right">
+          <div className="shrink-0 @xl:text-right">
             <div className={cn("font-mono text-[28px] font-bold tracking-tight tabular-nums", done ? "text-success-700" : "text-slate-950")}>
               +{done ? (batch.approveValue >= 1 ? `$${batch.approveValue.toFixed(2)}M` : `$${Math.round(batch.approveValue * 1000)}K`) : batch.value}
             </div>

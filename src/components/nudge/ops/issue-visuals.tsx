@@ -62,13 +62,13 @@ function Tile({ asin, label, deal, badge, price, list }: { asin: string; label: 
         <img src={candleThumbnail(asin)} alt="" className="size-14 shrink-0 rounded-md object-cover ring-1 ring-slate-200" />
         <div className="min-w-0">
           {deal || badge ? (
-            <span className="inline-block rounded bg-slate-900 px-1.5 py-0.5 text-[11px] font-semibold text-white">Halloween deal · 20% off</span>
+            <span className="inline-block rounded bg-slate-900 px-1.5 py-0.5 text-[11px] font-semibold whitespace-nowrap text-white">Halloween deal · 20% off</span>
           ) : (
             <span className="inline-block rounded border border-dashed border-slate-300 px-1.5 py-0.5 text-[11px] text-slate-400">No badge</span>
           )}
-          <div className="mt-1 flex items-baseline gap-2 tabular-nums">
-            <span className="text-[17px] font-semibold text-slate-950">${price.toFixed(2)}</span>
-            {deal ? <span className="text-xs text-slate-500 line-through">List ${list.toFixed(2)}</span> : <span className="text-xs text-slate-400">no list price shown</span>}
+          <div className="mt-1 flex flex-wrap items-baseline gap-x-2 tabular-nums">
+            <span className="text-[17px] font-semibold whitespace-nowrap text-slate-950">${price.toFixed(2)}</span>
+            {deal ? <span className="text-xs whitespace-nowrap text-slate-500 line-through">List ${list.toFixed(2)}</span> : <span className="text-xs whitespace-nowrap text-slate-400">no list price shown</span>}
           </div>
         </div>
       </div>
@@ -92,9 +92,11 @@ function BadgeVisual({ batch, asin }: { batch: OpsBatch; asin?: string }) {
       sub={short(sku.name)}
       line={asin ? <>Deal live Oct 1–31 · {badgeShows ? "strike-through missing" : "badge and strike-through missing"}</> : <>Deal live Oct 1–31 · badge and strike-through missing on <span className="font-semibold text-slate-950">{batch.skus} SKUs</span></>}
     >
-      <div className="grid grid-cols-2 gap-4">
-        <Tile asin={sku.asin} label="Now" deal={false} badge={badgeShows} price={price} list={list} />
-        <Tile asin={sku.asin} label="With the deal showing" deal badge price={price} list={list} />
+      <div className="@container">
+        <div className="grid grid-cols-1 gap-4 @md:grid-cols-2">
+          <Tile asin={sku.asin} label="Now" deal={false} badge={badgeShows} price={price} list={list} />
+          <Tile asin={sku.asin} label="With the deal showing" deal badge price={price} list={list} />
+        </div>
       </div>
     </Frame>
   )
