@@ -9,6 +9,7 @@ import { AUTOPILOT_BEST_IN_CLASS, OPEN_BY_AREA, fmtM } from "../data"
 import type { WaterfallStage } from "../data"
 import { AGENT_LABEL, type AgentId } from "../types"
 import { useLive } from "../live-model"
+import { PANEL, PANEL_BODY, PANEL_COLS, PANEL_HEAD } from "./panel"
 
 // Workstream, share vs best in class, value, action. The action column fits "Increase autopilot"
 // so the button never runs into the value.
@@ -62,8 +63,8 @@ export function AutopilotDetail({ stage }: { stage: WaterfallStage }) {
   }
 
   return (
-    <div className="mt-6 overflow-hidden rounded-xl border border-slate-200">
-      <div className={cn(GRID, "border-b border-slate-100 bg-slate-25 px-6 py-4")}>
+    <div className={PANEL}>
+      <div className={cn(GRID, PANEL_HEAD)}>
         <div className="col-span-2 min-w-0">
           <div className="text-lg font-semibold text-slate-950">{stage.label}</div>
           <div className="mt-0.5 text-sm text-slate-500">
@@ -79,7 +80,7 @@ export function AutopilotDetail({ stage }: { stage: WaterfallStage }) {
         <div />
       </div>
 
-      <div className={cn(GRID, "px-6 pt-3 pb-1 text-xs font-medium text-slate-500")}>
+      <div className={cn(GRID, PANEL_COLS)}>
         <div className={NAME_GRID}>
           <span>Workstream</span>
           <span className="hidden lg:block">What runs itself</span>
@@ -89,7 +90,7 @@ export function AutopilotDetail({ stage }: { stage: WaterfallStage }) {
         <span />
       </div>
 
-      <div className="px-6 pb-1.5">
+      <div className={PANEL_BODY}>
         {rows.map((r) => (
           <div key={r.agent} className={cn(GRID, "group border-t border-slate-100 py-3.5 first:border-t-0")}>
             <div className={cn(NAME_GRID, "items-start")}>

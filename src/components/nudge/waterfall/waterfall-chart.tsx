@@ -128,7 +128,7 @@ export function WaterfallChart({ selectedId, onSelect }: WaterfallChartProps) {
               className={cn(
                 "group relative flex min-w-[120px] flex-1 flex-col items-center rounded-xl px-1 pb-2 transition-colors",
                 col.selectable ? "cursor-pointer" : "cursor-default",
-                selected ? "bg-brand-50 ring-1 ring-brand-200" : col.selectable && "hover:bg-slate-50",
+                selected ? "bg-brand-50" : col.selectable && "hover:bg-slate-50",
               )}
               style={{ paddingTop: PAD_TOP }}
             >
@@ -158,17 +158,13 @@ export function WaterfallChart({ selectedId, onSelect }: WaterfallChartProps) {
               <div className="mt-3 flex flex-col items-center gap-0.5 px-1 text-center" style={{ height: LABEL_HEIGHT }}>
                 <span
                   className={cn(
-                    "text-[13px] leading-tight",
-                    selected
-                      ? "font-semibold text-brand-700"
-                      : col.key === "total" || col.key === "pace"
-                        ? "font-semibold text-slate-950"
-                        : "text-slate-500 group-hover:text-slate-700",
+                    "text-[13px] leading-tight font-semibold",
+                    selected ? "text-brand-700" : "text-slate-950",
                   )}
                 >
                   {col.label}
                 </span>
-                {col.sub && <span className="text-[11px] text-slate-400">{col.sub}</span>}
+                {col.sub && <span className="text-xs text-slate-500">{col.sub}</span>}
                 {col.key === "total" && !mvp && (
                   <span className={cn("text-[11px] font-medium", landed >= 0 ? "text-success-700" : "text-error-600")}>
                     ${Math.abs(landed).toFixed(1)}M {landed >= 0 ? "over" : "short of"} plan
@@ -181,8 +177,10 @@ export function WaterfallChart({ selectedId, onSelect }: WaterfallChartProps) {
             </button>
           )
         })}
+        {/* The baseline the bars stand on; drawn over the columns so the selected column's tint doesn't hide it. */}
+        <div className="pointer-events-none absolute inset-x-0 z-10 border-t border-slate-300" style={{ top: PAD_TOP + CHART_HEIGHT }} />
       </div>
-      <div className="mt-1 flex items-center gap-1 text-[11px] text-slate-400">
+      <div className="mt-1 flex items-center gap-1 text-[11px] text-slate-500">
         Axis starts at {fmtBiz(min)}
         {mvp && <InfoIcon title="Impact" align="left" points={["High: a quarter of the gap or more", "Medium: a tenth or more", "Low: less", "Bars show the level, not dollars; they stop below the plan line"]} />}
       </div>

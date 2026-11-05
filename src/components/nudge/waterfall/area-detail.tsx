@@ -12,6 +12,7 @@ import { useNudge } from "../nudge-context"
 import { useFireNudge } from "../use-fire-nudge"
 import { OwnerName } from "../owner-name"
 import { AGENT_LABEL, type AgentId, type NudgeKey, type TierRow } from "../types"
+import { PANEL, PANEL_BODY, PANEL_COLS, PANEL_HEAD } from "./panel"
 
 
 const BUCKETS = [
@@ -120,20 +121,20 @@ export function AreaDetail() {
   const views = BUCKETS.map((b) => ({ ...b, view: tierView(b.tier, approved, policy, period) }))
 
   return (
-    <div className="mt-6 overflow-hidden rounded-xl border border-slate-200">
-      <div className={`${TIER_GRID} border-b border-slate-100 bg-slate-25 px-6 py-4`}>
+    <div className={PANEL}>
+      <div className={`${TIER_GRID} ${PANEL_HEAD}`}>
         <span className="text-lg font-semibold text-slate-950">Open opportunity by area</span>
         <span className="text-right font-mono text-[15px] font-bold text-slate-950 tabular-nums">{open.totalLabel}</span>
         <span />
         <span />
       </div>
-      <div className={`${TIER_GRID} px-6 pt-3 pb-1 text-xs font-medium text-slate-500`}>
+      <div className={`${TIER_GRID} ${PANEL_COLS}`}>
         <span>Area</span>
         <span className="text-right">Value</span>
         <span />
         <span />
       </div>
-      <div className="px-6 pb-1.5">
+      <div className={PANEL_BODY}>
         {/* Soonest deadline first, then the most open dollars. */}
         {rankLevers(snapshot, approved).map((agent) => (
           <AreaGroup

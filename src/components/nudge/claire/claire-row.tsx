@@ -26,6 +26,9 @@ const TONE: Record<string, string> = {
   shipped: "text-success-700",
 }
 
+/** Owner · task · status. The task is what Claire reads, so it takes the spare width. */
+export const ROW_COLS = "grid-cols-[136px_minmax(0,1fr)] lg:grid-cols-[136px_minmax(0,1fr)_152px]"
+
 const LINK = "text-[13px] font-medium text-brand-700 hover:underline"
 
 export function ClaireRow({ row, grid, showAction, impact }: { row: TierRow; grid: string; /** The table has a button column (some row has a move). */ showAction: boolean; /** The MVP shows the row's impact level in place of its value. */ impact?: string }) {
@@ -101,7 +104,7 @@ export function ClaireRow({ row, grid, showAction, impact }: { row: TierRow; gri
   return (
     // Text and value share the row's first line; the button centers on the row.
     <div className={cn(grid, "group items-start border-t border-slate-100 py-3.5 first:border-t-0")}>
-      <div className="grid grid-cols-[168px_minmax(0,1fr)] items-start gap-4 lg:grid-cols-[168px_minmax(0,1fr)_180px]">
+      <div className={cn("grid items-start gap-4", ROW_COLS)}>
         <div className="flex items-center gap-2.5">
           <span className={`size-2 rounded-sm ${AGENT_DOT[row.agent]}`} />
           {row.analystName ? (
@@ -112,7 +115,7 @@ export function ClaireRow({ row, grid, showAction, impact }: { row: TierRow; gri
             <span className="text-sm font-medium text-slate-950">{AGENT_LABEL[row.agent]}</span>
           )}
         </div>
-        <p className="text-sm leading-5 text-slate-600">{row.description}</p>
+        <p className="text-sm leading-5 text-pretty text-slate-700">{row.description}</p>
         <div className="text-sm leading-5">
           <span className={cn("font-medium", TONE[st.kind])}>
             {(st.kind === "shipped" || st.kind === "held") && <Check className="mr-1 inline size-3.5 -translate-y-px" />}
