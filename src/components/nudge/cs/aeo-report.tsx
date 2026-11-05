@@ -17,12 +17,13 @@ const moved = (m: number) => (m === 0 ? "—" : m > 0 ? `up ${m}` : `down ${-m}`
  * moved, who's ahead, which topics and questions cost the most, and what Ally
  * already drafted. Numbers from the readout sent Oct 5.
  */
-export function AeoReport() {
+/** `className` lets a full page widen it; in chat it keeps its own width. */
+export function AeoReport({ className }: { className?: string } = {}) {
   const change = +(AEO.visibility - AEO.prevVisibility).toFixed(1)
   const down = AEO.rank - AEO.prevRank
   const leader = LEADERBOARD[0]
   return (
-    <div className="flex max-w-[960px] flex-col gap-8 rounded-2xl bg-white px-6 py-5 text-[15px] text-slate-700 ring-1 ring-slate-200">
+    <div className={cn("flex max-w-[960px] flex-col gap-8 rounded-2xl bg-white px-6 py-5 text-[15px] text-slate-700 ring-1 ring-slate-200", className)}>
       <div>
         <div className={HEAD}>
           AI visibility · {AEO.assistant} · {AEO.period} vs {AEO.previous} · {AEO.questions} questions

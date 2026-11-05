@@ -31,7 +31,7 @@ const PERIODS: { id: ResultPeriod; label: string }[] = [
 
 function Segmented<T extends string>({ items, value, onChange }: { items: { id: T; label: string }[]; value: T; onChange: (v: T) => void }) {
   return (
-    <div className="flex rounded-lg border border-slate-200 bg-slate-25 p-1">
+    <div className="flex rounded-lg border border-slate-200 bg-white p-1">
       {items.map((t) => (
         <button
           key={t.id}
@@ -72,9 +72,9 @@ export function ContentResults() {
 
   return (
     <>
-    <TopStrip person="claire" home="/claire-waterfall" className="px-12" crumbs={[{ label: "Home", onClick: back }, { label: "Content results" }]} />
-    <div className="flex flex-col gap-7 px-12 pt-4 pb-8">
-      <div className="flex flex-col gap-4">
+    <TopStrip person="claire" home="/claire-waterfall" crumbs={[{ label: "Home", onClick: back }, { label: "Content results" }]} />
+    <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-4 px-10 pt-4">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 text-sm text-slate-500">

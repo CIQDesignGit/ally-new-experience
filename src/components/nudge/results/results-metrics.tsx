@@ -47,7 +47,7 @@ export function ResultsMetrics({ totals, sections, current }: { totals: ResultTo
   const progress = Math.min(100, (totals.incremental / totals.promised) * 100)
   return (
     <div
-      className="grid overflow-hidden rounded-xl border border-slate-200 bg-white"
+      className="grid overflow-hidden rounded-2xl bg-white shadow-xs ring-1 ring-slate-200"
       style={{ gridTemplateColumns: `repeat(${cells.length}, minmax(0, 1fr))` }}
     >
       {cells.map((c, i) => {

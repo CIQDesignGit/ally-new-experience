@@ -4,12 +4,13 @@ import { useState } from "react"
 import Link from "next/link"
 import { ArrowRight, Check, ChevronRight, Lock } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { Widget } from "@/components/layout/page-frame"
 import { PRIMARY, SECONDARY } from "../mike/buttons"
 import { useCompetition } from "../../competition/state"
 import { CORE, CORE_DASHBOARDS, CORE_SCHEDULED, LOCKED, availableFor, type LibrarySkill } from "./data"
 import { statusOf, turnOn, useLibrary } from "./state"
 
-const HEAD = "font-mono text-xs tracking-wide text-slate-500 uppercase"
+const HEAD = "px-10 font-mono text-xs tracking-wide text-slate-500 uppercase"
 
 /**
  * The library: what CommerceIQ has built from its work across brands. Core
@@ -23,12 +24,12 @@ export function LibraryView() {
     <div className="flex flex-col gap-10">
       <section>
         <div className={HEAD}>On for everyone</div>
-        <div className="mt-3 overflow-hidden rounded-xl border border-slate-200">
+        <Widget className="mt-3">
           {/* Three groups, each one row; the list behind it opens in place. */}
           <CoreGroup title="Scheduled" skills={CORE_SCHEDULED} open />
           <CoreGroup title="Alerts" skills={CORE} />
           <CoreGroup title="Dashboards" skills={CORE_DASHBOARDS} open />
-        </div>
+        </Widget>
       </section>
 
       <section>
@@ -93,7 +94,7 @@ function SkillCard({ skill }: { skill: LibrarySkill }) {
   // A skill that needs the customer's input asks for it before it turns on.
   const [asking, setAsking] = useState(false)
   return (
-    <div className="flex flex-col rounded-xl border border-slate-200 bg-white p-5">
+    <div className="flex flex-col rounded-2xl bg-white p-5 shadow-xs ring-1 ring-slate-200">
       <div className="flex items-start justify-between gap-3">
         <div className="text-[15px] font-semibold text-slate-950">{skill.name}</div>
         <span className="shrink-0 rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">{skill.gives}</span>

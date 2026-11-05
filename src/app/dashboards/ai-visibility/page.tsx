@@ -4,6 +4,7 @@ import { Fragment, useState, type ReactNode } from "react"
 import { Sparkles, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { PageShell } from "@/components/layout/page-shell"
+import { PageFrame } from "@/components/layout/page-frame"
 import { TopStrip, useViewer } from "@/components/nudge/top-strip"
 import { AppDrawer } from "@/components/nudge/app-drawer"
 import { AskBar, ChatProvider, ChatThread } from "@/components/nudge/chat/inline-chat"
@@ -28,12 +29,11 @@ export default function AiVisibilityDashboard() {
   return (
     <ChatProvider thread={{ where: "AI visibility", home }}>
       <PageShell className="bg-slate-50">
-        <div className="mx-auto max-w-[1280px] overflow-clip bg-white shadow-pane-lg sm:my-6 sm:rounded-2xl sm:ring-1 sm:ring-slate-900/6">
+        <PageFrame>
           <TopStrip person={viewer} home={home} crumbs={[{ label: "Home", href: home }, { label: "My dashboards" }, { label: "AI visibility" }]} />
           <Dashboard />
           <ChatThread />
-          <div className="pb-24" />
-        </div>
+        </PageFrame>
         <AppDrawer />
         <AskBar />
       </PageShell>
@@ -44,7 +44,7 @@ export default function AiVisibilityDashboard() {
 /** A section: title, optional info and control, its body, then one line from Ally. */
 function Card({ title, info, control, ally, children, className }: { title: string; info?: string[]; control?: ReactNode; ally?: ReactNode; children: ReactNode; className?: string }) {
   return (
-    <section className={cn("rounded-xl border border-slate-200 p-5", className)}>
+    <section className={cn("rounded-2xl bg-white p-5 shadow-xs ring-1 ring-slate-200", className)}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="flex items-center gap-1 text-sm font-semibold text-slate-950">
           {title}
@@ -104,7 +104,7 @@ function Dashboard() {
 
   return (
     <>
-      <div className="flex items-end justify-between gap-6 px-10 pt-4">
+      <div className="flex items-end justify-between gap-6 px-10 pt-4 pb-6">
         <div>
           <h1 className="text-[28px] leading-tight font-semibold tracking-tight text-slate-950">AI visibility</h1>
           <div className="mt-1 flex items-center gap-2 text-sm text-slate-500">
@@ -115,7 +115,7 @@ function Dashboard() {
         <ExportButton onExport={exportAll} />
       </div>
 
-      <div className="flex flex-col gap-5 px-10 pt-6 pb-10">
+      <div className="flex flex-col gap-5">
         <div className="grid grid-cols-3 gap-4 max-md:grid-cols-1">
           <Stat label="AI visibility" value={`${AEO.visibility}%`} delta={pts(change)} bad={change < 0} />
           <Stat label="AI rank" value={`#${AEO.rank}`} delta={`${moved(-placesDown)} ${Math.abs(placesDown) === 1 ? "place" : "places"}`} bad={placesDown > 0} />
@@ -134,7 +134,7 @@ function Dashboard() {
 
 function Stat({ label, value, unit, delta, bad }: { label: string; value: string; unit?: string; delta?: string; bad?: boolean }) {
   return (
-    <div className="rounded-xl border border-slate-200 px-5 py-4">
+    <div className="rounded-2xl bg-white px-5 py-4 shadow-xs ring-1 ring-slate-200">
       <div className={HEAD}>{label}</div>
       <div className="mt-1 font-mono text-[28px] leading-tight font-semibold text-slate-950 tabular-nums">
         {value}
