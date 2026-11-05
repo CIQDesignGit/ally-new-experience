@@ -1,6 +1,7 @@
 "use client"
 
 import { PageShell } from "@/components/layout/page-shell"
+import { PageFrame, Widget, WidgetStack } from "@/components/layout/page-frame"
 import { TopStrip } from "@/components/nudge/top-strip"
 import { AppDrawer } from "@/components/nudge/app-drawer"
 import { ExportButton } from "@/components/nudge/ui/export-button"
@@ -56,7 +57,7 @@ function Dashboard() {
     <PageShell className="bg-slate-50">
       <StepBar step={4} />
       <StarterChips id="dashboard-competition" chips={STARTERS} />
-      <div className="mx-auto max-w-[1280px] overflow-clip bg-white shadow-pane-lg sm:my-6 sm:rounded-2xl sm:ring-1 sm:ring-slate-900/6">
+      <PageFrame>
         <TopStrip person="michelle" crumbs={[{ label: "Daily brief", href: "/michelle" }, { label: "Dashboards" }, { label: "Competition" }]} />
 
         <div className="flex items-end justify-between gap-6 px-10 pt-4">
@@ -70,22 +71,22 @@ function Dashboard() {
           <ExportButton onExport={exportCompetitionPptx} />
         </div>
 
-        <div className="flex flex-col gap-6 px-10 pt-6 pb-24">
+        <WidgetStack className="pt-6">
           <div className="grid grid-cols-4 gap-4 max-md:grid-cols-2">
             {kpis.map((k) => (
-              <div key={k.label} className="rounded-xl border border-slate-200 px-5 py-4">
+              <div key={k.label} className="rounded-2xl bg-white px-5 py-4 shadow-xs ring-1 ring-slate-200">
                 <div className="font-mono text-[26px] leading-none font-semibold text-slate-950">{k.figure}</div>
                 <div className="mt-2 text-[13px] text-slate-500">{k.label}</div>
               </div>
             ))}
           </div>
 
-          <section className="rounded-xl border border-slate-200 p-5">
+          <Widget className="p-5">
             <div className="text-[15px] font-semibold text-slate-950">Share of voice on your gift terms</div>
             <SovChart />
-          </section>
+          </Widget>
 
-          <section className="rounded-xl border border-slate-200">
+          <Widget>
             <div className="border-b border-slate-200 px-5 py-3 text-[15px] font-semibold text-slate-950">Deals on your matched gift sets</div>
             <div className="grid grid-cols-[minmax(0,1.2fr)_minmax(0,1.2fr)_90px_80px_100px] gap-4 border-b border-slate-200 px-5 py-2.5 text-xs font-medium text-slate-500">
               <span>{NAMES.competitor}</span>
@@ -105,10 +106,10 @@ function Dashboard() {
                 </li>
               ))}
             </ul>
-          </section>
-          <ChatThread />
-        </div>
-      </div>
+          </Widget>
+        </WidgetStack>
+        <ChatThread />
+      </PageFrame>
       <AppDrawer />
       <AskBar />
     </PageShell>

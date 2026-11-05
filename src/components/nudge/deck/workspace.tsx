@@ -9,6 +9,7 @@ import { Check, Download, GripVertical, Lock, Maximize2, Minimize2, Paperclip, S
 import { cn } from "@/lib/utils"
 import { FadeAbove, MoreBelow } from "@/components/nudge/chat/more-below"
 import { PageShell } from "@/components/layout/page-shell"
+import { PageFrame, Widget } from "@/components/layout/page-frame"
 import { TopStrip } from "@/components/nudge/top-strip"
 import { useNudge } from "@/components/nudge/nudge-context"
 import { AS_OF } from "@/components/nudge/data"
@@ -239,10 +240,11 @@ export function DeckWorkspace({ spec }: { spec: DeckSpec }) {
 
   return (
     <PageShell className={cn("bg-slate-50", playfair.variable, lato.variable)}>
-      <div className="mx-auto max-w-[1440px] overflow-clip bg-white shadow-pane-lg sm:my-6 sm:rounded-2xl sm:ring-1 sm:ring-slate-900/6">
+      <PageFrame className="max-w-[1440px] pb-6">
         <TopStrip person={spec.author?.person ?? "michelle"} crumbs={[{ label: spec.author?.label ?? "Daily brief", href: spec.author?.home ?? "/michelle" }, { label: spec.name }]} />
+        <Widget className="mt-4">
         {view === "answer" ? (
-          <div className="mt-4 flex min-h-[760px] justify-center border-t border-slate-200 px-10 pt-8 pb-10">
+          <div className="flex min-h-[760px] justify-center px-10 pt-8 pb-10">
             <div className="flex w-full max-w-[860px] flex-col gap-6">
               <div className="flex justify-end">
                 <div className="max-w-[560px] rounded-2xl rounded-br-md bg-brand-500 px-4 py-2.5 text-[15px] text-white">{spec.ask}</div>
@@ -278,7 +280,7 @@ export function DeckWorkspace({ spec }: { spec: DeckSpec }) {
             </div>
           </div>
         ) : (
-        <div className={cn("mt-4 grid min-h-[760px] border-t border-slate-200", expanded ? "grid-cols-1" : "grid-cols-[384px_minmax(0,1fr)]")}>
+        <div className={cn("grid min-h-[760px]", expanded ? "grid-cols-1" : "grid-cols-[384px_minmax(0,1fr)]")}>
           {!expanded && <Conversation name={spec.name} msgs={msgs} chips={chips} onAsk={ask} retro={retro} onSave={saveLesson} />}
           <div className="relative min-w-0 bg-slate-50">
             {objectPane}
@@ -305,7 +307,8 @@ export function DeckWorkspace({ spec }: { spec: DeckSpec }) {
           </div>
         </div>
         )}
-      </div>
+        </Widget>
+      </PageFrame>
 {/* Like Claude with an artifact: the sidebar steps aside once the storyboard or deck opens. */}
       <AppDrawer key={view === "answer" ? "talk" : "object"} defaultOpen={view === "answer"} />
             {share && (

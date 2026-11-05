@@ -15,11 +15,11 @@ import { REGEN_SKU } from "./data"
  */
 export function Floor({ uc, published }: { uc: UseCase; published: boolean }) {
   if (!published) {
-    return <div className="rounded-xl border border-dashed border-slate-300 px-6 py-10 text-center text-sm text-slate-500">Publish in step 2 to see what {uc.persona} gets</div>
+    return <div className="rounded-2xl border border-dashed border-slate-300 px-6 py-10 text-center text-sm text-slate-500">Publish in step 2 to see what {uc.persona} gets</div>
   }
   if (uc.id === "regen") return <Regenerate />
   return (
-    <section className="flex flex-col gap-5 rounded-xl border border-slate-200 p-6">
+    <section className="flex flex-col gap-5 rounded-2xl bg-white shadow-xs ring-1 ring-slate-200 p-6">
       <h3 className="text-lg font-semibold text-slate-950">{uc.floor.title}</h3>
       <ul className="flex flex-col gap-2.5">
         {uc.floor.points.map((p) => (
@@ -55,7 +55,7 @@ function Regenerate() {
 
   return (
     <div className="flex flex-col gap-6">
-      <section className="rounded-xl border border-slate-200">
+      <section className="rounded-2xl bg-white shadow-xs ring-1 ring-slate-200">
         <div className="border-b border-slate-200 px-5 py-3">
           <div className="text-[13px] text-slate-500">Mike · Jar candles · Title</div>
           <div className="text-[15px] font-semibold text-slate-950">{REGEN_SKU.name}</div>
@@ -138,7 +138,7 @@ function Regenerate() {
         </div>
       </section>
 
-      <section className="flex items-center justify-between gap-4 rounded-xl border border-slate-200 px-5 py-4 max-sm:flex-col max-sm:items-start">
+      <section className="flex items-center justify-between gap-4 rounded-2xl bg-white shadow-xs ring-1 ring-slate-200 px-5 py-4 max-sm:flex-col max-sm:items-start">
         <div>
           <div className="text-sm font-medium text-slate-950">New data from Aurelle: holiday keyword file</div>
           <div className="text-[13px] text-slate-500">
@@ -166,11 +166,11 @@ function Regenerate() {
       </section>
 
       <div className="grid grid-cols-2 gap-4 max-sm:grid-cols-1">
-        <div className="rounded-xl border border-slate-200 px-5 py-4">
+        <div className="rounded-2xl bg-white shadow-xs ring-1 ring-slate-200 px-5 py-4">
           <div className="font-mono text-[26px] leading-none font-semibold text-slate-950">{state === "accepted" ? 1 : 0}</div>
           <div className="mt-2 text-[13px] text-slate-500">Actions taken on this call</div>
         </div>
-        <div className="rounded-xl border border-slate-200 px-5 py-4">
+        <div className="rounded-2xl bg-white shadow-xs ring-1 ring-slate-200 px-5 py-4">
           <div className="font-mono text-[26px] leading-none font-semibold text-slate-950">{batch === "done" ? 18 : 0}</div>
           <div className="mt-2 text-[13px] text-slate-500">SKUs regenerated from new data</div>
         </div>

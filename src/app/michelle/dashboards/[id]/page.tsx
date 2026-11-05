@@ -2,6 +2,7 @@
 
 import { use, useEffect, useState } from "react"
 import { PageShell } from "@/components/layout/page-shell"
+import { PageFrame } from "@/components/layout/page-frame"
 import { TopStrip } from "@/components/nudge/top-strip"
 import { AppDrawer } from "@/components/nudge/app-drawer"
 import { useNudge } from "@/components/nudge/nudge-context"
@@ -49,7 +50,7 @@ function SavedDashboard({ id }: { id: string }) {
   return (
     <PageShell className="bg-slate-50">
       <StarterChips id={`dashboard-${id}`} chips={[...STARTERS, ...WIDGET_CHIPS]} />
-      <div className="mx-auto max-w-[1280px] overflow-clip bg-white shadow-pane-lg sm:my-6 sm:rounded-2xl sm:ring-1 sm:ring-slate-900/6">
+      <PageFrame>
         <TopStrip person="michelle" crumbs={[{ label: "Daily brief", href: "/michelle" }, { label: "Dashboards" }, { label: d?.name ?? "Dashboard" }]} />
 
         {d ? (
@@ -62,16 +63,16 @@ function SavedDashboard({ id }: { id: string }) {
               </div>
             </div>
 
-            <div data-sticky-top className="sticky top-0 z-30 mt-6 flex flex-wrap items-center gap-2 border-y border-slate-200 bg-white px-10 py-3">
+            <div data-sticky-top className="sticky top-0 z-30 -mx-1 mt-3 flex flex-wrap items-center gap-2 bg-slate-50 px-11 py-3">
               <DateRange label={RANGES[0].dates} ranges={RANGES} month="October 2026" startPad={4} days={31} from={1} to={8} />
               <Menu label="Retailer" value="Amazon" options={["Amazon"]} locked />
               <Menu label="Category" value={category} options={PROMO_DEPTH.map((r) => r.category)} onChange={setCategory} />
             </div>
 
             {/* Ask from the bar about the whole page, or highlight anything to ask about just that. */}
-            <SelectToAsk className="grid grid-cols-2 gap-4 px-10 pt-6 pb-16">
+            <SelectToAsk className="grid grid-cols-2 gap-4 pt-3">
               {widgets.map((w) => (
-                <section key={w} aria-label={PROMO_QUESTIONS[w]} className={w === "promo-badge" ? "col-span-2 flex flex-col rounded-xl border border-slate-200 p-5" : "flex flex-col rounded-xl border border-slate-200 p-5"}>
+                <section key={w} aria-label={PROMO_QUESTIONS[w]} className={w === "promo-badge" ? "col-span-2 flex flex-col rounded-2xl bg-white p-5 shadow-xs ring-1 ring-slate-200" : "flex flex-col rounded-2xl bg-white p-5 shadow-xs ring-1 ring-slate-200"}>
                   <div className="text-[15px] font-semibold text-slate-950">{WIDGET_HEADLINE[w]}</div>
                   <div className="mt-4 flex-1">
                     <PromoWidgetBody id={w} focus={category} />
@@ -81,10 +82,10 @@ function SavedDashboard({ id }: { id: string }) {
             </SelectToAsk>
           </>
         ) : (
-          <p className="px-10 pt-6 pb-16 text-[15px] text-slate-500">Loading…</p>
+          <p className="px-10 pt-6 text-[15px] text-slate-500">Loading…</p>
         )}
         <ChatThread />
-      </div>
+      </PageFrame>
       <AppDrawer />
       <AskBar />
     </PageShell>

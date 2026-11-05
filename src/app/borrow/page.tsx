@@ -4,6 +4,7 @@ import { useCallback, useState } from "react"
 import { Check } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { PageShell } from "@/components/layout/page-shell"
+import { PageFrame, Widget, WidgetStack } from "@/components/layout/page-frame"
 import { useNudge } from "@/components/nudge/nudge-context"
 import { ALERT_RULES } from "@/components/nudge/alerts/data"
 import { FILL_STEP, LESSON_ID, lessonText } from "@/components/nudge/ops/gap-training"
@@ -52,14 +53,14 @@ export default function BorrowPage() {
 
   return (
     <PageShell className="bg-slate-50">
-      <div className="mx-auto max-w-[1280px] overflow-clip bg-white shadow-pane-lg sm:my-6 sm:rounded-2xl sm:ring-1 sm:ring-slate-900/6">
+      <PageFrame>
         <header className="px-10 pt-8 max-sm:px-4">
           <div className="text-[13px] text-slate-500">FDE workflow · Aurelle Candles · Amazon US</div>
           <h1 className="mt-1 text-[28px] leading-tight font-semibold tracking-tight text-slate-950">{uc.label}</h1>
         </header>
 
-        <div className="mt-5 border-y border-slate-200 px-10 py-2.5 max-sm:px-4">
-          <div role="tablist" aria-label="Use cases" className="flex h-9 overflow-x-auto rounded-lg border border-slate-200 bg-slate-25 p-0.5">
+        <div className="mt-3 px-10 py-2.5 max-sm:px-4">
+          <div role="tablist" aria-label="Use cases" className="flex h-9 overflow-x-auto rounded-lg border border-slate-200 bg-slate-100 p-0.5">
             {USE_CASES.map((u) => (
               <button
                 key={u.id}
@@ -82,6 +83,8 @@ export default function BorrowPage() {
           </div>
         </div>
 
+        <WidgetStack className="mt-3">
+        <Widget>
         <dl className="grid grid-cols-2 gap-10 px-10 py-5 max-sm:grid-cols-1 max-sm:gap-3 max-sm:px-4">
           <div>
             <dt className="text-[13px] text-slate-500">Today</dt>
@@ -93,7 +96,7 @@ export default function BorrowPage() {
           </div>
         </dl>
 
-        <ol role="tablist" aria-label="Steps" className="grid grid-cols-3 border-y border-slate-200 max-sm:grid-cols-1">
+        <ol role="tablist" aria-label="Steps" className="grid grid-cols-3 border-t border-slate-200 max-sm:grid-cols-1">
           {STEPS.map((s) => {
             const open = s.n === 1 || !!built[id]
             const done = (s.n === 1 && built[id]) || (s.n === 2 && live)
@@ -119,13 +122,15 @@ export default function BorrowPage() {
             )
           })}
         </ol>
+        </Widget>
 
-        <div className="px-10 pt-6 pb-16 max-sm:px-4">
+        <div className="max-sm:px-4">
           {step === 1 && <Workshop key={uc.id} uc={uc} onDone={onBuilt} />}
           {step === 2 && <Publish key={uc.id} uc={uc} published={published[id]} onPublish={onPublish} />}
           {step === 3 && <Floor uc={uc} published={live} />}
         </div>
-      </div>
+        </WidgetStack>
+      </PageFrame>
     </PageShell>
   )
 }

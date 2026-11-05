@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { PageShell } from "@/components/layout/page-shell"
+import { PageFrame, WidgetStack } from "@/components/layout/page-frame"
 import { TopStrip } from "@/components/nudge/top-strip"
 import { AppDrawer } from "@/components/nudge/app-drawer"
 import { useNudge } from "@/components/nudge/nudge-context"
@@ -73,7 +74,7 @@ function Dashboard() {
   return (
     <PageShell className="bg-slate-50">
       <StarterChips id="dashboard-prime-day" chips={STARTERS} />
-      <div className="mx-auto max-w-[1280px] overflow-clip bg-white shadow-pane-lg sm:my-6 sm:rounded-2xl sm:ring-1 sm:ring-slate-900/6">
+      <PageFrame>
         <TopStrip person="michelle" crumbs={[{ label: "Daily brief", href: "/michelle" }, { label: "Dashboards" }, { label: RETRO.name }]} />
 
         <div className="flex items-end justify-between gap-6 px-10 pt-4">
@@ -89,7 +90,7 @@ function Dashboard() {
           </Link>
         </div>
 
-        <div data-sticky-top className="sticky top-0 z-30 mt-6 flex flex-wrap items-center gap-2 border-y border-slate-200 bg-white px-10 py-3">
+        <div data-sticky-top className="sticky top-0 z-30 -mx-1 mt-3 flex flex-wrap items-center gap-2 bg-slate-50 px-11 py-3">
           <DateRange label={RANGES[0].dates} ranges={RANGES} month="July 2026" startPad={3} days={31} from={14} to={15} />
           <Menu label="Retailer" value="Amazon" options={["Amazon"]} locked />
           <Menu label="Category" value={category} options={CATEGORIES} onChange={setCategory} />
@@ -103,17 +104,17 @@ function Dashboard() {
                 setAgent(undefined)
                 setDeal(undefined)
               }}
-              className="ml-1 rounded-md px-2 py-1.5 text-[13px] text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+              className="ml-1 rounded-md px-2 py-1.5 text-[13px] text-slate-500 hover:bg-white hover:text-slate-900"
             >
               Clear filters
             </button>
           )}
         </div>
 
-        <div className="flex flex-col gap-6 px-10 pt-6 pb-16">
+        <WidgetStack className="pt-3">
           <div className="grid grid-cols-4 gap-4">
             {kpis.map((k) => (
-              <div key={k.label} className="rounded-xl border border-slate-200 px-5 py-4">
+              <div key={k.label} className="rounded-2xl bg-white px-5 py-4 shadow-xs ring-1 ring-slate-200">
                 <div className="font-mono text-[26px] leading-none font-semibold text-slate-950">{k.figure}</div>
                 <div className="mt-2 text-[13px] text-slate-500">{k.label}</div>
               </div>
@@ -122,7 +123,7 @@ function Dashboard() {
 
           <div className="grid grid-cols-2 gap-4">
             {tiles.map((s) => (
-              <section key={s.id} aria-label={TILE_NAME[s.id] ?? s.eyebrow.split(" · ")[1]} className="flex flex-col rounded-xl border border-slate-200 p-5">
+              <section key={s.id} aria-label={TILE_NAME[s.id] ?? s.eyebrow.split(" · ")[1]} className="flex flex-col rounded-2xl bg-white p-5 shadow-xs ring-1 ring-slate-200">
                 <div className="text-xs font-medium tracking-wide text-slate-500 uppercase">{TILE_NAME[s.id] ?? s.eyebrow.split(" · ")[1]}</div>
                 <div className="mt-1 text-[15px] font-semibold text-slate-950">{s.title}</div>
                 <div className="mt-4 grid flex-1 grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] gap-5">
@@ -141,10 +142,10 @@ function Dashboard() {
               </section>
             ))}
           </div>
-          <div className="text-[13px] text-slate-500">{RETRO.sources}</div>
-        </div>
+          <div className="px-10 text-[13px] text-slate-500">{RETRO.sources}</div>
+        </WidgetStack>
         <ChatThread />
-      </div>
+      </PageFrame>
       <AppDrawer />
       <AskBar />
     </PageShell>

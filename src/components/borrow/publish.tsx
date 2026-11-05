@@ -41,7 +41,7 @@ export function Publish({ uc, published, onPublish }: { uc: UseCase; published?:
   return (
     <div className="grid grid-cols-[minmax(0,1fr)_320px] gap-6 max-lg:grid-cols-1">
       <div className="flex flex-col gap-6">
-        <section className="rounded-xl border border-slate-200">
+        <section className="rounded-2xl bg-white shadow-xs ring-1 ring-slate-200">
           <div className="flex items-center justify-between border-b border-slate-200 px-5 py-3">
             <h3 className="text-[15px] font-semibold text-slate-950">{p.title}</h3>
             <span className="text-[13px] text-slate-500">Checked Oct 8, 9:05 AM</span>
@@ -61,7 +61,7 @@ export function Publish({ uc, published, onPublish }: { uc: UseCase; published?:
         </section>
 
         {p.table && (
-          <section className="rounded-xl border border-slate-200">
+          <section className="rounded-2xl bg-white shadow-xs ring-1 ring-slate-200">
             <div className="grid gap-3 border-b border-slate-200 px-5 py-2.5 text-xs font-medium text-slate-500" style={{ gridTemplateColumns: cols }}>
               {p.table.head.map((h, i) => (
                 <span key={h} className={cn(scored && i === p.table!.head.length - 1 && "text-right")}>
@@ -84,7 +84,7 @@ export function Publish({ uc, published, onPublish }: { uc: UseCase; published?:
         )}
 
         {p.routed && (
-          <section className="rounded-xl border border-slate-200">
+          <section className="rounded-2xl bg-white shadow-xs ring-1 ring-slate-200">
             <h3 className="border-b border-slate-200 px-5 py-3 text-[15px] font-semibold text-slate-950">Failures, routed to their cause</h3>
             <ul className="divide-y divide-slate-100">
               {p.routed.map((r) => (
@@ -98,7 +98,7 @@ export function Publish({ uc, published, onPublish }: { uc: UseCase; published?:
         )}
       </div>
 
-      <aside className="flex h-fit flex-col gap-4 rounded-xl border border-slate-200 p-5">
+      <aside className="flex h-fit flex-col gap-4 rounded-2xl bg-white shadow-xs ring-1 ring-slate-200 p-5">
         <div>
           <div className="text-[13px] font-medium text-slate-500">Goes live for</div>
           <div className="mt-1 text-[15px] font-semibold text-slate-950">{p.scope}</div>

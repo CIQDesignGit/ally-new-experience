@@ -44,7 +44,7 @@ export function Workshop({ uc, onDone }: { uc: UseCase; onDone: () => void }) {
 
   return (
     <div className="grid grid-cols-[minmax(0,1fr)_300px] gap-4 max-lg:grid-cols-1">
-      <div className="overflow-hidden rounded-xl bg-[#1e1b2e] shadow-pane-lg ring-1 ring-slate-900/10">
+      <div className="overflow-hidden rounded-2xl bg-[#1e1b2e] shadow-pane-lg ring-1 ring-slate-900/10">
         <div className="flex items-center gap-2 border-b border-white/10 px-4 py-2.5">
           <span className="size-2.5 rounded-full bg-[#ff5f57]" aria-hidden />
           <span className="size-2.5 rounded-full bg-[#febc2e]" aria-hidden />
@@ -70,7 +70,7 @@ export function Workshop({ uc, onDone }: { uc: UseCase; onDone: () => void }) {
         </div>
       </div>
 
-      <aside className="flex flex-col gap-3 rounded-xl border border-slate-200 p-4">
+      <aside className="flex flex-col gap-3 rounded-2xl bg-white p-4 shadow-xs ring-1 ring-slate-200">
         <div className="text-[13px] font-medium text-slate-500">Files</div>
         {uc.workshop.files.map((f) => {
           const on = done || written.includes(f)
