@@ -8,6 +8,13 @@ export function PageFrame({ children, className }: { children: React.ReactNode; 
   return <div className={cn("mx-auto flex max-w-[1280px] flex-col pb-24 sm:px-6", className)}>{children}</div>
 }
 
+/**
+ * The side padding for anything on the page background (top strip, page header,
+ * section titles, tabs): flush with the Widget edges on wide screens, inset when
+ * Widgets go edge to edge on mobile.
+ */
+export const PAGE_EDGE = "px-4 sm:px-0"
+
 /** One block of work on the page: a white card with a hairline edge. */
 export function Widget({ children, className }: { children: React.ReactNode; className?: string }) {
   return <section className={cn("overflow-clip bg-white sm:rounded-2xl sm:shadow-xs sm:ring-1 sm:ring-slate-200", className)}>{children}</section>
@@ -19,7 +26,7 @@ export function Widget({ children, className }: { children: React.ReactNode; cla
  */
 export function SectionTitle({ children, aside, className }: { children: React.ReactNode; aside?: React.ReactNode; className?: string }) {
   return (
-    <div className={cn("flex items-baseline gap-2 px-4 sm:px-0", className)}>
+    <div className={cn("flex items-baseline gap-2", PAGE_EDGE, className)}>
       <h2 className="text-base font-semibold text-slate-950">{children}</h2>
       {aside && <span className="text-sm text-slate-500">{aside}</span>}
     </div>

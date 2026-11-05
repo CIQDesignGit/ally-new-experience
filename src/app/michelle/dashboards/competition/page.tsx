@@ -1,7 +1,7 @@
 "use client"
 
 import { PageShell } from "@/components/layout/page-shell"
-import { PageFrame, Widget, WidgetStack } from "@/components/layout/page-frame"
+import { PageFrame, Widget, WidgetStack, PAGE_EDGE } from "@/components/layout/page-frame"
 import { TopStrip } from "@/components/nudge/top-strip"
 import { AppDrawer } from "@/components/nudge/app-drawer"
 import { ExportButton } from "@/components/nudge/ui/export-button"
@@ -58,9 +58,9 @@ function Dashboard() {
       <StepBar step={4} />
       <StarterChips id="dashboard-competition" chips={STARTERS} />
       <PageFrame>
-        <TopStrip person="michelle" crumbs={[{ label: "Daily brief", href: "/michelle" }, { label: "Dashboards" }, { label: "Competition" }]} />
+        <TopStrip className={PAGE_EDGE} person="michelle" crumbs={[{ label: "Daily brief", href: "/michelle" }, { label: "Dashboards" }, { label: "Competition" }]} />
 
-        <div className="flex items-end justify-between gap-6 px-10 pt-4">
+        <div className={`flex items-end justify-between gap-6 pt-4 ${PAGE_EDGE}`}>
           <div>
             <h1 className="text-3xl leading-tight font-semibold tracking-tight text-slate-950">{NAMES.competitor} vs Aurelle</h1>
             <div className="mt-1 flex items-center gap-2 text-sm text-slate-500">

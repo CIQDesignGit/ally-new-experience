@@ -1,5 +1,6 @@
 "use client"
 
+import { PAGE_EDGE } from "@/components/layout/page-frame"
 import { Fig, PageHeader, Signal } from "@/components/layout/page-header"
 import { VsPlan } from "./vs-plan"
 import { Fragment, useEffect, useRef, useState } from "react"
@@ -40,7 +41,7 @@ export function BusinessHero() {
   const who = RETAILERS.find((r) => r.id === retailer)?.label ?? "Amazon"
   return (
     <PageHeader
-      className="px-4 sm:px-0"
+      className={PAGE_EDGE}
       eyebrow={
         <>
           {retailer === "all" ? "Your business" : who} is projected to land at <Fig>{fmtBiz(pace)}</Fig> {PERIOD_WORDS[l.period]}

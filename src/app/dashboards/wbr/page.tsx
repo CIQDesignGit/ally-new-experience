@@ -4,7 +4,7 @@ import { useState, type ReactNode } from "react"
 import { Sparkles } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { PageShell } from "@/components/layout/page-shell"
-import { PageFrame } from "@/components/layout/page-frame"
+import { PageFrame, PAGE_EDGE } from "@/components/layout/page-frame"
 import { TopStrip, useViewer } from "@/components/nudge/top-strip"
 import { AppDrawer } from "@/components/nudge/app-drawer"
 import { AskBar, ChatProvider, ChatThread } from "@/components/nudge/chat/inline-chat"
@@ -41,7 +41,7 @@ export default function WbrDashboard() {
     <ChatProvider thread={{ where: "Weekly business review", home }}>
       <PageShell className="bg-slate-50">
         <PageFrame>
-          <TopStrip person={viewer} home={home} crumbs={[{ label: "Home", href: home }, { label: "My dashboards" }, { label: "Weekly business review" }]} />
+          <TopStrip className={PAGE_EDGE} person={viewer} home={home} crumbs={[{ label: "Home", href: home }, { label: "My dashboards" }, { label: "Weekly business review" }]} />
           <Wbr />
           <ChatThread />
         </PageFrame>
@@ -145,7 +145,7 @@ function Wbr() {
 
   return (
     <>
-      <div className="flex items-end justify-between gap-6 px-10 pt-4 pb-6">
+      <div className={`flex items-end justify-between gap-6 pt-4 pb-6 ${PAGE_EDGE}`}>
         <div>
           <h1 className="text-3xl leading-tight font-semibold tracking-tight text-slate-950">Weekly business review</h1>
           <div className="mt-1 flex items-center gap-2 text-sm text-slate-500">
@@ -171,7 +171,7 @@ function Wbr() {
           </ul>
         </section>
 
-        <div role="tablist" className="flex gap-6 px-10">
+        <div role="tablist" className={`flex gap-6 ${PAGE_EDGE}`}>
           {([1, 2] as const).map((p) => (
             <button key={p} role="tab" aria-selected={page === p} type="button" onClick={() => setPage(p)} className={cn("-mb-px border-b-2 py-2.5 text-sm font-medium", page === p ? "border-brand-500 text-brand-700" : "border-transparent text-slate-500 hover:text-slate-900")}>
               {p === 1 ? "Performance" : "Drivers and next week"}

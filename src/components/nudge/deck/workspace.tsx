@@ -9,7 +9,7 @@ import { Check, Download, GripVertical, Lock, Maximize2, Minimize2, Paperclip, S
 import { cn } from "@/lib/utils"
 import { FadeAbove, MoreBelow } from "@/components/nudge/chat/more-below"
 import { PageShell } from "@/components/layout/page-shell"
-import { PageFrame, Widget } from "@/components/layout/page-frame"
+import { PageFrame, Widget, PAGE_EDGE } from "@/components/layout/page-frame"
 import { TopStrip } from "@/components/nudge/top-strip"
 import { useNudge } from "@/components/nudge/nudge-context"
 import { AS_OF } from "@/components/nudge/data"
@@ -241,7 +241,7 @@ export function DeckWorkspace({ spec }: { spec: DeckSpec }) {
   return (
     <PageShell className={cn("bg-slate-50", playfair.variable, lato.variable)}>
       <PageFrame className="max-w-[1440px] pb-6">
-        <TopStrip person={spec.author?.person ?? "michelle"} crumbs={[{ label: spec.author?.label ?? "Daily brief", href: spec.author?.home ?? "/michelle" }, { label: spec.name }]} />
+        <TopStrip className={PAGE_EDGE} person={spec.author?.person ?? "michelle"} crumbs={[{ label: spec.author?.label ?? "Daily brief", href: spec.author?.home ?? "/michelle" }, { label: spec.name }]} />
         <Widget className="mt-4">
         {view === "answer" ? (
           <div className="flex min-h-[760px] justify-center px-10 pt-8 pb-10">

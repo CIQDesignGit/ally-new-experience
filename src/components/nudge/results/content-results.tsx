@@ -1,5 +1,6 @@
 "use client"
 
+import { PAGE_EDGE } from "@/components/layout/page-frame"
 import { useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { ArrowLeft, ChevronDown } from "lucide-react"
@@ -72,9 +73,9 @@ export function ContentResults() {
 
   return (
     <>
-    <TopStrip person="claire" home="/claire-waterfall" crumbs={[{ label: "Home", onClick: back }, { label: "Content results" }]} />
+    <TopStrip className={PAGE_EDGE} person="claire" home="/claire-waterfall" crumbs={[{ label: "Home", onClick: back }, { label: "Content results" }]} />
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-4 px-10 pt-4">
+      <div className={`flex flex-col gap-4 pt-4 ${PAGE_EDGE}`}>
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 text-sm text-slate-500">

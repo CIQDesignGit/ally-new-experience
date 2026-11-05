@@ -4,7 +4,7 @@ import { useEffect } from "react"
 import Link from "next/link"
 import { Plus } from "lucide-react"
 import { PageShell } from "@/components/layout/page-shell"
-import { PageFrame, WidgetStack } from "@/components/layout/page-frame"
+import { PageFrame, WidgetStack, PAGE_EDGE } from "@/components/layout/page-frame"
 import { TopStrip } from "@/components/nudge/top-strip"
 import { AppDrawer } from "@/components/nudge/app-drawer"
 import { useNudge } from "@/components/nudge/nudge-context"
@@ -108,9 +108,9 @@ function Alerts() {
     <PageShell className="bg-slate-50">
       <StarterChips id="alerts" chips={STARTERS} />
       <PageFrame>
-        <TopStrip person="michelle" crumbs={[{ label: "Today", href: "/michelle" }, { label: "Scheduled" }]} />
+        <TopStrip className={PAGE_EDGE} person="michelle" crumbs={[{ label: "Today", href: "/michelle" }, { label: "Scheduled" }]} />
         {/* Everything Ally runs on its own clock. Each opens in place to edit; "New" turns a sentence into a draft. */}
-        <div className="flex items-end justify-between gap-6 px-10 pt-4 pb-8">
+        <div className={`flex items-end justify-between gap-6 pt-4 pb-8 ${PAGE_EDGE}`}>
           <h1 className="text-3xl leading-tight font-semibold tracking-tight text-slate-950">Scheduled</h1>
           {/* More briefs and alerts come from the library. */}
           <div className="flex items-center gap-2">

@@ -1,5 +1,6 @@
 "use client"
 
+import { PAGE_EDGE } from "@/components/layout/page-frame"
 import { Fig, PageHeader, Signal } from "@/components/layout/page-header"
 import { BUSINESS, fmtBiz } from "../data"
 import { useLive } from "../live-model"
@@ -33,7 +34,7 @@ export function BusinessHero({ topLineOnly = false, crumbs }: { topLineOnly?: bo
       <TopStrip
         person="claire"
         home="/claire-waterfall"
-        className="px-4 sm:px-0"
+        className={PAGE_EDGE}
         greeting={crumbs ? undefined : "Hi Claire"}
         crumbs={crumbs}
         period
@@ -46,7 +47,7 @@ export function BusinessHero({ topLineOnly = false, crumbs }: { topLineOnly?: bo
       />
     {!topLineOnly && (
       <PageHeader
-        className="px-4 sm:px-0"
+        className={PAGE_EDGE}
         eyebrow={
           <>
             <Fig>{fmtBiz(b.pace)}</Fig> forecast vs <Fig>{fmtBiz(b.plan)}</Fig> plan

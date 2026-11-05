@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { AppDrawer } from "@/components/nudge/app-drawer"
 import { PageShell } from "@/components/layout/page-shell"
-import { PageFrame, Widget, WidgetStack } from "@/components/layout/page-frame"
+import { PageFrame, Widget, WidgetStack, PAGE_EDGE } from "@/components/layout/page-frame"
 import { ResetDemoButton } from "@/components/nudge/reset-demo-button"
 import { DemoControls } from "@/components/nudge/claire/demo-controls"
 import { BusinessHero } from "@/components/nudge/claire/business-hero"
@@ -118,7 +118,7 @@ function ClaireWaterfall() {
             <ClaireChat />
             <ChatThread />
             {/* Demo-only control, kept out of the product chrome. */}
-            <div className="flex justify-end gap-6 px-4 pt-6 sm:px-0">
+            <div className={`flex justify-end gap-6 pt-6 ${PAGE_EDGE}`}>
               <DemoControls />
               <ResetDemoButton />
             </div>

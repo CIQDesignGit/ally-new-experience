@@ -4,7 +4,7 @@ import { Fragment, useState, type ReactNode } from "react"
 import { Sparkles, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { PageShell } from "@/components/layout/page-shell"
-import { PageFrame } from "@/components/layout/page-frame"
+import { PageFrame, PAGE_EDGE } from "@/components/layout/page-frame"
 import { TopStrip, useViewer } from "@/components/nudge/top-strip"
 import { AppDrawer } from "@/components/nudge/app-drawer"
 import { AskBar, ChatProvider, ChatThread } from "@/components/nudge/chat/inline-chat"
@@ -30,7 +30,7 @@ export default function AiVisibilityDashboard() {
     <ChatProvider thread={{ where: "AI visibility", home }}>
       <PageShell className="bg-slate-50">
         <PageFrame>
-          <TopStrip person={viewer} home={home} crumbs={[{ label: "Home", href: home }, { label: "My dashboards" }, { label: "AI visibility" }]} />
+          <TopStrip className={PAGE_EDGE} person={viewer} home={home} crumbs={[{ label: "Home", href: home }, { label: "My dashboards" }, { label: "AI visibility" }]} />
           <Dashboard />
           <ChatThread />
         </PageFrame>
@@ -104,7 +104,7 @@ function Dashboard() {
 
   return (
     <>
-      <div className="flex items-end justify-between gap-6 px-10 pt-4 pb-6">
+      <div className={`flex items-end justify-between gap-6 pt-4 pb-6 ${PAGE_EDGE}`}>
         <div>
           <h1 className="text-3xl leading-tight font-semibold tracking-tight text-slate-950">AI visibility</h1>
           <div className="mt-1 flex items-center gap-2 text-sm text-slate-500">
