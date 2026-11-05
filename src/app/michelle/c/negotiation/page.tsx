@@ -48,7 +48,7 @@ function Thread() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   return (
-    <PageShell className="bg-slate-50 xl:bg-white">
+    <PageShell className="bg-slate-50">
       <div className="mx-auto min-h-screen max-w-[1280px] bg-white">
         <TopStrip person={viewer} crumbs={[{ label: viewer === "sarah" ? "Today" : "Daily brief", href: home }, { label: "Amazon vendor negotiation" }]} />
         <div className="pt-2">

@@ -123,8 +123,8 @@ export default function MikePage() {
     <BackgroundProvider>
       <ChatProvider thread={{ where: "Daily brief", home: "/mike" }}>
       <MikeChat />
-      <PageShell className="bg-slate-50 xl:bg-white">
-      <div className="mx-auto max-w-[1280px] overflow-hidden bg-white shadow-pane-lg sm:my-6 sm:rounded-2xl sm:ring-1 sm:ring-slate-900/6 xl:my-0 xl:rounded-none xl:shadow-none xl:ring-0">
+      <PageShell className="bg-slate-50">
+      <div className="mx-auto max-w-[1280px] overflow-hidden bg-white shadow-pane-lg sm:my-6 sm:rounded-2xl sm:ring-1 sm:ring-slate-900/6">
         <MikeHeader />
         <MikeProgress celebrate={celebrate} stage={filter === "all" ? undefined : filter} onStage={(st) => pickFilter(st, true)} />
         <div ref={queueRef} className="grid scroll-mt-4 grid-cols-1 lg:grid-cols-[400px_minmax(0,1fr)]">

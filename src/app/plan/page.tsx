@@ -12,8 +12,8 @@ export default function PlanPage() {
   const { viewer, home } = useViewer("claire")
   return (
     <ChatProvider thread={{ where: "Joint plan", home }}>
-      <PageShell className="bg-slate-50 xl:bg-white">
-        <div className="mx-auto max-w-[1080px] overflow-clip bg-white shadow-pane-lg sm:my-6 sm:rounded-2xl sm:ring-1 sm:ring-slate-900/6 xl:my-0 xl:rounded-none xl:shadow-none xl:ring-0">
+      <PageShell className="bg-slate-50">
+        <div className="mx-auto max-w-[1080px] overflow-clip bg-white shadow-pane-lg sm:my-6 sm:rounded-2xl sm:ring-1 sm:ring-slate-900/6">
           <TopStrip person={viewer} home={home} crumbs={[{ label: viewer === "sarah" ? "Today" : "Home", href: home }, { label: "Joint plan" }]} />
           <div className="px-10 pt-2 pb-10">
             <h1 className="text-[28px] leading-tight font-bold tracking-tight text-slate-950">{viewer === "sarah" ? `Joint plan with ${ACCOUNT.name}` : "Your plan with CommerceIQ"}</h1>

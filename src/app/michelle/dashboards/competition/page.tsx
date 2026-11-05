@@ -53,10 +53,10 @@ function Dashboard() {
   ]
 
   return (
-    <PageShell className="bg-slate-50 xl:bg-white">
+    <PageShell className="bg-slate-50">
       <StepBar step={4} />
       <StarterChips id="dashboard-competition" chips={STARTERS} />
-      <div className="mx-auto max-w-[1280px] overflow-clip bg-white shadow-pane-lg sm:my-6 sm:rounded-2xl sm:ring-1 sm:ring-slate-900/6 xl:my-0 xl:rounded-none xl:shadow-none xl:ring-0">
+      <div className="mx-auto max-w-[1280px] overflow-clip bg-white shadow-pane-lg sm:my-6 sm:rounded-2xl sm:ring-1 sm:ring-slate-900/6">
         <TopStrip person="michelle" crumbs={[{ label: "Daily brief", href: "/michelle" }, { label: "Dashboards" }, { label: "Competition" }]} />
 
         <div className="flex items-end justify-between gap-6 px-10 pt-4">

@@ -47,9 +47,9 @@ function SavedDashboard({ id }: { id: string }) {
   // Half-width widgets pair up first; the full-width table goes below them.
   const widgets = ((d?.widgets ?? []) as PromoWidget[]).slice().sort((a, b) => Number(a === "promo-badge") - Number(b === "promo-badge"))
   return (
-    <PageShell className="bg-slate-50 xl:bg-white">
+    <PageShell className="bg-slate-50">
       <StarterChips id={`dashboard-${id}`} chips={[...STARTERS, ...WIDGET_CHIPS]} />
-      <div className="mx-auto max-w-[1280px] overflow-clip bg-white shadow-pane-lg sm:my-6 sm:rounded-2xl sm:ring-1 sm:ring-slate-900/6 xl:my-0 xl:rounded-none xl:shadow-none xl:ring-0">
+      <div className="mx-auto max-w-[1280px] overflow-clip bg-white shadow-pane-lg sm:my-6 sm:rounded-2xl sm:ring-1 sm:ring-slate-900/6">
         <TopStrip person="michelle" crumbs={[{ label: "Daily brief", href: "/michelle" }, { label: "Dashboards" }, { label: d?.name ?? "Dashboard" }]} />
 
         {d ? (

@@ -6,8 +6,11 @@ import type { WaterfallStage } from "../data"
 import { useLive } from "../live-model"
 import { IMPACT_HEIGHT, gapUnit, type Impact } from "../mvp"
 import { InfoIcon } from "../ui/info-icon"
+import { DEMO_LAYOUT_MIN_PX } from "@/lib/breakpoints"
 
 const CHART_HEIGHT = 300
+/** Below this width the bridge squashes; scroll horizontally instead of reflowing. */
+const CHART_MIN_WIDTH = DEMO_LAYOUT_MIN_PX
 /** Fixed so every column is the same total height — otherwise items-end floats the bars to different baselines. */
 const LABEL_HEIGHT = 72
 /** Column top padding, above the chart band; the plan line is positioned against it. */
@@ -106,8 +109,8 @@ export function WaterfallChart({ selectedId, onSelect }: WaterfallChartProps) {
   const landed = columns[columns.length - 1].end - plan
 
   return (
-    <div>
-      <div className="relative flex items-end gap-3">
+    <div className="-mx-1 overflow-x-auto px-1">
+      <div className="relative flex items-end gap-3" style={{ minWidth: CHART_MIN_WIDTH }}>
         <div className="pointer-events-none absolute inset-x-0 z-10 border-t-2 border-dashed border-slate-900/60" style={{ top: planTop }}>
           <span className="absolute -top-6 right-0 rounded bg-white px-1.5 font-mono text-xs font-semibold text-slate-950">Plan {fmtBiz(plan)}</span>
         </div>
@@ -123,7 +126,7 @@ export function WaterfallChart({ selectedId, onSelect }: WaterfallChartProps) {
               disabled={!col.selectable}
               onClick={() => col.selectable && onSelect(col.key as WaterfallSelection)}
               className={cn(
-                "group relative flex flex-1 flex-col items-center rounded-xl px-1 pb-2 transition-colors",
+                "group relative flex min-w-[120px] flex-1 flex-col items-center rounded-xl px-1 pb-2 transition-colors",
                 col.selectable ? "cursor-pointer" : "cursor-default",
                 selected ? "bg-brand-50 ring-1 ring-brand-200" : col.selectable && "hover:bg-slate-50",
               )}

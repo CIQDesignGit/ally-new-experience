@@ -51,8 +51,8 @@ export default function BorrowPage() {
   }
 
   return (
-    <PageShell className="bg-slate-50 xl:bg-white">
-      <div className="mx-auto max-w-[1280px] overflow-clip bg-white shadow-pane-lg sm:my-6 sm:rounded-2xl sm:ring-1 sm:ring-slate-900/6 xl:my-0 xl:rounded-none xl:shadow-none xl:ring-0">
+    <PageShell className="bg-slate-50">
+      <div className="mx-auto max-w-[1280px] overflow-clip bg-white shadow-pane-lg sm:my-6 sm:rounded-2xl sm:ring-1 sm:ring-slate-900/6">
         <header className="px-10 pt-8 max-sm:px-4">
           <div className="text-[13px] text-slate-500">FDE workflow · Aurelle Candles · Amazon US</div>
           <h1 className="mt-1 text-[28px] leading-tight font-semibold tracking-tight text-slate-950">{uc.label}</h1>

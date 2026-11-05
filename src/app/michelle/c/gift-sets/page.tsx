@@ -32,7 +32,7 @@ function Thread() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   return (
-    <PageShell className="bg-slate-50 xl:bg-white">
+    <PageShell className="bg-slate-50">
       <div className="mx-auto min-h-screen max-w-[1280px] bg-white">
         <TopStrip person="michelle" crumbs={[{ label: "Daily brief", href: "/michelle" }, { label: "Gift sets" }]} />
         <div className="pt-2">

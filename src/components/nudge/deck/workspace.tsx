@@ -238,8 +238,8 @@ export function DeckWorkspace({ spec }: { spec: DeckSpec }) {
   )
 
   return (
-    <PageShell className={cn("bg-slate-50 xl:bg-white", playfair.variable, lato.variable)}>
-      <div className="mx-auto max-w-[1440px] overflow-clip bg-white shadow-pane-lg sm:my-6 sm:rounded-2xl sm:ring-1 sm:ring-slate-900/6 xl:my-0 xl:rounded-none xl:shadow-none xl:ring-0">
+    <PageShell className={cn("bg-slate-50", playfair.variable, lato.variable)}>
+      <div className="mx-auto max-w-[1440px] overflow-clip bg-white shadow-pane-lg sm:my-6 sm:rounded-2xl sm:ring-1 sm:ring-slate-900/6">
         <TopStrip person={spec.author?.person ?? "michelle"} crumbs={[{ label: spec.author?.label ?? "Daily brief", href: spec.author?.home ?? "/michelle" }, { label: spec.name }]} />
         {view === "answer" ? (
           <div className="mt-4 flex min-h-[760px] justify-center border-t border-slate-200 px-10 pt-8 pb-10">

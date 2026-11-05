@@ -10,8 +10,8 @@ import { MeetingPrep } from "@/components/nudge/cs/prep"
 export default function PrepPage() {
   return (
     <ChatProvider thread={{ where: "Meeting prep", home: "/sarah" }}>
-      <PageShell className="bg-slate-50 xl:bg-white">
-        <div className="mx-auto max-w-[1080px] overflow-clip bg-white shadow-pane-lg sm:my-6 sm:rounded-2xl sm:ring-1 sm:ring-slate-900/6 xl:my-0 xl:rounded-none xl:shadow-none xl:ring-0">
+      <PageShell className="bg-slate-50">
+        <div className="mx-auto max-w-[1080px] overflow-clip bg-white shadow-pane-lg sm:my-6 sm:rounded-2xl sm:ring-1 sm:ring-slate-900/6">
           <SarahHeader crumbs={[{ label: "Today", href: "/sarah" }, { label: "Meeting prep" }]} />
           <MeetingPrep />
           <ChatThread />

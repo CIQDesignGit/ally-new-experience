@@ -13,6 +13,11 @@
 ───────────────────────────────────────────── */
 @theme inline {
 
+  /* ── Breakpoints ────────────────────────── */
+  /* 700px: compact vs comfortable (Cursor pane ~760px and desktop agree on md/max-md). */
+  --breakpoint-sm: 43.75rem;
+  --breakpoint-md: 43.75rem;
+
   /* ── Fonts ──────────────────────────────── */
   /* --font-inter is injected by next/font in layout.tsx */
   --font-sans:    var(--font-inter);

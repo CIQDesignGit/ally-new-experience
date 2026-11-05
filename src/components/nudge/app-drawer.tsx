@@ -16,6 +16,7 @@ import { INBOX } from "./cs/data"
 import { availableFor } from "./library/data"
 import { useCompetition } from "../competition/state"
 import { statusOf, useLibrary } from "./library/state"
+import { sidebarLayoutMinMediaQuery } from "@/lib/breakpoints"
 
 const OPEN_W = "264px"
 const SHUT_W = "64px"
@@ -99,7 +100,7 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
   // The page always makes room, so nothing is covered; it slides in step with the rail (same 200ms), so nothing jumps (xl and up, where it shows).
   useEffect(() => {
     const root = document.documentElement
-    const wide = window.matchMedia("(min-width: 1280px)")
+    const wide = window.matchMedia(sidebarLayoutMinMediaQuery)
     const apply = () => {
       const w = wide.matches ? (open ? OPEN_W : SHUT_W) : "0px"
       root.style.setProperty("--sidebar-w", w)
@@ -251,7 +252,7 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
         if (open) scheduleClose()
         else window.clearTimeout(timer.current)
       }}
-      className={cn("fixed inset-y-0 left-0 z-50 hidden flex-col overflow-hidden bg-brand-950 transition-[width] duration-200 xl:flex")}
+      className={cn("fixed inset-y-0 left-0 z-50 hidden flex-col overflow-hidden bg-brand-950 transition-[width] duration-200 md:flex")}
     >
       <div className={cn("flex h-16 shrink-0 items-center", open ? "justify-between pr-2 pl-4" : "justify-center")}>
         {open && (
@@ -285,7 +286,8 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
       </div>
 
       {open ? (
-        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-2 pb-2">
+        <div className="flex min-h-0 flex-1 flex-col px-2 pb-2">
+          <div className="min-h-0 flex-1 overflow-y-auto">
           {fde ? (
             <>
               {/* The engineer's work: what customers asked for, the skills that answer them, and what Ally knows about each account. */}
@@ -356,10 +358,12 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
           )}
           {/* What Ally runs for the account: the customer's to watch, not the engineer's. */}
           {!fde && (
-            <div className="mt-auto pt-4">
+            <div className="mt-4">
               <AllyWorking />
             </div>
           )}
+          </div>
+          {!fde && <OldExperienceToggle />}
         </div>
       ) : (
         <nav className="flex flex-1 flex-col items-center gap-1 pb-3">
@@ -413,6 +417,38 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
         </nav>
       )}
     </aside>
+  )
+}
+
+/** Preview only — wiring to /launchpad (Content Agent) comes later. */
+function OldExperienceToggle() {
+  const [on, setOn] = useState(false)
+  return (
+    <div className="mt-2 shrink-0 border-t border-white/10 pt-3">
+      <div className="flex items-center justify-between gap-2 px-1">
+        <span className="text-[12px] leading-snug text-brand-200">Old experience</span>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={on}
+          aria-label="Old experience"
+          title="Coming soon"
+          onClick={() => setOn((v) => !v)}
+          className={cn(
+            "relative h-5 w-9 shrink-0 rounded-full transition-colors",
+            on ? "bg-ally-500" : "bg-white/20",
+          )}
+        >
+          <span
+            aria-hidden
+            className={cn(
+              "absolute top-0.5 left-0.5 size-4 rounded-full bg-white shadow-sm transition-transform",
+              on && "translate-x-4",
+            )}
+          />
+        </button>
+      </div>
+    </div>
   )
 }
 

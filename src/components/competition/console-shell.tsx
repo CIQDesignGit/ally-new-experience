@@ -11,7 +11,7 @@ import { TopStrip, type Crumb } from "../nudge/top-strip"
  */
 export function ConsoleShell({ step, crumbs = [{ label: "Skills" }], children }: { step?: 2 | 3; /** After Home (Nora's Requests). */ crumbs?: Crumb[]; children: ReactNode }) {
   return (
-    <div className="min-h-screen bg-slate-50 xl:bg-white">
+    <div className="min-h-screen bg-slate-50">
       {step && <StepBar step={step} harness={step === 2 ? "build" : undefined} />}
       <main className="mx-auto min-h-screen max-w-[1280px] bg-white">
         <TopStrip person="nora" crumbs={[{ label: "Home", href: "/fde" }, ...crumbs]} />

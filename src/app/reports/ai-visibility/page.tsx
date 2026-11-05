@@ -11,8 +11,8 @@ export default function AiVisibilityPage() {
   const { viewer, home } = useViewer("sarah")
   return (
     <ChatProvider thread={{ where: "AI visibility", home }}>
-      <PageShell className="bg-slate-50 xl:bg-white">
-        <div className="mx-auto max-w-[1080px] bg-white px-10 pt-2 pb-24 shadow-pane-lg sm:my-6 sm:rounded-2xl sm:ring-1 sm:ring-slate-900/6 xl:my-0 xl:rounded-none xl:shadow-none xl:ring-0">
+      <PageShell className="bg-slate-50">
+        <div className="mx-auto max-w-[1080px] bg-white px-10 pt-2 pb-24 shadow-pane-lg sm:my-6 sm:rounded-2xl sm:ring-1 sm:ring-slate-900/6">
           <TopStrip person={viewer} home={home} className="px-0" crumbs={[{ label: viewer === "sarah" ? "Today" : "Home", href: home }, { label: "AI visibility" }]} />
           <div className="mt-2">
             <AeoReport />

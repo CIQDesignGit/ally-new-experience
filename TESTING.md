@@ -6,7 +6,7 @@ Prototype only: there are no automated tests. Check changes by hand in the brows
 1. Run `npx tsc --noEmit`. It must print nothing.
 2. Open the page in the browser pane with the pane visible (a hidden pane pauses hydration). Wait about 2.5s after load, or 6.5s on Claire's page because of the banner.
 3. Check every state you touched: default, hover, selected, done, empty, and after **Reset** (the faint button at the bottom of each page).
-4. Check at about 1300px wide and in a narrow pane of about 760px.
+4. Check at about 1300px wide and in a narrow pane of about 760px. Compact vs comfortable layout and the Ally sidebar rail both switch at **700px** (`sm`/`md` in `globals.css`). The waterfall chart keeps a **700px** min width and scrolls horizontally if the pane is narrower.
 5. Read the numbers: do they tie to the other pages?
 
 ## The story flow to click through

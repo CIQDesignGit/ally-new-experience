@@ -21,8 +21,8 @@ export default function RequestsPage() {
   return (
     <ChatProvider thread={{ where: "Requests", home: "/fde" }}>
       <NoraChat />
-      <PageShell className="bg-slate-50 xl:bg-white">
-        <div className="mx-auto max-w-[1280px] overflow-clip bg-white shadow-pane-lg sm:my-6 sm:rounded-2xl sm:ring-1 sm:ring-slate-900/6 xl:my-0 xl:rounded-none xl:shadow-none xl:ring-0">
+      <PageShell className="bg-slate-50">
+        <div className="mx-auto max-w-[1280px] overflow-clip bg-white shadow-pane-lg sm:my-6 sm:rounded-2xl sm:ring-1 sm:ring-slate-900/6">
           <TopStrip person="nora" greeting="Hi Nora" />
           <Requests />
           <ChatThread />

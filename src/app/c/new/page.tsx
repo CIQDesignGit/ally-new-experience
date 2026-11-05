@@ -29,7 +29,7 @@ function NewChat({ viewer, home }: { viewer: Person; home: string }) {
   const Chips = HOME_CHAT[viewer] ?? MichelleChat
   const name = viewer.charAt(0).toUpperCase() + viewer.slice(1)
   return (
-    <PageShell className="bg-slate-50 xl:bg-white">
+    <PageShell className="bg-slate-50">
       <Chips newChat />
       <div className="mx-auto min-h-screen max-w-[1280px] bg-white">
         <TopStrip person={viewer} home={home} crumbs={[{ label: "Home", href: home }, { label: turns[0]?.q ?? "New chat" }]} />

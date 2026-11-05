@@ -44,7 +44,7 @@ function Conversation({ person, home, title, meta }: { person: Person; home: str
   // Nothing in memory and nothing Ally can answer again.
   const ended = !turns.length && source.chips.length > 0 && !chip
   return (
-    <PageShell className="bg-slate-50 xl:bg-white">
+    <PageShell className="bg-slate-50">
       <Chips />
       <div className="mx-auto min-h-screen max-w-[1280px] bg-white">
         <TopStrip person={person} home={home} crumbs={[{ label: "Home", href: home }, { label: title ?? "Conversation" }]} />
