@@ -7,7 +7,7 @@ const ALLY_BRAIN_HREF = "https://allybrain.web.app/#/"
 
 const MODULES = [
   { id: "ally", label: "Home", href: ALLY_BRAIN_HREF, external: true },
-  { id: "content", label: "Content", href: "/", external: false },
+  { id: "content", label: "Content", href: "/launchpad", external: false },
   { id: "ops", label: "Ops", href: "https://allybrain.web.app/#/ops", external: true },
   { id: "insights", label: "Insights", href: "https://allybrain.web.app/#/insights", external: true },
   { id: "media", label: "Media", href: null, external: false },

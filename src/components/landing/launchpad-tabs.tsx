@@ -12,7 +12,7 @@ import {
 import { DateRangePicker } from "./date-range-picker"
 
 export const LAUNCHPAD_TABS = [
-  { id: "glance", label: "Overview", href: "/" },
+  { id: "glance", label: "Overview", href: "/launchpad" },
   { id: "ai-tracking", label: "AI Tracking", href: "/ai-tracking" },
   { id: "review", label: "Review SKUs", href: "/workbench" },
   { id: "impact", label: "AI Impact", href: "/impact" },
@@ -21,7 +21,7 @@ export const LAUNCHPAD_TABS = [
 export type LaunchpadTabId = (typeof LAUNCHPAD_TABS)[number]["id"]
 
 function tabIdFromPath(pathname: string): LaunchpadTabId | null {
-  if (pathname === "/") return "glance"
+  if (pathname === "/launchpad") return "glance"
   if (pathname.startsWith("/ai-tracking")) return "ai-tracking"
   if (pathname.startsWith("/workbench")) return "review"
   if (pathname.startsWith("/impact")) return "impact"
@@ -39,7 +39,7 @@ export function LaunchpadTabs({ className }: LaunchpadTabsProps) {
   const { profileId } = useProfile()
   const active = tabIdFromPath(pathname)
   const showDateRange =
-    pathname === "/" ||
+    pathname === "/launchpad" ||
     pathname.startsWith("/impact") ||
     pathname.startsWith("/ai-tracking")
 
