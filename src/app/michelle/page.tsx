@@ -14,6 +14,7 @@ import type { OpenItemDetail } from "@/components/nudge/chat/open-item"
 import { OpsSkuPane } from "@/components/nudge/ops/ops-sku-pane"
 import { NoteBar } from "@/components/nudge/ops/note-bar"
 import { PageShell } from "@/components/layout/page-shell"
+import { PageFrame, Widget, WidgetStack } from "@/components/layout/page-frame"
 import { MichelleHeader } from "@/components/nudge/ops/michelle-header"
 import { OpsProgress } from "@/components/nudge/ops/ops-progress"
 import { OpsBatchList, inboxRows, useOpsLevel } from "@/components/nudge/ops/ops-batch-list"
@@ -156,7 +157,7 @@ function Michelle() {
   return (
     <PageShell className="bg-slate-50">
       <StepBar step={competition.stage === "live" ? 4 : 1} />
-      <div className="mx-auto max-w-[1280px] overflow-clip bg-white shadow-pane-lg sm:my-6 sm:rounded-2xl sm:ring-1 sm:ring-slate-900/6">
+      <PageFrame>
         <MichelleHeader />
         <CompetitionTracker />
         <OpsProgress celebrate={celebrate} stage={filter === "all" ? undefined : filter} onStage={(st) => pickFilter(st, true)} />
@@ -166,6 +167,8 @@ function Michelle() {
             showProgress()
           }}
         />
+        <WidgetStack>
+        <Widget>
         <div ref={queueRef} className="grid grid-cols-1 lg:grid-cols-[400px_minmax(0,1fr)]">
           <div className="border-b border-slate-200 bg-white lg:border-r lg:border-b-0">
             <OpsBatchList
@@ -183,7 +186,7 @@ function Michelle() {
               }}
             />
           </div>
-          <DetailCard>
+          <DetailCard flat>
           {selectedSku ? (
             <OpsSkuPane batch={selected} asin={selectedSku} checked={checked[selected.id] ?? {}} onBack={() => setSelectedSku(null)} onCheck={check} onSend={handleAction} />
           ) : (
@@ -191,15 +194,21 @@ function Michelle() {
           )}
           </DetailCard>
         </div>
+        </Widget>
         <MichelleChat />
-        <OpsDelivered />
+        <Widget>
+          <div id="ops-delivered">
+            <OpsDelivered flat />
+          </div>
+        </Widget>
+        </WidgetStack>
         {/* Page-level answers go last, so the conversation is the end of the page.  */}
         <ChatThread />
-        {/* Demo-only control, kept out of the product chrome. Room below for the floating Ask Ally bar. */}
-        <div className="flex justify-end px-10 pb-24 opacity-50 hover:opacity-100">
+        {/* Demo-only control, kept out of the product chrome. */}
+        <div className="flex justify-end px-10 pt-4 opacity-50 hover:opacity-100">
           <ResetDemoButton />
         </div>
-      </div>
+      </PageFrame>
       <AppDrawer />
       <AskBar />
     </PageShell>

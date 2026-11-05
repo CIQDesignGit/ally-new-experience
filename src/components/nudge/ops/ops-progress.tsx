@@ -57,7 +57,7 @@ export function OpsProgress({ celebrate, stage, onStage }: { celebrate: Celebrat
     const oneApproval = waiting.filter((b) => b.tier === "approval")
     const losing = oneApproval.filter((b) => b.urgent)
     return (
-      <div className="flex items-end justify-between gap-8 border-b border-slate-200 px-10 pt-4 pb-8">
+      <div className="flex items-end justify-between gap-8 px-10 pt-4 pb-8">
         <div className="min-w-0">
           <div className="text-base font-medium text-slate-500 tabular-nums">
             {gap > 0 && (

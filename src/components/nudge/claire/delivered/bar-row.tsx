@@ -11,6 +11,9 @@ import { useMvp } from "../../mvp"
 const BAR_GRID = "grid grid-cols-[20px_200px_minmax(0,1fr)_128px_260px] items-center gap-4"
 /** Delivered only: no "vs projected" column, so the figure closes the row. */
 const BAR_GRID_MVP = "grid grid-cols-[20px_200px_minmax(0,1fr)_128px] items-center gap-4"
+/** A list where no row opens: no chevron column, so the name lines up with the section heading. */
+const BAR_GRID_STATIC = "grid grid-cols-[200px_minmax(0,1fr)_128px_260px] items-center gap-4"
+const BAR_GRID_STATIC_MVP = "grid grid-cols-[200px_minmax(0,1fr)_128px] items-center gap-4"
 
 /** The shortfall's top reason, in a few words: the first "waiting" or "lost" bullet, without its dollar prefix. */
 function topReason(data?: { bullets?: Bullet[] }) {
@@ -26,7 +29,7 @@ function topReason(data?: { bullets?: Bullet[] }) {
  * One agent as a bullet bar: delivered (green) against the projected
  * tick, the shortfall shaded red or the overshoot green, all on the section's scale.
  */
-export function BarRow({ name, did, delivered, promised, scale, data, why: whyText, open, onToggle, children }: { name: string; did: string; delivered: number; promised: number; scale: number; data?: { bullets?: Bullet[] }; why?: string; open?: boolean; onToggle?: () => void; children?: React.ReactNode }) {
+export function BarRow({ name, did, delivered, promised, scale, data, why: whyText, open, onToggle, compact, children }: { /** Only when no row in the list opens. */ compact?: boolean; name: string; did: string; delivered: number; promised: number; scale: number; data?: { bullets?: Bullet[] }; why?: string; open?: boolean; onToggle?: () => void; children?: React.ReactNode }) {
   const pct = (v: number) => `${(v / scale) * 100}%`
   // The MVP shows what was delivered, measured; nothing against a projection.
   const mvp = useMvp()
@@ -35,7 +38,7 @@ export function BarRow({ name, did, delivered, promised, scale, data, why: whyTe
   const why = whyText ?? (short ? topReason(data) : "Ahead of projection")
   const row = (
     <>
-      <span>{onToggle && <ChevronRight className={cn("size-4 text-slate-400 transition-transform", open && "rotate-90")} />}</span>
+      {!compact && <span>{onToggle && <ChevronRight className={cn("size-4 text-slate-400 transition-transform", open && "rotate-90")} />}</span>}
       <div className="min-w-0">
         <div className="text-[15px] font-semibold text-slate-950">{name}</div>
         <div className="truncate text-[13px] text-slate-500">{did}</div>
@@ -79,7 +82,7 @@ export function BarRow({ name, did, delivered, promised, scale, data, why: whyTe
           {row}
         </div>
       ) : (
-        <div className={cn(mvp ? BAR_GRID_MVP : BAR_GRID, "px-6 py-4")}>{row}</div>
+        <div className={cn(compact ? (mvp ? BAR_GRID_STATIC_MVP : BAR_GRID_STATIC) : mvp ? BAR_GRID_MVP : BAR_GRID, "px-6 py-4")}>{row}</div>
       )}
       {open && <div className="border-t border-slate-100 bg-slate-25 px-6 py-5">{children}</div>}
     </div>
@@ -105,7 +108,7 @@ export function BarKey() {
  * A queue's "so far" section, drawn like Claire's: Projected · Delivered · the gap,
  * then one bar per kind of work on one scale. Claire's row for this agent, opened up.
  */
-export function QueueDelivered({ label, rows, footer }: { label: string; rows: { name: string; did: string; delivered: number; promised: number; data?: { bullets?: Bullet[] }; why?: string }[]; footer?: React.ReactNode }) {
+export function QueueDelivered({ label, rows, footer, flat }: { /** Inside a Widget: no rule above, no second box around the rows. */ flat?: boolean; label: string; rows: { name: string; did: string; delivered: number; promised: number; data?: { bullets?: Bullet[] }; why?: string }[]; footer?: React.ReactNode }) {
   const promised = rows.reduce((s, r) => s + r.promised, 0)
   const delivered = rows.reduce((s, r) => s + r.delivered, 0)
   const delta = delivered - promised
@@ -115,7 +118,7 @@ export function QueueDelivered({ label, rows, footer }: { label: string; rows: {
   // Most delivered first, as on Claire's page.
   const sorted = [...rows].sort((a, b) => b.delivered - a.delivered)
   return (
-    <section className="border-t border-slate-200 px-10 pt-10 pb-10">
+    <section className={flat ? "px-10 pt-8 pb-6" : "border-t border-slate-200 px-10 pt-10 pb-10"}>
       <div className="text-xs font-medium tracking-wider text-slate-500 uppercase">{label}</div>
       <div className="mt-2 flex flex-wrap items-baseline gap-x-6 gap-y-1">
         {!mvp && (
@@ -134,9 +137,9 @@ export function QueueDelivered({ label, rows, footer }: { label: string; rows: {
         )}
       </div>
       <BarKey />
-      <div className="mt-3 overflow-hidden rounded-xl border border-slate-200 bg-white">
+      <div className={flat ? "-mx-6 mt-5 border-t border-slate-100" : "mt-3 overflow-hidden rounded-xl border border-slate-200 bg-white"}>
         {sorted.map((r) => (
-          <BarRow key={r.name} {...r} scale={scale} />
+          <BarRow key={r.name} {...r} scale={scale} compact={flat} />
         ))}
       </div>
       {footer && <div className="mt-4">{footer}</div>}

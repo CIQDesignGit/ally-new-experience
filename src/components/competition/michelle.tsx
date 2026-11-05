@@ -185,7 +185,7 @@ export function CompetitionTracker() {
   const n = requestStep(c)
   const live = c.stage === "live"
   return (
-    <section className="mx-10 mt-4 rounded-xl border border-slate-200 px-5 py-4 max-sm:mx-4">
+    <section className="mx-10 mt-4 rounded-xl border border-slate-200 bg-white px-5 py-4 max-sm:mx-4">
       <div className="flex items-start justify-between gap-6 max-md:flex-col">
         <div className="min-w-0">
           <div className="text-[13px] text-slate-500">
