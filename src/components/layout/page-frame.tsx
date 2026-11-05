@@ -13,6 +13,19 @@ export function Widget({ children, className }: { children: React.ReactNode; cla
   return <section className={cn("overflow-clip bg-white sm:rounded-2xl sm:shadow-xs sm:ring-1 sm:ring-slate-200", className)}>{children}</section>
 }
 
+/**
+ * The title of a group of cards that sits on the page background, outside any Widget.
+ * Flush with the card edges; titles inside a Widget keep the Widget's own inset.
+ */
+export function SectionTitle({ children, aside, className }: { children: React.ReactNode; aside?: React.ReactNode; className?: string }) {
+  return (
+    <div className={cn("flex items-baseline gap-2 px-4 sm:px-0", className)}>
+      <h2 className="text-base font-semibold text-slate-950">{children}</h2>
+      {aside && <span className="text-sm text-slate-500">{aside}</span>}
+    </div>
+  )
+}
+
 /** The vertical rhythm between widgets. */
 export function WidgetStack({ children, className }: { children: React.ReactNode; className?: string }) {
   return <div className={cn("flex flex-col gap-6", className)}>{children}</div>

@@ -1,6 +1,7 @@
 "use client"
 
 import { ArrowRight } from "lucide-react"
+import { SectionTitle } from "@/components/layout/page-frame"
 import { useNudge } from "../nudge-context"
 import { cn } from "@/lib/utils"
 import { fmtBiz, fmtValue } from "../data"
@@ -91,8 +92,8 @@ export function GrowCards({ onOpen }: { onOpen: (v: GrowView) => void }) {
   if (retailer === "walmart" || retailer === "target") return null
   return (
     <section className="pt-4">
-      <div className="px-10 font-mono text-xs tracking-wide text-slate-500 uppercase">Grow beyond plan{retailer === "all" ? " · Amazon" : ""}</div>
-      <div className="mt-4 grid gap-4 lg:grid-cols-3">
+      <SectionTitle aside={retailer === "all" ? "Amazon" : undefined}>Grow beyond plan</SectionTitle>
+      <div className="mt-3 grid gap-4 lg:grid-cols-3">
         <GrowCard
           label="Market"
           headline={<>{seg.name} is growing {seg.growth}%; you hold {seg.share}%</>}
