@@ -1,5 +1,6 @@
 "use client"
 
+import { ArrowRight } from "lucide-react"
 import { useNudge } from "../nudge-context"
 import { cn } from "@/lib/utils"
 import { fmtBiz, fmtValue } from "../data"
@@ -12,10 +13,67 @@ import { MarketMap } from "./market-map"
 
 export type GrowView = "market" | "competition" | "event"
 
-const CARD = "flex flex-col rounded-2xl bg-white p-6 text-left shadow-xs ring-1 ring-slate-200 transition-shadow hover:shadow-sm hover:ring-brand-300 focus-visible:ring-2 focus-visible:ring-brand-300 outline-none"
+const READINESS: Record<Readiness, string> = { ready: "Ready", partial: "Partial", risk: "Not set" }
 
 export function ReadinessDot({ state }: { state: Readiness }) {
-  return <span className={cn("inline-block size-2.5 rounded-full", state === "ready" ? "bg-success-500" : state === "partial" ? "bg-warning-500" : "bg-error-500")} />
+  return <span className={cn("inline-block size-2.5 shrink-0 rounded-full", state === "ready" ? "bg-success-500" : state === "partial" ? "bg-warning-500" : "bg-error-500")} />
+}
+
+/**
+ * Every card has the same anatomy so the three read as peers: label, one-sentence
+ * headline, evidence, two supporting points, then what it's worth and the move.
+ */
+function GrowCard({ label, headline, evidence, points, value, onOpen, action }: {
+  label: React.ReactNode
+  headline: React.ReactNode
+  evidence: React.ReactNode
+  points: React.ReactNode[]
+  value: React.ReactNode
+  action: string
+  onOpen: () => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      className="group flex flex-col rounded-2xl bg-white p-6 text-left shadow-xs ring-1 ring-slate-200 outline-none transition-shadow hover:shadow-sm hover:ring-brand-300 focus-visible:ring-2 focus-visible:ring-brand-300"
+    >
+      <div className="text-xs font-medium text-slate-500">{label}</div>
+      {/* Two lines reserved so the evidence panels start level across cards. */}
+      <div className="mt-1.5 line-clamp-2 min-h-14 text-lg leading-7 font-semibold text-balance text-slate-950">{headline}</div>
+      <div className="mt-4 rounded-xl bg-slate-25 ring-1 ring-slate-100">{evidence}</div>
+      <Points className="mt-4" items={points} />
+      <div className="mt-auto pt-5">
+        <div className="border-t border-slate-100 pt-4">{value}</div>
+        <div className="mt-3 flex items-center justify-between gap-3 text-[15px] font-semibold text-brand-700">
+          <span>{action}</span>
+          <ArrowRight className="size-4 shrink-0 transition-transform group-hover:translate-x-0.5" />
+        </div>
+      </div>
+    </button>
+  )
+}
+
+function Value({ amount, caption, bad }: { amount: string; caption: string; bad?: boolean }) {
+  return (
+    <div className="flex items-baseline gap-2">
+      <span className={cn("font-mono text-2xl font-semibold tracking-tight", bad ? "text-error-600" : "text-slate-950")}>{amount}</span>
+      <span className="text-sm text-slate-500">{caption}</span>
+    </div>
+  )
+}
+
+function Tiles({ children }: { children: React.ReactNode }) {
+  return <div className="grid auto-cols-fr grid-flow-col divide-x divide-slate-100">{children}</div>
+}
+
+function Tile({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="min-w-0 px-2.5 py-3">
+      <div className="truncate text-[11px] text-slate-500">{label}</div>
+      <div className="mt-1 flex items-center gap-1.5 text-[13px] font-semibold whitespace-nowrap text-slate-950">{children}</div>
+    </div>
+  )
 }
 
 /**
@@ -35,77 +93,61 @@ export function GrowCards({ onOpen }: { onOpen: (v: GrowView) => void }) {
     <section className="pt-4">
       <div className="px-10 font-mono text-xs tracking-wide text-slate-500 uppercase">Grow beyond plan{retailer === "all" ? " · Amazon" : ""}</div>
       <div className="mt-4 grid gap-4 lg:grid-cols-3">
-        <button type="button" onClick={() => onOpen("market")} className={CARD}>
-          <div className="text-xs font-medium text-slate-500">Market</div>
-          <div className="mt-2 rounded-lg bg-slate-25 px-2 py-1">
-            <MarketMap compact selected={seg.id} />
-          </div>
-          <Points
-            className="mt-3"
-            items={[
-              <>
-                {seg.name} <Num>+{seg.growth}%</Num>, fastest-growing
-              </>,
-              <>
-                Your share <Num>{seg.share}%</Num>
-              </>,
-            ]}
-          />
-          <span className="mt-auto pt-4 text-[15px] font-semibold text-brand-700">Win share in {seg.name.toLowerCase()} →</span>
-          <span className="mt-0.5 text-xs text-slate-500">
-            About <span className="font-mono">+{fmtValue(annual(offered(seg.plays, mvp)))}</span> a year
-          </span>
-        </button>
+        <GrowCard
+          label="Market"
+          headline={<>{seg.name} is growing {seg.growth}%; you hold {seg.share}%</>}
+          evidence={
+            <div className="px-2 py-1.5">
+              <MarketMap compact selected={seg.id} />
+            </div>
+          }
+          points={seg.points.slice(0, 2)}
+          value={<Value amount={`+${fmtValue(annual(offered(seg.plays, mvp)))}`} caption="a year, projected" />}
+          action={`Win share in ${seg.name.toLowerCase()}`}
+          onOpen={() => onOpen("market")}
+        />
 
-        <button type="button" onClick={() => onOpen("competition")} className={CARD}>
-          <div className="text-xs font-medium text-slate-500">Competition</div>
-          <div className="mt-3 text-lg leading-snug font-semibold text-slate-950">{comp.headline}</div>
-          <div className="mt-3 grid grid-cols-3 gap-2 rounded-lg bg-slate-25 px-3 py-2.5 text-center">
-            {comp.stats.map((s) => (
-              <div key={s.label}>
-                <div className={cn("font-mono text-sm font-semibold", s.bad ? "text-error-600" : "text-slate-950")}>{s.value}</div>
-                <div className="mt-0.5 text-[11px] text-slate-500">{s.label}</div>
-              </div>
-            ))}
-          </div>
-          <Points className="mt-3" items={comp.moves} />
-          <span className="mt-auto pt-4 text-[15px] font-semibold text-brand-700">Respond to {comp.name}&apos;s price cut →</span>
-          <span className="mt-0.5 text-xs text-slate-500">
-            <span className="font-mono text-error-600">−{fmtValue(comp.atRisk)}</span> at risk this quarter
-          </span>
-        </button>
+        <GrowCard
+          label="Competition"
+          headline={comp.headline}
+          evidence={
+            <Tiles>
+              {comp.stats.map((s) => (
+                <Tile key={s.label} label={s.label}>
+                  <span className={cn("font-mono", s.bad && "text-error-600")}>{s.value}</span>
+                </Tile>
+              ))}
+            </Tiles>
+          }
+          points={comp.moves.slice(0, 2)}
+          value={<Value amount={`−${fmtValue(comp.atRisk)}`} caption="at risk this quarter" bad />}
+          action={`Respond to ${comp.name}`}
+          onOpen={() => onOpen("competition")}
+        />
 
-        <button type="button" onClick={() => onOpen("event")} className={CARD}>
-          <div className="text-xs font-medium text-slate-500">Event readiness</div>
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-lg font-semibold text-slate-950">{ev.name}</span>
-            <span className="text-sm text-slate-500">
-              {ev.date} · {ev.weeks} weeks
-            </span>
-          </div>
-          <div className="mt-3 grid grid-cols-4 gap-2 rounded-lg bg-slate-25 px-3 py-2.5 text-center">
-            {ev.levers.map((l) => (
-              <div key={l.name} className="flex flex-col items-center gap-1.5">
-                <ReadinessDot state={l.state} />
-                <div className="text-[11px] text-slate-500">{l.name}</div>
-              </div>
-            ))}
-          </div>
-          <Points
-            className="mt-3"
-            items={[
-              <>
-                Last year <Num bad>−{fmtValue(ev.lastYear.lost)}</Num>
-              </>,
-              ...ev.lastYear.points.slice(0, 2),
-              <>This year: {ev.levers.filter((l) => l.state === "risk").map((l) => l.name.toLowerCase()).join(" and ")} not set</>,
-            ]}
-          />
-          <span className="mt-auto pt-4 text-[15px] font-semibold text-brand-700">Get ready for {ev.name} →</span>
-          <span className="mt-0.5 text-xs text-slate-500">
-            <span className="font-mono">{fmtBiz(ev.atStake)}</span> at stake
-          </span>
-        </button>
+        <GrowCard
+          label={<>Event readiness · {ev.date}</>}
+          headline={<>{ev.name} is {ev.weeks} weeks away</>}
+          evidence={
+            <Tiles>
+              {ev.levers.map((l) => (
+                <Tile key={l.name} label={l.name}>
+                  <ReadinessDot state={l.state} />
+                  {READINESS[l.state]}
+                </Tile>
+              ))}
+            </Tiles>
+          }
+          points={[
+            <>
+              Last year <Num bad>−{fmtValue(ev.lastYear.lost)}</Num>
+            </>,
+            ev.lastYear.points[0],
+          ]}
+          value={<Value amount={fmtBiz(ev.atStake)} caption="at stake" />}
+          action={`Get ready for ${ev.name}`}
+          onOpen={() => onOpen("event")}
+        />
       </div>
     </section>
   )

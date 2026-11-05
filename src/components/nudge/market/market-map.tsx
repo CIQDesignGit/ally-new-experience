@@ -78,6 +78,11 @@ export function MarketMap({ selected, onSelect, compact = false }: { selected?: 
               <title>{`${s.name}: $${s.size}M, ${s.growth > 0 ? "+" : ""}${s.growth}% growth, your share ${s.share}%`}</title>
               <circle cx={x(s.growth)} cy={y(s.share)} r={r(s.size)} fill={fill(s.change)} fillOpacity={active ? 0.9 : 0.55} stroke="white" strokeWidth={2} />
               {active && <circle cx={x(s.growth)} cy={y(s.share)} r={r(s.size) + 4} fill="none" stroke="var(--color-slate-900)" strokeWidth={1.5} />}
+              {compact && active && (
+                <text x={x(s.growth) + r(s.size) + 4} y={y(s.share) - r(s.size) - 8} textAnchor="end" className="fill-slate-950 text-[10px] font-semibold">
+                  {s.name}
+                </text>
+              )}
               {!compact && (
                 <text x={x(s.growth)} y={y(s.share) - r(s.size) - 6} textAnchor="middle" className={cn("text-[12px]", active ? "fill-slate-950 font-semibold" : "fill-slate-700")}>
                   {s.name}
