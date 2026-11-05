@@ -49,7 +49,7 @@ function ruleSentence(r: ReviewRule) {
   return `On ${r.retailer}, ${change} to ${who}${what || "all"} SKUs: ${MODE_PLAIN[r.mode].charAt(0).toLowerCase()}${MODE_PLAIN[r.mode].slice(1)}.`
 }
 
-const CARD = "overflow-hidden rounded-xl border border-slate-200 bg-white"
+const CARD = "overflow-hidden rounded-2xl bg-white shadow-xs ring-1 ring-slate-200"
 const TITLE_BAR = "border-b border-slate-100 bg-slate-25 px-6 py-4"
 
 /** Totals per mode across Mike's batches one approval away, under a policy. */
@@ -146,7 +146,7 @@ export function ReviewPolicy() {
           const m = draft.tiers[t]
           const Icon = MODE_ICON[m]
           return (
-            <section key={t} className="flex flex-col rounded-xl border border-slate-200 bg-white px-5 py-4">
+            <section key={t} className={cn(CARD, "flex flex-col px-5 py-4")}>
               <div className="flex items-baseline justify-between gap-3">
                 <span className="text-[15px] font-semibold text-slate-950">{TIER_INFO[t].label}</span>
                 <span className="text-xs text-slate-500">{SHARE_LABEL[t]}</span>

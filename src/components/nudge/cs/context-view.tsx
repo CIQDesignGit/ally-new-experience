@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { cn } from "@/lib/utils"
+import { Widget, WidgetStack } from "@/components/layout/page-frame"
 import { BRAND_CONTEXT, BRAND_TOTAL, CATEGORY, GROWTH, NEW_BRAND_START, PATTERNS, TYPE_COUNTS } from "./context-data"
 import type { ContextEntry, ContextType } from "./context-data"
 
@@ -16,8 +17,8 @@ export function ContextView({ editor, extra = [] }: { /** The editable rules, op
   const first = GROWTH[0]
   const last = GROWTH[GROWTH.length - 1]
   return (
-    <div className="flex flex-col gap-10">
-      <div>
+    <WidgetStack>
+      <div className="px-10 pb-2">
         <LearningNow />
         <h2 className="mt-3 text-2xl leading-tight font-bold tracking-tight text-slate-950">
           Ally knows <span className="font-mono">{BRAND_TOTAL}</span> things about Aurelle.
@@ -29,7 +30,7 @@ export function ContextView({ editor, extra = [] }: { /** The editable rules, op
 
       <BrandContext editor={editor} extra={extra} />
 
-      <section>
+      <Widget className="px-6 py-5">
         <div className="flex flex-wrap items-baseline justify-between gap-4">
           <h2 className="text-xl font-semibold tracking-tight text-slate-950">Learned across {CATEGORY.name.toLowerCase()}</h2>
           <span className="text-sm text-slate-500">
@@ -67,8 +68,8 @@ export function ContextView({ editor, extra = [] }: { /** The editable rules, op
           Seen at 3 or more brands, then tested, then proven, then signed off before it reaches every account. A brand&apos;s own rule always comes first. A new candle brand starts at about{" "}
           <span className="font-mono">{NEW_BRAND_START}%</span> first-time approval on day one, not <span className="font-mono">{first.firstPass}%</span>.
         </p>
-      </section>
-    </div>
+      </Widget>
+    </WidgetStack>
   )
 }
 
@@ -118,7 +119,7 @@ function BrandContext({ editor, extra }: { editor?: React.ReactNode; extra: Cont
   const [editing, setEditing] = useState(false)
   const rows = [...BRAND_CONTEXT, ...extra].filter((e) => type === "All" || e.type === type)
   return (
-    <section>
+    <Widget className="px-6 py-5">
       <div className="flex flex-wrap items-baseline justify-between gap-4">
         <h2 className="text-xl font-semibold tracking-tight text-slate-950">By bucket</h2>
         {editor && (
@@ -177,6 +178,6 @@ function BrandContext({ editor, extra }: { editor?: React.ReactNode; extra: Cont
         Showing {rows.length} of {type === "All" ? BRAND_TOTAL : TYPE_COUNTS[type]} · from calls, edits, the brand team and legal
       </p>
       {editing && <div className="mt-5">{editor}</div>}
-    </section>
+    </Widget>
   )
 }

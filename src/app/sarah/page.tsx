@@ -2,6 +2,7 @@
 
 import { AppDrawer } from "@/components/nudge/app-drawer"
 import { PageShell } from "@/components/layout/page-shell"
+import { PageFrame, Widget, WidgetStack } from "@/components/layout/page-frame"
 import { AskBar, ChatProvider, ChatThread } from "@/components/nudge/chat/inline-chat"
 import { SarahChat } from "@/components/nudge/chat/home-chats"
 import { ResetDemoButton } from "@/components/nudge/reset-demo-button"
@@ -18,15 +19,19 @@ export default function SarahPage() {
     <ChatProvider thread={{ where: "Today", home: "/sarah" }}>
       <SarahChat />
       <PageShell className="bg-slate-50">
-        <div className="mx-auto max-w-[1280px] overflow-clip bg-white shadow-pane-lg sm:my-6 sm:rounded-2xl sm:ring-1 sm:ring-slate-900/6">
+        <PageFrame>
           <SarahHeader />
           <SarahHero />
-          <SarahInbox />
+          <WidgetStack>
+            <Widget>
+              <SarahInbox />
+            </Widget>
+          </WidgetStack>
           <ChatThread />
-          <div className="flex justify-end px-10 pb-24 opacity-50 hover:opacity-100">
+          <div className="flex justify-end px-10 pt-4 opacity-50 hover:opacity-100">
             <ResetDemoButton />
           </div>
-        </div>
+        </PageFrame>
         <AppDrawer />
         <AskBar />
       </PageShell>

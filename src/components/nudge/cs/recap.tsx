@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Mic, Plus, X } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
+import { Widget, WidgetStack } from "@/components/layout/page-frame"
 import { useNudge } from "../nudge-context"
 import { PRIMARY, SECONDARY } from "../mike/buttons"
 import { LAST_CALL, RECAP } from "./data"
@@ -40,7 +41,8 @@ export function Recap() {
   const drop = (sec: string, i: number) => setLines((x) => ({ ...x, [sec]: x[sec].filter((_, k) => k !== i) }))
 
   return (
-    <div className="px-10 pt-2 pb-12">
+    <>
+    <div className="px-10 pt-2 pb-8">
       <div className="flex flex-wrap items-start justify-between gap-6">
         <div className="min-w-0">
           <div className="inline-flex items-center gap-1.5 text-sm text-slate-500">
@@ -69,9 +71,11 @@ export function Recap() {
           </button>
         </div>
       </div>
+    </div>
 
+    <WidgetStack>
       {adding && (
-        <div className="mt-5 flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-25 px-4 py-3">
+        <Widget className="flex items-center gap-2 px-6 py-3">
           <input
             autoFocus
             value={draft}
@@ -90,12 +94,13 @@ export function Recap() {
           <button type="button" onClick={() => setAdding(false)} className="px-2 text-[13px] font-medium text-slate-500 hover:text-slate-800">
             Cancel
           </button>
-        </div>
+        </Widget>
       )}
 
-      <div className="mt-6 flex flex-col">
+      <Widget className="px-10 pt-1 pb-6">
+      <div className="flex flex-col">
         {RECAP.map((s) => (
-          <section key={s.id} className="grid grid-cols-1 gap-3 border-t border-slate-100 py-5 md:grid-cols-[200px_minmax(0,1fr)] md:gap-6">
+          <section key={s.id} className="grid grid-cols-1 gap-3 border-t border-slate-100 py-5 first:border-t-0 md:grid-cols-[200px_minmax(0,1fr)] md:gap-6">
             <div>
               <h2 className="text-[17px] font-semibold text-slate-950">{s.title}</h2>
               <div className="mt-0.5 text-[13px] text-slate-500">Goes to {s.feeds.toLowerCase()}</div>
@@ -131,6 +136,8 @@ export function Recap() {
         ))}
       </div>
       <p className={cn(HEAD, "mt-2")}>Click any line to edit it · nothing here needs approval · Going forward lines appear in every weekly prep</p>
-    </div>
+      </Widget>
+    </WidgetStack>
+    </>
   )
 }

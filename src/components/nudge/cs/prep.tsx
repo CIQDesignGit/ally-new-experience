@@ -5,6 +5,7 @@ import Link from "next/link"
 import { CalendarDays, Check, Presentation, Sparkles } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
+import { Widget, WidgetStack } from "@/components/layout/page-frame"
 import { BUSINESS, fmtBiz } from "../data"
 import { useLive } from "../live-model"
 import { useNudge } from "../nudge-context"
@@ -25,7 +26,7 @@ const STEPS = [
 ]
 const HEAD = "text-xs font-medium tracking-wide text-slate-500 uppercase font-mono"
 const Section = ({ n, title, children }: { n: number; title: string; children: React.ReactNode }) => (
-  <section className="grid grid-cols-[32px_minmax(0,1fr)] gap-4 border-t border-slate-100 py-6">
+  <section className="grid grid-cols-[32px_minmax(0,1fr)] gap-4 border-t border-slate-100 py-6 first:border-t-0">
     <span className="font-mono text-sm text-slate-400">{n}</span>
     <div className="min-w-0">
       <h2 className="text-[17px] font-semibold text-slate-950">{title}</h2>
@@ -84,7 +85,8 @@ export function MeetingPrep() {
   const setSent = (v: boolean) => v && setCallItem("p-call", "done")
 
   return (
-    <div className="px-10 pt-2 pb-10">
+    <>
+    <div className="px-10 pt-2 pb-8">
       <div className="flex flex-wrap items-start justify-between gap-6">
         <div className="min-w-0">
           <div className="inline-flex items-center gap-1.5 text-sm text-slate-500">
@@ -124,10 +126,12 @@ export function MeetingPrep() {
           </ol>
         )}
       </div>
+    </div>
 
+    <WidgetStack>
       {sending && !sent && (
         // A send to the customer: shown first, sent on a second click.
-        <div className="mt-5 rounded-xl border border-slate-200 bg-slate-25 px-6 py-4 text-sm">
+        <Widget className="px-10 py-5 text-sm">
           <div className="text-slate-500">To {attendees.join(", ")}</div>
           <div className="mt-1 font-semibold text-slate-950">Agenda · {NEXT_MEETING.title}, {NEXT_MEETING.when}</div>
           <ol className="mt-2 list-decimal pl-5 text-slate-700">
@@ -150,10 +154,11 @@ export function MeetingPrep() {
               Cancel
             </button>
           </div>
-        </div>
+        </Widget>
       )}
 
-      <div className="mt-6">
+      <Widget className="px-10 pt-2 pb-6">
+        <div>
         <Section n={1} title={`Your asks from ${LAST_CALL.short} · ${delivered === ASKS.length ? `all ${ASKS.length}` : `${delivered} of ${ASKS.length}`} completed`}>
           <Bullets
             items={[
@@ -244,6 +249,8 @@ export function MeetingPrep() {
       <p className="text-xs text-slate-400">
         <span className={HEAD}>Sources</span> · {NEXT_MEETING.source} · {LAST_CALL.source} call {LAST_CALL.short}{" "}· live numbers from Claire&apos;s page and the queues
       </p>
-    </div>
+      </Widget>
+    </WidgetStack>
+    </>
   )
 }

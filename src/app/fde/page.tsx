@@ -5,6 +5,7 @@ import Link from "next/link"
 import { ArrowRight, Check, Inbox } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { PageShell } from "@/components/layout/page-shell"
+import { PageFrame, WidgetStack } from "@/components/layout/page-frame"
 import { Avatar, TopStrip } from "@/components/nudge/top-strip"
 import { AppDrawer } from "@/components/nudge/app-drawer"
 import { AskBar, ChatProvider, ChatThread } from "@/components/nudge/chat/inline-chat"
@@ -22,15 +23,15 @@ export default function RequestsPage() {
     <ChatProvider thread={{ where: "Requests", home: "/fde" }}>
       <NoraChat />
       <PageShell className="bg-slate-50">
-        <div className="mx-auto max-w-[1280px] overflow-clip bg-white shadow-pane-lg sm:my-6 sm:rounded-2xl sm:ring-1 sm:ring-slate-900/6">
+        <PageFrame>
           <TopStrip person="nora" greeting="Hi Nora" />
           <Requests />
           <ChatThread />
-          {/* Demo-only, the same Reset as Michelle's: the next run starts from her asking. Room below for the Ask Ally bar. */}
-          <div className="flex justify-end px-10 pb-24 opacity-50 hover:opacity-100">
+          {/* Demo-only, the same Reset as Michelle's: the next run starts from her asking. */}
+          <div className="flex justify-end px-10 pt-4 opacity-50 hover:opacity-100">
             <ResetDemoButton />
           </div>
-        </div>
+        </PageFrame>
         <AppDrawer />
         <AskBar />
       </PageShell>
@@ -42,10 +43,10 @@ function Requests() {
   const { open, done } = useRequests()
   const [show, setShow] = useState<"open" | "done">("open")
   return (
-    <div className="flex flex-col gap-6 px-10 pt-4 pb-10">
-      <div className="flex flex-wrap items-end justify-between gap-4">
+    <>
+      <div className="flex flex-wrap items-end justify-between gap-4 px-10 pt-4 pb-8">
         <h1 className="text-[28px] leading-tight font-semibold tracking-tight text-slate-950">Requests</h1>
-        <div role="tablist" className="flex rounded-lg border border-slate-200 bg-slate-25 p-1">
+        <div role="tablist" className="flex rounded-lg border border-slate-200 bg-white p-1">
           {(["open", "done"] as const).map((t) => (
             <button
               key={t}
@@ -61,15 +62,17 @@ function Requests() {
           ))}
         </div>
       </div>
-      {show === "open" ? open.length ? open.map((r) => <RequestCard key={r.id} r={r} />) : <Empty onDone={() => setShow("done")} published={done.length} /> : <DoneList rows={done} />}
-    </div>
+      <WidgetStack>
+        {show === "open" ? open.length ? open.map((r) => <RequestCard key={r.id} r={r} />) : <Empty onDone={() => setShow("done")} published={done.length} /> : <DoneList rows={done} />}
+      </WidgetStack>
+    </>
   )
 }
 
 /** One open request: who asked and by when, the ask in their words, where it stands, and the one next step. */
 function RequestCard({ r }: { r: OpenRequest }) {
   return (
-    <article className="rounded-xl border border-slate-200 bg-white">
+    <article className="overflow-clip rounded-2xl bg-white shadow-xs ring-1 ring-slate-200">
       <div className="flex items-start justify-between gap-6 px-6 pt-5">
         <div className="min-w-0">
           <div className="flex items-center gap-2 text-[13px] text-slate-500">
@@ -122,7 +125,7 @@ function RequestCard({ r }: { r: OpenRequest }) {
 function Empty({ published, onDone }: { published: number; onDone: () => void }) {
   // Says what's empty and where the finished work is, nothing else.
   return (
-    <div className="flex flex-col items-center rounded-xl border border-dashed border-slate-200 px-6 py-14 text-center">
+    <div className="flex flex-col items-center rounded-2xl bg-white px-6 py-14 text-center shadow-xs ring-1 ring-slate-200">
       <span className="flex size-10 items-center justify-center rounded-full bg-slate-100 text-slate-500">
         <Inbox className="size-5" aria-hidden />
       </span>
@@ -139,7 +142,7 @@ const DONE_COLS = "grid grid-cols-[minmax(0,1fr)_150px_110px_70px_200px] items-c
 /** Requests that became skills, newest first: what each does, who asked, when it shipped, where it's live for the customer. */
 function DoneList({ rows }: { rows: DoneRequest[] }) {
   return (
-    <section className="rounded-xl border border-slate-200">
+    <section className="overflow-clip rounded-2xl bg-white shadow-xs ring-1 ring-slate-200">
       <div className={cn(DONE_COLS, "border-b border-slate-200 px-5 py-2.5 text-xs font-medium text-slate-500")}>
         <span>Skill</span>
         <span>Asked by</span>

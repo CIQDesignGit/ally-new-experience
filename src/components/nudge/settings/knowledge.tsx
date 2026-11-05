@@ -44,7 +44,7 @@ export function Knowledge() {
   }
 
   return (
-    <div className="flex flex-col gap-6 pb-28">
+    <div className="flex flex-col gap-6">
       <section className="overflow-hidden rounded-xl border border-slate-200 bg-white">
         <div className="border-b border-slate-100 bg-slate-25 px-6 py-4">
           <div className="text-lg font-semibold text-slate-950">Add knowledge</div>

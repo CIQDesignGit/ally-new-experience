@@ -7,6 +7,7 @@ import { TopStrip, useViewer } from "@/components/nudge/top-strip"
 import { cn } from "@/lib/utils"
 import { AppDrawer } from "@/components/nudge/app-drawer"
 import { PageShell } from "@/components/layout/page-shell"
+import { PageFrame } from "@/components/layout/page-frame"
 import { ReviewPolicy } from "@/components/nudge/settings/review-policy"
 import { Knowledge } from "@/components/nudge/settings/knowledge"
 import { ContextView } from "@/components/nudge/cs/context-view"
@@ -52,11 +53,10 @@ function Settings() {
 
   return (
     <>
-    <TopStrip person={viewer} home={home} className="px-12" crumbs={[{ label: "Home", onClick: back }, { label: "Teach Ally" }]} />
-    <div className="flex flex-col gap-6 px-12 pt-4 pb-8">
-      <div className="flex flex-wrap items-end justify-between gap-4">
+    <TopStrip person={viewer} home={home} crumbs={[{ label: "Home", onClick: back }, { label: "Teach Ally" }]} />
+      <div className="flex flex-wrap items-end justify-between gap-4 px-10 pt-4 pb-8">
         <h1 className="text-[28px] font-semibold tracking-tight text-slate-950">Teach Ally</h1>
-        <div className="flex rounded-lg border border-slate-200 bg-slate-25 p-1">
+        <div className="flex rounded-lg border border-slate-200 bg-white p-1">
           {TABS.map((t) => (
             <button
               key={t.id}
@@ -85,7 +85,6 @@ function Settings() {
       ) : (
         <DataSources />
       )}
-    </div>
     </>
   )
 }
@@ -95,12 +94,12 @@ export default function SettingsPage() {
     <ChatProvider>
       <PageShell className="bg-slate-50">
         <StarterChips id="settings" chips={STARTERS} />
-        <div className="mx-auto max-w-[1080px] overflow-hidden bg-white shadow-pane-lg sm:my-6 sm:rounded-2xl sm:ring-1 sm:ring-slate-900/6">
+        <PageFrame className="max-w-[1080px]">
           <Suspense fallback={null}>
             <Settings />
           </Suspense>
           <ChatThread />
-        </div>
+        </PageFrame>
         <AppDrawer />
         <AskBar />
       </PageShell>

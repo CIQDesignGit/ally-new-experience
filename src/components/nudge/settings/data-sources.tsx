@@ -66,9 +66,9 @@ export function DataSources() {
   }
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-6">
       {(["Retailers", "Your data", "Meetings"] as const).map((group) => (
-        <section key={group} className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+        <section key={group} className="overflow-hidden rounded-2xl bg-white shadow-xs ring-1 ring-slate-200">
           <div className="border-b border-slate-100 px-6 py-3.5 text-[15px] font-semibold text-slate-950">{group}</div>
           <div className="grid grid-cols-[36px_minmax(0,1fr)_150px_112px] lg:grid-cols-[36px_minmax(0,1fr)_minmax(0,1fr)_200px_112px] items-center gap-4 px-6 pt-3 pb-1 text-xs font-medium text-slate-500">
             <span />
@@ -122,7 +122,7 @@ export function DataSources() {
           </div>
         </section>
       ))}
-      <p className="flex items-center gap-1.5 text-[13px] text-slate-500">
+      <p className="flex items-center gap-1.5 px-6 text-[13px] text-slate-500">
         <Lock className="size-3.5" /> Passwords are stored encrypted and used only to read reports. Amazon connects through Amazon&apos;s sign-in.
       </p>
     </div>

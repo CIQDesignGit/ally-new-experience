@@ -72,8 +72,8 @@ export function SarahInbox() {
 
 
   return (
-    <div className="grid grid-cols-1 border-t border-slate-300 lg:grid-cols-[400px_minmax(0,1fr)]">
-      <div className="border-b border-slate-300 bg-white lg:border-r lg:border-b-0">
+    <div className="grid grid-cols-1 lg:grid-cols-[400px_minmax(0,1fr)]">
+      <div className="border-b border-slate-200 bg-white lg:border-r lg:border-b-0">
         <InboxFilters filter={filter} onFilter={setFilter} />
         {show("approval") && ordered.map((i) => {
           const done = w.approved(i.id)
@@ -95,7 +95,7 @@ export function SarahInbox() {
           <InboxRow key={i.id} id={i.id} active={sel === i.id} onSelect={setSel} dot={DOT.autopilot} done title={i.line} meta={i.ask ? `From the ${LAST_CALL.short} call` : i.source} right={w.undone(i.id) ? <span className="text-slate-500">{i.undo === "Undo" ? "Undone" : "Recalled"}</span> : <span className="text-slate-500">Done</span>} />
         ))}
       </div>
-      <DetailCard>
+      <DetailCard flat>
         <div className="px-10 py-8">
           {sel === "recap" ? <RecapPane /> : sel === "mood" ? <SentimentPane /> : selected ? <ItemPane item={selected} /> : null}
         </div>
