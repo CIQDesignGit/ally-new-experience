@@ -118,7 +118,7 @@ function ClaireWaterfall() {
             <ClaireChat />
             <ChatThread />
             {/* Demo-only control, kept out of the product chrome. */}
-            <div className="flex justify-end gap-6 px-10 pt-6">
+            <div className="flex justify-end gap-6 px-4 pt-6 sm:px-0">
               <DemoControls />
               <ResetDemoButton />
             </div>

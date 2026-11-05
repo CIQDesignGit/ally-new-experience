@@ -33,7 +33,7 @@ export function BusinessHero({ topLineOnly = false, crumbs }: { topLineOnly?: bo
       <TopStrip
         person="claire"
         home="/claire-waterfall"
-        className="px-10"
+        className="px-4 sm:px-0"
         greeting={crumbs ? undefined : "Hi Claire"}
         crumbs={crumbs}
         period
@@ -46,6 +46,7 @@ export function BusinessHero({ topLineOnly = false, crumbs }: { topLineOnly?: bo
       />
     {!topLineOnly && (
       <PageHeader
+        className="px-4 sm:px-0"
         eyebrow={
           <>
             <Fig>{fmtBiz(b.pace)}</Fig> forecast vs <Fig>{fmtBiz(b.plan)}</Fig> plan
