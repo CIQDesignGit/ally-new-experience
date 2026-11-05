@@ -4,6 +4,7 @@ import { useState } from "react"
 import { ChevronRight, Plus, X } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
+import { Widget, WidgetBody, WidgetHeader, WIDGET_INSET } from "@/components/layout/page-frame"
 import { PRIMARY, SECONDARY } from "../mike/buttons"
 import { useNudge } from "../nudge-context"
 import { useHarness } from "../../competition/harness"
@@ -86,22 +87,21 @@ export function RunList({
   }
 
   return (
-    <section className="@container overflow-hidden rounded-2xl bg-white shadow-xs ring-1 ring-slate-200">
-      <div className="flex items-center justify-between gap-4 border-b border-slate-100 px-6 py-3.5">
+    <Widget className="@container">
+      <WidgetHeader className="flex items-center justify-between gap-4 py-3.5">
         <span className="text-[15px] font-semibold text-slate-950">
           {title} <span className="ml-1 font-mono text-[13px] font-medium text-slate-400 tabular-nums">{shown.length}</span>
         </span>
-        {/* Borrow harness: customers don't make new alerts or briefs in the product (an engineer builds them); the joint plan is CommerceIQ's own list. */}
         {!composing && (planned || !borrow) && (
           <button type="button" onClick={() => setComposing(true)} className={cn(SECONDARY, "h-9 gap-1 px-3")}>
             <Plus className="size-4" /> New
           </button>
         )}
-      </div>
+      </WidgetHeader>
 
+      <WidgetBody pad={false} className="py-0">
       {composing && (
-        // Say it the way you'd say it to a person; Ally fills in the rest, and you check it.
-        <div className="border-b border-slate-100 bg-slate-25 px-6 py-4">
+        <div className={cn("border-b border-slate-100 bg-slate-25 py-4", WIDGET_INSET)}>
           <div className="flex items-center gap-3">
             <input
               autoFocus
@@ -125,7 +125,7 @@ export function RunList({
         </div>
       )}
 
-      <div className={cn(GRID, "px-6 pt-3 pb-1 text-xs font-medium text-slate-500")}>
+      <div className={cn(GRID, WIDGET_INSET, "pt-3 pb-1 text-xs font-medium text-slate-500")}>
         <span />
         <span>{whatLabel ?? (kind === "skill" ? "Skill" : "What")}</span>
         <span>Runs</span>
@@ -133,7 +133,7 @@ export function RunList({
         <span>{lastLabel}</span>
         <span className="text-right">Status</span>
       </div>
-      <div className="px-6 pb-2">
+      <div className={cn(WIDGET_INSET, "pb-2")}>
         {shown.map((i) => {
           const isOpen = open === i.id
           const off = paused(i.id)
@@ -177,7 +177,8 @@ export function RunList({
           )
         })}
       </div>
-    </section>
+      </WidgetBody>
+    </Widget>
   )
 }
 

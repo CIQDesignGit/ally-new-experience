@@ -3,7 +3,7 @@
 import Link from "next/link"
 import { ArrowRight } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { WIDGET_INSET } from "@/components/layout/page-frame"
+import { Widget, WidgetBody, WidgetHeader, WidgetStack, WIDGET_INSET } from "@/components/layout/page-frame"
 import { Fig } from "@/components/layout/page-header"
 import { useNudge } from "../nudge-context"
 import { useMvp } from "../mvp"
@@ -70,42 +70,48 @@ export function PlanTable({ customer }: { /** Read by the customer: "you asked",
   }
   const changes = planChanged ? ASKS.filter((a) => a.answeredBy === "a-plan") : []
   return (
-    <div className="flex flex-col gap-8">
+    <WidgetStack className="gap-8">
       {changes.length > 0 && (
-        <section className={cn("rounded-2xl bg-white py-5 shadow-xs ring-1 ring-slate-200", WIDGET_INSET)}>
-          <h2 className="text-base font-semibold text-slate-950">
-            {changes.length} {changes.length === 1 ? "change" : "changes"} from our {LAST_CALL.short} call
-          </h2>
-          <ul className="mt-3 flex flex-col">
-            {changes.map((a) => (
-              <li key={a.id} className="flex items-baseline justify-between gap-4 border-t border-slate-100 py-2.5 text-sm first:border-t-0">
-                <span className="font-medium text-slate-950">{a.title}</span>
-                <span className="shrink-0 text-slate-500">{customer && a.who === ACCOUNT.contact ? "You asked" : `${a.who.split(" ")[0]} asked`}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
+        <Widget>
+          <WidgetHeader>
+            <h2 className="text-base font-semibold text-slate-950">
+              {changes.length} {changes.length === 1 ? "change" : "changes"} from our {LAST_CALL.short} call
+            </h2>
+          </WidgetHeader>
+          <WidgetBody className="py-0">
+            <ul className="flex flex-col">
+              {changes.map((a) => (
+                <li key={a.id} className="flex items-baseline justify-between gap-4 border-t border-slate-100 py-2.5 text-sm first:border-t-0">
+                  <span className="font-medium text-slate-950">{a.title}</span>
+                  <span className="shrink-0 text-slate-500">{customer && a.who === ACCOUNT.contact ? "You asked" : `${a.who.split(" ")[0]} asked`}</span>
+                </li>
+              ))}
+            </ul>
+          </WidgetBody>
+        </Widget>
       )}
       {groups.map((g) => (
-        <section key={g.title} className="@container overflow-hidden rounded-2xl bg-white shadow-xs ring-1 ring-slate-200">
-          <div className={cn("flex items-baseline gap-2 pt-5 pb-3", WIDGET_INSET)}>
+        <Widget key={g.title} className="@container">
+          <WidgetHeader className="flex items-baseline gap-2">
             <h2 className="text-lg font-semibold text-slate-950">{g.title}</h2>
             <span className="text-sm text-slate-400 tabular-nums">{g.items.length}</span>
-          </div>
-          <div className={cn("hidden gap-4 border-y border-slate-100 bg-slate-25 py-2 text-xs font-medium text-slate-500 @3xl:grid", WIDGET_INSET, COLS)}>
-            <span>Deliverable</span>
-            <span>When</span>
-            <span>Review</span>
-            <span>Last sent or next</span>
-          </div>
-          <div className={cn("pb-1", WIDGET_INSET)}>
-            {g.items.map((i) => (
-              <PlanRow key={i.id} item={i} href={openFor(i.id)} />
-            ))}
-          </div>
-        </section>
+          </WidgetHeader>
+          <WidgetBody pad={false} className="py-0">
+            <div className={cn("hidden gap-4 border-y border-slate-100 bg-slate-25 py-2 text-xs font-medium text-slate-500 @3xl:grid", WIDGET_INSET, COLS)}>
+              <span>Deliverable</span>
+              <span>When</span>
+              <span>Review</span>
+              <span>Last sent or next</span>
+            </div>
+            <div className={cn("pb-1", WIDGET_INSET)}>
+              {g.items.map((i) => (
+                <PlanRow key={i.id} item={i} href={openFor(i.id)} />
+              ))}
+            </div>
+          </WidgetBody>
+        </Widget>
       ))}
-    </div>
+    </WidgetStack>
   )
 }
 

@@ -1,15 +1,15 @@
 "use client"
 
-import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react"
+import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useRef, useState } from "react"
 import { motion } from "framer-motion"
 import { QUOTE_EVENT } from "./select-to-ask"
 import { useNudge } from "../nudge-context"
 import { UploadDialog } from "./upload-dialog"
-import { CornerDownRight, Mail, Paperclip, Plus, Send, Sparkles, X } from "lucide-react"
+import { CornerDownRight, Ellipsis, Mail, Paperclip, Plus, Send, Sparkles, X } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { PAGE_MAX } from "@/components/layout/page-frame"
-import { FadeAbove, MoreBelow } from "./more-below"
+import { MoreBelow } from "./more-below"
 
 /**
  * Inline chat: one Ask Ally bar at the bottom, chips that follow what's on
@@ -155,11 +155,187 @@ function NoMatch() {
       <p>I can&apos;t answer that here yet. Try one of these:</p>
       <div className="flex flex-wrap gap-2">
         {starters.map((c) => (
-          <button key={c.q} type="button" onClick={() => ask(c)} className="rounded-full bg-white px-3 py-1.5 text-[13px] text-slate-700 ring-1 ring-slate-200 hover:bg-slate-50">
+          <button key={c.q} type="button" onClick={() => ask(c)} className={chipButtonClass(c)}>
             {c.q}
           </button>
         ))}
       </div>
+    </div>
+  )
+}
+
+function chipButtonClass(c: Chip, compact?: boolean) {
+  if (compact) {
+    return cn(
+      "inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-lg border px-2.5 py-1 text-left text-xs leading-snug font-medium text-slate-700 transition-colors",
+      c.task
+        ? "border-brand-200 bg-brand-50 text-brand-800 hover:border-brand-300"
+        : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50",
+    )
+  }
+  return cn(
+    "inline-flex max-w-full items-center gap-1.5 rounded-xl border px-3.5 py-2 text-left text-[13px] leading-snug font-medium text-slate-700 transition-colors",
+    c.task
+      ? "border-brand-200 bg-brand-50 text-brand-800 hover:border-brand-300 hover:bg-brand-25"
+      : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50",
+  )
+}
+
+function ChipButton({ c, onPick, compact }: { c: Chip; onPick: (c: Chip) => void; compact?: boolean }) {
+  return (
+    <button type="button" onClick={() => onPick(c)} className={chipButtonClass(c, compact)} title={c.q}>
+      {c.task && (
+        <>
+          <Plus className="size-3 shrink-0" />
+          <span className="font-semibold">New:</span>
+        </>
+      )}
+      {!compact && <span className="line-clamp-2">{c.q}</span>}
+      {compact && c.q}
+    </button>
+  )
+}
+
+/** Starters — `compact` keeps one line on the dock with a ⋯ menu for overflow. */
+function SuggestionRow({
+  chips,
+  onPick,
+  className,
+  compact,
+}: {
+  chips: Chip[]
+  onPick: (c: Chip) => void
+  className?: string
+  compact?: boolean
+}) {
+  const rootRef = useRef<HTMLDivElement>(null)
+  const [moreOpen, setMoreOpen] = useState(false)
+
+  useEffect(() => {
+    if (!moreOpen) return
+    const onDown = (e: MouseEvent) => {
+      if (rootRef.current && !rootRef.current.contains(e.target as Node)) setMoreOpen(false)
+    }
+    document.addEventListener("mousedown", onDown)
+    return () => document.removeEventListener("mousedown", onDown)
+  }, [moreOpen])
+
+  if (!chips.length) return null
+
+  if (!compact) {
+    return (
+      <div className={cn("flex w-full max-w-[760px] flex-wrap justify-center gap-2", className)}>
+        {chips.map((c) => (
+          <ChipButton key={c.q} c={c} onPick={onPick} />
+        ))}
+      </div>
+    )
+  }
+
+  return <CompactSuggestionRow chips={chips} onPick={onPick} className={className} rootRef={rootRef} moreOpen={moreOpen} setMoreOpen={setMoreOpen} />
+}
+
+const CHIP_GAP_PX = 6
+const MORE_BTN_PX = 28
+
+/** One visible row; overflow chips sit behind ⋯ (width measured on mount/resize). */
+function CompactSuggestionRow({
+  chips,
+  onPick,
+  className,
+  rootRef,
+  moreOpen,
+  setMoreOpen,
+}: {
+  chips: Chip[]
+  onPick: (c: Chip) => void
+  className?: string
+  rootRef: React.RefObject<HTMLDivElement | null>
+  moreOpen: boolean
+  setMoreOpen: (v: boolean | ((o: boolean) => boolean)) => void
+}) {
+  const measureRef = useRef<HTMLDivElement>(null)
+  const [visibleCount, setVisibleCount] = useState(chips.length)
+
+  const remeasure = useCallback(() => {
+    const row = rootRef.current
+    const measure = measureRef.current
+    if (!row || !measure) return
+    const maxW = row.clientWidth
+    const chipEls = [...measure.querySelectorAll<HTMLElement>("[data-suggest-chip]")]
+    if (!chipEls.length) return
+    let used = 0
+    let count = 0
+    for (let i = 0; i < chipEls.length; i++) {
+      const w = chipEls[i].offsetWidth
+      const gap = count > 0 ? CHIP_GAP_PX : 0
+      const hiddenAfter = chipEls.length - (i + 1)
+      const reserve = hiddenAfter > 0 ? CHIP_GAP_PX + MORE_BTN_PX : 0
+      if (used + gap + w + reserve > maxW + 1) break
+      used += gap + w
+      count = i + 1
+    }
+    setVisibleCount(count > 0 ? count : 1)
+  }, [chips, rootRef])
+
+  useLayoutEffect(() => {
+    remeasure()
+    const row = rootRef.current
+    if (!row) return
+    const ro = new ResizeObserver(remeasure)
+    ro.observe(row)
+    return () => ro.disconnect()
+  }, [remeasure, rootRef])
+
+  const inline = chips.slice(0, visibleCount)
+  const inMenu = chips.slice(visibleCount)
+  const showMore = inMenu.length > 0
+
+  const moreBtnClass =
+    "inline-flex size-7 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition-colors hover:border-slate-300 hover:bg-slate-50"
+
+  return (
+    <div ref={rootRef} className={cn("relative w-full max-w-[760px]", className)}>
+      <div ref={measureRef} aria-hidden className="pointer-events-none absolute flex gap-1.5 opacity-0">
+        {chips.map((c) => (
+          <span key={c.q} data-suggest-chip className="inline-flex">
+            <ChipButton c={c} onPick={onPick} compact />
+          </span>
+        ))}
+      </div>
+      <div className="flex flex-nowrap items-center gap-1.5">
+        {inline.map((c) => (
+          <ChipButton key={c.q} c={c} onPick={onPick} compact />
+        ))}
+        {showMore && (
+          <button
+            type="button"
+            aria-label="More suggested questions"
+            aria-expanded={moreOpen}
+            onClick={() => setMoreOpen((v) => !v)}
+            className={moreBtnClass}
+          >
+            <Ellipsis className="size-4" />
+          </button>
+        )}
+      </div>
+      {showMore && moreOpen && (
+        <div className="absolute right-0 bottom-full z-50 mb-1 flex w-max max-w-[min(20rem,calc(100vw-2rem))] flex-col gap-1 rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg">
+          {inMenu.map((c) => (
+            <button
+              key={c.q}
+              type="button"
+              onClick={() => {
+                onPick(c)
+                setMoreOpen(false)
+              }}
+              className="rounded-lg border border-transparent px-2.5 py-2 text-left text-xs leading-snug text-slate-700 hover:border-slate-100 hover:bg-slate-50"
+            >
+              {c.q}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
@@ -302,7 +478,7 @@ export function ChatThread({ className, anchor }: { className?: string; anchor?:
                       {t.followUps
                         .filter((f) => !asked.has(f.q))
                         .map((f) => (
-                          <button key={f.q} type="button" onClick={() => ask(f, anchor)} className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-left text-sm text-slate-700 transition-colors hover:border-brand-300 hover:text-brand-700">
+                          <button key={f.q} type="button" onClick={() => ask(f, anchor)} className={cn(chipButtonClass(f), "gap-2 pr-4 text-sm")}>
                             <CornerDownRight className="size-3.5 shrink-0 text-slate-400" />
                             {f.q}
                           </button>
@@ -382,8 +558,10 @@ export function AskBar({ placeholder = "What can I take off your plate?", center
     return () => document.removeEventListener("mousedown", onDown)
   }, [open])
 
-  // Follow-ups show while you're using the bar and collapse when you click anywhere else; centered, they sit under it instead.
+  // In the tray while the bar is focused; on the dock when collapsed so starters stay visible per page.
   const showChips = open && chips.length > 0 && !centered
+  const dockSuggestions = chips
+  const showDockSuggestions = !centered && dockSuggestions.length > 0 && !open
 
   const tray = open && (showChips || turns.length > 0)
   // A paste-and-attach starter fills the bar for you to send; the rest ask now.
@@ -397,22 +575,6 @@ export function AskBar({ placeholder = "What can I take off your plate?", center
     // Get out of the answer's way; the follow-ups come back when you click into the bar.
     setOpen(false)
   }
-  const chipClass = (c: Chip) =>
-    cn(
-      "rounded-full border px-3 py-1.5 text-sm transition-colors",
-      c.task ? "inline-flex items-center gap-1.5 border-brand-200 bg-brand-25 text-brand-700 hover:border-brand-400" : "border-slate-200 bg-white text-slate-700 hover:border-brand-300 hover:text-brand-700",
-    )
-  const chipLabel = (c: Chip) => (
-    <>
-      {c.task && (
-        <>
-          <Plus className="size-3.5" />
-          <span className="font-semibold">New:</span>
-        </>
-      )}
-      {c.q}
-    </>
-  )
   const upload = uploading && source.files && (
     <UploadDialog
       files={source.files}
@@ -428,15 +590,9 @@ export function AskBar({ placeholder = "What can I take off your plate?", center
     return (
       <>
         {upload}
-        <div className="flex w-full flex-col items-center">
+        <div className="flex w-full flex-col items-center gap-4">
           {panel()}
-          <div className="mt-4 flex max-w-[760px] flex-wrap justify-center gap-2">
-            {chips.slice(0, 4).map((c) => (
-              <button key={c.q} type="button" onClick={() => pick(c)} className={chipClass(c)}>
-                {chipLabel(c)}
-              </button>
-            ))}
-          </div>
+          <SuggestionRow chips={chips.slice(0, 4)} onPick={pick} />
         </div>
       </>
     )
@@ -445,16 +601,23 @@ export function AskBar({ placeholder = "What can I take off your plate?", center
     {upload}
     {/* The dock, like Claude's: content fades out above it, the box is solid, and nothing shows beside or below it.
         It spans the page card's width, so on grey-backed pages it reads as the card's own bottom. */}
-    <div ref={dockRef} className="pointer-events-none fixed inset-x-0 bottom-0 z-40 transition-[left] duration-200 ease-out md:left-[var(--sidebar-w,0px)]">
-      <div className={cn("relative mx-auto", PAGE_MAX)}>
-        <FadeAbove />
-        <div className="absolute inset-x-0 -top-8 flex justify-center">
+    <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 transition-[left] duration-200 ease-out md:left-[var(--sidebar-w,0px)]">
+      <div
+        ref={dockRef}
+        className={cn("pointer-events-auto relative mx-auto flex flex-col items-center gap-0.5 bg-white px-4 py-1.5", PAGE_MAX)}
+      >
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 bottom-full h-6 bg-gradient-to-t from-white to-transparent"
+        />
+        <div className="pointer-events-none absolute inset-x-0 -top-9 flex justify-center">
           <MoreBelow />
         </div>
-      </div>
-      <div className={cn("pointer-events-auto mx-auto flex flex-col items-center bg-white px-4 pb-2.5", PAGE_MAX)}>
-      {panel()}
-      <p className="mt-2 text-center text-xs text-slate-400">Ally is AI and can make mistakes. Please double-check responses.</p>
+        {showDockSuggestions && <SuggestionRow chips={dockSuggestions} onPick={pick} compact className="w-full" />}
+        {panel()}
+        <p className="max-w-[760px] py-0.5 text-center text-[10px] leading-none text-slate-400">
+          Ally is AI and can make mistakes. Please double-check responses.
+        </p>
       </div>
     </div>
     </>
@@ -466,20 +629,18 @@ export function AskBar({ placeholder = "What can I take off your plate?", center
       <div
         ref={rootRef}
         className={cn(
-          "pointer-events-auto flex w-full max-w-[760px] flex-col border border-slate-300 bg-white shadow-[0_8px_24px_-6px_rgba(15,23,42,0.18),0_2px_6px_rgba(15,23,42,0.06)] transition-colors focus-within:border-brand-400",
-          tray ? "rounded-[22px]" : "rounded-full",
+          "pointer-events-auto flex w-full max-w-[760px] flex-col overflow-hidden border border-slate-200 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.05),0_12px_32px_-12px_rgba(15,23,42,0.14)] transition-[border-color,box-shadow] focus-within:border-brand-500/35 focus-within:shadow-[0_0_0_3px_rgba(135,91,247,0.12),0_12px_32px_-12px_rgba(15,23,42,0.14)]",
+          "rounded-2xl",
         )}
       >
         {tray && (
-          <div className="flex flex-wrap items-center gap-2 border-b border-slate-100 px-3 pt-3 pb-2.5">
+          <div className="flex flex-wrap items-center gap-1.5 border-b border-slate-100 bg-slate-50/60 px-2 py-1.5">
             {showChips &&
               chips.map((c) => (
-                <button key={c.q} type="button" onClick={() => pick(c)} className={chipClass(c)}>
-                  {chipLabel(c)}
-                </button>
+                <ChipButton key={c.q} c={c} onPick={pick} />
               ))}
             {turns.length > 0 && (
-              <button type="button" onClick={clear} className="ml-auto shrink-0 rounded-full px-2.5 py-1.5 text-xs text-slate-500 hover:bg-slate-50 hover:text-slate-800">
+              <button type="button" onClick={clear} className="ml-auto shrink-0 rounded-lg px-2.5 py-1.5 text-xs font-medium text-slate-500 hover:bg-white hover:text-slate-800">
                 Clear conversation
               </button>
             )}
@@ -512,7 +673,7 @@ export function AskBar({ placeholder = "What can I take off your plate?", center
             } else setOpen(true)
             setText("")
           }}
-          className="flex flex-wrap items-center gap-2 py-1.5 pr-1.5 pl-4"
+          className="flex min-h-11 flex-wrap items-center gap-2 px-2.5 py-1.5"
         >
           {quote && (
             <span className="flex w-full items-center gap-2 pt-1.5 pb-1">
@@ -531,7 +692,9 @@ export function AskBar({ placeholder = "What can I take off your plate?", center
               ))}
             </span>
           )}
-          <Sparkles className="size-4 shrink-0 text-ally-600" />
+          <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-ally-50 text-ally-600">
+            <Sparkles className="size-3.5" />
+          </span>
           <input
             ref={inputRef}
             value={text}
@@ -539,15 +702,26 @@ export function AskBar({ placeholder = "What can I take off your plate?", center
             onFocus={() => setOpen(true)}
             onClick={() => setOpen(true)}
             placeholder={quote ? "Ask about this" : placeholder}
-            className="flex-1 bg-transparent text-sm text-slate-950 outline-none placeholder:text-slate-400"
+            className="min-w-0 flex-1 bg-transparent text-sm text-slate-950 outline-none placeholder:text-slate-400"
           />
           {!!source.files?.length && (
-            <button type="button" onClick={() => setUploading(true)} aria-label="Attach files" title="Attach files" className="flex size-8 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 hover:text-slate-900">
+            <button
+              type="button"
+              onClick={() => setUploading(true)}
+              aria-label="Attach files"
+              title="Attach files"
+              className="flex size-8 shrink-0 items-center justify-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900"
+            >
               <Paperclip className="size-4" />
             </button>
           )}
-          <button type="submit" aria-label="Ask Ally" className="flex size-8 items-center justify-center rounded-full bg-brand-500 text-white transition-colors hover:bg-brand-600">
-            <Send className="size-4" />
+          <button
+            type="submit"
+            aria-label="Ask Ally"
+            className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-brand-500 text-white transition-colors hover:bg-brand-600 disabled:pointer-events-none disabled:opacity-40"
+            disabled={!text.trim() && !attach.length && !quote}
+          >
+            <Send className="size-3.5" />
           </button>
         </form>
       </div>

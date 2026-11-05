@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { ArrowRight } from "lucide-react"
+import { WidgetStack } from "@/components/layout/page-frame"
 import { TopStrip } from "../top-strip"
 import { useNudge } from "../nudge-context"
 import { RunList } from "../runs/run-list"
@@ -114,11 +115,11 @@ export function JointPlan() {
     ) : null
   }
   return (
-    <div className="flex flex-col gap-5">
+    <WidgetStack>
       {plan.map((g) => (
         <RunList key={g.title} title={g.title} items={g.items} kind="scheduled" placeholder="Send a Target content report every Friday" whatLabel="Deliverable" lastLabel="Last sent or next" builtInLabel="" author={SARAH.name} planned extra={extra} doesLabel={PLAN_DOES} doesHeader="Review" />
       ))}
       <RunList title="Added from calls" items={added} kind="scheduled" placeholder="Send a Target content report every Friday" whatLabel="Deliverable" lastLabel="Last sent or next" builtInLabel="" author={SARAH.name} planned extra={extra} doesLabel={PLAN_DOES} doesHeader="Review" />
-    </div>
+    </WidgetStack>
   )
 }

@@ -42,7 +42,7 @@ function GrowCard({ label, headline, evidence, points, value, onOpen, action }: 
       <div className="text-xs font-medium text-slate-500">{label}</div>
       {/* Two lines reserved so the evidence panels start level across cards. */}
       <div className="mt-1.5 line-clamp-2 min-h-14 text-lg leading-7 font-semibold text-balance text-slate-950">{headline}</div>
-      <div className="mt-4 rounded-xl bg-slate-25 ring-1 ring-slate-100">{evidence}</div>
+      <div className="mt-4 overflow-hidden rounded-xl bg-slate-25 ring-1 ring-slate-200">{evidence}</div>
       <Points className="mt-4" items={points} />
       <div className="mt-auto pt-5">
         <div className="border-t border-slate-100 pt-4">{value}</div>
@@ -65,7 +65,11 @@ function Value({ amount, caption, bad }: { amount: string; caption: string; bad?
 }
 
 function Tiles({ children }: { children: React.ReactNode }) {
-  return <div className="grid auto-cols-fr grid-flow-col divide-x divide-slate-100">{children}</div>
+  return <div className="grid auto-cols-fr grid-flow-col divide-x divide-slate-200">{children}</div>
+}
+
+function TilesGrid({ children }: { children: React.ReactNode }) {
+  return <div className="grid grid-cols-2 divide-x divide-y divide-slate-200">{children}</div>
 }
 
 function Tile({ label, children }: { label: string; children: React.ReactNode }) {
@@ -130,14 +134,14 @@ export function GrowCards({ onOpen }: { onOpen: (v: GrowView) => void }) {
           label={<>Event readiness · {ev.date}</>}
           headline={<>{ev.name} is {ev.weeks} weeks away</>}
           evidence={
-            <Tiles>
+            <TilesGrid>
               {ev.levers.map((l) => (
                 <Tile key={l.name} label={l.name}>
                   <ReadinessDot state={l.state} />
                   {READINESS[l.state]}
                 </Tile>
               ))}
-            </Tiles>
+            </TilesGrid>
           }
           points={[
             <>

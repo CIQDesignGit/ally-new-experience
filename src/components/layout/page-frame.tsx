@@ -39,6 +39,21 @@ export function Widget({ children, className }: { children: React.ReactNode; cla
   return <section className={cn("overflow-clip bg-white sm:rounded-2xl sm:shadow-xs sm:ring-1 sm:ring-slate-200", className)}>{children}</section>
 }
 
+/** Title band at the top of a Widget; separated from body by a hairline. */
+export function WidgetHeader({ children, className }: { children: React.ReactNode; className?: string }) {
+  return <div className={cn("border-b border-slate-200 py-4", WIDGET_INSET, className)}>{children}</div>
+}
+
+/** Main content of a Widget. `pad={false}` for full-bleed tables inside the card. */
+export function WidgetBody({ children, className, pad = true }: { children: React.ReactNode; className?: string; pad?: boolean }) {
+  return <div className={cn(pad && WIDGET_INSET, pad && "py-4", className)}>{children}</div>
+}
+
+/** Optional actions or meta below the body. */
+export function WidgetFooter({ children, className }: { children: React.ReactNode; className?: string }) {
+  return <div className={cn("border-t border-slate-200 py-3", WIDGET_INSET, className)}>{children}</div>
+}
+
 /**
  * The title of a group of cards that sits on the page background, outside any Widget.
  * Flush with the card edges; titles inside a Widget keep the Widget's own inset.
