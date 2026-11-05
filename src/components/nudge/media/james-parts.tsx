@@ -1,6 +1,6 @@
 "use client"
 
-import { Fig, PageHeader, Signal } from "@/components/layout/page-header"
+import { Fig, FIG_EYEBROW, PageHeader, Signal } from "@/components/layout/page-header"
 import Link from "next/link"
 import { ArrowRight, Check } from "lucide-react"
 import { toast } from "sonner"
@@ -102,18 +102,24 @@ export function MediaProgress({ celebrate, stage, onStage }: { celebrate: { valu
     const oneApproval = waiting.filter((b) => b.tier === "approval")
     return (
       <PageHeader
+        title={`${waiting.length} plays waiting on you`}
         eyebrow={
+          gap > 0 ? (
+            <>
+              <Fig className={FIG_EYEBROW}>{fmtBiz(gap)}</Fig> gap to plan
+            </>
+          ) : undefined
+        }
+        signals={
           <>
-            {gap > 0 && (
-              <>
-                <Fig>{fmtBiz(gap)}</Fig> gap to plan ·{" "}
-              </>
+            {oneApproval.length > 0 && (
+              <Signal tone="brand">
+                {oneApproval.length} {oneApproval.length === 1 ? "is" : "are"} one approval away
+              </Signal>
             )}
-            <Fig>{waiting.length}</Fig> plays waiting on you
+            {!approved["media-build"] && <Signal tone="warning">14 keywords from content are waiting for budget</Signal>}
           </>
         }
-        title={oneApproval.length ? `${oneApproval.length} ${oneApproval.length === 1 ? "is" : "are"} one approval away.` : "Everything one approval away is approved."}
-        signals={!approved["media-build"] && <Signal tone="warning">14 keywords from content are waiting for budget</Signal>}
         aside={
           celebrate && (
             <div className="relative text-sm font-semibold text-success-700">
@@ -132,7 +138,7 @@ export function MediaProgress({ celebrate, stage, onStage }: { celebrate: { valu
       <PageHeader
         eyebrow={
           <>
-            <Fig>{money(total)}</Fig> of media opportunity is {acted > 0 ? "still " : ""}open this quarter
+            <Fig className={FIG_EYEBROW}>{money(total)}</Fig> of media opportunity is {acted > 0 ? "still " : ""}open this quarter
           </>
         }
         title={left > 0.005 ? `${money(left)} ${anyDone ? "still" : "is"} one approval from live.` : "Everything one approval away is approved."}

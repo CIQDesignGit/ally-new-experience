@@ -1,6 +1,6 @@
 "use client"
 
-import { Fig, PageHeader, Signal } from "@/components/layout/page-header"
+import { Fig, FIG_EYEBROW, PageHeader, Signal } from "@/components/layout/page-header"
 import { PublishConfetti } from "@/components/home/publish-confetti"
 import { AS_OF, contentBatches, launchedIds } from "../data"
 import { daysUntil } from "../model"
@@ -64,19 +64,27 @@ export function MikeProgress({ celebrate, stage, onStage }: { celebrate: Celebra
     const expiring = dated.filter((b) => b.deadline === soonest)
     return (
       <PageHeader
+        title={`${waiting.reduce((s, b) => s + (b.inputSkus ?? b.skus), 0)} SKUs waiting on you`}
         eyebrow={
           <>
-            <Fig>{waiting.length}</Fig> batches · <Fig>{waiting.reduce((s, b) => s + (b.inputSkus ?? b.skus), 0)}</Fig> SKUs waiting on you
+            <Fig className={FIG_EYEBROW}>{waiting.length}</Fig> batches in your queue
           </>
         }
-        title={oneApproval.length ? `${oneApproval.length} ${oneApproval.length === 1 ? "is" : "are"} one approval from live.` : "Everything one approval away is live."}
         signals={
-          expiry &&
-          expiring.length > 0 && (
-            <Signal tone="warning">
-              {expiry.all ? "All of them" : `${expiring.length} ${expiring.length === 1 ? "batch" : "batches"}`} {expiry.all || expiring.length > 1 ? "expire" : "expires"} in {expiry.days} days
-            </Signal>
-          )
+          <>
+            {oneApproval.length > 0 && (
+              <Signal tone="brand">
+                {oneApproval.length} {oneApproval.length === 1 ? "is" : "are"} one approval from live
+              </Signal>
+            )}
+            {expiry &&
+              expiring.length > 0 && (
+                <Signal tone="warning">
+                  {expiry.all ? "All of them" : `${expiring.length} ${expiring.length === 1 ? "batch" : "batches"}`}{" "}
+                  {expiry.all || expiring.length > 1 ? "expire" : "expires"} in {expiry.days} days
+                </Signal>
+              )}
+          </>
         }
         aside={
           celebrate && (
@@ -98,7 +106,7 @@ export function MikeProgress({ celebrate, stage, onStage }: { celebrate: Celebra
       <PageHeader
         eyebrow={
           <>
-            <Fig>{fmt(open)}</Fig> of content opportunity is {actedValue > 0 ? "still " : ""}open this quarter
+            <Fig className={FIG_EYEBROW}>{fmt(open)}</Fig> of content opportunity is {actedValue > 0 ? "still " : ""}open this quarter
           </>
         }
         title={left > 0.005 ? `${fmt(left)} ${doneValue > 0 ? "still" : "is"} one approval from live.` : "Everything one approval away is live."}

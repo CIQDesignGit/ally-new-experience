@@ -1,6 +1,6 @@
 "use client"
 
-import { Fig, PageHeader, Signal } from "@/components/layout/page-header"
+import { Fig, FIG_EYEBROW, PageHeader, Signal } from "@/components/layout/page-header"
 import { TopStrip } from "@/components/nudge/top-strip"
 import { META, QUESTIONS, TO_WIN, brandRank, isFixed, isLeader, score, sov, visibility, type Done } from "./data"
 
@@ -38,7 +38,8 @@ export function Hero({ done }: { done: Done }) {
       <PageHeader
         eyebrow={
           <>
-            AI rank <Fig>#{r.rank}</Fig> of {r.of} brands · Coverage <Fig>{v.in}</Fig> of {v.of} answers
+            AI rank <Fig className={FIG_EYEBROW}>#{r.rank}</Fig> of {r.of} brands · Coverage <Fig className={FIG_EYEBROW}>{v.in}</Fig> of {v.of}{" "}
+            answers
           </>
         }
         title={

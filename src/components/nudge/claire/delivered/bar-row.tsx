@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { ArrowRight, ChevronRight } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { WidgetBody, WidgetFooter, WidgetHeader } from "@/components/layout/page-frame"
 import { fmtValue } from "../../data"
 import type { Bullet, ContentDelivered } from "../../delivered-content-data"
 import { useMvp } from "../../mvp"
@@ -119,31 +120,56 @@ export function QueueDelivered({ label, rows, footer, flat }: { /** Inside a Wid
   const scale = Math.max(...rows.map((r) => Math.max(r.delivered, mvp ? 0 : r.promised))) * 1.15
   // Most delivered first, as on Claire's page.
   const sorted = [...rows].sort((a, b) => b.delivered - a.delivered)
-  return (
-    <section className={flat ? "px-10 pt-8 pb-6" : "border-t border-slate-200 px-10 pt-10 pb-10"}>
-      <div className="text-xs font-medium tracking-wider text-slate-500 uppercase">{label}</div>
-      <div className="mt-2 flex flex-wrap items-baseline gap-x-6 gap-y-1">
-        {!mvp && (
-          <span className="text-2xl font-semibold tracking-tight text-slate-500">
-            Projected <span className="font-mono">{fmtValue(promised)}</span>
-          </span>
-        )}
-        <span className="text-2xl font-semibold tracking-tight text-slate-950">
-          Delivered <span className="text-success-700 tabular-nums">{fmtValue(delivered)}</span>
+
+  const totals = (
+    <div className="mt-2 flex flex-wrap items-baseline gap-x-6 gap-y-1">
+      {!mvp && (
+        <span className="text-2xl font-semibold tracking-tight text-slate-500">
+          Projected <span className="font-mono">{fmtValue(promised)}</span>
         </span>
-        {!mvp && (
-          <span className={cn("font-mono text-sm font-semibold tabular-nums", delta >= 0 ? "text-success-700" : "text-error-600")}>
-            {delta >= 0 ? "+" : "−"}
-            {fmtValue(Math.abs(delta))}
-          </span>
-        )}
-      </div>
+      )}
+      <span className="text-2xl font-semibold tracking-tight text-slate-950">
+        Delivered <span className="text-success-700 tabular-nums">{fmtValue(delivered)}</span>
+      </span>
+      {!mvp && (
+        <span className={cn("font-mono text-sm font-semibold tabular-nums", delta >= 0 ? "text-success-700" : "text-error-600")}>
+          {delta >= 0 ? "+" : "−"}
+          {fmtValue(Math.abs(delta))}
+        </span>
+      )}
+    </div>
+  )
+
+  const rowsBlock = (
+    <>
+      {sorted.map((r) => (
+        <BarRow key={r.name} {...r} scale={scale} compact={flat} edge={flat} />
+      ))}
+    </>
+  )
+
+  if (flat) {
+    return (
+      <>
+        <WidgetHeader>
+          <div className="text-xs font-medium tracking-wider text-slate-500 uppercase">{label}</div>
+          {totals}
+          <BarKey />
+        </WidgetHeader>
+        <WidgetBody pad={false} className="py-0">
+          <div className="border-t border-slate-100">{rowsBlock}</div>
+        </WidgetBody>
+        {footer ? <WidgetFooter>{footer}</WidgetFooter> : null}
+      </>
+    )
+  }
+
+  return (
+    <section className="border-t border-slate-200 px-10 pt-10 pb-10">
+      <div className="text-xs font-medium tracking-wider text-slate-500 uppercase">{label}</div>
+      {totals}
       <BarKey />
-      <div className={flat ? "-mx-6 mt-5 border-t border-slate-100" : "mt-3 overflow-hidden rounded-xl border border-slate-200 bg-white"}>
-        {sorted.map((r) => (
-          <BarRow key={r.name} {...r} scale={scale} compact={flat} />
-        ))}
-      </div>
+      <div className="mt-3 overflow-hidden rounded-xl border border-slate-200 bg-white">{rowsBlock}</div>
       {footer && <div className="mt-4">{footer}</div>}
     </section>
   )

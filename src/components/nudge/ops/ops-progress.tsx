@@ -1,6 +1,6 @@
 "use client"
 
-import { Fig, PageHeader, Signal } from "@/components/layout/page-header"
+import { Fig, FIG_EYEBROW, PageHeader, Signal } from "@/components/layout/page-header"
 import { PublishConfetti } from "@/components/home/publish-confetti"
 import { BUSINESS, OPS_DAYS_SAVED, fmtBiz, opsBatches } from "../data"
 import { useLive } from "../live-model"
@@ -59,18 +59,24 @@ export function OpsProgress({ celebrate, stage, onStage }: { celebrate: Celebrat
     const losing = oneApproval.filter((b) => b.urgent)
     return (
       <PageHeader
+        title={`${waiting.length} fixes waiting on you`}
         eyebrow={
+          gap > 0 ? (
+            <>
+              <Fig className={FIG_EYEBROW}>{fmtBiz(gap)}</Fig> gap to plan
+            </>
+          ) : undefined
+        }
+        signals={
           <>
-            {gap > 0 && (
-              <>
-                <Fig>{fmtBiz(gap)}</Fig> gap to plan ·{" "}
-              </>
+            {oneApproval.length > 0 && (
+              <Signal tone="brand">
+                {oneApproval.length} {oneApproval.length === 1 ? "is" : "are"} one approval away
+              </Signal>
             )}
-            <Fig>{waiting.length}</Fig> fixes waiting on you
+            {losing.length > 0 && <Signal tone="warning">{losing.length} on SKUs losing sales now</Signal>}
           </>
         }
-        title={oneApproval.length ? `${oneApproval.length} ${oneApproval.length === 1 ? "is" : "are"} one approval away.` : "Everything one approval away is live."}
-        signals={losing.length > 0 && <Signal tone="warning">{losing.length} on SKUs losing sales now</Signal>}
         aside={
           celebrate && (
             <div className="relative text-sm font-semibold text-success-700">
@@ -91,7 +97,7 @@ export function OpsProgress({ celebrate, stage, onStage }: { celebrate: Celebrat
       <PageHeader
         eyebrow={
           <>
-            <Fig>{fmt(open)}</Fig> of ops opportunity is {actedValue > 0 ? "still " : ""}open this quarter
+            <Fig className={FIG_EYEBROW}>{fmt(open)}</Fig> of ops opportunity is {actedValue > 0 ? "still " : ""}open this quarter
           </>
         }
         title={left > 0.005 ? `${fmt(left)} ${doneValue > 0 ? "still" : "is"} one approval from live.` : "Everything one approval away is live."}

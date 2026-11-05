@@ -1,8 +1,11 @@
 import { cn } from "@/lib/utils"
-import { PAGE_EDGE, PAGE_HEAD_SPACE } from "./page-frame"
+import { PAGE_EDGE } from "./page-frame"
 
-/** The one page-title style. Every page's h1 uses it, so headlines read the same size everywhere. */
-export const PAGE_TITLE = "text-3xl leading-tight font-semibold tracking-tight text-balance text-slate-950 tabular-nums"
+/** Shared page headline — one size on every persona and plan page. */
+export const PAGE_TITLE = "text-2xl leading-tight font-semibold tracking-tight text-balance text-slate-950 tabular-nums"
+
+/** Muted numbers in the context line under the headline. */
+export const FIG_EYEBROW = "font-medium text-slate-700"
 
 const TONE = {
   neutral: { dot: "bg-slate-400", text: "text-slate-700" },
@@ -22,24 +25,35 @@ export function Signal({ tone = "neutral", children }: { tone?: keyof typeof TON
 }
 
 /**
- * The page header under the top strip, in three levels: the context line (small,
- * muted), the headline (the one big thing), then status signals. `aside` sits
- * at the right, bottom-aligned with the headline: an action, a chart, a celebration.
+ * Page header under the top strip: headline first, context under it, then signals.
+ * `aside` sits at the right, aligned with the headline block.
  */
-export function PageHeader({ eyebrow, title, signals, aside, className }: { eyebrow?: React.ReactNode; title: React.ReactNode; signals?: React.ReactNode; aside?: React.ReactNode; className?: string }) {
+export function PageHeader({
+  eyebrow,
+  title,
+  signals,
+  aside,
+  className,
+}: {
+  eyebrow?: React.ReactNode
+  title: React.ReactNode
+  signals?: React.ReactNode
+  aside?: React.ReactNode
+  className?: string
+}) {
   return (
-    <div className={cn("flex items-start justify-between gap-8", PAGE_EDGE, "pt-6", PAGE_HEAD_SPACE, className)}>
+    <div className={cn("flex items-start justify-between gap-6", PAGE_EDGE, "pt-4 mb-6", className)}>
       <div className="min-w-0">
-        {eyebrow && <div className="mb-1.5 text-[15px] text-slate-500 tabular-nums">{eyebrow}</div>}
         <h1 className={PAGE_TITLE}>{title}</h1>
-        {signals && <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-sm">{signals}</div>}
+        {eyebrow && <p className="mt-1 text-sm leading-snug tabular-nums text-slate-500">{eyebrow}</p>}
+        {signals && <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">{signals}</div>}
       </div>
       {aside && <div className="shrink-0 self-end">{aside}</div>}
     </div>
   )
 }
 
-/** A figure inside the context line: same font, darker, so it reads before the words around it. */
-export function Fig({ children }: { children: React.ReactNode }) {
-  return <span className="font-semibold text-slate-950">{children}</span>
+/** A figure inside the context line: darker than surrounding copy so numbers scan first. */
+export function Fig({ children, className }: { children: React.ReactNode; className?: string }) {
+  return <span className={cn("font-semibold text-slate-950", className)}>{children}</span>
 }

@@ -1,6 +1,6 @@
 "use client"
 
-import { Fig, PageHeader, Signal } from "@/components/layout/page-header"
+import { Fig, FIG_EYEBROW, PageHeader, Signal } from "@/components/layout/page-header"
 import { BUSINESS, fmtBiz } from "../data"
 import { useLive } from "../live-model"
 import { useNudge } from "../nudge-context"
@@ -47,13 +47,14 @@ export function BusinessHero({ topLineOnly = false, crumbs }: { topLineOnly?: bo
       <PageHeader
         eyebrow={
           <>
-            <Fig>{fmtBiz(b.pace)}</Fig> forecast vs <Fig>{fmtBiz(b.plan)}</Fig> plan
+            <Fig className={FIG_EYEBROW}>{fmtBiz(b.pace)}</Fig> forecast vs{" "}
+            <Fig className={FIG_EYEBROW}>{fmtBiz(b.plan)}</Fig> plan
             {/* Where the open work sits, by lever; the MVP shows no pipeline dollars. */}
             {!live.mvp &&
               live.open.byArea.map((a) => (
                 <span key={a.agent}>
                   <span className="text-slate-300"> · </span>
-                  <Fig>{a.value}</Fig> in {a.agent}
+                  <Fig className={FIG_EYEBROW}>{a.value}</Fig> in {a.agent}
                 </span>
               ))}
           </>

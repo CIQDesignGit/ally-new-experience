@@ -1,6 +1,6 @@
 "use client"
 
-import { Fig, PageHeader, Signal } from "@/components/layout/page-header"
+import { Fig, FIG_EYEBROW, PageHeader, Signal } from "@/components/layout/page-header"
 import { VsPlan } from "./vs-plan"
 import { Fragment, useEffect, useRef, useState } from "react"
 import { ChevronRight } from "lucide-react"
@@ -42,7 +42,8 @@ export function BusinessHero() {
     <PageHeader
       eyebrow={
         <>
-          {retailer === "all" ? "Your business" : who} is projected to land at <Fig>{fmtBiz(pace)}</Fig> {PERIOD_WORDS[l.period]}
+          {retailer === "all" ? "Your business" : who} is projected to land at <Fig className={FIG_EYEBROW}>{fmtBiz(pace)}</Fig>{" "}
+          {PERIOD_WORDS[l.period]}
         </>
       }
       title={
