@@ -6,7 +6,7 @@ import { AppDrawer } from "@/components/nudge/app-drawer"
 import { AskBar, ChatProvider, ChatThread, useChatSource } from "@/components/nudge/chat/inline-chat"
 import { LESSON_CHIP } from "@/components/nudge/ops/gap-training"
 import { PageShell } from "@/components/layout/page-shell"
-import { PageFrame, Widget, PAGE_EDGE } from "@/components/layout/page-frame"
+import { PageFrame, Widget } from "@/components/layout/page-frame"
 import { MichelleHeader } from "@/components/nudge/ops/michelle-header"
 import { BusinessHero, BusinessPane, BusinessRail } from "@/components/nudge/ops/business-view"
 import { retailerTree } from "@/components/nudge/ops/gap-retailers"
@@ -36,7 +36,7 @@ export default function GapToPlanPage() {
       <GapChat />
       <PageShell className="bg-slate-50">
         <PageFrame>
-          <MichelleHeader className={PAGE_EDGE} />
+          <MichelleHeader />
           <BusinessHero />
           <Widget>
             <div className="grid grid-cols-[340px_minmax(0,1fr)]">

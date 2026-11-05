@@ -13,8 +13,10 @@ const CHART_HEIGHT = 300
 const CHART_MIN_WIDTH = DEMO_LAYOUT_MIN_PX
 /** Fixed so every column is the same total height — otherwise items-end floats the bars to different baselines. */
 const LABEL_HEIGHT = 72
+/** Headroom above each bar so value pills are not clipped. */
+const VALUE_HEADROOM = 32
 /** Column top padding, above the chart band; the plan line is positioned against it. */
-const PAD_TOP = 32
+const PAD_TOP = 32 + VALUE_HEADROOM
 /**
  * The axis starts above zero so a small step is still visible next to a big base
  * (said on the chart): 90% of the lower of run rate and plan, rounded down.
@@ -42,9 +44,31 @@ export interface Column {
   label: string
   sub?: string
   valueLabel: string
+  /** Signed step size for this bucket (vision: same as valueLabel; MVP: shown in the legend). */
+  stepLabel?: string
+  impact?: Impact
   start: number
   end: number
   selectable: boolean
+}
+
+/** Dollar label on a bar or in the legend (MVP: open $; bar height still reflects impact). */
+function amountLabel(col: Column, mvp: boolean): string | null {
+  if (col.key === "total") return mvp ? null : col.valueLabel || null
+  if (col.key === "pace") return col.valueLabel || null
+  const step = col.stepLabel ?? (mvp ? null : col.valueLabel)
+  if (!step) return null
+  return mvp ? `${step} open` : step
+}
+
+function BarValue({ col, mvp }: { col: Column; mvp: boolean }) {
+  const text = amountLabel(col, mvp)
+  if (!text) return null
+  return (
+    <div className="pointer-events-none absolute bottom-full left-1/2 z-30 mb-1 -translate-x-1/2 rounded-md bg-white px-2 py-1 shadow-xs ring-1 ring-slate-200">
+      <span className="font-mono text-xs font-semibold whitespace-nowrap text-slate-950 tabular-nums">{text}</span>
+    </div>
+  )
 }
 
 /** Current run rate → + each open bucket → where Ally takes you, against the plan line. */
@@ -52,7 +76,7 @@ export function buildColumns(stages: WaterfallStage[], pace: number, min: number
   let acc = pace
   const steps = stages.map((s) => {
     const sub = s.caption ?? s.effort
-    const col = { key: s.id, label: s.label, sub, valueLabel: `+${fmtStep(s.value)}`, start: acc, end: acc + s.value, selectable: true }
+    const col = { key: s.id, label: s.label, sub, valueLabel: `+${fmtStep(s.value)}`, stepLabel: `+${fmtStep(s.value)}`, start: acc, end: acc + s.value, selectable: true }
     acc += s.value
     return col
   })
@@ -74,7 +98,17 @@ export function buildImpactColumns(stages: WaterfallStage[], pace: number, plan:
   let acc = pace
   const steps = stages.map((s) => {
     const level = impact(s.value)
-    const col = { key: s.id, label: s.label, sub: s.caption ?? s.effort, valueLabel: level, start: acc, end: acc + unit * IMPACT_HEIGHT[level], selectable: true }
+    const col = {
+      key: s.id,
+      label: s.label,
+      sub: s.caption ?? s.effort,
+      valueLabel: level,
+      stepLabel: `+${fmtStep(s.value)}`,
+      impact: level,
+      start: acc,
+      end: acc + unit * IMPACT_HEIGHT[level],
+      selectable: true,
+    }
     acc = col.end
     return col
   })
@@ -109,7 +143,7 @@ export function WaterfallChart({ selectedId, onSelect }: WaterfallChartProps) {
   const landed = columns[columns.length - 1].end - plan
 
   return (
-    <div className="-mx-1 overflow-x-auto px-1">
+    <div className="-mx-1 overflow-x-auto overflow-y-visible px-1 pt-1">
       <div className="relative flex items-end gap-3" style={{ minWidth: CHART_MIN_WIDTH }}>
         <div className="pointer-events-none absolute inset-x-0 z-10 border-t-2 border-dashed border-slate-900/60" style={{ top: planTop }}>
           <span className="absolute -top-6 right-0 rounded bg-white px-1.5 font-mono text-xs font-semibold text-slate-950">Plan {fmtBiz(plan)}</span>
@@ -143,16 +177,8 @@ export function WaterfallChart({ selectedId, onSelect }: WaterfallChartProps) {
                   </div>
                 )}
                 <div className="absolute inset-x-3 rounded-t-md" style={{ top: `${topPct}%`, height: `${heightPct}%`, minHeight: 6 }}>
-                  <div
-                    className={cn(
-                      "size-full rounded-t-md transition-all",
-                      // Every bar at full color: each color has one job, and the column highlight shows what's selected.
-                      BAR[col.key],
-                    )}
-                  />
-                  <div className={cn("absolute -top-6 left-1/2 -translate-x-1/2 text-sm font-bold whitespace-nowrap text-slate-950", col.key === "pace" || !mvp ? "font-mono tabular-nums" : "")}>
-                    {col.valueLabel}
-                  </div>
+                  <BarValue col={col} mvp={mvp} />
+                  <div className={cn("size-full rounded-t-md transition-all", BAR[col.key])} />
                 </div>
               </div>
               <div className="mt-3 flex flex-col items-center gap-0.5 px-1 text-center" style={{ height: LABEL_HEIGHT }}>
@@ -164,6 +190,9 @@ export function WaterfallChart({ selectedId, onSelect }: WaterfallChartProps) {
                 >
                   {col.label}
                 </span>
+                {amountLabel(col, mvp) && col.key !== "pace" && col.key !== "total" && (
+                  <span className="font-mono text-xs font-semibold text-slate-950 tabular-nums">{col.stepLabel ?? col.valueLabel}</span>
+                )}
                 {col.sub && <span className="text-xs text-slate-500">{col.sub}</span>}
                 {col.key === "total" && !mvp && (
                   <span className={cn("text-[11px] font-medium", landed >= 0 ? "text-success-700" : "text-error-600")}>
@@ -180,9 +209,32 @@ export function WaterfallChart({ selectedId, onSelect }: WaterfallChartProps) {
         {/* The baseline the bars stand on; drawn over the columns so the selected column's tint doesn't hide it. */}
         <div className="pointer-events-none absolute inset-x-0 z-10 border-t border-slate-300" style={{ top: PAD_TOP + CHART_HEIGHT }} />
       </div>
-      <div className="mt-1 flex items-center gap-1 text-[11px] text-slate-500">
+      <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 border-t border-slate-100 pt-4">
+        {columns
+          .filter((c) => c.key !== "total" && BAR[c.key])
+          .map((c) => (
+            <span key={c.key} className="inline-flex items-center gap-2 text-xs text-slate-700">
+              <span className={cn("size-2.5 shrink-0 rounded-sm", BAR[c.key])} aria-hidden />
+              <span className="font-medium text-slate-950">{c.label}</span>
+              {amountLabel(c, mvp) && (
+                <span className="font-mono tabular-nums text-slate-600">{c.key === "pace" ? c.valueLabel : c.stepLabel ?? c.valueLabel}</span>
+              )}
+            </span>
+          ))}
+      </div>
+      <div className="mt-3 flex items-center gap-1 text-[11px] text-slate-500">
         Axis starts at {fmtBiz(min)}
-        {mvp && <InfoIcon title="Impact" align="left" points={["High: a quarter of the gap or more", "Medium: a tenth or more", "Low: less", "Bars show the level, not dollars; they stop below the plan line"]} />}
+        {mvp && (
+          <InfoIcon
+            title="Impact"
+            align="left"
+            points={[
+              "Bar height ranks impact on the gap to plan, not dollars",
+              "Labels show open opportunity in dollars",
+              "High / Medium / Low appear in the detail table below",
+            ]}
+          />
+        )}
       </div>
     </div>
   )

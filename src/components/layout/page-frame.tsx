@@ -4,19 +4,35 @@ import { cn } from "@/lib/utils"
 export const PAGE_MAX = "max-w-[1240px]"
 
 /**
+ * Horizontal edge for the top strip, page headline, and section titles on the gray
+ * background: flush with white cards on sm+, inset on small screens.
+ */
+export const PAGE_EDGE = "px-4 sm:px-0"
+
+/** @deprecated Same as PAGE_EDGE */
+export const PAGE_CHROME = PAGE_EDGE
+
+/**
+ * Vertical rhythm: space below the page headline before the next block (card, widget stack, table).
+ */
+export const PAGE_HEAD_SPACE = "mb-8"
+
+/**
+ * Inside white widgets (queue header, detail pane): tighter on small screens when
+ * the card goes edge to edge.
+ */
+export const WIDGET_INSET = "px-4 sm:px-10"
+
+/** @deprecated Use PAGE_CHROME or WIDGET_INSET */
+export const PAGE_INSET = WIDGET_INSET
+
+/**
  * The page layout: the top strip and headline sit on the page background,
  * and each block of work is its own Widget below them. Room at the bottom for the floating Ask Ally bar.
  */
 export function PageFrame({ children, className }: { children: React.ReactNode; className?: string }) {
   return <div className={cn("mx-auto flex flex-col pb-24 sm:px-6", PAGE_MAX, className)}>{children}</div>
 }
-
-/**
- * The side padding for anything on the page background (top strip, page header,
- * section titles, tabs): flush with the Widget edges on wide screens, inset when
- * Widgets go edge to edge on mobile.
- */
-export const PAGE_EDGE = "px-4 sm:px-0"
 
 /** One block of work on the page: a white card with a hairline edge. */
 export function Widget({ children, className }: { children: React.ReactNode; className?: string }) {

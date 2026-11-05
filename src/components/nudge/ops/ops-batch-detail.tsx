@@ -12,6 +12,7 @@ import { IssueVisual, hasIssueVisual } from "./issue-visuals"
 import { VENDOR_MANAGER, useNote } from "./note-bar"
 import { daysLeft, useOpsLevel } from "./ops-batch-list"
 import { cn } from "@/lib/utils"
+import { WIDGET_INSET } from "@/components/layout/page-frame"
 import { ImpactMeter, IMPACT_TONE } from "../ui/impact-meter"
 
 interface OpsBatchDetailProps {
@@ -72,7 +73,7 @@ export function OpsBatchDetail({ batch, onAction, onReviewAll }: OpsBatchDetailP
   const impactLevel = level ? level(batch) : undefined
 
   return (
-    <div className="@container flex min-w-0 flex-col px-10 py-8">
+    <div className={cn("@container flex min-w-0 flex-col py-8", WIDGET_INSET)}>
       <div className="flex flex-col gap-4 @xl:flex-row @xl:items-start @xl:justify-between @xl:gap-8">
         <div className="min-w-0">
           <div className="text-sm font-medium text-slate-500">

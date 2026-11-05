@@ -7,6 +7,7 @@ import { usePathname, useRouter } from "next/navigation"
 import { RETAILER_PAGES } from "./retailer"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
+import { PAGE_EDGE } from "@/components/layout/page-frame"
 import { PeriodSwitch, RetailerSwitch } from "./period-switch"
 import { dayLabel } from "./claire/claire-actions"
 import { useNudge } from "./nudge-context"
@@ -248,7 +249,7 @@ function Facts({ children }: { children: React.ReactNode }) {
 export function TopStrip({ person, greeting, crumbs, period, facts, controls, icons, className }: TopStripProps) {
   return (
     // Always one row: the left side never wraps; when it runs out of room, whole metrics drop from the end.
-    <header className={cn("flex h-[72px] items-center justify-between gap-6 px-10 pt-4", className)}>
+    <header className={cn("flex h-[72px] items-center justify-between gap-6 pt-4", PAGE_EDGE, className)}>
       <div className="flex min-w-0 flex-1 flex-nowrap items-center gap-x-2 overflow-hidden text-sm whitespace-nowrap text-slate-500">
         {/* No logo: the strip starts with where you are (the greeting, or the breadcrumb home). AllyLogo stays available above. */}
         {crumbs?.length ? (

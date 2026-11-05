@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils"
+import { PAGE_EDGE, PAGE_HEAD_SPACE } from "./page-frame"
 
 /** The one page-title style. Every page's h1 uses it, so headlines read the same size everywhere. */
 export const PAGE_TITLE = "text-3xl leading-tight font-semibold tracking-tight text-balance text-slate-950 tabular-nums"
@@ -27,13 +28,13 @@ export function Signal({ tone = "neutral", children }: { tone?: keyof typeof TON
  */
 export function PageHeader({ eyebrow, title, signals, aside, className }: { eyebrow?: React.ReactNode; title: React.ReactNode; signals?: React.ReactNode; aside?: React.ReactNode; className?: string }) {
   return (
-    <div className={cn("flex items-end justify-between gap-8 px-10 pt-2 pb-6", className)}>
+    <div className={cn("flex items-start justify-between gap-8", PAGE_EDGE, "pt-6", PAGE_HEAD_SPACE, className)}>
       <div className="min-w-0">
         {eyebrow && <div className="mb-1.5 text-[15px] text-slate-500 tabular-nums">{eyebrow}</div>}
         <h1 className={PAGE_TITLE}>{title}</h1>
         {signals && <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1.5 text-sm">{signals}</div>}
       </div>
-      {aside && <div className="shrink-0">{aside}</div>}
+      {aside && <div className="shrink-0 self-end">{aside}</div>}
     </div>
   )
 }

@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { ArrowRight } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { WIDGET_INSET } from "@/components/layout/page-frame"
 import { Fig } from "@/components/layout/page-header"
 import { useNudge } from "../nudge-context"
 import { useMvp } from "../mvp"
@@ -71,7 +72,7 @@ export function PlanTable({ customer }: { /** Read by the customer: "you asked",
   return (
     <div className="flex flex-col gap-8">
       {changes.length > 0 && (
-        <section className="rounded-2xl bg-white px-6 py-5 shadow-xs ring-1 ring-slate-200">
+        <section className={cn("rounded-2xl bg-white py-5 shadow-xs ring-1 ring-slate-200", WIDGET_INSET)}>
           <h2 className="text-base font-semibold text-slate-950">
             {changes.length} {changes.length === 1 ? "change" : "changes"} from our {LAST_CALL.short} call
           </h2>
@@ -87,17 +88,17 @@ export function PlanTable({ customer }: { /** Read by the customer: "you asked",
       )}
       {groups.map((g) => (
         <section key={g.title} className="@container overflow-hidden rounded-2xl bg-white shadow-xs ring-1 ring-slate-200">
-          <div className="flex items-baseline gap-2 px-6 pt-5 pb-3">
+          <div className={cn("flex items-baseline gap-2 pt-5 pb-3", WIDGET_INSET)}>
             <h2 className="text-lg font-semibold text-slate-950">{g.title}</h2>
             <span className="text-sm text-slate-400 tabular-nums">{g.items.length}</span>
           </div>
-          <div className={cn("hidden gap-4 border-y border-slate-100 bg-slate-25 px-6 py-2 text-xs font-medium text-slate-500 @3xl:grid", COLS)}>
+          <div className={cn("hidden gap-4 border-y border-slate-100 bg-slate-25 py-2 text-xs font-medium text-slate-500 @3xl:grid", WIDGET_INSET, COLS)}>
             <span>Deliverable</span>
             <span>When</span>
             <span>Review</span>
             <span>Last sent or next</span>
           </div>
-          <div className="px-6 pb-1">
+          <div className={cn("pb-1", WIDGET_INSET)}>
             {g.items.map((i) => (
               <PlanRow key={i.id} item={i} href={openFor(i.id)} />
             ))}

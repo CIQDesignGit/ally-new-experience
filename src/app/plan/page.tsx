@@ -2,7 +2,7 @@
 
 import { AppDrawer } from "@/components/nudge/app-drawer"
 import { PageShell } from "@/components/layout/page-shell"
-import { PageFrame, PAGE_EDGE } from "@/components/layout/page-frame"
+import { PageFrame } from "@/components/layout/page-frame"
 import { PageHeader } from "@/components/layout/page-header"
 import { AskBar, ChatProvider, ChatThread } from "@/components/nudge/chat/inline-chat"
 import { TopStrip, useViewer } from "@/components/nudge/top-strip"
@@ -18,9 +18,8 @@ export default function PlanPage() {
       <PageShell className="bg-slate-50">
         <PageFrame>
           {/* Header text sits flush with the card edges, like SectionTitle. */}
-          <TopStrip className={PAGE_EDGE} person={viewer} home={home} crumbs={[{ label: viewer === "sarah" ? "Today" : "Home", href: home }, { label: "Joint plan" }]} />
+          <TopStrip person={viewer} home={home} crumbs={[{ label: viewer === "sarah" ? "Today" : "Home", href: home }, { label: "Joint plan" }]} />
           <PageHeader
-            className={PAGE_EDGE}
             eyebrow={`${ACCOUNT.name} · ${ACCOUNT.tier} · Agreed with ${ACCOUNT.contact}, Jan 12`}
             title={viewer === "sarah" ? `Joint plan with ${ACCOUNT.name}` : "Your plan with CommerceIQ"}
             signals={<PlanSignals />}
