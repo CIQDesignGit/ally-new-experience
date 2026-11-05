@@ -7,7 +7,7 @@ import { useLive } from "../live-model"
 
 
 /** Michelle's top line: greeting, quarter, and where the business lands: forecast, plan and the gap (the same numbers as Claire's headline). */
-export function MichelleHeader() {
+export function MichelleHeader({ className }: { className?: string } = {}) {
   const { viewer, visiting, home } = useViewer("michelle")
   const l = useLive()
   const { plan } = BUSINESS[l.period]
@@ -16,6 +16,7 @@ export function MichelleHeader() {
     <TopStrip
       person={viewer}
       home={home}
+      className={className}
       greeting={visiting ? undefined : "Hi Michelle"}
       crumbs={visiting ? [{ label: "Home", href: home }, { label: "Michelle's queue" }] : undefined}
       period

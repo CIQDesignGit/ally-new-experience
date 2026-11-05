@@ -40,6 +40,7 @@ export function BusinessHero() {
   const who = RETAILERS.find((r) => r.id === retailer)?.label ?? "Amazon"
   return (
     <PageHeader
+      className="px-4 sm:px-0"
       eyebrow={
         <>
           {retailer === "all" ? "Your business" : who} is projected to land at <Fig>{fmtBiz(pace)}</Fig> {PERIOD_WORDS[l.period]}

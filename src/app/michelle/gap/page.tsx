@@ -36,7 +36,7 @@ export default function GapToPlanPage() {
       <GapChat />
       <PageShell className="bg-slate-50">
         <PageFrame>
-          <MichelleHeader />
+          <MichelleHeader className="px-4 sm:px-0" />
           <BusinessHero />
           <Widget>
             <div className="grid grid-cols-[340px_minmax(0,1fr)]">
