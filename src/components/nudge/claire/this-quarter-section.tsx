@@ -69,7 +69,7 @@ export function ThisQuarterSection() {
       {/* Why the delivered number keeps rising: Ally learns from the team every day. */}
       <LearningLine href="/settings?tab=context&from=claire" />
       <BarKey />
-      <div className="-mx-6 mt-5 border-t border-slate-100">
+      <div className="-mx-10 mt-5 border-t border-slate-100">
         {ORDER.map((agent) => {
           const style = DRILLDOWN[agent]
           const l = leverDelivered(d, agent)
@@ -78,12 +78,12 @@ export function ThisQuarterSection() {
           if (style && agent !== "media" && retailer === "amazon") {
             const data = d[agent]
             return (
-              <BarRow key={agent} name={AGENT_LABEL[agent]} did={data.did} delivered={data.delivered} promised={data.promised} scale={scale} data={data} open={open === agent} onToggle={() => toggle(agent)}>
-                <WorkTypeBars data={data} scale={scale} resultsHref={style.resultsHref} />
+              <BarRow key={agent} name={AGENT_LABEL[agent]} did={data.did} delivered={data.delivered} promised={data.promised} scale={scale} data={data} open={open === agent} onToggle={() => toggle(agent)} edge>
+                <WorkTypeBars data={data} scale={scale} resultsHref={style.resultsHref} edge />
               </BarRow>
             )
           }
-          return <BarRow key={agent} name={AGENT_LABEL[agent]} did={l.reason} delivered={l.delivered} promised={l.promised} scale={scale} />
+          return <BarRow key={agent} name={AGENT_LABEL[agent]} did={l.reason} delivered={l.delivered} promised={l.promised} scale={scale} edge />
         })}
       </div>
     </section>

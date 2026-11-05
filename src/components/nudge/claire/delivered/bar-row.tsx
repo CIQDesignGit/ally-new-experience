@@ -29,7 +29,8 @@ function topReason(data?: { bullets?: Bullet[] }) {
  * One agent as a bullet bar: delivered (green) against the projected
  * tick, the shortfall shaded red or the overshoot green, all on the section's scale.
  */
-export function BarRow({ name, did, delivered, promised, scale, data, why: whyText, open, onToggle, compact, children }: { /** Only when no row in the list opens. */ compact?: boolean; name: string; did: string; delivered: number; promised: number; scale: number; data?: { bullets?: Bullet[] }; why?: string; open?: boolean; onToggle?: () => void; children?: React.ReactNode }) {
+export function BarRow({ name, did, delivered, promised, scale, data, why: whyText, open, onToggle, compact, edge, nested, children }: { /** Only when no row in the list opens. */ compact?: boolean; /** A row inside an opened row: a step smaller, so it reads as part of its parent. */ nested?: boolean; /** The list runs to its Widget's edges, so rows take the Widget's px-10 inset. */ edge?: boolean; name: string; did: string; delivered: number; promised: number; scale: number; data?: { bullets?: Bullet[] }; why?: string; open?: boolean; onToggle?: () => void; children?: React.ReactNode }) {
+  const pad = edge ? "px-10" : "px-6"
   const pct = (v: number) => `${(v / scale) * 100}%`
   // The MVP shows what was delivered, measured; nothing against a projection.
   const mvp = useMvp()
@@ -40,7 +41,7 @@ export function BarRow({ name, did, delivered, promised, scale, data, why: whyTe
     <>
       {!compact && <span>{onToggle && <ChevronRight className={cn("size-4 text-slate-400 transition-transform", open && "rotate-90")} />}</span>}
       <div className="min-w-0">
-        <div className="text-[15px] font-semibold text-slate-950">{name}</div>
+        <div className={cn("text-slate-950", nested ? "text-sm font-medium" : "text-[15px] font-semibold")}>{name}</div>
         <div className="truncate text-[13px] text-slate-500">{did}</div>
       </div>
       <div className="relative h-2 overflow-hidden rounded-full bg-slate-100" aria-hidden>
@@ -78,13 +79,14 @@ export function BarRow({ name, did, delivered, promised, scale, data, why: whyTe
   return (
     <div className="border-t border-slate-100 first:border-t-0">
       {onToggle ? (
-        <div role="button" tabIndex={0} onClick={onToggle} onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onToggle()} className={cn(mvp ? BAR_GRID_MVP : BAR_GRID, "cursor-pointer px-6 py-4 hover:bg-slate-50")}>
+        <div role="button" tabIndex={0} onClick={onToggle} onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onToggle()} className={cn(mvp ? BAR_GRID_MVP : BAR_GRID, "cursor-pointer py-4 hover:bg-slate-50", pad)}>
           {row}
         </div>
       ) : (
-        <div className={cn(compact ? (mvp ? BAR_GRID_STATIC_MVP : BAR_GRID_STATIC) : mvp ? BAR_GRID_MVP : BAR_GRID, "px-6 py-4")}>{row}</div>
+        <div className={cn(compact ? (mvp ? BAR_GRID_STATIC_MVP : BAR_GRID_STATIC) : mvp ? BAR_GRID_MVP : BAR_GRID, "py-4", pad)}>{row}</div>
       )}
-      {open && <div className="border-t border-slate-100 bg-slate-25 px-6 py-5">{children}</div>}
+      {/* The breakdown runs edge to edge on a tint; its rows keep the parent's grid so names and bars line up. */}
+      {open && <div className="border-t border-slate-100 bg-slate-25 pb-5">{children}</div>}
     </div>
   )
 }
@@ -153,17 +155,19 @@ const TONE_DOT: Record<string, string> = { orange: "bg-warning-500", red: "bg-er
  * A lever opened on Claire's page: one bar per kind of work (what Mike or Michelle
  * sees on their page), then what worked and how it was measured.
  */
-export function WorkTypeBars({ data, scale, resultsHref }: { data: ContentDelivered; /** The section's scale, so a sub-row's bar is comparable to its parent's. */ scale: number; resultsHref?: string }) {
+export function WorkTypeBars({ data, scale, resultsHref, edge }: { data: ContentDelivered; /** The section's scale, so a sub-row's bar is comparable to its parent's. */ scale: number; resultsHref?: string; edge?: boolean }) {
   // The rows already say what waited; only what worked and how it was measured is new here.
   const notes = (data.bullets ?? []).filter((b) => b.tone === "green" || b.tone === "learn")
   const rows = [...data.workTypes].sort((a, b) => b.delivered - a.delivered)
   return (
     <div className="flex flex-col gap-4">
-      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+      <div className="border-b border-slate-100">
         {rows.map((w) => (
-          <BarRow key={w.id} name={w.name} did={w.did} delivered={w.delivered} promised={w.promised} scale={scale} data={w} />
+          <BarRow key={w.id} name={w.name} did={w.did} delivered={w.delivered} promised={w.promised} scale={scale} data={w} edge={edge} nested />
         ))}
       </div>
+      {/* Notes and the link start under the names: past the chevron column (20px + 16px gap). */}
+      <div className={cn("flex flex-col gap-4", edge ? "pr-10 pl-19" : "pr-6 pl-15")}>
       {notes.length > 0 && (
         <ul className="flex flex-col gap-1.5 text-sm text-slate-700">
           {notes.map((b) => (
@@ -179,6 +183,7 @@ export function WorkTypeBars({ data, scale, resultsHref }: { data: ContentDelive
           See SKU-level results and method <ArrowRight className="size-3.5" />
         </Link>
       )}
+      </div>
     </div>
   )
 }
