@@ -17,8 +17,10 @@ export default function PlanPage() {
     <ChatProvider thread={{ where: "Joint plan", home }}>
       <PageShell className="bg-slate-50">
         <PageFrame className="max-w-[1080px]">
-          <TopStrip person={viewer} home={home} crumbs={[{ label: viewer === "sarah" ? "Today" : "Home", href: home }, { label: "Joint plan" }]} />
+          {/* Header text sits flush with the card edges, like SectionTitle. */}
+          <TopStrip className="px-4 sm:px-0" person={viewer} home={home} crumbs={[{ label: viewer === "sarah" ? "Today" : "Home", href: home }, { label: "Joint plan" }]} />
           <PageHeader
+            className="px-4 sm:px-0"
             eyebrow={`${ACCOUNT.name} · ${ACCOUNT.tier} · Agreed with ${ACCOUNT.contact}, Jan 12`}
             title={viewer === "sarah" ? `Joint plan with ${ACCOUNT.name}` : "Your plan with CommerceIQ"}
             signals={<PlanSignals />}
