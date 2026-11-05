@@ -86,7 +86,7 @@ export function RunList({
   }
 
   return (
-    <section className="@container overflow-hidden rounded-xl border border-slate-200 bg-white">
+    <section className="@container overflow-hidden rounded-2xl bg-white shadow-xs ring-1 ring-slate-200">
       <div className="flex items-center justify-between gap-4 border-b border-slate-100 px-6 py-3.5">
         <span className="text-[15px] font-semibold text-slate-950">
           {title} <span className="ml-1 font-mono text-[13px] font-medium text-slate-400 tabular-nums">{shown.length}</span>

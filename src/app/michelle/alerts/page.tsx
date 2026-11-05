@@ -4,6 +4,7 @@ import { useEffect } from "react"
 import Link from "next/link"
 import { Plus } from "lucide-react"
 import { PageShell } from "@/components/layout/page-shell"
+import { PageFrame, WidgetStack } from "@/components/layout/page-frame"
 import { TopStrip } from "@/components/nudge/top-strip"
 import { AppDrawer } from "@/components/nudge/app-drawer"
 import { useNudge } from "@/components/nudge/nudge-context"
@@ -106,25 +107,25 @@ function Alerts() {
   return (
     <PageShell className="bg-slate-50">
       <StarterChips id="alerts" chips={STARTERS} />
-      <div className="mx-auto max-w-[1280px] overflow-clip bg-white shadow-pane-lg sm:my-6 sm:rounded-2xl sm:ring-1 sm:ring-slate-900/6">
+      <PageFrame>
         <TopStrip person="michelle" crumbs={[{ label: "Today", href: "/michelle" }, { label: "Scheduled" }]} />
-        <div className="flex flex-col gap-6 px-10 pt-4 pb-12">
-          {/* Everything Ally runs on its own clock. Each opens in place to edit; "New" turns a sentence into a draft. */}
-          <div className="flex items-end justify-between gap-6">
-            <h1 className="text-[28px] leading-tight font-semibold tracking-tight text-slate-950">Scheduled</h1>
-            {/* More briefs and alerts come from the library. */}
-            <div className="flex items-center gap-2">
-              <Link href="/library" className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-800 hover:bg-slate-50">
-                <Plus className="size-4" /> Add from library
-              </Link>
-              <ExportButton onExport={exportAlerts} />
-            </div>
+        {/* Everything Ally runs on its own clock. Each opens in place to edit; "New" turns a sentence into a draft. */}
+        <div className="flex items-end justify-between gap-6 px-10 pt-4 pb-8">
+          <h1 className="text-[28px] leading-tight font-semibold tracking-tight text-slate-950">Scheduled</h1>
+          {/* More briefs and alerts come from the library. */}
+          <div className="flex items-center gap-2">
+            <Link href="/library" className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-800 hover:bg-slate-50">
+              <Plus className="size-4" /> Add from library
+            </Link>
+            <ExportButton onExport={exportAlerts} />
           </div>
+        </div>
+        <WidgetStack>
           <RunList title="Briefs" items={briefs} kind="scheduled" placeholder="Send me a promo recap every Friday" />
           <RunList title="Alerts" items={alertItems} kind="scheduled" placeholder="Tell me when gift-set share of voice drops below 20%" editor={editor} />
-        </div>
+        </WidgetStack>
         <ChatThread />
-      </div>
+      </PageFrame>
       <AppDrawer />
       <AskBar />
     </PageShell>

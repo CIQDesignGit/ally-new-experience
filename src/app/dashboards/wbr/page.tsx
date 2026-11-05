@@ -4,6 +4,7 @@ import { useState, type ReactNode } from "react"
 import { Sparkles } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { PageShell } from "@/components/layout/page-shell"
+import { PageFrame } from "@/components/layout/page-frame"
 import { TopStrip, useViewer } from "@/components/nudge/top-strip"
 import { AppDrawer } from "@/components/nudge/app-drawer"
 import { AskBar, ChatProvider, ChatThread } from "@/components/nudge/chat/inline-chat"
@@ -39,12 +40,11 @@ export default function WbrDashboard() {
   return (
     <ChatProvider thread={{ where: "Weekly business review", home }}>
       <PageShell className="bg-slate-50">
-        <div className="mx-auto max-w-[1280px] overflow-clip bg-white shadow-pane-lg sm:my-6 sm:rounded-2xl sm:ring-1 sm:ring-slate-900/6">
+        <PageFrame>
           <TopStrip person={viewer} home={home} crumbs={[{ label: "Home", href: home }, { label: "My dashboards" }, { label: "Weekly business review" }]} />
           <Wbr />
           <ChatThread />
-          <div className="pb-24" />
-        </div>
+        </PageFrame>
         <AppDrawer />
         <AskBar />
       </PageShell>
@@ -55,7 +55,7 @@ export default function WbrDashboard() {
 /** One tile of the grid: a title, then its chart or table filling the rest. */
 function Tile({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <section className="flex h-[300px] flex-col rounded-xl border border-slate-200 p-5">
+    <section className="flex h-[300px] flex-col rounded-2xl bg-white p-5 shadow-xs ring-1 ring-slate-200">
       <h3 className="text-sm font-semibold text-slate-950">{title}</h3>
       <div className="mt-3 min-h-0 flex-1">{children}</div>
     </section>
@@ -145,7 +145,7 @@ function Wbr() {
 
   return (
     <>
-      <div className="flex items-end justify-between gap-6 px-10 pt-4">
+      <div className="flex items-end justify-between gap-6 px-10 pt-4 pb-6">
         <div>
           <h1 className="text-[28px] leading-tight font-semibold tracking-tight text-slate-950">Weekly business review</h1>
           <div className="mt-1 flex items-center gap-2 text-sm text-slate-500">
@@ -156,8 +156,8 @@ function Wbr() {
         <ExportButton onExport={exportWbr} />
       </div>
 
-      <div className="@container flex flex-col gap-5 px-10 pt-6 pb-10">
-        <section className="rounded-xl border border-slate-200 px-5 py-4">
+      <div className="@container flex flex-col gap-5">
+        <section className="rounded-2xl bg-white px-6 py-5 shadow-xs ring-1 ring-slate-200">
           <div className="flex items-center gap-2 text-sm font-semibold text-ally-700">
             <Sparkles className="size-4" aria-hidden /> Ally&apos;s summary
           </div>
@@ -171,7 +171,7 @@ function Wbr() {
           </ul>
         </section>
 
-        <div role="tablist" className="flex gap-6 border-b border-slate-200">
+        <div role="tablist" className="flex gap-6 px-10">
           {([1, 2] as const).map((p) => (
             <button key={p} role="tab" aria-selected={page === p} type="button" onClick={() => setPage(p)} className={cn("-mb-px border-b-2 py-2.5 text-sm font-medium", page === p ? "border-brand-500 text-brand-700" : "border-transparent text-slate-500 hover:text-slate-900")}>
               {p === 1 ? "Performance" : "Drivers and next week"}

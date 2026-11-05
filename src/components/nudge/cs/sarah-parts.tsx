@@ -157,7 +157,7 @@ function PlanTable({ customer }: { customer?: boolean }) {
   return (
     <div className="flex flex-col gap-6">
       {changes.length > 0 && (
-        <div className="rounded-xl border border-slate-200 bg-slate-25 px-6 py-4">
+        <div className="rounded-2xl bg-white px-6 py-4 shadow-xs ring-1 ring-slate-200">
           <div className={HEAD}>What changed</div>
           <ul className="mt-2 flex flex-col gap-1 text-sm text-slate-700">
             {changes.map((a) => (
@@ -169,7 +169,7 @@ function PlanTable({ customer }: { customer?: boolean }) {
         </div>
       )}
       {groups.map((g) => (
-        <section key={g.title} className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+        <section key={g.title} className="overflow-hidden rounded-2xl bg-white shadow-xs ring-1 ring-slate-200">
           <div className="border-b border-slate-100 px-6 py-3.5 text-[15px] font-semibold text-slate-950">{g.title}</div>
           <div className="grid grid-cols-[minmax(0,1fr)_170px_170px_170px] gap-4 px-6 pt-3 pb-1 text-xs font-medium text-slate-500">
             <span>Deliverable</span>

@@ -6,6 +6,7 @@ import { AppDrawer } from "@/components/nudge/app-drawer"
 import { AskBar, ChatProvider, ChatThread, useChatSource } from "@/components/nudge/chat/inline-chat"
 import { LESSON_CHIP } from "@/components/nudge/ops/gap-training"
 import { PageShell } from "@/components/layout/page-shell"
+import { PageFrame, Widget } from "@/components/layout/page-frame"
 import { MichelleHeader } from "@/components/nudge/ops/michelle-header"
 import { BusinessHero, BusinessPane, BusinessRail } from "@/components/nudge/ops/business-view"
 import { retailerTree } from "@/components/nudge/ops/gap-retailers"
@@ -34,18 +35,19 @@ export default function GapToPlanPage() {
     <ChatProvider thread={{ where: "Gap to plan", home: "/michelle" }}>
       <GapChat />
       <PageShell className="bg-slate-50">
-        <div className="mx-auto max-w-[1280px] overflow-clip bg-white shadow-pane-lg sm:my-6 sm:rounded-2xl sm:ring-1 sm:ring-slate-900/6">
+        <PageFrame>
           <MichelleHeader />
           <BusinessHero />
-          <div className="grid grid-cols-[340px_minmax(0,1fr)] border-t border-slate-200">
-            <div className="border-r border-slate-200 bg-white">
-              <BusinessRail root={tree} selected={nodeId} onSelect={setNodeId} />
+          <Widget>
+            <div className="grid grid-cols-[340px_minmax(0,1fr)]">
+              <div className="border-r border-slate-200 bg-white">
+                <BusinessRail root={tree} selected={nodeId} onSelect={setNodeId} />
+              </div>
+              <BusinessPane root={tree} nodeId={nodeId} onSelect={setNodeId} onOpenOps={(batch, asin) => router.push(`/michelle?open=${batch}${asin ? `&asin=${asin}` : ""}`)} />
             </div>
-            <BusinessPane root={tree} nodeId={nodeId} onSelect={setNodeId} onOpenOps={(batch, asin) => router.push(`/michelle?open=${batch}${asin ? `&asin=${asin}` : ""}`)} />
-          </div>
+          </Widget>
           <ChatThread />
-          <div className="pb-24" />
-        </div>
+        </PageFrame>
         <AppDrawer />
         <AskBar />
       </PageShell>
