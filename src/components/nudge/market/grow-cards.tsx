@@ -12,7 +12,7 @@ import { MarketMap } from "./market-map"
 
 export type GrowView = "market" | "competition" | "event"
 
-const CARD = "flex flex-col rounded-xl border border-slate-200 bg-white p-5 text-left transition-colors hover:border-brand-300 focus-visible:ring-2 focus-visible:ring-brand-300 outline-none"
+const CARD = "flex flex-col rounded-2xl bg-white p-6 text-left shadow-xs ring-1 ring-slate-200 transition-shadow hover:shadow-sm hover:ring-brand-300 focus-visible:ring-2 focus-visible:ring-brand-300 outline-none"
 
 export function ReadinessDot({ state }: { state: Readiness }) {
   return <span className={cn("inline-block size-2.5 rounded-full", state === "ready" ? "bg-success-500" : state === "partial" ? "bg-warning-500" : "bg-error-500")} />
@@ -32,8 +32,8 @@ export function GrowCards({ onOpen }: { onOpen: (v: GrowView) => void }) {
   const mvp = useMvp()
   if (retailer === "walmart" || retailer === "target") return null
   return (
-    <section className="px-12 pt-10 pb-4">
-      <div className="font-mono text-xs tracking-wide text-slate-500 uppercase">Grow beyond plan{retailer === "all" ? " · Amazon" : ""}</div>
+    <section className="pt-4">
+      <div className="px-12 font-mono text-xs tracking-wide text-slate-500 uppercase">Grow beyond plan{retailer === "all" ? " · Amazon" : ""}</div>
       <div className="mt-4 grid gap-4 lg:grid-cols-3">
         <button type="button" onClick={() => onOpen("market")} className={CARD}>
           <div className="text-xs font-medium text-slate-500">Market</div>

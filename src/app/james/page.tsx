@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 import { useMvp } from "@/components/nudge/mvp"
 import { AppDrawer } from "@/components/nudge/app-drawer"
 import { PageShell } from "@/components/layout/page-shell"
+import { PageFrame, Widget, WidgetStack } from "@/components/layout/page-frame"
 import { AskBar, ChatProvider, ChatThread, useChatSource } from "@/components/nudge/chat/inline-chat"
 import { ResetDemoButton } from "@/components/nudge/reset-demo-button"
 import { useNudge } from "@/components/nudge/nudge-context"
@@ -64,26 +65,36 @@ function James() {
 
   return (
     <PageShell className="bg-slate-50">
-      <div className="mx-auto max-w-[1280px] overflow-clip bg-white shadow-pane-lg sm:my-6 sm:rounded-2xl sm:ring-1 sm:ring-slate-900/6">
+      <PageFrame>
         <JamesHeader />
         <MediaProgress celebrate={celebrate} stage={filter === "all" ? undefined : filter} onStage={(st) => pickFilter(st, true)} />
+        <WidgetStack>
+        <Widget>
         <div ref={queueRef} className="grid grid-cols-1 lg:grid-cols-[400px_minmax(0,1fr)]">
           <div className="border-b border-slate-200 bg-white lg:border-r lg:border-b-0">
             <MediaList selectedId={selectedId} filter={filter} onFilter={(f) => pickFilter(f)} onSelect={setSelectedId} />
           </div>
-          <DetailCard>
+          <DetailCard flat>
             <MediaDetail batch={selected} onAction={act} />
           </DetailCard>
         </div>
+        </Widget>
         <JamesChat />
-        <PacingSection />
-        <LedgerSection />
-        <MediaDelivered />
+        <Widget>
+          <PacingSection />
+        </Widget>
+        <Widget>
+          <LedgerSection />
+        </Widget>
+        <Widget>
+          <MediaDelivered />
+        </Widget>
+        </WidgetStack>
         <ChatThread />
-        <div className="flex justify-end px-10 pb-24 opacity-50 hover:opacity-100">
+        <div className="flex justify-end px-10 pt-4 opacity-50 hover:opacity-100">
           <ResetDemoButton />
         </div>
-      </div>
+      </PageFrame>
       <AppDrawer />
       <AskBar />
     </PageShell>

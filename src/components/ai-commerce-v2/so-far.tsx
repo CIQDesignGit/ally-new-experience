@@ -18,7 +18,7 @@ export function SoFar({ done }: { done: Done }) {
   const dShare = share(done) - share(BASE)
 
   return (
-    <section className="px-12 pt-10 pb-4">
+    <section className="px-12 pt-8 pb-6">
       <div className="font-mono text-xs tracking-wide text-slate-500 uppercase">{META.asOf} so far</div>
       <div className="mt-2 flex flex-wrap items-baseline gap-x-6 gap-y-1">
         <span className="text-2xl font-semibold tracking-tight text-slate-950">
@@ -34,7 +34,7 @@ export function SoFar({ done }: { done: Done }) {
           {saved ? ` · $${saved}K a month of ads paused` : ""} · gap to {META.leader} {money(Math.max(opportunity(done), 0))}
         </span>
       </div>
-      <div className="mt-3 overflow-hidden rounded-xl border border-slate-200 bg-white">
+      <div className="-mx-6 mt-5 border-t border-slate-100">
         {shipped.length === 0 && <div className="px-6 py-5 text-sm text-slate-500">Nothing shipped yet this month. Approve an action above and it shows here with the agents&apos; answers before and after.</div>}
         {shipped.map((a) => {
           const isOpen = open === a.id

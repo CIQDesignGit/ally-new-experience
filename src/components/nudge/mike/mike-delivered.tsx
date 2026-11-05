@@ -7,11 +7,12 @@ import { useNudge } from "../nudge-context"
 import { QueueDelivered } from "../claire/delivered/bar-row"
 
 /** Claire's Content row, opened up for Mike: one bar per kind of content work, the same numbers. */
-export function MikeDelivered() {
+export function MikeDelivered({ flat }: { flat?: boolean }) {
   const { period } = useNudge()
   const d = DELIVERED[period]
   return (
     <QueueDelivered
+      flat={flat}
       label={d.label}
       rows={d.content.workTypes.map((w) => ({ name: w.name, did: w.did, delivered: w.delivered, promised: w.promised, data: w }))}
       footer={

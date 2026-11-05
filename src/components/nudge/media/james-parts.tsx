@@ -100,7 +100,7 @@ export function MediaProgress({ celebrate, stage, onStage }: { celebrate: { valu
     const waiting = MEDIA_BATCHES.filter((b) => b.tier !== "autopilot" && !approved[b.id])
     const oneApproval = waiting.filter((b) => b.tier === "approval")
     return (
-      <div className="flex items-end justify-between gap-8 border-b border-slate-200 px-10 pt-2 pb-6">
+      <div className="flex items-end justify-between gap-8 px-10 pt-2 pb-8">
         <div className="min-w-0">
           <div className="text-2xl font-semibold tracking-tight text-slate-700">
             {gap > 0 && (
@@ -389,7 +389,7 @@ export function MediaDetail({ batch, onAction }: { batch: MediaBatch; onAction: 
 /** October budget by category: a track per category, the tick at how much of the month has gone. */
 export function PacingSection() {
   return (
-    <section className="border-t border-slate-200 px-10 pt-9 pb-8">
+    <section className="px-10 pt-8 pb-8">
       <div className="flex items-baseline justify-between gap-4">
         <h2 className="text-xl font-semibold tracking-tight text-slate-950">October pacing by category</h2>
         <span className="text-sm text-slate-500">
@@ -434,7 +434,7 @@ export function PacingSection() {
 export function LedgerSection() {
   const { approved } = useNudge()
   return (
-    <section className="border-t border-slate-200 px-10 pt-9 pb-8">
+    <section className="px-10 pt-8 pb-8">
       <div className="flex items-baseline justify-between gap-4">
         <h2 className="text-xl font-semibold tracking-tight text-slate-950">Keywords, content and media together</h2>
         <span className="text-sm text-slate-500">{LEDGER.length} of 1,400 keywords</span>
@@ -505,6 +505,7 @@ export function MediaDelivered() {
   return (
     <div id="media-delivered">
       <QueueDelivered
+        flat
         label={d.label}
         rows={[{ name: "Media", did: m.reason, delivered: m.delivered, promised: m.promised }]}
         footer={loop !== undefined && <p className="text-[15px] text-slate-700">38 keywords harvested · $21K a week moved to them</p>}

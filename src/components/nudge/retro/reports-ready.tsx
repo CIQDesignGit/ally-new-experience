@@ -11,10 +11,10 @@ export function ReportsReady() {
   if (!retro.sentToClaire && !qbr?.sentToClaire) return null
   const kept = LESSONS.filter((l) => retro.saved?.includes(l.id))
   return (
-    <section aria-label="Reports ready" className="px-12 pt-6 pb-2">
-      <div className="font-mono text-xs tracking-wide text-slate-500 uppercase">Reports ready</div>
+    <section aria-label="Reports ready" className="flex flex-col gap-3">
+      <div className="px-12 pt-2 font-mono text-xs tracking-wide text-slate-500 uppercase">Reports ready</div>
       {qbr?.sentToClaire && (
-        <div className="mt-3 flex flex-col gap-2.5 rounded-xl border border-slate-200 px-5 py-4">
+        <div className="flex flex-col gap-2.5 rounded-2xl bg-white px-6 py-5 shadow-xs ring-1 ring-slate-200">
           <div className="flex items-baseline justify-between gap-4">
             <span className="text-base font-semibold text-slate-950">Q4 business review</span>
             <span className="text-xs text-slate-500">{qbr.repeat ? "from Michelle · refreshes every Monday on autopilot" : "from Michelle · today"}</span>
@@ -39,7 +39,7 @@ export function ReportsReady() {
       )}
       {retro.sentToClaire && (
       <div className="mt-3 grid grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] gap-4">
-        <div className="flex flex-col gap-2.5 rounded-xl border border-slate-200 px-5 py-4">
+        <div className="flex flex-col gap-2.5 rounded-2xl bg-white px-6 py-5 shadow-xs ring-1 ring-slate-200">
           <div className="flex items-baseline justify-between gap-4">
             <span className="text-base font-semibold text-slate-950">{RETRO.name}</span>
             <span className="text-xs text-slate-500">from Michelle · today</span>
@@ -59,7 +59,7 @@ export function ReportsReady() {
             </Link>
           </div>
         </div>
-        <div className="flex flex-col gap-2 rounded-xl border border-slate-200 px-5 py-4">
+        <div className="flex flex-col gap-2 rounded-2xl bg-white px-6 py-5 shadow-xs ring-1 ring-slate-200">
           <div className="text-[13px] font-medium text-slate-500">Lessons the team kept</div>
           {kept.length ? (
             kept.map((l) => (

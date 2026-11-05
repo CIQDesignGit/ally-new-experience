@@ -4,6 +4,7 @@ import { DetailCard } from "@/components/nudge/ui/detail-card"
 import { useEffect, useRef, useState } from "react"
 import { AppDrawer } from "@/components/nudge/app-drawer"
 import { PageShell } from "@/components/layout/page-shell"
+import { PageFrame, Widget, WidgetStack } from "@/components/layout/page-frame"
 import { ResetDemoButton } from "@/components/nudge/reset-demo-button"
 import { AskBar, ChatProvider, ChatThread } from "@/components/nudge/chat/inline-chat"
 import { MikeChat } from "@/components/nudge/chat/home-chats"
@@ -124,9 +125,11 @@ export default function MikePage() {
       <ChatProvider thread={{ where: "Daily brief", home: "/mike" }}>
       <MikeChat />
       <PageShell className="bg-slate-50">
-      <div className="mx-auto max-w-[1280px] overflow-hidden bg-white shadow-pane-lg sm:my-6 sm:rounded-2xl sm:ring-1 sm:ring-slate-900/6">
+      <PageFrame>
         <MikeHeader />
         <MikeProgress celebrate={celebrate} stage={filter === "all" ? undefined : filter} onStage={(st) => pickFilter(st, true)} />
+        <WidgetStack>
+        <Widget>
         <div ref={queueRef} className="grid scroll-mt-4 grid-cols-1 lg:grid-cols-[400px_minmax(0,1fr)]">
           <BatchList
             selectedId={selectedId}
@@ -138,7 +141,7 @@ export default function MikePage() {
             onSelectBatch={handleSelectBatch}
             onSelectSku={handleSelectSku}
           />
-          <DetailCard>
+          <DetailCard flat>
           {selectedRow ? (
             <SkuDetailPane
               batch={selected}
@@ -153,14 +156,18 @@ export default function MikePage() {
           )}
           </DetailCard>
         </div>
-        <MikeDelivered />
+        </Widget>
+        <Widget>
+          <MikeDelivered flat />
+        </Widget>
+        </WidgetStack>
         {/* Answers go last, so the conversation is the end of the page (same as Claire's and Michelle's). */}
         <ChatThread />
         {/* Demo-only control, kept out of the product chrome, same as Claire's page. */}
-        <div className="flex justify-end px-10 pb-24 opacity-50 hover:opacity-100">
+        <div className="flex justify-end px-10 pt-4 opacity-50 hover:opacity-100">
           <ResetDemoButton />
         </div>
-      </div>
+      </PageFrame>
       <AppDrawer home="/mike" />
       <AskBar />
       </PageShell>

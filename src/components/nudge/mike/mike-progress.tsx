@@ -62,7 +62,7 @@ export function MikeProgress({ celebrate, stage, onStage }: { celebrate: Celebra
     const oneApproval = waiting.filter((b) => b.tier === "approval")
     const expiring = dated.filter((b) => b.deadline === soonest)
     return (
-      <div className="flex items-end justify-between gap-8 border-b border-slate-200 px-10 pt-2 pb-6">
+      <div className="flex items-end justify-between gap-8 px-10 pt-2 pb-8">
         <div className="min-w-0">
           <div className="text-2xl font-semibold tracking-tight text-slate-700">
             <span className="font-mono text-slate-950">{waiting.length}</span> batches · <span className="font-mono text-slate-950">{waiting.reduce((s, b) => s + (b.inputSkus ?? b.skus), 0)}</span> SKUs waiting on you.

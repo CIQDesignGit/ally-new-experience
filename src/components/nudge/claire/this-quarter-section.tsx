@@ -42,7 +42,7 @@ export function ThisQuarterSection() {
   const scale = Math.max(...ORDER.map((a) => Math.max(leverDelivered(d, a).delivered, mvp ? 0 : leverDelivered(d, a).promised))) * 1.15
 
   return (
-    <section className="px-12 pt-10 pb-4">
+    <section className="px-12 pt-8 pb-6">
       <div className="font-mono text-xs tracking-wide text-slate-500 uppercase">{d.label}</div>
       {mvp ? (
         <div className="mt-2 flex flex-wrap items-baseline gap-x-4 gap-y-1">
@@ -69,7 +69,7 @@ export function ThisQuarterSection() {
       {/* Why the delivered number keeps rising: Ally learns from the team every day. */}
       <LearningLine href="/settings?tab=context&from=claire" />
       <BarKey />
-      <div className="mt-3 overflow-hidden rounded-xl border border-slate-200 bg-white">
+      <div className="-mx-6 mt-5 border-t border-slate-100">
         {ORDER.map((agent) => {
           const style = DRILLDOWN[agent]
           const l = leverDelivered(d, agent)

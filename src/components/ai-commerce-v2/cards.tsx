@@ -5,7 +5,7 @@ import { Points } from "@/components/nudge/points"
 import { META, OURS, QUESTIONS, SURFACES, isFixed, isLeader, money, score, share, top3, type Done } from "./data"
 import { PRODUCTS } from "./products"
 
-const CARD = "flex min-w-0 flex-col rounded-2xl border border-slate-200 bg-white p-5 text-left transition-colors hover:border-brand-300"
+const CARD = "flex min-w-0 flex-col rounded-2xl bg-white p-6 text-left shadow-xs ring-1 ring-slate-200 transition-shadow hover:shadow-sm hover:ring-brand-300"
 
 /** Three cards: what's rising, the product that needs the most, where the leader wins. Each opens its answer in Ask Ally. */
 export function Cards({ done, onAsk }: { done: Done; onAsk: (q: string) => void }) {
@@ -19,8 +19,8 @@ export function Cards({ done, onAsk }: { done: Done; onAsk: (q: string) => void 
   const openSurface = [...bySurface].sort((a, b) => a.leader - b.leader)[0]
 
   return (
-    <section className="px-12 pt-10 pb-4">
-      <div className="font-mono text-xs tracking-wide text-slate-500 uppercase">Beyond the gap</div>
+    <section className="pt-4">
+      <div className="px-12 font-mono text-xs tracking-wide text-slate-500 uppercase">Beyond the gap</div>
       <div className="mt-4 grid gap-4 lg:grid-cols-3">
         <button type="button" onClick={() => onAsk("What's rising this month?")} className={CARD}>
           <div className="text-xs font-medium text-slate-500">Rising this month</div>

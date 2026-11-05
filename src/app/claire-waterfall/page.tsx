@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react"
 import { AppDrawer } from "@/components/nudge/app-drawer"
 import { PageShell } from "@/components/layout/page-shell"
+import { PageFrame, Widget, WidgetStack } from "@/components/layout/page-frame"
 import { ResetDemoButton } from "@/components/nudge/reset-demo-button"
 import { DemoControls } from "@/components/nudge/claire/demo-controls"
 import { BusinessHero } from "@/components/nudge/claire/business-hero"
@@ -81,7 +82,7 @@ function ClaireWaterfall() {
 
   return (
     <PageShell className="bg-slate-50">
-      <div className="mx-auto max-w-[1280px] bg-white shadow-pane-lg sm:my-6 sm:rounded-2xl sm:ring-1 sm:ring-slate-900/6">
+      <PageFrame>
         {/* A view shows where you are instead of the greeting; "Home" is the way back. */}
         <BusinessHero
           topLineOnly={!!grow}
@@ -89,36 +90,41 @@ function ClaireWaterfall() {
         />
         {grow ? (
           <>
-            <GrowViewSwitch view={grow} onBack={closeGrow} />
+            <Widget>
+              <GrowViewSwitch view={grow} onBack={closeGrow} />
+            </Widget>
             <ChatThread />
-            <div className="pb-28" />
           </>
         ) : (
           <>
-            <div className="px-12 pt-1 pb-3">
-              <div className="font-mono text-xs tracking-wide text-slate-500 uppercase">Where it sits today</div>
-            </div>
-
-            <div className="px-12 pb-2">
-              <WaterfallChart selectedId={selectedId} onSelect={setSelectedId} />
-              <div id="stage-detail" className="scroll-mt-4">
-                {selectedId === "total" ? <AreaDetail /> : <StageDetail stage={selected} />}
-              </div>
-            </div>
-
-            <ReportsReady />
-            <ThisQuarterSection />
-            <GrowCards onOpen={openGrow} />
+            <WidgetStack>
+              <Widget>
+                <div className="px-12 pt-8 pb-3">
+                  <div className="font-mono text-xs tracking-wide text-slate-500 uppercase">Where it sits today</div>
+                </div>
+                <div className="px-12 pb-10">
+                  <WaterfallChart selectedId={selectedId} onSelect={setSelectedId} />
+                  <div id="stage-detail" className="scroll-mt-4">
+                    {selectedId === "total" ? <AreaDetail /> : <StageDetail stage={selected} />}
+                  </div>
+                </div>
+              </Widget>
+              <ReportsReady />
+              <Widget>
+                <ThisQuarterSection />
+              </Widget>
+              <GrowCards onOpen={openGrow} />
+            </WidgetStack>
             <ClaireChat />
             <ChatThread />
-            {/* Demo-only control, kept out of the product chrome. Room below for the floating Ask Ally bar. */}
-            <div className="flex justify-end gap-6 px-12 pt-6 pb-24">
+            {/* Demo-only control, kept out of the product chrome. */}
+            <div className="flex justify-end gap-6 px-12 pt-6">
               <DemoControls />
               <ResetDemoButton />
             </div>
           </>
         )}
-      </div>
+      </PageFrame>
       <AppDrawer home="/claire-waterfall" />
       <AskBar />
     </PageShell>

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react"
 import { PageShell } from "@/components/layout/page-shell"
+import { PageFrame, Widget, WidgetStack } from "@/components/layout/page-frame"
 import { AppDrawer } from "@/components/nudge/app-drawer"
 import { AskBar, ChatProvider, ChatThread, useChat, useChatSource } from "@/components/nudge/chat/inline-chat"
 import { ACTIONS, type Done } from "./data"
@@ -53,29 +54,33 @@ function Page() {
 
   return (
     <PageShell className="bg-slate-50">
-      <div className="mx-auto max-w-[1280px] overflow-clip bg-white shadow-pane-lg sm:my-6 sm:rounded-2xl sm:ring-1 sm:ring-slate-900/6">
+      <PageFrame>
         <Hero done={done} />
-        <Stand done={done} />
-
-        <div className="px-12 pt-8 pb-3">
-          <div className="font-mono text-xs tracking-wide text-slate-500 uppercase">Where the gaps are</div>
-        </div>
-        <div className="px-12 pb-2">
-          <Bridge done={done} selected={filter} onSelect={setFilter} />
-          <div id="actions-table" className="scroll-mt-4">
-            <ActionsTable done={done} onFix={fix} filter={filter} onClear={() => setFilter("all")} />
-          </div>
-        </div>
-
-        <SoFar done={done} />
-        <Cards done={done} onAsk={askText} />
+        <WidgetStack>
+          <Stand done={done} />
+          <Widget>
+            <div className="px-12 pt-8 pb-3">
+              <div className="font-mono text-xs tracking-wide text-slate-500 uppercase">Where the gaps are</div>
+            </div>
+            <div className="px-12 pb-10">
+              <Bridge done={done} selected={filter} onSelect={setFilter} />
+              <div id="actions-table" className="scroll-mt-4">
+                <ActionsTable done={done} onFix={fix} filter={filter} onClear={() => setFilter("all")} />
+              </div>
+            </div>
+          </Widget>
+          <Widget>
+            <SoFar done={done} />
+          </Widget>
+          <Cards done={done} onAsk={askText} />
+        </WidgetStack>
         <div id="ai-commerce-thread" className="scroll-mt-4">
           <ChatThread />
         </div>
-        <div className="flex items-center justify-between px-12 pt-6 pb-24 text-xs text-slate-400">
+        <div className="flex items-center justify-between px-12 pt-6 text-xs text-slate-400">
           <span>Illustrative data. Questions come from retailer search terms and the prompts shoppers put to each agent, asked about 10 times a week; a brand counts as top 3 when it lands there in most runs.</span>
         </div>
-      </div>
+      </PageFrame>
       <AppDrawer home="/ai-commerce-v2" />
       <AskBar placeholder="Ask about any question, product or agent" />
     </PageShell>

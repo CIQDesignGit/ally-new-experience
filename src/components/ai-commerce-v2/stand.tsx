@@ -4,7 +4,7 @@ import { useState } from "react"
 import { cn } from "@/lib/utils"
 import { META, SOURCES, SURFACES, TRENDS, brandRank, linkSplit, money, sov, surfacesOf, visibility, voices, type Done, type SourceId } from "./data"
 
-const CARD = "flex min-w-0 flex-col rounded-2xl border bg-white p-5 text-left transition-colors"
+const CARD = "flex min-w-0 flex-col rounded-2xl bg-white p-6 text-left shadow-xs ring-1 transition-shadow"
 const LABEL: Record<string, string> = { Measured: "bg-success-50 text-success-700", Estimated: "bg-warning-50 text-warning-700", "No volume": "bg-slate-100 text-slate-600", Modeled: "bg-slate-100 text-slate-600" }
 
 function Tag({ label }: { label: string }) {
@@ -20,8 +20,8 @@ export function Stand({ done }: { done: Done }) {
   const [open, setOpen] = useState<SourceId | null>(null)
   const cur = open ? SOURCES.find((s) => s.id === open)! : null
   return (
-    <section className="px-12 pt-2 pb-4">
-      <div className="flex items-baseline gap-3">
+    <section>
+      <div className="flex items-baseline gap-3 px-12">
         <div className="font-mono text-xs tracking-wide text-slate-500 uppercase">Where you stand</div>
         <div className="text-xs text-slate-500">AI visibility by source · AI rank · coverage</div>
       </div>
@@ -32,7 +32,7 @@ export function Stand({ done }: { done: Done }) {
           const r = brandRank(done, ss)
           const isOpen = open === src.id
           return (
-            <button key={src.id} type="button" onClick={() => setOpen(isOpen ? null : src.id)} className={cn(CARD, isOpen ? "border-brand-300 ring-1 ring-brand-200" : "border-slate-200 hover:border-brand-300")}>
+            <button key={src.id} type="button" onClick={() => setOpen(isOpen ? null : src.id)} className={cn(CARD, isOpen ? "ring-2 ring-brand-300" : "ring-slate-200 hover:shadow-sm hover:ring-brand-300")}>
               <div className="text-xs font-medium text-slate-500">{src.name}</div>
               <div className="mt-3 font-mono text-[28px] leading-none font-semibold text-slate-950 tabular-nums">{sov(done, META.brand, ss)}%</div>
               <div className="mt-2 text-[13px] text-slate-500">
@@ -51,7 +51,7 @@ export function Stand({ done }: { done: Done }) {
       </div>
 
       {cur && (
-        <div className="mt-4 overflow-hidden rounded-xl border border-slate-200">
+        <div className="mt-4 overflow-hidden rounded-2xl bg-white shadow-xs ring-1 ring-slate-200">
           <div className="grid gap-6 px-6 py-5 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
             <div>
               <div className="text-xs font-medium text-slate-500">By surface · AI visibility · coverage · AI rank</div>
@@ -132,7 +132,7 @@ export function Stand({ done }: { done: Done }) {
           </div>
         </div>
       )}
-      <div className="mt-2 text-[11px] text-slate-400">AI visibility: each product in an answer weighted 1 ÷ its position (1st = 1, 2nd = ½, 3rd = ⅓ …); your share of that weight. AI rank: your place among brands by AI visibility. Coverage: the answers you appear in, out of all tracked; prompts on agents, keywords on retail search (page one). Dollars: questions × click rate at your position × conversion at the retailer; a band where volume isn&apos;t measured.</div>
+      <div className="mt-3 px-12 text-[11px] text-slate-400">AI visibility: each product in an answer weighted 1 ÷ its position (1st = 1, 2nd = ½, 3rd = ⅓ …); your share of that weight. AI rank: your place among brands by AI visibility. Coverage: the answers you appear in, out of all tracked; prompts on agents, keywords on retail search (page one). Dollars: questions × click rate at your position × conversion at the retailer; a band where volume isn&apos;t measured.</div>
     </section>
   )
 }
