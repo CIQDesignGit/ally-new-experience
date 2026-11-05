@@ -80,7 +80,7 @@ export function MediaLink({ batchId }: { batchId: string }) {
     } catch {}
     if (seen.includes(base)) return
     const t = window.setTimeout(() => {
-      toast("James was pinged", { description: `${a.ping} · waiting for his approval`, position: "top-right", icon: <Megaphone className="size-4 text-ally-600" /> })
+      toast("James was pinged", { description: `${a.ping} · waiting for his approval`, icon: <Megaphone className="size-4 text-ally-600" /> })
       try {
         window.sessionStorage.setItem(PINGED_KEY, JSON.stringify([...seen, base]))
       } catch {}

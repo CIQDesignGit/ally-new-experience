@@ -41,7 +41,7 @@ export function DemoControls() {
         const ids = [...itemsFor("approval-media", s).map((i) => i.id), ...few.map((i) => i.id)]
         approveMany(ids)
         nextMorning(BEATS[1].day)
-        toast(`${dayLabel(BEATS[1].day)} · James approved his plays · Michelle approved ${few.length} fixes`, { position: "top-right" })
+        toast(`${dayLabel(BEATS[1].day)} · James approved his plays · Michelle approved ${few.length} fixes`)
         await emailClaire({ approved: { ...approved, ...Object.fromEntries(ids.map((id) => [id, true])) }, autoShipped, day: BEATS[1].day })
         return
       }
@@ -52,7 +52,7 @@ export function DemoControls() {
       approveMany(ops)
       if (ship.length) autoShip("approval-content", ship.map((i) => i.id))
       nextMorning(BEATS[2].day)
-      toast(`${dayLabel(BEATS[2].day)} · Michelle approved the rest of her fixes${ship.length ? " · Ally shipped Mike's core SKUs on your deadline" : ""}`, { position: "top-right" })
+      toast(`${dayLabel(BEATS[2].day)} · Michelle approved the rest of her fixes${ship.length ? " · Ally shipped Mike's core SKUs on your deadline" : ""}`)
       await emailClaire({
         approved: { ...approved, ...Object.fromEntries([...ops, ...ship.map((i) => i.id)].map((id) => [id, true])) },
         autoShipped: ship.length ? { ...autoShipped, "approval-content": ship.map((i) => i.id) } : autoShipped,

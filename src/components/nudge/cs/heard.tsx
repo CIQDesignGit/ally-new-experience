@@ -86,7 +86,7 @@ export function SentimentPane() {
               type="button"
               onClick={() => {
                 setCallItem(INVITED, "done")
-                toast.success(`${MANAGER.first} added to Thursday's call`, { position: "top-right" })
+                toast.success(`${MANAGER.first} added to Thursday's call`)
               }}
               className={PRIMARY}
             >

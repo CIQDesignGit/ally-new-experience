@@ -99,7 +99,7 @@ export function NoteBar({ onSent }: { onSent?: (sent: { value: number; label: st
     onSent?.({ value: groups.filter((g) => complete.includes(g.batch.id)).reduce((n, g) => n + g.batch.approveValue, 0), label: `${skus} SKUs sent to the ${VENDOR_MANAGER.label}` })
     // The signed-in person gets the email, playing Dana.
     void emailMe({ kind: "note", subject: `${groups.length} ${groups.length === 1 ? "issue" : "issues"} on our Amazon listings · ${skus} SKUs`, body: text, skus, issues: groups.length }, { quiet: true })
-    toast.success(`Sent to ${VENDOR_MANAGER.full}, ${VENDOR_MANAGER.label} · ${skus} SKUs across ${groups.length} ${groups.length === 1 ? "issue" : "issues"}, evidence attached`, { position: "top-right" })
+    toast.success(`Sent to ${VENDOR_MANAGER.full}, ${VENDOR_MANAGER.label} · ${skus} SKUs across ${groups.length} ${groups.length === 1 ? "issue" : "issues"}, evidence attached`)
     setOpen(false)
     setBody(null)
   }
@@ -107,7 +107,7 @@ export function NoteBar({ onSent }: { onSent?: (sent: { value: number; label: st
   // The first add explains the note once, at the moment it starts; later adds just confirm.
   const hadNote = useRef(skus > 0)
   useEffect(() => {
-    if (skus > 0 && !hadNote.current) toast.success(`Added ${skus} ${skus === 1 ? "SKU" : "SKUs"} to your note to the ${VENDOR_MANAGER.label}`, { description: "Everything you add goes out as one email when you send.", position: "top-right" })
+    if (skus > 0 && !hadNote.current) toast.success(`Added ${skus} ${skus === 1 ? "SKU" : "SKUs"} to your note to the ${VENDOR_MANAGER.label}`, { description: "Everything you add goes out as one email when you send." })
     hadNote.current = skus > 0
   }, [skus])
 

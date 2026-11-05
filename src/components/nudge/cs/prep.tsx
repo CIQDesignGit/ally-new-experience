@@ -144,7 +144,7 @@ export function MeetingPrep() {
               type="button"
               onClick={() => {
                 setSent(true)
-                toast.success(`Agenda sent to ${attendees.length} attendees`, { position: "top-right" })
+                toast.success(`Agenda sent to ${attendees.length} attendees`)
               }}
               className={PRIMARY}
             >

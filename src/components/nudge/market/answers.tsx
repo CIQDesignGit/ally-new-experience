@@ -183,7 +183,7 @@ export function AnswerCard({ a, onAsk, visual }: { a: Answer; onAsk: (q: string)
               onClick={() => {
                 if (act.plays) launch(act.plays)
                 else if (act.ask) onAsk(act.ask)
-                else if (act.watch) toast.success(`Watching ${act.watch}. Ally will tell you Monday if it moves.`, { position: "top-right" })
+                else if (act.watch) toast.success(`Watching ${act.watch}. Ally will tell you Monday if it moves.`)
               }}
               className={cn(
                 "flex items-center gap-2 rounded-lg px-3.5 py-2 text-left text-sm font-medium transition-colors",

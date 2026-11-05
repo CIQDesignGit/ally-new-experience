@@ -137,7 +137,7 @@ function ItemPane({ item }: { item: InboxItem }) {
   function approveIt() {
     w.setCallItem(item.id, "done")
     if (item.approves) approve(item.approves)
-    toast.success(item.id === "p-call" ? `Agenda sent to ${attendees.length} attendees` : `Approved · ${title(item)}`, { position: "top-right" })
+    toast.success(item.id === "p-call" ? `Agenda sent to ${attendees.length} attendees` : `Approved · ${title(item)}`)
   }
   return (
     <div className="flex flex-col gap-5">

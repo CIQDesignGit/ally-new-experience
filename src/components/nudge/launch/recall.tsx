@@ -71,7 +71,7 @@ function DigAnswer() {
         </tbody>
       </table>
       <div>
-        <button type="button" onClick={() => toast.success("Filled 3 attributes · asked Priya for burn time", { position: "top-right" })} className={PRIMARY}>
+        <button type="button" onClick={() => toast.success("Filled 3 attributes · asked Priya for burn time")} className={PRIMARY}>
           Fill 3 and ask Priya for burn time
         </button>
       </div>

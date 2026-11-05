@@ -53,7 +53,7 @@ export function useFireNudge() {
       if (!row.nudgeKey) return
       nudge(row.nudgeKey)
       if (nudgeTargets(policy)[row.nudgeKey]) sendSlack(row)
-      else toast.success(`Nudged ${row.analystName}`, { position: "top-right" })
+      else toast.success(`Nudged ${row.analystName}`)
     },
     [nudge, sendSlack, policy],
   )

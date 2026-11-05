@@ -60,7 +60,7 @@ function InvestAnswer() {
         goes to other sellers until Michelle&apos;s fix lands.
       </p>
       <div className="flex flex-wrap gap-2">
-        <button type="button" onClick={() => toast.success("Sent to James · $600K sponsored ads on 67 SKUs, $400K Halloween deals · he'll draft the plan", { position: "top-right" })} className={`${ACTION} bg-brand-500 text-white hover:bg-brand-600`}>
+        <button type="button" onClick={() => toast.success("Sent to James · $600K sponsored ads on 67 SKUs, $400K Halloween deals · he'll draft the plan")} className={`${ACTION} bg-brand-500 text-white hover:bg-brand-600`}>
           Send this plan to James
         </button>
         <Link href="/content-results?period=qtd" className={`${ACTION} border border-slate-200 bg-white text-slate-950 hover:border-brand-300 hover:text-brand-700`}>

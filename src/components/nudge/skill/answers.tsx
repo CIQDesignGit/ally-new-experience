@@ -224,7 +224,7 @@ function RunAnswer({ version = 1 }: { version?: 1 | 2 }) {
           setPhase("ready")
           void TAUGHT_TOTAL
           void ASKS_TOTAL
-          toast.success(`${SKILL.name} is ready · +$${CONTRA_YEAR.toFixed(2)}M a year in better terms`, { position: "top-right" })
+          toast.success(`${SKILL.name} is ready · +$${CONTRA_YEAR.toFixed(2)}M a year in better terms`)
         },
         version === 2 ? 450 * steps.length + 500 : 900 * inView + 4200,
       ),
@@ -284,7 +284,7 @@ function Results({ version }: { version: 1 | 2 }) {
   const [sent, setSent] = useState<string[]>([])
   const send = (k: string, msg: string) => {
     setSent((x) => [...x, k])
-    toast.success(msg, { position: "top-right" })
+    toast.success(msg)
   }
   const share = (q: Quadrant) => Math.round((PRODUCTS.filter((p) => quadrantOf(p) === q).reduce((n, p) => n + p.cogs, 0) / 96) * 100)
   // Where either side loses first, then by volume: that's where the negotiation will go.

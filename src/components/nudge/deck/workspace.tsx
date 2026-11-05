@@ -168,9 +168,9 @@ export function DeckWorkspace({ spec }: { spec: DeckSpec }) {
   async function exportPptx() {
     try {
       await exportRetroPptx(slides, theme, { name: spec.name, file: spec.file })
-      toast.success(`Exported ${theme === "aurelle" ? `${spec.file} (Aurelle).pptx` : `${spec.file}.pptx`} · ${slides.length} editable slides`, { position: "top-right" })
+      toast.success(`Exported ${theme === "aurelle" ? `${spec.file} (Aurelle).pptx` : `${spec.file}.pptx`} · ${slides.length} editable slides`)
     } catch {
-      toast.error("Couldn't build the PowerPoint. Try again.", { position: "top-right" })
+      toast.error("Couldn't build the PowerPoint. Try again.")
     }
   }
 
@@ -228,11 +228,11 @@ export function DeckWorkspace({ spec }: { spec: DeckSpec }) {
       changed={changed}
       onMove={move}
       onExpand={() => setExpanded((e) => !e)}
-      onLock={() => { setRetro({ locked: !retro.locked }); toast.success(retro.locked ? "Unlocked" : "Storyline locked", { position: "top-right" }) }}
+      onLock={() => { setRetro({ locked: !retro.locked }); toast.success(retro.locked ? "Unlocked" : "Storyline locked") }}
       onDeck={makeDeck}
       name={spec.name}
       forWhom={spec.forWhom}
-      onDashboard={spec.dashboard ? () => { setRetro({ dashboard: true, dashboardSeen: false }); toast.success(`Published as a live dashboard · Dashboards › ${spec.name}`, { position: "top-right" }) } : undefined}
+      onDashboard={spec.dashboard ? () => { setRetro({ dashboard: true, dashboardSeen: false }); toast.success(`Published as a live dashboard · Dashboards › ${spec.name}`) } : undefined}
     />
   ) : (
     <Deck name={spec.name} slides={slides} current={current} setCurrent={setCurrent} theme={before ? "default" : theme} branded={theme === "aurelle"} before={before} setBefore={setBefore} onBrand={applyBrand} onExport={exportPptx} onShare={() => setShare(true)} onStoryboard={() => setView("storyboard")} />
@@ -322,7 +322,7 @@ export function DeckWorkspace({ spec }: { spec: DeckSpec }) {
             if (o.pptx) await exportPptx()
             setRetro({ sentToClaire: o.claire || retro.sentToClaire, dashboard: o.dashboard || retro.dashboard, repeat: o.repeat || retro.repeat })
             const where = [o.claire && "sent to Claire", o.dashboard && "live dashboard published", o.pptx && "PowerPoint exported", o.repeat && "repeats on autopilot"].filter(Boolean).join(" · ")
-            if (where) toast.success(`${spec.name} · ${where}`, { position: "top-right" })
+            if (where) toast.success(`${spec.name} · ${where}`)
             setExpanded(false)
             if (spec.lessons) say({ from: "ally", text: "Keep these for the next event? I'll use them when I plan Black Friday.", lessons: true })
             else say({ from: "ally", text: [o.claire && `Sent to ${spec.forWhom.split(" ")[0]}.`, o.repeat && `I'll refresh it every Monday on autopilot and send it the same way.`].filter(Boolean).join(" ") || "Done." })

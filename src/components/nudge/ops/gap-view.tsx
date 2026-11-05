@@ -185,10 +185,10 @@ export function ActionButton({ action }: { action: GapAction; onInbox?: (batchId
       onClick={() => {
         if (action.kind === "inbox") {
           approve(action.batchId)
-          toast.success(`${pastTense(action.label)} · evidence attached`, { position: "top-right" })
+          toast.success(`${pastTense(action.label)} · evidence attached`)
         } else if (action.kind === "ask") fire({ agent: "content", analystName: "Mike", description: "Halloween jar candles and gift sets", value: "$660K", nudgeKey: action.nudgeKey })
         else if (play) launch([play])
-        else toast.success(`${action.label}: Ally will tell you the moment it moves.`, { position: "top-right" })
+        else toast.success(`${action.label}: Ally will tell you the moment it moves.`)
       }}
       className={PRIMARY}
     >

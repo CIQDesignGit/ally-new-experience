@@ -8,7 +8,7 @@ export async function emailMe(payload: Record<string, unknown>, { quiet = false 
     const res = await fetch("/api/email", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) })
     const r = (await res.json()) as { ok: boolean; to?: string; reason?: string; detail?: string }
     if (r.ok) {
-      if (!quiet) toast.success(`Emailed to ${r.to}`, { position: "top-right" })
+      if (!quiet) toast.success(`Emailed to ${r.to}`)
       return true
     }
     const why =
@@ -21,9 +21,9 @@ export async function emailMe(payload: Record<string, unknown>, { quiet = false 
             : r.detail?.includes("testing emails")
               ? "Resend only delivers to its account owner until a domain is verified"
               : "Couldn't send the email"
-    toast.error(why, { position: "top-right" })
+    toast.error(why)
   } catch {
-    toast.error("Couldn't send the email", { position: "top-right" })
+    toast.error("Couldn't send the email")
   }
   return false
 }

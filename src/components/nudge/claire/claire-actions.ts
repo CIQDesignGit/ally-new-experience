@@ -180,7 +180,7 @@ export function useClaireActions() {
     const due = dayLabel(ASSIGN_DUE)
     askBy(row.nudgeKey, due, ASSIGN_DUE, "ally")
     if (row.nudgeKey === "approval-content") sendSlack(row, { headline: `Claire assigned you this week's work: ${row.description.replace(/\.$/, "")}. Due ${due}.`, chip: `Due ${due}` })
-    toast.success(`Assigned ${row.analystName} · due ${shortOf(due)}${by === "email" ? " · from your email reply" : ""}`, { position: "top-right" })
+    toast.success(`Assigned ${row.analystName} · due ${shortOf(due)}${by === "email" ? " · from your email reply" : ""}`)
   }
 
   /** Claire sets the next due date. On content it carries "or Ally ships it", and Mike hears it in Slack. */
@@ -195,7 +195,7 @@ export function useClaireActions() {
         chip: `Due ${due.label}`,
       })
     const via = by === "email" ? " · from your email reply" : ""
-    toast.success(ship ? `${row.analystName} has until ${due.label}, or Ally ships it${via}` : `Asked ${row.analystName} to finish by ${due.label}${via}`, { position: "top-right" })
+    toast.success(ship ? `${row.analystName} has until ${due.label}, or Ally ships it${via}` : `Asked ${row.analystName} to finish by ${due.label}${via}`)
   }
 
   /** Claire approves it herself: everything still open on the row ships now. */
@@ -206,14 +206,14 @@ export function useClaireActions() {
       by,
       itemsFor(row.nudgeKey, s).map((i) => i.id),
     )
-    toast.success(`${by === "email" ? "Your email reply approved" : "Approved"}: ${row.description.replace(/\.$/, "")} · ${row.value}`, { position: "top-right" })
+    toast.success(`${by === "email" ? "Your email reply approved" : "Approved"}: ${row.description.replace(/\.$/, "")} · ${row.value}`)
   }
 
   const seasonalOn = hasSeasonalAutopilot(policy)
   const autopilotSeasonal = (by: "product" | "email") => {
     if (seasonalOn) return
     savePolicy({ ...policy, rules: [...policy.rules, seasonalRule(`${dayLabel(day).split(", ")[1]}, 2026`)] })
-    toast.success(`Seasonal content on autopilot from the next event · core SKUs ship without review${by === "email" ? " · from your email reply" : ""}`, { position: "top-right" })
+    toast.success(`Seasonal content on autopilot from the next event · core SKUs ship without review${by === "email" ? " · from your email reply" : ""}`)
   }
 
   return { statusOf, assignFor, askFor, approveMyself, autopilotSeasonal, seasonalOn, day, s }

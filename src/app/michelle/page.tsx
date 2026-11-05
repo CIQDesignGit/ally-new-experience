@@ -151,7 +151,7 @@ function Michelle() {
     approve(batch.id)
     showProgress()
     celebrateFor([batch])
-    if (batch.email) toast.success(`Sent to ${batch.email.to}, ${batch.email.role} · evidence attached`, { position: "top-right" })
+    if (batch.email) toast.success(`Sent to ${batch.email.to}, ${batch.email.role} · evidence attached`)
   }
 
 

@@ -512,5 +512,5 @@ export function MediaDelivered() {
 
 /** After approving a play: the toast, and what it hands to whom. */
 export function approvedToast(b: MediaBatch) {
-  toast.success(`${b.name} · approved · +${money(b.value)}`, { position: "top-right" })
+  toast.success(`${b.name} · approved · +${money(b.value)}`)
 }

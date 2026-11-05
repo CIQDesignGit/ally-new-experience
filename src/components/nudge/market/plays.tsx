@@ -34,7 +34,6 @@ export function useLaunch() {
               new Set(agents.map((p) => p.owner)).size === 1 ? LANDS[agents[0].owner] : "one approval away on your bridge"
             }`
           : "Brief drafted · in Reports",
-        { position: "top-right" },
       )
     }
   }
@@ -87,7 +86,7 @@ export function BriefDoc({ brief }: { brief: Brief }) {
                   type="button"
                   onClick={() => {
                     setDecided(o)
-                    if (o !== "Not now") toast.success(`${brief.kind} sent to ${midSentence(brief.to)}`, { position: "top-right" })
+                    if (o !== "Not now") toast.success(`${brief.kind} sent to ${midSentence(brief.to)}`)
                   }}
                   className={cn(
                     "rounded-lg px-3.5 py-2 text-sm font-semibold transition-colors",

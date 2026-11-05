@@ -101,7 +101,7 @@ export function SkuDetailPane({ batch, row, onBack, onApprove, onSelectSku }: Sk
             disabled={withBg === 0}
             onClick={() => {
               onApprove(batch)
-              toast.success(batch.need!.toast, { position: "top-right" })
+              toast.success(batch.need!.toast)
             }}
             className={cn(PRIMARY, "disabled:opacity-50")}
           >
@@ -116,7 +116,7 @@ export function SkuDetailPane({ batch, row, onBack, onApprove, onSelectSku }: Sk
             type="button"
             onClick={() => {
               onApprove(batch)
-              toast.success(batch.need!.toast, { position: "top-right" })
+              toast.success(batch.need!.toast)
             }}
             className={PRIMARY}
           >

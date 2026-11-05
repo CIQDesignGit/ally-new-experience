@@ -83,7 +83,7 @@ export function useSlackNudgeToast() {
           }}
         />
       ),
-      { position: "bottom-right", duration: preview.duration ?? 8000 },
+      { duration: preview.duration ?? 8000 },
     )
   }
 }

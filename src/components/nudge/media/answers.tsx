@@ -70,7 +70,7 @@ export function BudgetPlanAnswer({ who }: { who: "james" | "claire" }) {
               type="button"
               onClick={() => {
                 approve("media-plan")
-                toast.success(`Plan approved · ${k(BUDGET_TOTAL)} across 4 lines, +${k(BUDGET_SALES)} projected`, { position: "top-right" })
+                toast.success(`Plan approved · ${k(BUDGET_TOTAL)} across 4 lines, +${k(BUDGET_SALES)} projected`)
               }}
               className={PRIMARY}
             >

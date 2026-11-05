@@ -62,7 +62,7 @@ export function DataSources() {
   function connected(s: Source) {
     update(s.id, { status: "connected", note: "First sync running · numbers in about an hour" })
     setOpen(null)
-    toast.success(`${s.name} connected`, { position: "top-right" })
+    toast.success(`${s.name} connected`)
   }
 
   return (
@@ -103,7 +103,7 @@ export function DataSources() {
                       </span>
                       <span className="flex justify-end">
                         {s.status === "connected" ? (
-                          <button type="button" onClick={() => toast(`${s.name}: syncing now`, { position: "top-right" })} className="text-[13px] font-medium text-brand-700 hover:underline">
+                          <button type="button" onClick={() => toast(`${s.name}: syncing now`)} className="text-[13px] font-medium text-brand-700 hover:underline">
                             Sync now
                           </button>
                         ) : (

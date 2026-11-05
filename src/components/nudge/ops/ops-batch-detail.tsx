@@ -64,7 +64,7 @@ export function OpsBatchDetail({ batch, onAction, onReviewAll }: OpsBatchDetailP
   const addAll = () => {
     addToNote(batch.id, skus.map((x) => x.asin), true)
     // The first add is confirmed by the note bar as it appears (with how the note works).
-    if (inNoteNow > 0) toast.success(`Added ${batch.skus} SKUs to your note to the ${VENDOR_MANAGER.label}`, { position: "top-right" })
+    if (inNoteNow > 0) toast.success(`Added ${batch.skus} SKUs to your note to the ${VENDOR_MANAGER.label}`)
   }
   // Buy box issues get the picture: the lead SKU's offers and crawls.
   const lead = batch.sellerSkus?.find((x) => x.asin === batch.exampleSku) ?? batch.sellerSkus?.[0]
@@ -213,7 +213,7 @@ export function OpsBatchDetail({ batch, onAction, onReviewAll }: OpsBatchDetailP
               type="button"
               onClick={() => {
                 onAction(batch)
-                toast.success(`Sent to Ally. ${level ? batch.doneLabel.split(" · ")[0] : batch.doneLabel}.`, { position: "top-right" })
+                toast.success(`Sent to Ally. ${level ? batch.doneLabel.split(" · ")[0] : batch.doneLabel}.`)
               }}
               className={PRIMARY}
             >

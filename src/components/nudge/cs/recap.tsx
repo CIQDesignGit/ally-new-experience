@@ -32,7 +32,7 @@ export function Recap() {
     setDraft("")
     setAdded((n) => n + 1)
     setAdding(false)
-    toast.success("Saved to Aurelle's context", { position: "top-right" })
+    toast.success("Saved to Aurelle's context")
   }
   const [lines, setLines] = useState(() => Object.fromEntries(RECAP.map((s) => [s.id, s.lines])) as Record<string, string[]>)
   const [editing, setEditing] = useState<string | null>(null)
@@ -59,7 +59,7 @@ export function Recap() {
               type="button"
               onClick={() => {
                 setCallItem("recap-saved", "done")
-                toast.success(`Saved ${total} things to Aurelle's context`, { position: "top-right" })
+                toast.success(`Saved ${total} things to Aurelle's context`)
               }}
               className={SECONDARY}
             >

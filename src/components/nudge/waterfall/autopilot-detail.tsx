@@ -59,7 +59,7 @@ export function AutopilotDetail({ stage }: { stage: WaterfallStage }) {
 
   function raise(agents: AgentId[]) {
     setRaised((prev) => ({ ...prev, ...Object.fromEntries(agents.map((a) => [a, true])) }))
-    toast.success(agents.length > 1 ? "Autopilot increased for content, media and ops" : `Autopilot increased for ${agents[0]}`, { position: "top-right" })
+    toast.success(agents.length > 1 ? "Autopilot increased for content, media and ops" : `Autopilot increased for ${agents[0]}`)
   }
 
   return (

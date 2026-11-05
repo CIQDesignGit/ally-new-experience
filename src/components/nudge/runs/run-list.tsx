@@ -66,12 +66,12 @@ export function RunList({
   const paused = (id: string) => runs.paused.includes(id)
   const togglePause = (i: RunItem) => {
     setRuns((r) => ({ ...r, paused: paused(i.id) ? r.paused.filter((x) => x !== i.id) : [...r.paused, i.id] }))
-    toast.success(`${i.name}: ${paused(i.id) ? "live again" : "paused"}`, { position: "top-right" })
+    toast.success(`${i.name}: ${paused(i.id) ? "live again" : "paused"}`)
   }
   const remove = (i: RunItem) => {
     setRuns((r) => ({ ...r, removed: [...r.removed, i.id], added: r.added.filter((x) => x.id !== i.id) }))
     setOpen(null)
-    toast.success(`Deleted ${i.name}`, { position: "top-right" })
+    toast.success(`Deleted ${i.name}`)
   }
   function create() {
     if (!text.trim()) {
@@ -83,7 +83,7 @@ export function RunList({
     setText("")
     setComposing(false)
     setOpen(item.id)
-    toast.success("Ally drafted it. Check the details below.", { position: "top-right" })
+    toast.success("Ally drafted it. Check the details below.")
   }
 
   return (
