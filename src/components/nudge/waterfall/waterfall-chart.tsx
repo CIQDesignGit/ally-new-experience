@@ -54,20 +54,30 @@ export interface Column {
 
 /** Dollar label on a bar or in the legend (MVP: open $; bar height still reflects impact). */
 function amountLabel(col: Column, mvp: boolean): string | null {
-  if (col.key === "total") return mvp ? null : col.valueLabel || null
+  if (col.key === "total") {
+    if (mvp) return col.stepLabel ? `${col.stepLabel} open` : null
+    return col.valueLabel || null
+  }
   if (col.key === "pace") return col.valueLabel || null
   const step = col.stepLabel ?? (mvp ? null : col.valueLabel)
   if (!step) return null
   return mvp ? `${step} open` : step
 }
 
+/** Same dollars without the MVP "open" suffix (under column titles). */
+function amountShort(col: Column, mvp: boolean): string | null {
+  if (col.key === "pace") return col.valueLabel || null
+  if (col.key === "total") return (mvp ? col.stepLabel : col.valueLabel) ?? col.stepLabel ?? null
+  return col.stepLabel ?? col.valueLabel ?? null
+}
+
 function BarValue({ col, mvp }: { col: Column; mvp: boolean }) {
   const text = amountLabel(col, mvp)
   if (!text) return null
   return (
-    <div className="pointer-events-none absolute bottom-full left-1/2 z-30 mb-1 -translate-x-1/2 rounded-md bg-white px-2 py-1 shadow-xs ring-1 ring-slate-200">
-      <span className="font-mono text-xs font-semibold whitespace-nowrap text-slate-950 tabular-nums">{text}</span>
-    </div>
+    <span className="pointer-events-none absolute bottom-full left-1/2 z-30 mb-1 -translate-x-1/2 font-mono text-xs font-semibold whitespace-nowrap text-slate-950 tabular-nums">
+      {text}
+    </span>
   )
 }
 
@@ -83,7 +93,7 @@ export function buildColumns(stages: WaterfallStage[], pace: number, min: number
   return [
     { key: "pace", label: "Current run rate", sub: "", valueLabel: fmtBiz(pace), start: min, end: pace, selectable: false },
     ...steps,
-    { key: "total", label: "Total opportunity", sub: "", valueLabel: `$${acc.toFixed(1)}M`, start: min, end: acc, selectable: true },
+    { key: "total", label: "Total opportunity", sub: "", valueLabel: `$${acc.toFixed(1)}M`, stepLabel: `+${fmtStep(acc - pace)}`, start: min, end: acc, selectable: true },
   ]
 }
 
@@ -112,11 +122,20 @@ export function buildImpactColumns(stages: WaterfallStage[], pace: number, plan:
     acc = col.end
     return col
   })
+  const openTotal = stages.reduce((n, s) => n + s.value, 0)
   return [
     { key: "pace", label: "Current run rate", sub: "", valueLabel: fmtBiz(pace), start: min, end: pace, selectable: false },
     ...steps,
-    // Where the work stacks up to, with no number on it: its split by area would be dollars, so it doesn't open.
-    { key: "total", label: "Total opportunity", sub: "", valueLabel: "", start: min, end: acc, selectable: false },
+    {
+      key: "total",
+      label: "Total opportunity",
+      sub: "",
+      valueLabel: "",
+      stepLabel: `+${fmtStep(openTotal)}`,
+      start: min,
+      end: acc,
+      selectable: false,
+    },
   ]
 }
 
@@ -190,8 +209,8 @@ export function WaterfallChart({ selectedId, onSelect }: WaterfallChartProps) {
                 >
                   {col.label}
                 </span>
-                {amountLabel(col, mvp) && col.key !== "pace" && col.key !== "total" && (
-                  <span className="font-mono text-xs font-semibold text-slate-950 tabular-nums">{col.stepLabel ?? col.valueLabel}</span>
+                {amountShort(col, mvp) && col.key !== "pace" && (
+                  <span className="font-mono text-xs font-semibold text-slate-950 tabular-nums">{amountShort(col, mvp)}</span>
                 )}
                 {col.sub && <span className="text-xs text-slate-500">{col.sub}</span>}
                 {col.key === "total" && !mvp && (
@@ -211,14 +230,12 @@ export function WaterfallChart({ selectedId, onSelect }: WaterfallChartProps) {
       </div>
       <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 border-t border-slate-100 pt-4">
         {columns
-          .filter((c) => c.key !== "total" && BAR[c.key])
+          .filter((c) => BAR[c.key])
           .map((c) => (
             <span key={c.key} className="inline-flex items-center gap-2 text-xs text-slate-700">
               <span className={cn("size-2.5 shrink-0 rounded-sm", BAR[c.key])} aria-hidden />
               <span className="font-medium text-slate-950">{c.label}</span>
-              {amountLabel(c, mvp) && (
-                <span className="font-mono tabular-nums text-slate-600">{c.key === "pace" ? c.valueLabel : c.stepLabel ?? c.valueLabel}</span>
-              )}
+              {amountShort(c, mvp) && <span className="font-mono tabular-nums text-slate-600">{amountShort(c, mvp)}</span>}
             </span>
           ))}
       </div>
