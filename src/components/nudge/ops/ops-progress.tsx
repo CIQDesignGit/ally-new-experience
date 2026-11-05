@@ -57,27 +57,28 @@ export function OpsProgress({ celebrate, stage, onStage }: { celebrate: Celebrat
     const oneApproval = waiting.filter((b) => b.tier === "approval")
     const losing = oneApproval.filter((b) => b.urgent)
     return (
-      <div className="flex items-end justify-between gap-8 border-b border-slate-200 px-10 pt-2 pb-6">
+      <div className="flex items-end justify-between gap-8 border-b border-slate-200 px-10 pt-4 pb-8">
         <div className="min-w-0">
-          <div className="text-2xl font-semibold tracking-tight text-slate-700">
+          <div className="text-base font-medium text-slate-500 tabular-nums">
             {gap > 0 && (
               <>
-                <span className="font-mono text-slate-950">{fmtBiz(gap)}</span> gap to plan ·{" "}
+                <span className="font-semibold text-slate-950">{fmtBiz(gap)}</span> gap to plan ·{" "}
               </>
             )}
-            <span className="font-mono text-slate-950">{waiting.length}</span> fixes waiting on you.
+            <span className="font-semibold text-slate-950">{waiting.length}</span> fixes waiting on you.
           </div>
-          <h1 className="mt-1 text-[28px] leading-tight font-bold tracking-tight text-slate-950">
+          <h1 className="mt-2 text-3xl leading-tight font-semibold tracking-tight text-slate-950 tabular-nums">
             {oneApproval.length ? (
               <>
-                <span className="font-mono">{oneApproval.length}</span> {oneApproval.length === 1 ? "is" : "are"} one approval away.
+                {oneApproval.length} {oneApproval.length === 1 ? "is" : "are"} one approval away.
               </>
             ) : (
               "Everything one approval away is live."
             )}
           </h1>
           {losing.length > 0 && (
-            <div className="mt-2 text-lg font-semibold text-error-600">
+            <div className="mt-3 flex items-center gap-2 text-[15px] font-medium text-warning-700">
+              <span className="size-2 rounded-full bg-warning-500" aria-hidden />
               {losing.length} on SKUs losing sales now
             </div>
           )}

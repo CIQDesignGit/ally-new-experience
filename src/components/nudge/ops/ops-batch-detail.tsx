@@ -11,6 +11,7 @@ import { BuyBoxVisual } from "./buybox-visual"
 import { IssueVisual, hasIssueVisual } from "./issue-visuals"
 import { VENDOR_MANAGER, useNote } from "./note-bar"
 import { useOpsLevel } from "./ops-batch-list"
+import { ImpactMeter } from "../ui/impact-meter"
 
 interface OpsBatchDetailProps {
   batch: OpsBatch
@@ -80,11 +81,14 @@ export function OpsBatchDetail({ batch, onAction, onReviewAll }: OpsBatchDetailP
         {level ? (
           // The MVP: impact on the gap to plan; the daily figure is what the SKUs normally sell (measured), not a projection.
           <div className="shrink-0 @xl:text-right">
-            <div className="text-[28px] font-bold tracking-tight text-slate-950">{level(batch)}</div>
-            <div className="mt-0.5 text-sm text-slate-500">{done ? "sent · " : ""}impact on the gap to plan</div>
+            <div className="text-xs font-medium text-slate-500">{done ? "Sent · impact" : "Impact"} on the gap to plan</div>
+            <div className="mt-1.5 flex items-center gap-2 @xl:justify-end">
+              <ImpactMeter level={level(batch)} />
+              <span className="text-lg font-semibold text-slate-950">{level(batch)}</span>
+            </div>
             {batch.urgent && !done && (
-              <div className="mt-0.5 text-sm text-slate-500">
-                These SKUs normally sell <span className="font-mono text-slate-950">{daily}</span> a day
+              <div className="mt-1.5 text-sm text-slate-500">
+                These SKUs normally sell <span className="font-mono font-medium text-slate-950">{daily}</span> a day
               </div>
             )}
           </div>
@@ -97,7 +101,7 @@ export function OpsBatchDetail({ batch, onAction, onReviewAll }: OpsBatchDetailP
         )}
       </div>
 
-      <div className="mt-5 overflow-hidden rounded-xl border border-slate-200">
+      <div className="mt-6 overflow-hidden rounded-xl border border-slate-200">
         {/* A label only where it adds something: autopilot. A caught issue speaks for itself. */}
         {batch.tier === "autopilot" && (
         <div className="flex items-center gap-2 border-b border-slate-100 bg-slate-50 px-5 py-3 text-sm font-semibold text-slate-950">
@@ -142,7 +146,7 @@ export function OpsBatchDetail({ batch, onAction, onReviewAll }: OpsBatchDetailP
         )}
       </div>
 
-      <div className="mt-5">
+      <div className="mt-6">
         {batch.tier === "autopilot" ? (
           <div className="flex items-start gap-3 rounded-xl border border-info-100 bg-info-50 px-5 py-4 text-sm text-slate-700">
             <RefreshCw className="mt-0.5 size-4 shrink-0 text-info-600" />

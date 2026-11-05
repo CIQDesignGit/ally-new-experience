@@ -95,7 +95,7 @@ export function OpsBatchList({ selectedId, selectedSku, expandedId, checked, fil
     <div className="bg-white">
       <InboxFilters filter={filter} onFilter={onFilter} sortable={!!level} />
 
-      <div className="flex flex-col">
+      <div className="flex flex-col gap-0.5 px-4 py-3">
         {rows.map((b) => {
           const active = selectedId === b.id
           const done = !!approved[b.id]
@@ -119,20 +119,20 @@ export function OpsBatchList({ selectedId, selectedSku, expandedId, checked, fil
           const count = b.tier === "input" ? b.inputCount : b.skus
           const noun = b.tier === "input" ? (b.inputNoun ?? "items") : "SKUs"
           return (
-            <div key={b.id} className={cn("border-b border-slate-100", active && !selectedSku && "bg-slate-50 shadow-[inset_2px_0_0_var(--color-brand-500)]")}>
+            <div key={b.id} className={cn("rounded-lg transition-colors", active && !selectedSku ? "bg-slate-100 ring-1 ring-slate-200" : "hover:bg-slate-50")}>
               {/* A row, not a button: the SKU count inside it is its own button. */}
               <div
                 role="button"
                 tabIndex={0}
                 onClick={() => onSelect(b.id)}
                 onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), onSelect(b.id))}
-                className="grid w-full cursor-pointer focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-300 grid-cols-[8px_minmax(0,1fr)_auto] items-baseline gap-x-2.5 py-2.5 pr-4 pl-10 text-left outline-none hover:bg-slate-50 focus-visible:bg-slate-50"
+                className="grid w-full cursor-pointer focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-300 grid-cols-[8px_minmax(0,1fr)_auto] items-baseline gap-x-3 rounded-lg py-3 pr-3 pl-6 text-left outline-none"
               >
                 <span className={cn("size-2 -translate-y-px rounded-full", DOT[b.tier])} aria-label={GROUPS.find((g) => g.tier === b.tier)?.label} />
                 <span className="min-w-0">
                   <span className={cn("block text-[14px] leading-snug", b.tier === "autopilot" ? "text-slate-500" : "font-medium text-slate-950")}>{b.name}</span>
                   {/* Count first, so it lines up down the list; then the part. */}
-                  <span className="mt-0.5 flex items-center gap-1.5 text-xs whitespace-nowrap text-slate-500">
+                  <span className="mt-1 flex items-center gap-1.5 text-xs whitespace-nowrap text-slate-500">
                     {skus.length > 0 ? (
                       <button
                         type="button"

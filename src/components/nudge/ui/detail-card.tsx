@@ -5,7 +5,7 @@
 export function DetailCard({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-w-0 bg-slate-50 p-6">
-      <div className="min-w-0 rounded-2xl border border-slate-300 bg-white shadow-md">{children}</div>
+      <div className="min-w-0 rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">{children}</div>
     </div>
   )
 }

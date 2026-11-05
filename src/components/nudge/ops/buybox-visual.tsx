@@ -20,7 +20,7 @@ export function BuyBoxVisual({ sku }: { sku: SellerSku }) {
         Offers vs MAP <span className="font-normal text-slate-500">· {sku.name}</span>
       </div>
       <PriceLadder sku={sku} />
-      <div className="mt-3 border-t border-slate-100 pt-3 text-sm text-slate-600 tabular-nums">
+      <div className="mt-3 border-t border-slate-100 pt-3 text-sm text-slate-500 tabular-nums">
         You won <span className="font-semibold text-slate-950">{yours} of the last 12</span> crawls
         {sku.sellers.map((s) => (
           <span key={s.name}>

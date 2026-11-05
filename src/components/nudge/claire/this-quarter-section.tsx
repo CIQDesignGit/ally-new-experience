@@ -47,7 +47,7 @@ export function ThisQuarterSection() {
       {mvp ? (
         <div className="mt-2 flex flex-wrap items-baseline gap-x-4 gap-y-1">
           <span className="text-2xl font-semibold tracking-tight text-slate-950">
-            Delivered <span className="font-mono text-ally-600">{fmtValue(delivered)}</span>
+            Delivered <span className="font-mono text-success-700">{fmtValue(delivered)}</span>
           </span>
           <span className="text-sm text-slate-500">Measured on the SKUs Ally changed, against their 4 weeks before</span>
         </div>
@@ -57,7 +57,7 @@ export function ThisQuarterSection() {
           Projected <span className="font-mono">{fmtValue(projected)}</span>
         </span>
         <span className="text-2xl font-semibold tracking-tight text-slate-950">
-          Delivered <span className="font-mono text-ally-600">{fmtValue(delivered)}</span>
+          Delivered <span className="font-mono text-success-700">{fmtValue(delivered)}</span>
         </span>
         <span className={cn("font-mono text-sm font-semibold tabular-nums", delta >= 0 ? "text-success-700" : "text-error-600")}>
           {delta >= 0 ? "+" : "−"}

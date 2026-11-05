@@ -9,6 +9,8 @@ import { useMvp } from "../../mvp"
 
 /** Name · bar · delivered of projected · the gap and why. One row per agent, on one scale. */
 const BAR_GRID = "grid grid-cols-[20px_200px_minmax(0,1fr)_128px_260px] items-center gap-4"
+/** Delivered only: no "vs projected" column, so the figure closes the row. */
+const BAR_GRID_MVP = "grid grid-cols-[20px_200px_minmax(0,1fr)_128px] items-center gap-4"
 
 /** The shortfall's top reason, in a few words: the first "waiting" or "lost" bullet, without its dollar prefix. */
 function topReason(data?: { bullets?: Bullet[] }) {
@@ -21,7 +23,7 @@ function topReason(data?: { bullets?: Bullet[] }) {
 }
 
 /**
- * One agent as a bullet bar: delivered (magenta, Ally's work) against the projected
+ * One agent as a bullet bar: delivered (green) against the projected
  * tick, the shortfall shaded red or the overshoot green, all on the section's scale.
  */
 export function BarRow({ name, did, delivered, promised, scale, data, why: whyText, open, onToggle, children }: { name: string; did: string; delivered: number; promised: number; scale: number; data?: { bullets?: Bullet[] }; why?: string; open?: boolean; onToggle?: () => void; children?: React.ReactNode }) {
@@ -38,12 +40,12 @@ export function BarRow({ name, did, delivered, promised, scale, data, why: whyTe
         <div className="text-[15px] font-semibold text-slate-950">{name}</div>
         <div className="truncate text-[13px] text-slate-500">{did}</div>
       </div>
-      <div className="relative h-3 rounded-sm bg-slate-100" aria-hidden>
+      <div className="relative h-2 overflow-hidden rounded-full bg-slate-100" aria-hidden>
         {mvp ? (
-          <div className="absolute inset-y-0 left-0 rounded-l-sm bg-ally-500" style={{ width: pct(delivered) }} />
+          <div className="absolute inset-y-0 left-0 rounded-full bg-success-500" style={{ width: pct(delivered) }} />
         ) : (
           <>
-            <div className="absolute inset-y-0 left-0 rounded-l-sm bg-ally-500" style={{ width: pct(Math.min(delivered, promised)) }} />
+            <div className="absolute inset-y-0 left-0 rounded-l-full bg-success-500" style={{ width: pct(Math.min(delivered, promised)) }} />
             <div className={cn("absolute inset-y-0", short ? "bg-error-100" : "bg-success-200")} style={{ left: pct(Math.min(delivered, promised)), width: pct(Math.abs(delta)) }} />
             <div className="absolute -inset-y-1 w-0.5 bg-ink" style={{ left: pct(promised) }} />
           </>
@@ -53,29 +55,31 @@ export function BarRow({ name, did, delivered, promised, scale, data, why: whyTe
         <span className="font-semibold text-slate-950">{fmtValue(delivered)}</span>
         {!mvp && <span className="text-slate-500"> of {fmtValue(promised)}</span>}
       </div>
-      <div className="line-clamp-2 min-w-0 text-[13px] leading-snug">
-        {mvp ? null : delta === 0 ? (
-          <span className="text-slate-600">On projection</span>
-        ) : (
-          <>
-            <span className={cn("font-mono font-semibold tabular-nums", short ? "text-error-600" : "text-success-700")}>
-              {short ? "−" : "+"}
-              {fmtValue(Math.abs(delta))}
-            </span>
-            {why && <span className="text-slate-600"> · {why}</span>}
-          </>
-        )}
-      </div>
+      {!mvp && (
+        <div className="line-clamp-2 min-w-0 text-[13px] leading-snug">
+          {delta === 0 ? (
+            <span className="text-slate-600">On projection</span>
+          ) : (
+            <>
+              <span className={cn("font-mono font-semibold tabular-nums", short ? "text-error-600" : "text-success-700")}>
+                {short ? "−" : "+"}
+                {fmtValue(Math.abs(delta))}
+              </span>
+              {why && <span className="text-slate-600"> · {why}</span>}
+            </>
+          )}
+        </div>
+      )}
     </>
   )
   return (
     <div className="border-t border-slate-100 first:border-t-0">
       {onToggle ? (
-        <div role="button" tabIndex={0} onClick={onToggle} onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onToggle()} className={cn(BAR_GRID, "cursor-pointer px-6 py-4 hover:bg-slate-50")}>
+        <div role="button" tabIndex={0} onClick={onToggle} onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onToggle()} className={cn(mvp ? BAR_GRID_MVP : BAR_GRID, "cursor-pointer px-6 py-4 hover:bg-slate-50")}>
           {row}
         </div>
       ) : (
-        <div className={cn(BAR_GRID, "px-6 py-4")}>{row}</div>
+        <div className={cn(mvp ? BAR_GRID_MVP : BAR_GRID, "px-6 py-4")}>{row}</div>
       )}
       {open && <div className="border-t border-slate-100 bg-slate-25 px-6 py-5">{children}</div>}
     </div>
@@ -89,7 +93,7 @@ export function BarKey() {
   if (mvp) return null
   return (
     <div className="mt-4 flex flex-wrap gap-4 text-xs text-slate-500">
-      <span className="flex items-center gap-1.5"><span className="h-2 w-3 rounded-sm bg-ally-500" /> Delivered</span>
+      <span className="flex items-center gap-1.5"><span className="h-2 w-3 rounded-sm bg-success-500" /> Delivered</span>
       <span className="flex items-center gap-1.5"><span className="h-3 w-0.5 bg-ink" /> Projected</span>
       <span className="flex items-center gap-1.5"><span className="h-2 w-3 rounded-sm bg-error-100" /> Short</span>
       <span className="flex items-center gap-1.5"><span className="h-2 w-3 rounded-sm bg-success-200" /> Ahead</span>
@@ -111,8 +115,8 @@ export function QueueDelivered({ label, rows, footer }: { label: string; rows: {
   // Most delivered first, as on Claire's page.
   const sorted = [...rows].sort((a, b) => b.delivered - a.delivered)
   return (
-    <section className="border-t border-slate-300 px-10 pt-9 pb-10">
-      <div className="font-mono text-xs tracking-wide text-slate-500 uppercase">{label}</div>
+    <section className="border-t border-slate-200 px-10 pt-10 pb-10">
+      <div className="text-xs font-medium tracking-wider text-slate-500 uppercase">{label}</div>
       <div className="mt-2 flex flex-wrap items-baseline gap-x-6 gap-y-1">
         {!mvp && (
           <span className="text-2xl font-semibold tracking-tight text-slate-500">
@@ -120,7 +124,7 @@ export function QueueDelivered({ label, rows, footer }: { label: string; rows: {
           </span>
         )}
         <span className="text-2xl font-semibold tracking-tight text-slate-950">
-          Delivered <span className="font-mono text-ally-600">{fmtValue(delivered)}</span>
+          Delivered <span className="text-success-700 tabular-nums">{fmtValue(delivered)}</span>
         </span>
         {!mvp && (
           <span className={cn("font-mono text-sm font-semibold tabular-nums", delta >= 0 ? "text-success-700" : "text-error-600")}>

@@ -12,13 +12,13 @@ import type { OpsBatch } from "../data"
 
 function Frame({ title, sub, line, children }: { title: string; sub?: string; line?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <div className="px-5 py-4">
+    <div className="px-6 py-5">
       <div className="text-sm font-semibold text-slate-950">
         {title}
         {sub && <span className="font-normal text-slate-500"> · {sub}</span>}
       </div>
       <div className="mt-3">{children}</div>
-      {line && <div className="mt-3 border-t border-slate-100 pt-3 text-sm text-slate-600 tabular-nums">{line}</div>}
+      {line && <div className="mt-3 border-t border-slate-100 pt-3 text-sm text-slate-500 tabular-nums">{line}</div>}
     </div>
   )
 }
@@ -58,13 +58,13 @@ function Tile({ asin, label, deal, badge, price, list }: { asin: string; label: 
   return (
     <div className="min-w-0">
       <div className="text-xs font-medium text-slate-500">{label}</div>
-      <div className="mt-1.5 flex items-center gap-3 rounded-lg border border-slate-200 bg-white p-3">
+      <div className="mt-1.5 flex items-center gap-3 rounded-lg bg-slate-50 p-3">
         <img src={candleThumbnail(asin)} alt="" className="size-14 shrink-0 rounded-md object-cover ring-1 ring-slate-200" />
         <div className="min-w-0">
           {deal || badge ? (
             <span className="inline-block rounded bg-slate-900 px-1.5 py-0.5 text-[11px] font-semibold whitespace-nowrap text-white">Halloween deal · 20% off</span>
           ) : (
-            <span className="inline-block rounded border border-dashed border-slate-300 px-1.5 py-0.5 text-[11px] text-slate-400">No badge</span>
+            <span className="inline-block rounded border border-dashed border-slate-300 bg-white px-1.5 py-0.5 text-[11px] text-slate-500">No badge</span>
           )}
           <div className="mt-1 flex flex-wrap items-baseline gap-x-2 tabular-nums">
             <span className="text-[17px] font-semibold whitespace-nowrap text-slate-950">${price.toFixed(2)}</span>
@@ -90,7 +90,7 @@ function BadgeVisual({ batch, asin }: { batch: OpsBatch; asin?: string }) {
     <Frame
       title="What shoppers see"
       sub={short(sku.name)}
-      line={asin ? <>Deal live Oct 1–31 · {badgeShows ? "strike-through missing" : "badge and strike-through missing"}</> : <>Deal live Oct 1–31 · badge and strike-through missing on <span className="font-semibold text-slate-950">{batch.skus} SKUs</span></>}
+      line={asin ? <>Deal live Oct 1–31 · {badgeShows ? "strike-through missing" : "badge and strike-through missing"}</> : <>Deal live Oct 1–31 · badge and strike-through missing on <span className="font-semibold whitespace-nowrap text-slate-950">{batch.skus} SKUs</span></>}
     >
       <div className="@container">
         <div className="grid grid-cols-1 gap-4 @md:grid-cols-2">
@@ -118,7 +118,7 @@ function DealPageVisual({ batch, asin }: { batch: OpsBatch; asin?: string }) {
           return (
             <div key={label} className="flex flex-col">
               <div className={i === 4 ? "text-xs font-medium text-slate-950" : "text-xs text-slate-500"}>{label}</div>
-              <div className="mt-1.5 flex min-h-[64px] flex-wrap content-start gap-1.5 rounded-lg border border-slate-200 bg-slate-25 p-2">
+              <div className="mt-1.5 flex min-h-[64px] flex-wrap content-start gap-1.5 rounded-lg bg-slate-50 p-2">
                 {here.map((s) => (
                   <img key={s.asin} src={candleThumbnail(s.asin)} alt={s.name} title={s.name} className={cn("size-9 rounded-md object-cover", asin === s.asin ? "ring-2 ring-brand-500" : asin ? "opacity-40 ring-1 ring-slate-200" : "ring-1 ring-slate-200")} />
                 ))}
@@ -141,14 +141,14 @@ function StockVisual({ batch, asin }: { batch: OpsBatch; asin?: string }) {
       <div className="grid grid-cols-2 gap-4">
         <div>
           <div className="text-xs font-medium text-slate-500">At your DC</div>
-          <div className="mt-1.5 rounded-lg border border-slate-200 p-3">
+          <div className="mt-1.5 rounded-lg bg-slate-50 p-3">
             <div className="text-[22px] font-semibold text-slate-950 tabular-nums">{units}</div>
             <div className="text-xs text-slate-500">units on hand</div>
           </div>
         </div>
         <div>
           <div className="text-xs font-medium text-slate-500">On Amazon</div>
-          <div className="mt-1.5 flex items-center gap-3 rounded-lg border border-slate-200 p-3">
+          <div className="mt-1.5 flex items-center gap-3 rounded-lg bg-slate-50 p-3">
             <img src={candleThumbnail(lead.asin)} alt="" className="size-10 shrink-0 rounded-md object-cover opacity-60 ring-1 ring-slate-200" />
             <div>
               <div className="text-[15px] font-semibold text-slate-950">Currently unavailable.</div>
