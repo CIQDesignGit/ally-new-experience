@@ -17,7 +17,7 @@ import { availableFor } from "./library/data"
 import { useCompetition } from "../competition/state"
 import { statusOf, useLibrary } from "./library/state"
 import { sidebarLayoutMinMediaQuery } from "@/lib/breakpoints"
-import { useExperienceMode } from "@/lib/experience-mode"
+import { RegionRetailerSettings } from "./region-retailer-settings"
 
 const OPEN_W = "264px"
 const SHUT_W = "64px"
@@ -44,6 +44,8 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
   // Pinned stays open everywhere; unpinned closes on its own a few seconds after the pointer leaves it.
   const [pinned, setPinned] = useState(false)
   const [open, setOpen] = useState(defaultOpen ?? kind === "conversation")
+  const [regionSettingsOpen, setRegionSettingsOpen] = useState(false)
+  const regionSettingsOpenRef = useRef(false)
   // Read after mount, so the server and the first client render agree.
   useEffect(() => {
     const t = window.setTimeout(() => {
@@ -64,16 +66,16 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
   /** Closes after the pointer leaves (quickly) or a while after opening without a hover (slower). */
   const scheduleClose = (ms = 800) => {
     window.clearTimeout(timer.current)
-    if (pinned) return
+    if (pinned || regionSettingsOpenRef.current) return
     timer.current = window.setTimeout(() => {
-      if (!pointerOn()) setOpen(false)
+      if (!pointerOn() && !regionSettingsOpenRef.current) setOpen(false)
     }, ms)
   }
   useEffect(() => {
-    if (open && !pinned) scheduleClose(3000)
+    if (open && !pinned && !regionSettingsOpen) scheduleClose(3000)
     return () => window.clearTimeout(timer.current)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, pinned])
+  }, [open, pinned, regionSettingsOpen])
   function pin(next: boolean) {
     setPinned(next)
     try {
@@ -250,6 +252,7 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
       }}
       onMouseLeave={() => {
         hovering.current = false
+        if (regionSettingsOpen) return
         if (open) scheduleClose()
         else window.clearTimeout(timer.current)
       }}
@@ -285,6 +288,15 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
           </button>
         </span>
       </div>
+
+      {open && (
+        <RegionRetailerSettings
+          onOpenChange={(next) => {
+            regionSettingsOpenRef.current = next
+            setRegionSettingsOpen(next)
+          }}
+        />
+      )}
 
       {open ? (
         <div className="flex min-h-0 flex-1 flex-col px-2 pb-2">
@@ -366,7 +378,6 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
           )}
           </div>
           </div>
-          {!fde && <OldExperienceToggle />}
         </div>
       ) : (
         <nav className="flex flex-1 flex-col items-center gap-1 pb-3">
@@ -420,37 +431,6 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
         </nav>
       )}
     </aside>
-  )
-}
-
-function OldExperienceToggle() {
-  const { isOld, setMode } = useExperienceMode()
-  return (
-    <div className="mt-2 shrink-0 border-t border-white/10 pt-3">
-      <div className="flex items-center justify-between gap-2 px-1">
-        <span className="text-[12px] leading-snug text-brand-200">Old experience</span>
-        <button
-          type="button"
-          role="switch"
-          aria-checked={isOld}
-          aria-label="Old experience"
-          title="Switch to classic CommerceIQ"
-          onClick={() => setMode(isOld ? "new" : "old")}
-          className={cn(
-            "relative h-5 w-9 shrink-0 rounded-full transition-colors",
-            isOld ? "bg-ally-500" : "bg-white/20",
-          )}
-        >
-          <span
-            aria-hidden
-            className={cn(
-              "absolute top-0.5 left-0.5 size-4 rounded-full bg-white shadow-sm transition-transform",
-              isOld && "translate-x-4",
-            )}
-          />
-        </button>
-      </div>
-    </div>
   )
 }
 
