@@ -10,11 +10,8 @@ import type { Readiness } from "../market"
 import { useMvp } from "../mvp"
 import { annual, offered } from "./plays"
 import { Num, Points } from "../points"
-import { MarketMap } from "./market-map"
 
 export type GrowView = "market" | "competition" | "event"
-
-const READINESS: Record<Readiness, string> = { ready: "Ready", partial: "Partial", risk: "Not set" }
 
 export function ReadinessDot({ state }: { state: Readiness }) {
   return <span className={cn("inline-block size-2.5 shrink-0 rounded-full", state === "ready" ? "bg-success-500" : state === "partial" ? "bg-warning-500" : "bg-error-500")} />
@@ -22,12 +19,11 @@ export function ReadinessDot({ state }: { state: Readiness }) {
 
 /**
  * Every card has the same anatomy so the three read as peers: label, one-sentence
- * headline, evidence, two supporting points, then what it's worth and the move.
+ * headline, two supporting points, then what it's worth and the move.
  */
-function GrowCard({ label, headline, evidence, points, value, onOpen, action }: {
+function GrowCard({ label, headline, points, value, onOpen, action }: {
   label: React.ReactNode
   headline: React.ReactNode
-  evidence: React.ReactNode
   points: React.ReactNode[]
   value: React.ReactNode
   action: string
@@ -40,9 +36,8 @@ function GrowCard({ label, headline, evidence, points, value, onOpen, action }: 
       className="group flex flex-col rounded-2xl bg-white p-6 text-left shadow-xs ring-1 ring-slate-200 outline-none transition-shadow hover:shadow-sm hover:ring-brand-300 focus-visible:ring-2 focus-visible:ring-brand-300"
     >
       <div className="text-xs font-medium text-slate-500">{label}</div>
-      {/* Two lines reserved so the evidence panels start level across cards. */}
+      {/* Two lines reserved so the points start level across cards. */}
       <div className="mt-1.5 line-clamp-2 min-h-14 text-lg leading-7 font-semibold text-balance text-slate-950">{headline}</div>
-      <div className="mt-4 overflow-hidden rounded-xl bg-slate-25 ring-1 ring-slate-200">{evidence}</div>
       <Points className="mt-4" items={points} />
       <div className="mt-auto pt-5">
         <div className="border-t border-slate-100 pt-4">{value}</div>
@@ -60,23 +55,6 @@ function Value({ amount, caption, bad }: { amount: string; caption: string; bad?
     <div className="flex items-baseline gap-2">
       <span className={cn("font-mono text-2xl font-semibold tracking-tight", bad ? "text-error-600" : "text-slate-950")}>{amount}</span>
       <span className="text-sm text-slate-500">{caption}</span>
-    </div>
-  )
-}
-
-function Tiles({ children }: { children: React.ReactNode }) {
-  return <div className="grid auto-cols-fr grid-flow-col divide-x divide-slate-200">{children}</div>
-}
-
-function TilesGrid({ children }: { children: React.ReactNode }) {
-  return <div className="grid grid-cols-2 divide-x divide-y divide-slate-200">{children}</div>
-}
-
-function Tile({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="min-w-0 px-2.5 py-3">
-      <div className="truncate text-[11px] text-slate-500">{label}</div>
-      <div className="mt-1 flex items-center gap-1.5 text-[13px] font-semibold whitespace-nowrap text-slate-950">{children}</div>
     </div>
   )
 }
@@ -101,11 +79,6 @@ export function GrowCards({ onOpen }: { onOpen: (v: GrowView) => void }) {
         <GrowCard
           label="Market"
           headline={<>{seg.name} is growing {seg.growth}%; you hold {seg.share}%</>}
-          evidence={
-            <div className="px-2 py-1.5">
-              <MarketMap compact selected={seg.id} />
-            </div>
-          }
           points={seg.points.slice(0, 2)}
           value={<Value amount={`+${fmtValue(annual(offered(seg.plays, mvp)))}`} caption="a year, projected" />}
           action={`Win share in ${seg.name.toLowerCase()}`}
@@ -115,15 +88,6 @@ export function GrowCards({ onOpen }: { onOpen: (v: GrowView) => void }) {
         <GrowCard
           label="Competition"
           headline={comp.headline}
-          evidence={
-            <Tiles>
-              {comp.stats.map((s) => (
-                <Tile key={s.label} label={s.label}>
-                  <span className={cn("font-mono", s.bad && "text-error-600")}>{s.value}</span>
-                </Tile>
-              ))}
-            </Tiles>
-          }
           points={comp.moves.slice(0, 2)}
           value={<Value amount={`−${fmtValue(comp.atRisk)}`} caption="at risk this quarter" bad />}
           action={`Respond to ${comp.name}`}
@@ -131,17 +95,14 @@ export function GrowCards({ onOpen }: { onOpen: (v: GrowView) => void }) {
         />
 
         <GrowCard
-          label={<>Event readiness · {ev.date}</>}
-          headline={<>{ev.name} is {ev.weeks} weeks away</>}
-          evidence={
-            <TilesGrid>
-              {ev.levers.map((l) => (
-                <Tile key={l.name} label={l.name}>
-                  <ReadinessDot state={l.state} />
-                  {READINESS[l.state]}
-                </Tile>
-              ))}
-            </TilesGrid>
+          label="Event readiness"
+          headline={
+            <>
+              {ev.name}{" "}
+              <span className="text-sm font-normal text-slate-500">
+                {ev.date} · {ev.weeks} weeks
+              </span>
+            </>
           }
           points={[
             <>
