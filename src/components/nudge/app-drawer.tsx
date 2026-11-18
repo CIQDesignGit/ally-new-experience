@@ -145,6 +145,7 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
       fresh: fresh || dashboards.some((d) => !d.seen),
       items: [
         // On for every brand from day one (the library's core dashboard).
+        { label: "Business overview", sub: "Dashboard", href: "/brand-performance", on: path === "/brand-performance" },
         { label: "Weekly business review", sub: "Dashboard · every Monday", href: "/dashboards/wbr", on: path === "/dashboards/wbr" },
         // What a skill turned on from the library produces, unless it's already listed by its own story below.
         ...libraryOutputs.filter((o) => !(retro.dashboard && o.href === "/michelle/dashboards/prime-day")),
@@ -454,7 +455,7 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
           {groups[0].map((x) => {
             const Icon = LIST_ICON[x.title] ?? x.icon
             return (
-              <button key={x.title} type="button" onClick={() => toggle(true)} aria-label={x.title} title={x.title} className={iconBtn(x.title === "My dashboards" && (path.startsWith("/dashboards") || path.startsWith("/michelle/dashboards") || path.startsWith("/michelle/decks") || path === "/michelle/retro"))}>
+              <button key={x.title} type="button" onClick={() => toggle(true)} aria-label={x.title} title={x.title} className={iconBtn(x.title === "My dashboards" && (path === "/brand-performance" || path.startsWith("/dashboards") || path.startsWith("/michelle/dashboards") || path.startsWith("/michelle/decks") || path === "/michelle/retro"))}>
                 <Icon className="size-4" />
                 {x.fresh && <span aria-hidden className="absolute top-2 right-2 size-2 rounded-full bg-ally-500 ring-2 ring-brand-950" />}
               </button>
@@ -501,15 +502,15 @@ function AllyWorking() {
   const auto = stages.find((s) => s.id === "autopilot")
   if (!auto || auto.value <= 0) return null
   return (
-    <div className="rounded-lg bg-white/5 px-3 py-2.5 ring-1 ring-white/10">
+    <div className="px-2.5">
       <div className="flex items-center gap-2 text-[13px] font-semibold text-white">
         <span className="size-2 animate-pulse rounded-full bg-success-500" aria-hidden /> Ally is working
       </div>
       {/* The MVP doesn't put a dollar value on autopilot work. */}
       {!mvp && (
-        <div className="mt-1 text-xs text-brand-200">
+        <p className="mt-1 pl-5 text-xs text-brand-200">
           <span className="font-mono text-white">{fmtValue(auto.value)}</span> on autopilot
-        </div>
+        </p>
       )}
     </div>
   )
