@@ -1,6 +1,8 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { AnimatePresence, motion } from "framer-motion"
+import { DURATION, EASE_SWAP } from "@/lib/motion"
 import { AppDrawer } from "@/components/nudge/app-drawer"
 import { PageShell } from "@/components/layout/page-shell"
 import { PageFrame, Widget, WidgetStack, PAGE_EDGE } from "@/components/layout/page-frame"
@@ -43,17 +45,38 @@ export default function ClaireWaterfallPage() {
 
 function ClaireWaterfall() {
   const { isOld } = useExperienceMode()
-  if (isOld) {
-    return (
-      <PageShell className="overflow-hidden bg-slate-100">
-        <div className="flex h-screen overflow-hidden">
-          <OldExperienceSidebar />
-          <OldExperiencePlaceholder />
-        </div>
-      </PageShell>
-    )
-  }
-  return <ClaireWaterfallNew />
+  return (
+    <AnimatePresence mode="wait" initial={false}>
+      {isOld ? (
+        <motion.div
+          key="experience-classic"
+          className="min-h-screen"
+          initial={{ opacity: 0, scale: 0.995 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.995 }}
+          transition={{ duration: DURATION.base, ease: EASE_SWAP }}
+        >
+          <PageShell className="overflow-hidden bg-slate-100">
+            <div className="flex h-screen overflow-hidden">
+              <OldExperienceSidebar />
+              <OldExperiencePlaceholder />
+            </div>
+          </PageShell>
+        </motion.div>
+      ) : (
+        <motion.div
+          key="experience-ally"
+          className="min-h-screen"
+          initial={{ opacity: 0, scale: 0.995 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.995 }}
+          transition={{ duration: DURATION.base, ease: EASE_SWAP }}
+        >
+          <ClaireWaterfallNew />
+        </motion.div>
+      )}
+    </AnimatePresence>
+  )
 }
 
 function ClaireWaterfallNew() {

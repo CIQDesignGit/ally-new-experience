@@ -6,6 +6,7 @@ import { ProfileProvider } from "@/components/home/profile-context";
 import { NudgeProvider } from "@/components/nudge/nudge-context";
 import { DemoToggle } from "@/components/nudge/demo-toggle";
 import { Toaster } from "@/components/ui/sonner";
+import { ExperienceModeBridge } from "@/components/layout/experience-mode-bridge";
 
 // Inter: used for all body text, UI labels, and headings (--font-sans / --font-heading)
 const inter = Inter({
@@ -38,6 +39,7 @@ export default function RootLayout({
         <ProfileProvider>
           <NudgeProvider>
             {children}
+            <ExperienceModeBridge />
             <DemoToggle />
             <Toaster position="bottom-left" />
           </NudgeProvider>

@@ -18,6 +18,8 @@ import { useCompetition } from "../competition/state"
 import { statusOf, useLibrary } from "./library/state"
 import { sidebarLayoutMinMediaQuery } from "@/lib/breakpoints"
 import { RegionRetailerSettings } from "./region-retailer-settings"
+import { beginExperienceTransition, useExperienceMode } from "@/lib/experience-mode"
+import { ExperienceModeToggle } from "@/components/layout/experience-mode-toggle"
 
 const OPEN_W = "264px"
 const SHUT_W = "64px"
@@ -208,11 +210,20 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
       <div key={label}>
         {/* The row folds the list; its + (on hover, like Slack's channels) adds more from the library. */}
         <div className="group flex items-center rounded-lg hover:bg-white/10">
-          <button type="button" onClick={() => setOpenList(isOpen ? null : label)} aria-expanded={isOpen} className={cn(row(), "flex-1 hover:bg-transparent")}>
-            <Icon className="size-4" />
-            <span className="flex-1 text-left">{label}</span>
-            {sec.fresh && <span className="size-2 rounded-full bg-ally-500" aria-label="New" />}
-            {sec.items.length > 0 && <span className="font-mono text-xs text-brand-300">{sec.items.length}</span>}
+          <button
+            type="button"
+            onClick={() => setOpenList(isOpen ? null : label)}
+            aria-expanded={isOpen}
+            className={cn(row(), "min-w-0 flex-1 justify-start hover:bg-transparent")}
+          >
+            <Icon className="size-4 shrink-0" />
+            <span className="inline-flex min-w-0 items-center gap-1.5 text-left">
+              <span className="truncate">{label}</span>
+              {sec.fresh && <span className="size-2 shrink-0 rounded-full bg-ally-500" aria-label="New" />}
+              {sec.items.length > 0 && (
+                <span className="shrink-0 font-mono text-xs text-brand-300 tabular-nums">{sec.items.length}</span>
+              )}
+            </span>
           </button>
           {sec.add && (
             <Link
@@ -345,13 +356,40 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
           )}
           {/* Teaching Ally is the engineer's job (Nora's nav), so customers only ask. */}
           {/* Ask Ally opens a new chat, like Claude; the count beside it folds out the recent ones. */}
-          <div className={cn("flex items-center rounded-lg text-sm", path === "/c/new" ? "bg-brand-400 font-semibold text-white" : "text-brand-100 hover:bg-white/10")}>
-            <Link href="/c/new" className="flex flex-1 items-center gap-2.5 px-2.5 py-2 hover:text-white">
-              <MessageSquare className="size-4" /> <span className="flex-1">Ask Ally</span>
+          <div
+            className={cn(
+              "flex w-full items-center rounded-lg text-sm",
+              path === "/c/new" ? "bg-brand-400 font-semibold text-white" : "text-brand-100 hover:bg-white/10",
+            )}
+          >
+            <Link
+              href="/c/new"
+              className={cn(row(path === "/c/new"), "w-fit shrink-0 hover:bg-transparent hover:text-white")}
+            >
+              <MessageSquare className="size-4 shrink-0" />
+              <span className="inline-flex items-center gap-1.5">
+                Ask Ally
+                {chats.items.length > 0 && (
+                  <span
+                    className={cn(
+                      "font-mono text-xs tabular-nums",
+                      path === "/c/new" ? "text-white/80" : "text-brand-300",
+                    )}
+                  >
+                    {chats.items.length}
+                  </span>
+                )}
+              </span>
             </Link>
             {chats.items.length > 0 && (
-              <button type="button" onClick={() => setOpenList(openList === "Ask Ally" ? null : "Ask Ally")} aria-expanded={openList === "Ask Ally"} aria-label="Recent chats" title="Recent chats" className="mr-1 flex items-center gap-1 rounded-md px-1.5 py-1 font-mono text-xs text-brand-300 hover:bg-white/10 hover:text-white">
-                {chats.items.length}
+              <button
+                type="button"
+                onClick={() => setOpenList(openList === "Ask Ally" ? null : "Ask Ally")}
+                aria-expanded={openList === "Ask Ally"}
+                aria-label="Recent chats"
+                title="Recent chats"
+                className="ml-auto mr-1 flex size-7 items-center justify-center rounded-md text-brand-300 hover:bg-white/10 hover:text-white"
+              >
                 <ChevronDown className={cn("size-3.5 transition-transform", openList === "Ask Ally" && "rotate-180")} />
               </button>
             )}
@@ -378,6 +416,7 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
           )}
           </div>
           </div>
+          {!fde && <TryNewAllyToggle />}
         </div>
       ) : (
         <nav className="flex flex-1 flex-col items-center gap-1 pb-3">
@@ -431,6 +470,28 @@ export function AppDrawer({ home: homeProp, defaultOpen }: { home?: string; /** 
         </nav>
       )}
     </aside>
+  )
+}
+
+function TryNewAllyToggle() {
+  const path = usePathname()
+  const { isOld } = useExperienceMode()
+  const on = !isOld
+  return (
+    <ExperienceModeToggle
+      variant="ally"
+      checked={on}
+      title={on ? "Switch to classic CommerceIQ" : "Switch to new Ally"}
+      onCheckedChange={(next) => {
+        if (!next) {
+          beginExperienceTransition("old", {
+            href: path === "/claire-waterfall" ? undefined : "/claire-waterfall",
+          })
+        } else {
+          beginExperienceTransition("new")
+        }
+      }}
+    />
   )
 }
 

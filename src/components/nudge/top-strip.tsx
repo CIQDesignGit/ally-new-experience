@@ -13,7 +13,6 @@ import { dayLabel } from "./claire/claire-actions"
 import { useNudge } from "./nudge-context"
 import { useMvp } from "./mvp"
 import { VISION_ONLY_PAGES } from "./data"
-import { useExperienceMode } from "@/lib/experience-mode"
 
 /** Ally's mark, redrawn as a vector from the brand file (public/ally-logo.png): hair and ring, two sparks and a streak. */
 export function AllyLogo({ className }: { className?: string }) {
@@ -84,17 +83,6 @@ function AccountMenu({ person }: { person: Person }) {
   const [email, setEmail] = useState<string | null>(null)
   const router = useRouter()
   const mvp = useMvp()
-  const { setMode } = useExperienceMode()
-  // This menu only exists in the new shell — keep storage aligned so Claire
-  // doesn't open classic from a stale "old" left on another page.
-  useEffect(() => {
-    setMode("new")
-  }, [setMode])
-  // Turning the switch off leaves for classic CommerceIQ on Claire's page.
-  function switchToClassic() {
-    setMode("old")
-    router.push("/claire-waterfall")
-  }
   return (
     <DropdownMenu
       onOpenChange={(open) => {
@@ -127,25 +115,6 @@ function AccountMenu({ person }: { person: Person }) {
             {p === person && <Check className="size-4 text-brand-600" />}
           </DropdownMenuItem>
         ))}
-        <DropdownMenuSeparator />
-        <div className="px-2.5 pt-1.5 pb-1 text-xs font-medium text-slate-500">Experience</div>
-        <div className="flex items-center justify-between gap-3 px-2.5 py-2">
-          <span className="text-sm font-medium text-slate-950">Try new Ally</span>
-          <button
-            type="button"
-            role="switch"
-            aria-checked={true}
-            aria-label="Try new Ally"
-            title="Switch to classic CommerceIQ"
-            onClick={switchToClassic}
-            className="relative h-5 w-9 shrink-0 rounded-full bg-brand-500 transition-colors"
-          >
-            <span
-              aria-hidden
-              className="absolute top-0.5 left-0.5 size-4 translate-x-4 rounded-full bg-white shadow-sm transition-transform"
-            />
-          </button>
-        </div>
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={async () => {

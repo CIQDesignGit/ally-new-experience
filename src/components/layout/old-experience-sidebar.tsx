@@ -24,7 +24,8 @@ import {
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
-import { useExperienceMode } from "@/lib/experience-mode"
+import { beginExperienceTransition } from "@/lib/experience-mode"
+import { ExperienceModeToggle } from "@/components/layout/experience-mode-toggle"
 
 type NavItem = {
   label: string
@@ -93,21 +94,15 @@ function NavRow({ item }: { item: NavItem }) {
 }
 
 function OldExperienceFooterToggle() {
-  const { setMode } = useExperienceMode()
   return (
-    <label className="flex cursor-pointer items-center justify-between gap-2 px-4 py-2 type-caption transition-colors">
-      <span className="min-w-0 flex-1 leading-snug text-slate-300">Try the new experience</span>
-      <button
-        type="button"
-        role="switch"
-        aria-checked={false}
-        aria-label="Turn on to try the new Ally experience"
-        onClick={() => setMode("new")}
-        className="relative h-5 w-9 shrink-0 scale-75 rounded-full bg-slate-600 transition-colors"
-      >
-        <span aria-hidden className="absolute top-0.5 left-0.5 size-4 rounded-full bg-white shadow-sm" />
-      </button>
-    </label>
+    <ExperienceModeToggle
+      variant="classic"
+      checked={false}
+      title="Switch to new Ally"
+      onCheckedChange={(next) => {
+        if (next) beginExperienceTransition("new")
+      }}
+    />
   )
 }
 
@@ -167,7 +162,7 @@ export function OldExperienceSidebar() {
         ))}
       </nav>
 
-      <div className="shrink-0 border-t border-slate-600 py-2">
+      <div className="shrink-0 px-2 pb-2">
         <OldExperienceFooterToggle />
       </div>
     </aside>
