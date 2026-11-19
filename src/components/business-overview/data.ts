@@ -65,14 +65,15 @@ export const KPIS: Kpi[] = [
 
 export const MAX_CHART_METRICS = 2
 
+/** Daily chart points (units/ad in K; OPS/shipped in M; glance views in K). */
 export const CHART_SERIES: ChartRow[] = [
-  { day: "9 Nov", ops: 3.52, shippedRev: 3.48, unitsOrd: 54.2, unitsShip: 53.1, adSpend: 19.12, adSales: 0.462, glanceViews: 178, roas: 3.28 },
-  { day: "10 Nov", ops: 3.49, shippedRev: 3.51, unitsOrd: 53.4, unitsShip: 52.8, adSpend: 18.94, adSales: 0.451, glanceViews: 176, roas: 3.25 },
-  { day: "11 Nov", ops: 3.44, shippedRev: 3.46, unitsOrd: 51.8, unitsShip: 51.2, adSpend: 18.74, adSales: 0.438, glanceViews: 172, roas: 3.19 },
-  { day: "12 Nov", ops: 3.47, shippedRev: 3.43, unitsOrd: 51.03, unitsShip: 50.6, adSpend: 18.82, adSales: 0.429, glanceViews: 169, roas: 3.15 },
-  { day: "13 Nov", ops: 3.58, shippedRev: 3.52, unitsOrd: 55.1, unitsShip: 54.4, adSpend: 19.28, adSales: 0.448, glanceViews: 181, roas: 3.22 },
-  { day: "14 Nov", ops: 3.51, shippedRev: 3.49, unitsOrd: 52.6, unitsShip: 51.9, adSpend: 19.63, adSales: 0.421, glanceViews: 167, roas: 3.08 },
-  { day: "15 Nov", ops: 3.66, shippedRev: 3.58, unitsOrd: 56.62, unitsShip: 55.8, adSpend: 19.41, adSales: 0.431, glanceViews: 184, roas: 3.21 },
+  { day: "9 Nov", ops: 3.52, shippedRev: 3.48, unitsOrd: 53.6, unitsShip: 52.9, adSpend: 18.75, adSales: 59.2, glanceViews: 175, roas: 3.26 },
+  { day: "10 Nov", ops: 3.5, shippedRev: 3.5, unitsOrd: 53.1, unitsShip: 52.5, adSpend: 19.05, adSales: 59.8, glanceViews: 177, roas: 3.24 },
+  { day: "11 Nov", ops: 3.46, shippedRev: 3.47, unitsOrd: 52.4, unitsShip: 51.8, adSpend: 18.55, adSales: 58.4, glanceViews: 173, roas: 3.2 },
+  { day: "12 Nov", ops: 3.47, shippedRev: 3.45, unitsOrd: 52.7, unitsShip: 52.1, adSpend: 18.68, adSales: 58.9, glanceViews: 171, roas: 3.17 },
+  { day: "13 Nov", ops: 3.56, shippedRev: 3.52, unitsOrd: 54.6, unitsShip: 53.9, adSpend: 19.22, adSales: 60.5, glanceViews: 179, roas: 3.23 },
+  { day: "14 Nov", ops: 3.51, shippedRev: 3.49, unitsOrd: 53.2, unitsShip: 52.6, adSpend: 19.38, adSales: 59.0, glanceViews: 174, roas: 3.1 },
+  { day: "15 Nov", ops: 3.66, shippedRev: 3.58, unitsOrd: 56.62, unitsShip: 55.8, adSpend: 19.41, adSales: 59.8, glanceViews: 184, roas: 3.21 },
 ]
 
 export type MoverRow = {
@@ -264,3 +265,41 @@ export const BENCHMARK_GRID: MetricGroup[] = [
 ]
 
 export const BENCHMARK_COLUMNS = ["B000CS9ZME", "B01N0DOL1L", "B07TN3C2HD", "B000VDZ2D8"]
+
+export type BenchmarkMetricChoice = { id: string; label: string }
+
+export type BenchmarkMetricMenuEntry =
+  | (BenchmarkMetricChoice & { submenu?: undefined })
+  | (BenchmarkMetricChoice & { submenu: BenchmarkMetricChoice[] })
+
+/** Classic Business overview metric swap menu (per row). */
+export const BENCHMARK_METRIC_MENU: BenchmarkMetricMenuEntry[] = [
+  { id: "gross-margin", label: "Gross margin %" },
+  {
+    id: "share-of-voice",
+    label: "Share Of Voice",
+    submenu: [
+      { id: "sov-category", label: "Category" },
+      { id: "sov-competitor", label: "Competitor" },
+      { id: "sov-branded", label: "Branded" },
+    ],
+  },
+  { id: "ad-sales", label: "Ad Sales" },
+  { id: "ctr", label: "CTR" },
+  { id: "ad-spend-sns", label: "% Ad Spend on SNS SKUs" },
+  { id: "ad-conversion-14", label: "Ad Conversion 14 days" },
+  { id: "brand-halo-14", label: "Brand Halo Sales 14 days" },
+  { id: "impressions", label: "Impressions" },
+  { id: "cpc", label: "CPC" },
+  { id: "clicks", label: "Clicks" },
+]
+
+export function benchmarkMenuLabel(choiceId: string): string | undefined {
+  for (const entry of BENCHMARK_METRIC_MENU) {
+    if (entry.id === choiceId) return entry.label
+    for (const sub of entry.submenu ?? []) {
+      if (sub.id === choiceId) return `${entry.label} · ${sub.label}`
+    }
+  }
+  return undefined
+}

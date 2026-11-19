@@ -9,10 +9,10 @@ import { cn } from "@/lib/utils"
 
 export function TopMovers() {
   return (
-    <Widget className="min-w-0">
-      <WidgetHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <Widget className="min-w-0 @container">
+      <WidgetHeader className="flex flex-col gap-3 @[32rem]:flex-row @[32rem]:items-center @[32rem]:justify-between">
         <p className="text-xs font-medium tracking-wide text-slate-500 uppercase">Top movers ordered product sales (OPS)</p>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 @[32rem]:justify-end">
           <button type="button" className={cn(SECONDARY, "h-9 gap-1.5 px-3 text-xs")}>
             <BarChart2 className="size-3.5 shrink-0" aria-hidden /> Benchmark
           </button>
@@ -25,7 +25,7 @@ export function TopMovers() {
         </div>
       </WidgetHeader>
       <WidgetBody pad={false} className="py-0">
-        <div className="flex min-w-0 flex-col lg:flex-row">
+        <div className="flex min-w-0 flex-col @[52rem]:flex-row">
           <MoverPanel title="Top gainers" rows={TOP_GAINERS} />
           <MoverPanel title="Top losers" rows={TOP_LOSERS} />
         </div>

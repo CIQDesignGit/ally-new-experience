@@ -4,7 +4,6 @@ import { ChevronDown, Filter, RefreshCw, Star } from "lucide-react"
 import { PAGE_EDGE, PAGE_HEAD_SPACE, WidgetStack } from "@/components/layout/page-frame"
 import { SECONDARY } from "@/components/nudge/mike/buttons"
 import { BusinessOverviewDateRangeSelector } from "./date-range-selector"
-import { BenchmarkingSku } from "./benchmarking-sku"
 import { MetricsBenchmark } from "./metrics-benchmark"
 import { PerformanceOverview } from "./performance-overview"
 import { TopMovers } from "./top-movers"
@@ -47,7 +46,6 @@ export function BusinessOverviewView() {
       <WidgetStack>
         <PerformanceOverview />
         <TopMovers />
-        <BenchmarkingSku />
         <MetricsBenchmark />
       </WidgetStack>
     </>

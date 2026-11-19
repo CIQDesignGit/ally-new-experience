@@ -5,6 +5,23 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/
 import type { ChartConfig } from "@/components/ui/chart"
 import { CHART_SERIES, MAX_CHART_METRICS, type Kpi } from "./data"
 
+function axisDomain(series: Kpi[], axis: Kpi["axis"]): [number, number] {
+  const keys = series.filter((k) => k.axis === axis).map((k) => k.chartKey)
+  if (keys.length === 0) return [0, 1]
+  let min = Number.POSITIVE_INFINITY
+  let max = Number.NEGATIVE_INFINITY
+  for (const row of CHART_SERIES) {
+    for (const key of keys) {
+      const v = row[key]
+      min = Math.min(min, v)
+      max = Math.max(max, v)
+    }
+  }
+  const span = max - min || Math.abs(max) * 0.08 || 1
+  const pad = Math.max(span * 0.08, 0.25)
+  return [min - pad, max + pad]
+}
+
 function formatCurrencyAxis(v: number, plotted: Kpi[]) {
   const hasMillions = plotted.some((k) => k.axis === "currency" && (k.id === "ops" || k.id === "shipped-rev"))
   const hasThousands = plotted.some((k) => k.axis === "currency" && k.id !== "ops" && k.id !== "shipped-rev" && k.id !== "roas")
@@ -37,6 +54,8 @@ export function PerformanceChart({ plotted }: { plotted: Kpi[] }) {
   const dual = hasCurrency && hasCount
   const useLeft = hasCurrency
   const useRight = hasCount
+  const currencyDomain = axisDomain(series, "currency")
+  const countDomain = axisDomain(series, "count")
   const yId = (k: Kpi) => {
     if (dual) return k.axis === "currency" ? "currency" : "count"
     return hasCurrency ? "currency" : "count"
@@ -58,6 +77,7 @@ export function PerformanceChart({ plotted }: { plotted: Kpi[] }) {
               tickLine={false}
               axisLine={false}
               width={52}
+              domain={currencyDomain}
               tick={{ fill: "#64748b", fontSize: 10 }}
               tickFormatter={(v) => formatCurrencyAxis(v, series)}
             />
@@ -69,6 +89,7 @@ export function PerformanceChart({ plotted }: { plotted: Kpi[] }) {
               tickLine={false}
               axisLine={false}
               width={52}
+              domain={countDomain}
               tick={{ fill: "#64748b", fontSize: 10 }}
               tickFormatter={formatCountAxis}
             />
